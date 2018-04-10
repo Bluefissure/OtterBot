@@ -1,0 +1,2 @@
+# FFXIVBOT
+A QQ bot of FFXIV
