@@ -13,7 +13,7 @@ A QQ bot of FFXIV
 
 ## Use
 - /cat : require an image of cat (crawled from [pexels](https://www.pexels.com/search/cat))
-- /search $item : search $item in [FFXIVWIKI](https://ff14.huijiwiki.com/wiki)
+- /search $item : search $item in [FFXIVWIKI](https://ff14.huijiwiki.com/)
 - /anime $image : search the animation of $image ([whatanime](https://whatanime.ga/) API token required)
 - /random $num : require $num true random numbers  ([random.org](https://www.random.org/) API token required)
 
