@@ -4,10 +4,7 @@
 A QQ bot of FFXIV
 
 ## Install
-- python3 
-    - requests
-    - [BeautifulSoup](https://www.crummy.com/software/BeautifulSoup/)
-    - [django](https://www.djangoproject.com/)
+- python3(see [requeirements.txt](https://github.com/Bluefissure/FFXIVBOT/blob/master/requirements.txt) for details)
 - [coolq-wine(docker)](https://hub.docker.com/r/coolq/wine-coolq/)
 - [coolq-http-api](https://github.com/richardchien/coolq-http-api)
 
