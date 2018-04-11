@@ -1,7 +1,7 @@
 # FFXIVBOT
 [![Build Status](https://travis-ci.org/Bluefissure/FFXIVBOT.svg?branch=master)](https://travis-ci.org/Bluefissure/FFXIVBOT)
 <a target="_blank" href="http://wpa.qq.com/msgrd?v=3&uin=2746433796&site=qq&menu=yes"><img border="0" src="https://img.shields.io/badge/demo-QQ-green.svg" alt="Demo QQ Bot" title="Demo QQ Bot"/></a>
-
+[![license](https://img.shields.io/badge/license-GPL-blue.svg)](https://github.com/Bluefissure/FFXIVBOT/blob/master/LICENSE)
 
 A QQ bot of FFXIV
 
