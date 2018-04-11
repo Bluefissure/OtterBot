@@ -3,7 +3,7 @@
 <a target="_blank" href="http://wpa.qq.com/msgrd?v=3&uin=2746433796&site=qq&menu=yes"><img border="0" src="https://img.shields.io/badge/demo-QQ-green.svg" alt="Demo QQ Bot" title="Demo QQ Bot"/></a>
 [![license](https://img.shields.io/badge/license-GPL-blue.svg)](https://github.com/Bluefissure/FFXIVBOT/blob/master/LICENSE)
 
-A QQ bot of FFXIV  
+A QQ bot of FFXIV
 
 ## Install
 - python3.4+
@@ -16,6 +16,12 @@ A QQ bot of FFXIV
 - /search $item : search $item in [FFXIVWIKI](https://ff14.huijiwiki.com/wiki)
 - /anime $image : search the animation of $image ([whatanime](https://whatanime.ga/) API token required)
 - /random $num : require $num true random numbers  ([random.org](https://www.random.org/) API token required)
+
+## Examples
+![/cat](https://i.loli.net/2018/04/11/5acd9cd833831.png)
+![/search](https://i.loli.net/2018/04/11/5acd9c2eef267.png)
+![/anime](https://i.loli.net/2018/04/11/5acd9c2f2ceea.png)
+![/random](https://i.loli.net/2018/04/11/5acd9c2f0da51.png)
 
 ## Demo
 Add the demo bot above with keyword "FFXIV" 
