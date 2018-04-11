@@ -1,12 +1,15 @@
 # FFXIVBOT
+[![Build Status](https://travis-ci.org/Bluefissure/FFXIVBOT.svg?branch=master)](https://travis-ci.org/Bluefissure/FFXIVBOT)
 <a target="_blank" href="http://wpa.qq.com/msgrd?v=3&uin=2746433796&site=qq&menu=yes"><img border="0" src="https://img.shields.io/badge/demo-QQ-green.svg" alt="Demo QQ Bot" title="Demo QQ Bot"/></a>
+
 
 A QQ bot of FFXIV
 
 ## Install
-- python3(see [requeirements.txt](https://github.com/Bluefissure/FFXIVBOT/blob/master/requirements.txt) for details)
+- python3.4+
+- django and so on (see [requeirements.txt](https://github.com/Bluefissure/FFXIVBOT/blob/master/requirements.txt) for details)
 - [coolq-wine(docker)](https://hub.docker.com/r/coolq/wine-coolq/)
-- [coolq-http-api](https://github.com/richardchien/coolq-http-api)
+- [coolq-http-api](https://github.com/richardchien/coolq-http-api) z
 
 ## Use
 - /cat : require an image of cat (crawled from [pexels](https://www.pexels.com/search/cat))
