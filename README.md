@@ -9,7 +9,7 @@ A QQ bot of FFXIV
 - python3.4+
 - django and so on (see [requeirements.txt](https://github.com/Bluefissure/FFXIVBOT/blob/master/requirements.txt) for details)
 - [coolq-wine(docker)](https://hub.docker.com/r/coolq/wine-coolq/)
-- [coolq-http-api](https://github.com/richardchien/coolq-http-api) z
+- [coolq-http-api](https://github.com/richardchien/coolq-http-api)
 
 ## Use
 - /cat : require an image of cat (crawled from [pexels](https://www.pexels.com/search/cat))
