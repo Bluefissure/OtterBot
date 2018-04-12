@@ -44,7 +44,8 @@ WHATANIME_API_URL = "https://whatanime.ga/api/search?token="+WHATANIME_TOKEN
 FF14WIKI_BASE_URL = "https://ff14.huijiwiki.com"
 FF14WIKI_API_URL = "https://cdn.huijiwiki.com/ff14/api.php"
 
-
+#sorry API
+SORRY_BASE_URL = "https://sorry.xuty.tk/"
 
 def get_item_info(url):
     r = requests.get(url,timeout=3)
@@ -181,7 +182,7 @@ def qqpost(req):
                     if res_data:
                         reply_data = {"reply":[{"type":"share","data":res_data}]}
                     else:
-                        reply_data = {"reply":"在最终幻想XIV中没有找到 %s"%(name),"at_sender":"false"}
+                        reply_data = {"reply":"在最终幻想XIV中没有找到 %s"%(name)}
                     return JsonResponse(reply_data)
                 if (receive["message"].find('/anime')==0):
                     print("anime_msg:%s"%(receive["message"]))
@@ -200,7 +201,7 @@ def qqpost(req):
                     num = min(num,6)
                     post_data = {"jsonrpc":"2.0","method":"generateIntegers","params":{"apiKey":RANDOMORG_TOKEN,"n":num,"min":min_lim,"max":max_lim,"replacement":"true"},"id":1}
                     try:
-                        s=requests.post(url='https://api.random.org/json-rpc/1/invoke',data=json.dumps(post_data),timeout=1)
+                        s=requests.post(url='https://api.random.org/json-rpc/1/invoke',data=json.dumps(post_data),timeout=0.5)
                         res_jdata = json.loads(s.text)
                         if ("error" in res_jdata):
                             msg = res_jdata["error"]["message"]
@@ -216,13 +217,60 @@ def qqpost(req):
                     reply_data = {"reply":"[CQ:at,qq=%s]掷出了"%(receive["user_id"])+msg+"点！","at_sender":"false"}
                     print("reply_data:%s"%(reply_data))
                     return JsonResponse(reply_data)
-                
-            if (receive["post_type"] == "request"):
-                if (receive["request_type"] == "friend"):	#Add Friend
-                    qq = receive["user_id"]
-                    reply_data = {"approve":receive["message"] == "FFXIV"}
+                if (receive["message"].find('/gif')==0):
+                    sorry_dict = {"sorry":"好啊|就算你是一流工程师|就算你出报告再完美|我叫你改报告你就要改|毕竟我是客户|客户了不起啊|sorry 客户真的了不起|以后叫他天天改报告|天天改 天天改","wangjingze":"我就是饿死|死外边 从这跳下去|也不会吃你们一点东西|真香","jinkela":"金坷垃好处都有啥|谁说对了就给他|肥料掺了金坷垃|不流失 不蒸发 零浪费|肥料掺了金坷垃|能吸收两米下的氮磷钾","marmot":"啊~|啊~~~","dagong":"没有钱啊 肯定要做的啊|不做的话没有钱用|那你不会去打工啊|有手有脚的|打工是不可能打工的|这辈子不可能打工的","diandongche":"戴帽子的首先进里边去|开始拿剪刀出来 拿那个手机|手机上有电筒 用手机照射|寻找那个比较新的电动车|六月六号 两名男子再次出现|民警立即将两人抓获"}
+                    sorry_name = {"sorry":"为所欲为","wangjingze":"王境泽","jinkela":"金坷垃","marmot":"土拨鼠","dagong":"窃格瓦拉","diandongche":"偷电动车"}
+                    receive_msg = receive["message"].replace('/gif','').strip()
+                    if receive_msg=="list":
+                        msg = ""
+                        for (k,v) in sorry_dict.items():
+                            msg = msg + "%s : %s\n"%(k,sorry_name[k])
+                    else:
+                        now_template = ""
+                        for (k,v) in sorry_dict.items():
+                            if (receive_msg.find(k)==0):
+                                now_template = k
+                                break
+                        if (now_template=="" or len(receive_msg)==0 or receive_msg=="help"):
+                            msg = "/gif list : 目前可用模板\n/gif $template example : 查看模板$template的样例\n/gif $template $msg0|$msg1|... : 按照$msg0,$msg1...生成沙雕GIF\nPowered by sorry.xuty.tk"
+                        else:
+                            receive_msg = receive_msg.replace(now_template,"").strip()
+                            if(receive_msg=="example"):
+                                msg = sorry_dict[now_template]
+                            else:
+                                msgs = receive_msg.split('|')
+                                if(len(msgs)==0):
+                                    msg = "至少包含一条字幕消息"
+                                else:
+                                    cnt = 0
+                                    gen_data = {}
+                                    for sentence in msgs:
+                                        gen_data[str(cnt)] = sentence
+                                        print("sentence#%s:%s"%(cnt,sentence))
+                                        cnt += 1
+                                    print("gen_data:%s"%(json.dumps(gen_data)))
+                                    url = SORRY_BASE_URL + "api/%s/make"%(now_template)
+                                    try:
+                                        s = requests.post(url=url,data=json.dumps(gen_data),timeout=2)
+                                        img_url = SORRY_BASE_URL + s.text
+                                        print("img_url:%s"%(img_url))
+                                        msg = '[CQ:image,cache=0,file='+img_url+']'
+                                    except Exception as e:
+                                        msg = "SORRY API ERROR:%s"%(e)
+                                        print(msg)
+                                        reply_data = {"reply":msg}  
+                                        return JsonResponse(reply_data) 
+                    msg = msg.strip()
+                    reply_data = {"reply":msg}
+                    if(receive["message_type"]=="group"):
+                        reply_data["at_sender"] = "false"
                     return JsonResponse(reply_data)
-                if (receive["request_type"] == "group" and receive["sub_type"] == "invite"):	#Add Group
+            if (receive["post_type"] == "request"):
+                if (receive["request_type"] == "friend"):   #Add Friend
+                    qq = receive["user_id"]
+                    reply_data = {"approve": "FFXIV" in receive["message"]}
+                    return JsonResponse(reply_data)
+                if (receive["request_type"] == "group" and receive["sub_type"] == "invite"):    #Add Group
                     reply_data = {"approve":True}
                     return JsonResponse(reply_data)
         return HttpResponse(status=204)
