@@ -239,15 +239,18 @@ def qqpost(req):
                                 msg = sorry_dict[now_template]
                             else:
                                 msgs = receive_msg.split('|')
-                                if(len(msgs)==0):
+                                cnt = 0
+                                gen_data = {}
+                                for sentence in msgs:
+                                    sentence = sentence.strip()
+                                    if(sentence==""):
+                                        continue
+                                    gen_data[str(cnt)] = sentence
+                                    print("sentence#%s:%s"%(cnt,sentence))
+                                    cnt += 1
+                                if(cnt==0):
                                     msg = "至少包含一条字幕消息"
                                 else:
-                                    cnt = 0
-                                    gen_data = {}
-                                    for sentence in msgs:
-                                        gen_data[str(cnt)] = sentence
-                                        print("sentence#%s:%s"%(cnt,sentence))
-                                        cnt += 1
                                     print("gen_data:%s"%(json.dumps(gen_data)))
                                     url = SORRY_BASE_URL + "api/%s/make"%(now_template)
                                     try:
