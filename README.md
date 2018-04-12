@@ -16,7 +16,7 @@ A QQ bot of FFXIV
 - /search $item : search $item in [FFXIVWIKI](https://ff14.huijiwiki.com/)
 - /anime $image : search the animation of $image ([whatanime](https://whatanime.ga/) API token required)
 - /random $num : require $num true random numbers  ([random.org](https://www.random.org/) API token required)
-- /gif : generate an shadiao gif via [sorry.xuty.tk](https://sorry.xuty.tk/)
+- /gif : generate an shadiao gif via [sorry.xuty.tk](https://sorry.xuty.tk/) (/gif help : get help)
 
 ## Examples
 ![/cat](https://i.loli.net/2018/04/11/5acd9cd833831.png)
