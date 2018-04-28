@@ -172,6 +172,13 @@ def qqpost(req):
         received_sig = req.META.get("HTTP_X_SIGNATURE","unknow")[len('sha1='):]
         if(sig == received_sig):
             if (receive["post_type"] == "message"):
+                if (receive["message"].find('/help')==0):
+                    msg = "/cat : 云吸猫\n/random : 掷色子\n/search $item : 在最终幻想XIV中查询物品$item\n/anime $img : 查询$img对应番剧\n/gif : 生成沙雕GIF"
+                    msg = msg.strip()
+                    reply_data = {"reply":msg}
+                    if(receive["message_type"]=="group"):
+                        reply_data["at_sender"] = "false"
+                    return JsonResponse(reply_data)
                 if (receive["message"] == '/cat'):
                     reply_data = {"reply":[{"type":"image","data":{"file":"cat/%s.jpg"%(random.randint(0,750))}}],"at_sender":"false"}
                     return JsonResponse(reply_data)
