@@ -6,11 +6,11 @@ python:
   - "nightly" # currently points to 3.7-dev
 # command to install dependencies
 install: "pip install -r requirements.txt"
+before_script:
+  - python manage.py makemigrations
+  - python manage.py migrate
 # command to run tests
-script: 
-python manage.py makemigrations
-python manage.py migrate
-python manage.py test
+script: python manage.py test
 
 after_success: 
   - bash <(curl -s https://codecov.io/bash)
