@@ -7,7 +7,10 @@ python:
 # command to install dependencies
 install: "pip install -r requirements.txt"
 # command to run tests
-script: python manage.py test
+script: 
+python manage.py makemigrations
+python manage.py migrate
+python manage.py test
 
 after_success: 
   - bash <(curl -s https://codecov.io/bash)
