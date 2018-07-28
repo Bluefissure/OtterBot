@@ -67,8 +67,8 @@ BAIDU_IMAGE_CENSOR_URL = 'https://aip.baidubce.com/rest/2.0/solution/v1/img_cens
 
 QQBOT_LIST = ["2854196306"]
 
-
-
+TIMEFORMAT = "%Y-%m-%d %H:%M:%S"
+TIMEFORMAT_MDHMS = "%m-%d %H:%M:%S"
 
 def refresh_baidu_access_token():
     r = requests.post(url=BAIDU_RECORD_ACCESS_TOKEN_URL)
@@ -187,10 +187,10 @@ def whatanime(receive):
     print("WhatAnime_msg:\n%s"%(msg))
     if(receive["message_type"]=="private"):
         jdata = {"user_id":receive["user_id"],"message":msg}
-        s=requests.post(url=QQPOST_URL+'/send_private_msg?access_token='+ACCESS_TOKEN,data=jdata,timeout=10)
+        s=requests.post(url=QQPOST_URL+'/send_private_msg_async?access_token='+ACCESS_TOKEN,data=jdata,timeout=10)
     elif(receive["message_type"]=="group"):
         jdata = {"group_id":receive["group_id"],"message":"[CQ:at,qq=%s]\n"%(receive["user_id"])+msg}
-        s=requests.post(url=QQPOST_URL+'/send_group_msg?access_token=2ASdOeYCOyp',data=jdata,timeout=10)
+        s=requests.post(url=QQPOST_URL+'/send_group_msg_async?access_token=2ASdOeYCOyp',data=jdata,timeout=10)
 
 
 def get_group_member_info(group_id,user_id):
@@ -204,9 +204,17 @@ def send_group_msg(group_id,msg,at_user_id=None):
         msg = "[CQ:at,qq=%s] "%(at_user_id)+msg
     jdata = {"group_id":group_id,"message":msg}
     print("jdata:%s"%(json.dumps(jdata)))
-    s=requests.post(url=QQPOST_URL+'/send_group_msg?access_token=2ASdOeYCOyp',data=jdata,timeout=10)
+    s=requests.post(url=QQPOST_URL+'/send_group_msg_async?access_token=2ASdOeYCOyp',data=jdata,timeout=10)
     res_json = json.loads(s.text)
     return res_json
+
+def send_private_msg(user_id,msg):
+    jdata = {"user_id":user_id,"message":msg}
+    print("jdata:%s"%(json.dumps(jdata)))
+    s=requests.post(url=QQPOST_URL+'/send_private_msg_async?access_token=2ASdOeYCOyp',data=jdata,timeout=10)
+    res_json = json.loads(s.text)
+    return res_json
+
 
 def group_ban(group_id,user_id,duration=60):
     jdata = {"group_id":group_id,"user_id":user_id,"duration":duration}
@@ -262,11 +270,77 @@ def image_censor(receive):
             send_group_msg(receive["group_id"],msg)
 
 
-def get_record(file_name):
-    jdata = {"file":file_name,"out_format":"wav"}
-    s=requests.post(url=QQPOST_URL+'/get_record?access_token=2ASdOeYCOyp',data=jdata,timeout=10)
-    res_json = json.loads(s.text)
-    return res_json
+def calculateForecastTarget(unixSeconds): 
+    # Thanks to Rogueadyn's SaintCoinach library for this calculation.
+    # lDate is the current local time.
+    # Get Eorzea hour for weather start
+    bell = unixSeconds / 175
+
+    # Do the magic 'cause for calculations 16:00 is 0, 00:00 is 8 and 08:00 is 16
+    increment = int(bell + 8 - (bell % 8)) % 24
+
+    # Take Eorzea days since unix epoch
+    totalDays = unixSeconds // 4200
+    # totalDays = (totalDays << 32) >>> 0; # Convert to uint
+
+    calcBase = totalDays * 100 + increment
+
+    step1 = (((calcBase << 11)%(0x100000000)) ^ calcBase)
+    step2 = (((step1 >> 8)%(0x100000000)) ^ step1)
+    
+    return step2 % 100
+
+def getEorzeaHour(unixSeconds):
+    bell = (unixSeconds / 175) % 24;
+    return int(bell)
+
+def getWeatherTimeFloor(unixSeconds):
+    # Get Eorzea hour for weather start
+    bell = (unixSeconds / 175) % 24
+    startBell = bell - (bell % 8)
+    startUnixSeconds = round(unixSeconds - (175 * (bell - startBell)))
+    return startUnixSeconds
+
+def checkGale(unixSeconds):
+    chance = calculateForecastTarget(unixSeconds)
+    # print("chance for %s: %s"%(unixSeconds,chance))
+    return (30 <= chance < 60)
+
+def eurekaGale(count):
+    unixSeconds = int(time.time())
+    weatherStartTime = getWeatherTimeFloor(unixSeconds);
+    count = min(count,10)
+    count = max(count,-10)
+    match = 0
+    msg = ""
+    now_time = weatherStartTime
+    tryTime = 0
+    if count >= 0:
+        while(match < count and tryTime <= 1000):
+            tryTime += 1
+            if(checkGale(now_time)):
+                print("%s %s"%(getEorzeaHour(now_time),now_time))
+                msg += "ET: %s:00\tLT: %s\n"%(getEorzeaHour(now_time),time.strftime(TIMEFORMAT_MDHMS,time.localtime(now_time)))
+                # print("find gale:"+time.strftime(TIMEFORMAT_MDHMS,time.localtime(now_time)))
+                match += 1
+            # print("now_time: %s %s %s"%(getEorzeaHour(now_time),time.strftime(TIMEFORMAT_MDHMS,time.localtime(now_time)),now_time))
+            now_time += 8 * 175
+    if count < 0:
+        count = -count
+        msg = ""
+        while(match < count and tryTime <= 1000):
+            tryTime += 1
+            if(checkGale(now_time)):
+                print("%s %s"%(getEorzeaHour(now_time),now_time))
+                msg += "ET: %s:00\tLT: %s\n"%(getEorzeaHour(now_time),time.strftime(TIMEFORMAT_MDHMS,time.localtime(now_time)))
+                # print("find gale:"+time.strftime(TIMEFORMAT_MDHMS,time.localtime(now_time)))
+                match += 1
+            # print("now_time: %s %s %s"%(getEorzeaHour(now_time),time.strftime(TIMEFORMAT_MDHMS,time.localtime(now_time)),now_time))
+            now_time -= 8 * 175
+    # print(msg)
+    return msg.strip()
+
+
 
 @csrf_exempt
 def qqpost(req):
@@ -277,13 +351,13 @@ def qqpost(req):
         if(sig == received_sig):
             if (receive["post_type"] == "message"):
                 if (receive["message"].find('/help')==0):
-                    msg = "/cat : 云吸猫\n/gakki : 云吸gakki\n/like : 赞\n/random(gate) : 掷骰子\n/search $item : 在最终幻想XIV中查询物品$item\n/dps $boss $job $dps : 在最终幻想XIV中查询DPS在对应BOSS与职业的logs排名（国际服同期数据）\n/anime $img : 查询$img对应番剧(只支持1M以内静态全屏截图)\n/gif : 生成沙雕GIF\n/about : 关于獭獭\n/donate : 援助作者"
+                    msg = "/cat : 云吸猫\n/gakki : 云吸gakki\n/bird : 云吸飞鸟\n/like : 赞\n/random(gate) : 掷骰子\n/search $item : 在最终幻想XIV中查询物品$item\n/dps $boss $job $dps : 在最终幻想XIV中查询DPS在对应BOSS与职业的logs排名（国际服同期数据）\n/pzz $cnt : 在最终幻想XIV中查询尤雷卡接下来$cnt次强风时间\n/anime $img : 查询$img对应番剧(只支持1M以内静态全屏截图)\n/gif : 生成沙雕GIF\n/about : 关于獭獭\n/donate : 援助作者"
                     msg = msg.strip()
                     reply_data = {"reply":msg}
                     if(receive["message_type"]=="group"):
                         reply_data["at_sender"] = "false"
                     return JsonResponse(reply_data)
-                #Group Chat Func
+                
                 if (receive["message"] == '/cat'):
                     reply_data = {"reply":[{"type":"image","data":{"file":"cat/%s.jpg"%(random.randint(0,750))}}]}
                     if(receive["message_type"]=="group"):
@@ -291,6 +365,16 @@ def qqpost(req):
                     return JsonResponse(reply_data)
                 if (receive["message"] == '/gakki'):
                     reply_data = {"reply":[{"type":"image","data":{"file":"gakki/%s.jpg"%(random.randint(1,1270))}}]}
+                    if(receive["message_type"]=="group"):
+                        reply_data["at_sender"] = "false"
+                    return JsonResponse(reply_data)
+                if (receive["message"] == '/bird'):
+                    jpg_cnt = 182
+                    gif_cnt = 5
+                    png_cnt = 65
+                    idx = random.randint(1,jpg_cnt+gif_cnt+png_cnt)
+                    img_path = "bird/%s.jpg"%(idx) if idx<=jpg_cnt else ("bird/%s.gif"%(idx-jpg_cnt) if idx-jpg_cnt<=gif_cnt else "bird/%s.png"%(idx-jpg_cnt-gif_cnt))
+                    reply_data = {"reply":[{"type":"image","data":{"file":img_path}}]}
                     if(receive["message_type"]=="group"):
                         reply_data["at_sender"] = "false"
                     return JsonResponse(reply_data)
@@ -352,30 +436,34 @@ def qqpost(req):
                     print("reply_data:%s"%(reply_data))
                     return JsonResponse(reply_data)
                 if (receive["message"].find('/random')==0):
-                    min_lim = 1
-                    max_lim = 999
-                    try:
-                        num = int(receive["message"].replace("/random",""))
-                    except:
-                        num = 1
-                    num = min(num,6)
-                    post_data = {"jsonrpc":"2.0","method":"generateIntegers","params":{"apiKey":RANDOMORG_TOKEN,"n":num,"min":min_lim,"max":max_lim,"replacement":"true"},"id":1}
-                    try:
-                        s=requests.post(url='https://api.random.org/json-rpc/1/invoke',data=json.dumps(post_data),timeout=0.5)
-                        res_jdata = json.loads(s.text)
-                        if ("error" in res_jdata):
-                            msg = res_jdata["error"]["message"]
-                        else:
-                            msg = ""
-                            num_list = res_jdata["result"]["random"]["data"]
-                            for item in num_list:
-                                msg = msg + "%s "%(item)
-                            msg = msg.strip()
-                    except Exception as e:
-                        traceback.print_exc()
-                        msg = str(random.randint(1,1000))#+"(pseudo-random)"
+                    score = random.randint(1,1000)
+                    msg = str(score)
+                    if(receive["message_type"]=="group"):
+                        group_id = receive["group_id"]
+                        grps = QQGroup.objects.filter(group_id=group_id)
+                        if(len(grps)>0):
+                            group = grps[0]
+                            rss = RandomScore.objects.filter(user_id=receive["user_id"],group=group)
+                            if(len(rss)>0):
+                                rs = rss[0]
+                            else:
+                                rs = RandomScore(user_id=receive["user_id"],group=group)
+                            rs.min_random = min(rs.min_random,score)
+                            rs.max_random = max(rs.max_random,score)
+                            rs.save()
                     reply_data = {"reply":"[CQ:at,qq=%s]掷出了"%(receive["user_id"])+msg+"点！","at_sender":"false"}
                     print("reply_data:%s"%(reply_data))
+                    return JsonResponse(reply_data)
+
+
+                if (receive["message"].find('/eureka')==0 or receive["message"].find('/pzz')==0):
+                    receive_msg = receive["message"].replace("/eureka","").replace("/pzz","")
+                    try:
+                        cnt = int(receive_msg)
+                    except:
+                        cnt = 3
+
+                    reply_data = {"reply":"接下来Eureka的强风天气如下：\n%s"%(eurekaGale(cnt)),"at_sender":"false"}
                     return JsonResponse(reply_data)
                 if (receive["message"].find('/gif')==0):
                     sorry_dict = {"sorry":"好啊|就算你是一流工程师|就算你出报告再完美|我叫你改报告你就要改|毕竟我是客户|客户了不起啊|sorry 客户真的了不起|以后叫他天天改报告|天天改 天天改","wangjingze":"我就是饿死|死外边 从这跳下去|也不会吃你们一点东西|真香","jinkela":"金坷垃好处都有啥|谁说对了就给他|肥料掺了金坷垃|不流失 不蒸发 零浪费|肥料掺了金坷垃|能吸收两米下的氮磷钾","marmot":"啊~|啊~~~","dagong":"没有钱啊 肯定要做的啊|不做的话没有钱用|那你不会去打工啊|有手有脚的|打工是不可能打工的|这辈子不可能打工的","diandongche":"戴帽子的首先进里边去|开始拿剪刀出来 拿那个手机|手机上有电筒 用手机照射|寻找那个比较新的电动车|六月六号 两名男子再次出现|民警立即将两人抓获"}
@@ -424,10 +512,15 @@ def qqpost(req):
                                         reply_data = {"reply":msg}  
                                         return JsonResponse(reply_data) 
                     msg = msg.strip()
-                    reply_data = {"reply":msg}
-                    if(receive["message_type"]=="group"):
-                        reply_data["at_sender"] = "false"
-                    return JsonResponse(reply_data)
+                    # reply_data = {"reply":msg}
+                    if(receive["message_type"]=="private"):
+                        send_private_msg(receive["user_id"],msg)
+                    elif (receive["message_type"]=="group"):
+                        send_group_msg(receive["group_id"],msg)
+                    # if(receive["message_type"]=="group"):
+                    #     reply_data["at_sender"] = "false"
+                    # return JsonResponse(reply_data)
+
 
                 if (receive["message"].find('/dps')==0):
                     receive_msg = receive["message"].replace('/dpscheck','',1).strip()
@@ -482,7 +575,7 @@ def qqpost(req):
                         return JsonResponse(reply_data) 
                     else:
                         tile = tiles[0]
-                        if(receive_msg==""):
+                        if(receive_msg=="all"):
                             atk_dict = json.loads(tile.attack)
                             percentage_list = [10,25,50,75,95,99]
                             msg = "%s %s day#%s:\n"%(boss.cn_name,job.cn_name,day)
@@ -495,7 +588,7 @@ def qqpost(req):
                             atk = float(receive_msg)
                             assert(atk > 0)
                         except:
-                            msg = "Attack parsing failed:%s"%(receive_msg)
+                            msg = "DPS数值解析失败:%s"%(receive_msg)
                             reply_data = {"reply":msg}  
                             return JsonResponse(reply_data) 
                         atk_dict = json.loads(tile.attack)
@@ -543,7 +636,7 @@ def qqpost(req):
                 if (receive["message_type"]=="group"):
                     group_id = receive["group_id"]
                     user_id = receive["user_id"]
-                    keywords = ['/register_group','/set_welcome_msg','/add_custom_reply','/del_custom_reply','/welcome_demo','/set_repeat_ban','/disable_repeat_ban','/repeat','/left_reply','/set_ban','/ban']
+                    keywords = ['/vote','/register_group','/set_welcome_msg','/add_custom_reply','/del_custom_reply','/welcome_demo','/set_repeat_ban','/disable_repeat_ban','/repeat','/left_reply','/set_ban','/ban']
                     if(receive["message"].find('/group_help')==0):
                         msg = "/register_group : 将此群注册到数据库\n/set_welcome_msg $msg: 设置欢迎语$msg\n/welcome_demo : 查看欢迎示例\n/add_custom_reply /$key $val : 添加自定义回复\n/del_custom_reply /$key : 删除自定义回复\n/set_repeat_ban $times : 设置复读机检测条数\n/disable_repeat_ban : 关闭复读机检测\n/repeat $times $prob : 以百分之$prob的概率复读超过$times的对话\n/left_reply : 查看本群剩余聊天条数\n/set_ban $cnt : 设置禁言投票基准为$cnt\n/ban $member $time : 投票将$member禁言$time分钟\n/ban $member : 给$member禁言投票"
                         msg = msg.strip()
@@ -586,6 +679,8 @@ def qqpost(req):
                             return
                     else:
                         group = group_list[0]
+                        group.last_reply_time = time.time()
+                        group.save()
                         if(time.time() <= group.ban_till):
                             return
                     if(receive["message"].find('/set_welcome_msg')==0):
@@ -820,7 +915,10 @@ def qqpost(req):
                                     reply_data["at_sender"] = "false"
                                     return JsonResponse(reply_data)
                                 if(len(mems)==0):
-                                    mem = Member(user_id=qq,group=group,ban_time=min(int(msg_list[1]),2))
+                                    default_ban_time = 2
+                                    mem = Member(user_id=qq,group=group,ban_time=min(int(msg_list[1]),default_ban_time))
+                                    if(str(mem.user_id)==str(user_id)):
+                                        mem.ban_time = max(mem.ban_time,default_ban_time)
                                     vtlist = json.loads(mem.vote_list)
                                     vtlist["voted_by"] = []
                                     vtlist["voted_by"].append(str(receive["user_id"]))
@@ -867,6 +965,93 @@ def qqpost(req):
                             reply_data = {"reply":"不存在关于您的复仇机会。"}
                             return JsonResponse(reply_data)
 
+                    if (receive["message"].find('/vote')==0):
+                        receive_msg = receive["message"].replace('/vote','',1).strip()
+                        if receive_msg=="list":
+                            vs = Vote.objects.filter(group=group)
+                            msg = ""
+                            for item in vs:
+                                starttime_str = time.strftime(TIMEFORMAT,time.localtime(item.starttime))
+                                endtime_str = time.strftime(TIMEFORMAT,time.localtime(item.endtime))
+                                msg = msg + "#%s:%s %s -- %s\n"%(item.id,item.name,starttime_str,endtime_str)
+                            msg = msg.strip()
+                            reply_data = {"reply":msg}
+                            reply_data["at_sender"] = "false"
+                            return JsonResponse(reply_data)
+                        elif(receive_msg.find("#") == 0):
+                            receive_msg = receive_msg.replace("#","",1).strip()
+                            vote_id_str = ""
+                            for item in receive_msg:
+                                if(str.isdigit(item)):
+                                    vote_id_str += item
+                                else:
+                                    break
+                            vote_id = int(vote_id_str) if vote_id_str!="" else 0
+                            votes = Vote.objects.filter(id=vote_id,group=group)
+                            if(len(votes)==0):
+                                reply_data = {"reply":"不存在#%s号投票"%(vote_id)}
+                                reply_data["at_sender"] = "false"
+                                return JsonResponse(reply_data)
+                            else:
+                                receive_msg = receive_msg.replace(vote_id_str,"",1).strip()
+                                if(receive_msg.find("check")==0 or receive_msg==""):
+                                    vote = votes[0]
+                                    vote_json = json.loads(vote.vote)
+                                    sum_list = [{"qq":item[0],"tot":len(item[1]["voted_by"])} for item in vote_json.items()]
+                                    print(sum_list)
+                                    sum_list.sort(key=lambda x: x["tot"],reverse=True)
+
+                                    msg = "#%s:%s目前票数:\n"%(vote.id,vote.name)
+                                    for item in sum_list:
+                                        msg += "[CQ:at,qq=%s] : %s\n"%(item["qq"],item["tot"])
+                                else:
+                                    pattern = "[CQ:at,qq="
+                                    qq_str = receive_msg
+                                    qq = qq_str
+                                    if(qq_str.find(pattern)>=0):
+                                        qq = qq_str[qq_str.find(pattern)+len(pattern):qq_str.find("]")]
+                                    
+                                    if (not qq.isdecimal()):
+                                        reply_data = {"reply":"请艾特某人进行投票"}
+                                        reply_data["at_sender"] = "false"
+                                        return JsonResponse(reply_data)
+                                    vote = votes[0]
+                                    if(time.time()<vote.starttime):
+                                        msg = "投票 #%s:%s 未开始。"%(vote.id,vote.name)
+                                        reply_data = {"reply":msg}
+                                        return JsonResponse(reply_data)
+                                    if(time.time()>vote.endtime):
+                                        msg = "投票 #%s:%s 已结束。"%(vote.id,vote.name)
+                                        reply_data = {"reply":msg}
+                                        return JsonResponse(reply_data)
+                                    vote_json = json.loads(vote.vote)
+                                    can_vote = True
+                                    for (k,v) in vote_json.items():
+                                        # print(v)
+                                        # print(str(user_id))
+                                        # print(str(user_id) in v)
+                                        if(str(user_id) in v["voted_by"]):
+                                            msg = "[CQ:at,qq=%s]在 #%s:%s 中已投票，不可重复投票。"%(user_id,vote.id,vote.name)
+                                            break
+                                    else:
+                                        if(str(qq) not in vote_json.keys()):
+                                            vote_json[str(qq)] = {
+                                                "voted_by":[str(user_id)]
+                                            }
+                                        vote_list = vote_json[str(qq)]["voted_by"]
+                                        vote_list.append(str(user_id))
+                                        vote_list = list(set(vote_list))
+                                        vote_json[str(qq)]["voted_by"] = vote_list
+                                        vote.vote = json.dumps(vote_json)
+                                        vote.save()
+                                        msg = "[CQ:at,qq=%s]在 #%s:%s 中给[CQ:at,qq=%s]投票成功，目前票数%s。"%(user_id,vote.id,vote.name,qq,len(vote_list))
+                        else:
+                            msg = "/vote list: 群内投票ID与内容\n/vote #$id check : 投票$id的目前结果\n/vote #$id @$member : 通过艾特给某人投票"
+                        msg = msg.strip()
+                        reply_data = {"reply":msg}
+                        if(receive["message_type"]=="group"):
+                            reply_data["at_sender"] = "false"
+                        return JsonResponse(reply_data)
 
 
                     if len(group_list)>0:
@@ -942,14 +1127,16 @@ def qqpost(req):
                         #     image_censor(receive)
 
             if (receive["post_type"] == "request"):
-                if (receive["request_type"] == "friend"):	#Add Friend
+                if (receive["request_type"] == "friend"):   #Add Friend
                     qq = receive["user_id"]
                     reqmsg = receive["message"]
                     reqmsg = str(reqmsg).upper()
                     reply_data = {"approve": "FFXIV" in reqmsg or "FF14" in reqmsg}
+                    reply_data = {"approve":False,"reason":"好友过多，考虑服务器负荷暂时拒绝新的好友请求。"}
                     return JsonResponse(reply_data)
-                if (receive["request_type"] == "group" and receive["sub_type"] == "invite"):	#Add Group
-                    reply_data = {"approve":False}
+                if (receive["request_type"] == "group" and receive["sub_type"] == "invite"):    #Add Group
+                    reply_data = {"approve":False,"reason":"群过多，考虑服务器负荷暂时拒绝新的进群邀请。"}
+                    print(reply_data)
                     return JsonResponse(reply_data)
             if (receive["post_type"] == "event"):
                 if (receive["event"] == "group_increase"):
