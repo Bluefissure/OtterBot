@@ -28,6 +28,7 @@ import html
 import hmac
 from bs4 import BeautifulSoup
 import urllib
+from dwebsocket import require_websocket, accept_websocket
 # Create your views here.
 
 #Base Constant

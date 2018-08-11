@@ -15,7 +15,7 @@ class ChatMessageAdmin(admin.ModelAdmin):
     list_filter = ['group__group_id']
     search_fields = ['group__group_id']
 
-class MemberAdmin(admin.ModelAdmin):
+class BanMemberAdmin(admin.ModelAdmin):
     list_display = ('user_id','group','vote_list')
     list_filter = ['group__group_id']
     search_fields = ['group__group_id','user_id']
@@ -45,7 +45,7 @@ class DPSTileAdmin(admin.ModelAdmin):
 admin.site.register(QQGroup,QQGroupAdmin)
 admin.site.register(CustomReply,CustomReplyAdmin)
 admin.site.register(ChatMessage,ChatMessageAdmin)
-admin.site.register(Member,MemberAdmin)
+admin.site.register(BanMember,BanMemberAdmin)
 admin.site.register(Revenge,RevengeAdmin)
 admin.site.register(Quest,QuestAdmin)
 admin.site.register(Boss,BossAdmin)
