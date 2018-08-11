@@ -52,6 +52,12 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+
+MIDDLEWARE_CLASSES = [
+]
+
+WEBSOCKET_FACTORY_CLASS = 'dwebsocket.backends.uwsgi.factory.uWsgiWebSocketFactory'
+
 ROOT_URLCONF = 'FFXIVBOT.urls'
 
 TEMPLATES = [
