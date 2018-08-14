@@ -6,7 +6,7 @@
 A QQ bot of FFXIV
 
 ## Install
-- python 3.4+
+- python 3.5.3+
 - django and so on (see [requeirements.txt](https://github.com/Bluefissure/FFXIVBOT/blob/master/requirements.txt) for details)
 - [coolq-wine(docker)](https://hub.docker.com/r/coolq/wine-coolq/)
 - [coolq-http-api](https://github.com/richardchien/coolq-http-api)
