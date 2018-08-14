@@ -108,6 +108,8 @@ class QQBot(models.Model):
 	tuling_token = models.CharField(max_length=32,default="",blank=True)
 	api_last_time = models.BigIntegerField(default=0)
 	event_last_time = models.BigIntegerField(default=0)
+	api_channel_name = models.CharField(max_length=32,default="",blank=True)
+	event_channel_name = models.CharField(max_length=32,default="",blank=True)
 	def __str__(self):
 		return self.name
 	def clear_api_data(self):
@@ -132,6 +134,7 @@ class QQBot(models.Model):
 		self.event_last_time = int(time.time())
 		self.save()
 	def send_message(self,private_group,uid,message):
+		message = "系统将于2018年8月13日 19:30:00开始维护，期间服务可能停止。"
 		if(private_group=="group"):
 			self.send_ws_api("send_group_msg",{"group_id":uid,"message":message})
 		if(private_group=="private"):
@@ -143,3 +146,7 @@ class QQBot(models.Model):
 			"echo": "get_group_member_list:%s"%(group.group_id)
 		}
 		self.send_ws_api(None,None,jdata)
+	def is_api_online(self):
+		return time.time() - self.api_last_time <= 30
+	def is_event_online(self):
+		return time.time() - self.event_last_time <= 60

@@ -1,9 +1,9 @@
 beautifulsoup4==4.6.0
 bs4==0.0.1
 Django==2.0.4
-pycurl==7.43.0
 PyMySQL==0.8.0
 pytz==2018.3
 requests==2.9.1
 uWSGI==2.0.17
-dwebsocket==0.4.2
+channels==2.1.2
+channels-redis==2.2.1
