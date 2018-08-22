@@ -57,7 +57,6 @@ BAIDU_IMAGE_CENSOR_URL = 'https://aip.baidubce.com/rest/2.0/solution/v1/img_cens
 
 
 
-
 QQBOT_LIST = ["2854196306"]
 
 TIMEFORMAT = "%Y-%m-%d %H:%M:%S"
@@ -189,40 +188,6 @@ def whatanime(receive):
     return msg
 
 
-def get_group_member_info(group_id,user_id):
-    jdata = {"group_id":group_id,"user_id":user_id}
-    s = requests.post(url=QQPOST_URL+'/get_group_member_info?access_token='+ACCESS_TOKEN,data=jdata,timeout=10)
-    res_json = json.loads(s.text)
-    return res_json["data"]
-
-def send_group_msg(group_id,msg,at_user_id=None):
-    if at_user_id:
-        msg = "[CQ:at,qq=%s] "%(at_user_id)+msg
-    jdata = {"group_id":group_id,"message":msg}
-    print("jdata:%s"%(json.dumps(jdata)))
-    s=requests.post(url=QQPOST_URL+'/send_group_msg_async?access_token=2ASdOeYCOyp',data=jdata,timeout=10)
-    res_json = json.loads(s.text)
-    return res_json
-
-def send_private_msg(user_id,msg):
-    jdata = {"user_id":user_id,"message":msg}
-    print("jdata:%s"%(json.dumps(jdata)))
-    s=requests.post(url=QQPOST_URL+'/send_private_msg_async?access_token=2ASdOeYCOyp',data=jdata,timeout=10)
-    res_json = json.loads(s.text)
-    return res_json
-
-
-
-def send_like(user_id,times=1):
-    return
-    jdata = {"user_id":user_id,"times":times}
-    print("like_data:%s"%(json.dumps(jdata)))
-    s=requests.post(url=QQPOST_URL+'/send_like?access_token=2ASdOeYCOyp',data=jdata,timeout=10)
-    res_json = json.loads(s.text)
-    print("like_res:%s"%(json.dumps(res_json)))
-    return res_json
-
-
 
 
 def image_censor_url(image_url):
@@ -243,7 +208,7 @@ def image_censor(receive):
         return
     if(censor_res["conclusion"]=="不合规" or censor_res["conclusion"]=="疑似"):
         cnt = 0
-        msg = "[CQ:at,qq=%s]"%(receive["user_id"])+" 所发图片由于：\n"
+        msg = "[CQ:at,qq=%s] "%(receive["user_id"])+" 所发图片由于：\n"
         for item in censor_res["data"]:
             if("公众" in item["msg"] or "政治敏感" in item["msg"]):
                 msg += "%s：\n"%(item["msg"])
@@ -352,15 +317,34 @@ class APIConsumer(WebsocketConsumer):
         receive = json.loads(text_data)
         if(int(receive["retcode"])!=0):
             print("API error:"+text_data)
+        # print("API receive:{}".format(receive))
         if("echo" in receive.keys()):
             echo = receive["echo"]
+            print("echo")
+            print(receive)
             if(echo.find("get_group_member_list")==0):
                 group_id = echo.replace("get_group_member_list:","").strip()
                 groups = QQGroup.objects.filter(group_id=group_id)
                 if(len(groups)>0):
                     group = groups[0]
-                    group.member_list = json.dumps(receive["data"])
+                    group.member_list = json.dumps(receive["data"]) if receive["data"] else "[]"
+                    print("group %s member updated"%(group.group_id))
                     group.save()
+            if(echo.find("get_group_list")==0):
+                # group_list = echo.replace("get_group_list:","").strip()
+                self.bot.group_list = json.dumps(receive["data"])
+                self.bot.save()
+                self.bot.refresh_from_db()
+            if(echo.find("_get_friend_list")==0):
+                # friend_list = echo.replace("_get_friend_list:","").strip()
+                self.bot.friend_list = json.dumps(receive["data"])
+                self.bot.save()
+                self.bot.refresh_from_db()
+            if(echo.find("get_version_info")==0):
+                self.bot.version_info = json.dumps(receive["data"])
+                self.bot.save()
+                self.bot.refresh_from_db()
+
     def send_event(self, event):
         print("send_event with event:%s"%(event))
         self.send(text_data=event["text"])
@@ -384,6 +368,7 @@ class EventConsumer(WebsocketConsumer):
             return
         self.bot = bots[0]
         self.bot.event_channel_name = self.channel_name
+        self.bot.online_time = int(time.time())
         self.bot.save()
         self.accept()
 
@@ -392,6 +377,8 @@ class EventConsumer(WebsocketConsumer):
 
 
     def call_api(self, action, params, echo=None):
+        if("async" not in action and echo is None):
+            action = action + "_async"
         jdata = {
             "action":action,
             "params":params,
@@ -399,6 +386,9 @@ class EventConsumer(WebsocketConsumer):
         if echo:
             jdata["echo"] = echo
         self.bot.refresh_from_db()
+        if(self.bot.api_channel_name == ""):
+            print("empty channel for bot:{}".format(self.bot.user_id))
+            return
         # channel_layer.send(self.bot.api_channel_name, {"type": "send.event","text": json.dumps(jdata),})
         async_to_sync(channel_layer.send)(self.bot.api_channel_name, {"type": "send.event","text": json.dumps(jdata),})
 
@@ -421,6 +411,9 @@ class EventConsumer(WebsocketConsumer):
         self.call_api("set_group_ban",json_data)
 
     def receive(self, text_data):
+        self.bot.refresh_from_db()
+        self.bot.online_time = int(time.time())
+        self.bot.save()
         self.bot.refresh_from_db()
         print("received Event message:"+text_data)
         global GLOBAL_EVENT_HANDEL
@@ -485,7 +478,8 @@ class EventConsumer(WebsocketConsumer):
                     msg = [{"type":"share","data":res_data}]
                     self.send_message(receive["message_type"], group_id or user_id, msg)
                 if (receive["message"].find('/donate')==0):
-                    msg = [{"type":"text","data":{"text":"我很可爱(*╹▽╹*)请给我钱（来租服务器养活獭獭及其类似物）"}},{"type":"image","data":{"file":QQ_BASE_URL+"static/alipay.jpg"}}]
+                    # msg = [{"type":"text","data":{"text":"我很可爱(*╹▽╹*)请给我钱（来租服务器养活獭獭及其类似物）"}},{"type":"image","data":{"file":QQ_BASE_URL+"static/alipay.jpg"}}]
+                    msg = [{"type":"text","data":{"text":"我很可爱(*╹▽╹*)但是不要捐助辣獭獭买了好多零食吃"}}]
                     self.send_message(receive["message_type"], group_id or user_id, msg)
                 if (receive["message"].find('/anime')==0):
                     print("anime_msg:%s"%(receive["message"]))
@@ -506,7 +500,7 @@ class EventConsumer(WebsocketConsumer):
                     random.shuffle(choose_list)
                     gate_idx = choose_list.index(gate)
                     gate_msg = "左边" if gate_idx==0 else "右边" if gate_idx==1 else "中间"
-                    msg = "掐指一算，[CQ:at,qq=%s]应该走%s门，信%s没错！"%(receive["user_id"],gate_msg,BOT_NAME)
+                    msg = "掐指一算，[CQ:at,qq=%s] 应该走%s门，信%s没错！"%(receive["user_id"],gate_msg,BOT_NAME)
                     self.send_message(receive["message_type"], group_id or user_id, msg)
                 if (receive["message"].find('/random')==0):
                     score = random.randint(1,1000)
@@ -525,7 +519,7 @@ class EventConsumer(WebsocketConsumer):
                     #         rs.min_random = min(rs.min_random,score)
                     #         rs.max_random = max(rs.max_random,score)
                     #         rs.save()
-                    msg = "[CQ:at,qq=%s]掷出了"%(receive["user_id"])+msg+"点！"
+                    msg = "[CQ:at,qq=%s] 掷出了"%(receive["user_id"])+msg+"点！"
                     self.send_message(receive["message_type"], group_id or user_id, msg)
 
 
@@ -585,7 +579,7 @@ class EventConsumer(WebsocketConsumer):
                                         s = requests.post(url=url,data=json.dumps(gen_data),timeout=2)
                                         img_url = SORRY_BASE_URL + s.text
                                         print("img_url:%s"%(img_url))
-                                        msg = '[CQ:image,file='+img_url+']'
+                                        msg = '[CQ:image,cache=0,file='+img_url+']'
                                     except Exception as e:
                                         msg = "SORRY API ERROR:%s"%(e)
                                         print(msg)
@@ -696,430 +690,442 @@ class EventConsumer(WebsocketConsumer):
                     user_id = receive["user_id"]
 
                     (group, group_created) = QQGroup.objects.get_or_create(group_id=group_id)
-                    member_list = json.loads(group.member_list)
-                    if not member_list:
+                    try:
+                        member_list = json.loads(group.member_list)
+                        if group_created or member_list is None or len(member_list)==0:
+                            self.update_group_member_list(group_id)
+                            time.sleep(1)
+                            group.refresh_from_db()
+                            member_list = json.loads(group.member_list)
+                    except:
                         self.update_group_member_list(group_id)
                         time.sleep(1)
-                        group.refresh_from_db()
+                        
                     user_info = None
-                    for item in member_list:
-                        if(int(item["user_id"])==int(user_id)):
-                            user_info = item
-                            break
+                    if member_list:
 
-                    keywords = ['/vote','/set_welcome_msg','/add_custom_reply','/del_custom_reply','/welcome_demo','/set_repeat_ban','/disable_repeat_ban','/repeat','/left_reply','/set_ban','/ban']
-                    if(receive["message"].find('/group_help')==0):
-                        msg = "/register_group : 将此群注册到数据\n/update_group : 刷新群成员列表\n/set_welcome_msg $msg: 设置欢迎语$msg\n/welcome_demo : 查看欢迎示例\n/add_custom_reply /$key $val : 添加自定义回复\n/del_custom_reply /$key : 删除自定义回复\n/set_repeat_ban $times : 设置复读机检测条数\n/disable_repeat_ban : 关闭复读机检测\n/repeat $times $prob : 以百分之$prob的概率复读超过$times的对话\n/left_reply : 查看本群剩余聊天条数\n/set_ban $cnt : 设置禁言投票基准为$cnt\n/ban $member $time : 投票将$member禁言$time分钟\n/ban $member : 给$member禁言投票"
-                        msg = msg.strip()
-                        self.send_message("group", group_id, msg)
-                    if(receive["message"].find('/update_group')==0 or group_created or group.member_list=='[]'):
-                        self.update_group_member_list(group_id)
-                    if(receive["message"].find('/register_group')==0):
-                        self.update_group_member_list(group_id)
-                        time.sleep(1)   #ensure group member info updated
-                        group.refresh_from_db()
-                        member_list = json.loads(group.member_list)
-                        if(member_list==[]):
-                            msg = "群成员列表获取失败，请稍后重试"
-                            self.update_group_member_list(group_id)
+                        keywords = ['/vote','/set_welcome_msg','/add_custom_reply','/del_custom_reply','/welcome_demo','/set_repeat_ban','/disable_repeat_ban','/repeat','/left_reply','/set_ban','/ban']
+                        if(receive["message"].find('/group_help')==0):
+                            msg = "/register_group : 将此群注册到数据\n/update_group : 刷新群成员列表\n/set_welcome_msg $msg: 设置欢迎语$msg\n/welcome_demo : 查看欢迎示例\n/add_custom_reply /$key $val : 添加自定义回复\n/del_custom_reply /$key : 删除自定义回复\n/set_repeat_ban $times : 设置复读机检测条数\n/disable_repeat_ban : 关闭复读机检测\n/repeat $times $prob : 以百分之$prob的概率复读超过$times的对话\n/left_reply : 查看本群剩余聊天条数\n/set_ban $cnt : 设置禁言投票基准为$cnt\n/ban $member $time : 投票将$member禁言$time分钟\n/ban $member : 给$member禁言投票"
+                            msg = msg.strip()
                             self.send_message("group", group_id, msg)
-                        else:
-                            user_info = None
-                            for item in member_list:
-                                if(int(item["user_id"])==int(user_id)):
-                                    user_info = item
-                                    break
-                            if(not user_info):
-                                msg = "未能获取到%s的信息，注册失败"%(user_id)
+                        if(receive["message"].find('/update_group')==0 or group.member_list=='[]'):
+                            self.update_group_member_list(group_id)
+                        #get sender's user_info
+                        for item in member_list:
+                            if(int(item["user_id"])==int(user_id)):
+                                user_info = item
+                                break
+                        if(receive["message"].find('/register_group')==0):
+                            self.update_group_member_list(group_id)
+                            group.refresh_from_db()
+                            member_list = json.loads(group.member_list)
+                            if(member_list==[] or member_list is None):
+                                msg = "群成员列表获取失败，请稍后重试"
+                                self.update_group_member_list(group_id)
                                 self.send_message("group", group_id, msg)
                             else:
-                                if(user_info["role"]!="owner"):
-                                    msg = "仅群主有权限注册"
+                                user_info = None
+                                for item in member_list:
+                                    if(int(item["user_id"])==int(user_id)):
+                                        user_info = item
+                                        break
+                                if(not user_info):
+                                    msg = "未能获取到%s的信息，注册失败"%(user_id)
                                     self.send_message("group", group_id, msg)
                                 else:
-                                    group.registered = True
-                                    group.save()
-                                    msg = "群%s注册成功"
-                                    self.send_message("group", group_id, msg)
-                    request_flag = False
-                    for item in keywords:
-                        if(receive["message"].find(item)==0):
-                            request_flag = True
-                            break
-                    if request_flag:
-                        group.refresh_from_db()
-                        if not group.registered:
-                            msg = "本群%s未在数据库注册，请群主使用/register_group命令注册"%(group_id)
-                            self.send_message("group", group_id, msg)
-                        else:
-                            if(not user_info):
-                                print("no user %s in group %s"%(user_id, group_id))
+                                    if(user_info["role"]!="owner"):
+                                        msg = "仅群主有权限注册"
+                                        self.send_message("group", group_id, msg)
+                                    else:
+                                        group.registered = True
+                                        group.save()
+                                        msg = "群{}注册成功".format(group_id)
+                                        self.send_message("group", group_id, msg)
+                        request_flag = False
+                        for item in keywords:
+                            if(receive["message"].find(item)==0):
+                                request_flag = True
+                                break
+                        if request_flag:
+                            group.refresh_from_db()
+                            if not group.registered:
+                                msg = "本群%s未在数据库注册，请群主使用/register_group命令注册"%(group_id)
+                                self.send_message("group", group_id, msg)
                             else:
-                                if(receive["message"].find('/set_welcome_msg')==0):
-                                    if(user_info["role"]!="owner" and user_info["role"]!="admin" ):
-                                        msg = "仅群主与管理员有权限设置欢迎语"
-                                    else:
-                                        welcome_msg = receive["message"].replace("/set_welcome_msg","",1).strip()
-                                        group.welcome_msg = welcome_msg
-                                        group.save()
-                                        msg = "欢迎语已设置成功，使用/welcome_demo查看欢迎示例"
-                                    self.send_message("group", group_id, msg)
+                                if(not user_info):
+                                    print("no user %s in group %s"%(user_id, group_id))
+                                else:
+                                    if(receive["message"].find('/set_welcome_msg')==0):
+                                        if(user_info["role"]!="owner" and user_info["role"]!="admin" ):
+                                            msg = "仅群主与管理员有权限设置欢迎语"
+                                        else:
+                                            welcome_msg = receive["message"].replace("/set_welcome_msg","",1).strip()
+                                            group.welcome_msg = welcome_msg
+                                            group.save()
+                                            msg = "欢迎语已设置成功，使用/welcome_demo查看欢迎示例"
+                                        self.send_message("group", group_id, msg)
+                                            
+                                    elif(receive["message"].find('/welcome_demo')==0):
+                                        msg = "[CQ:at,qq=%s] "%(user_id) + group.welcome_msg
+                                        self.send_message("group", group_id, msg)
                                         
-                                elif(receive["message"].find('/welcome_demo')==0):
-                                    msg = "[CQ:at,qq=%s]"%(user_id) + group.welcome_msg
-                                    self.send_message("group", group_id, msg)
-                                    
-                                elif(receive["message"].find('/add_custom_reply')==0 or receive["message"].find('/del_custom_reply')==0):
-                                    if(user_info["role"]!="owner" and user_info["role"]!="admin" ):
-                                        msg = "仅群主与管理员有权限设置自定义回复"
-                                    else:
-                                        ori_msg = receive["message"].replace("/add_custom_reply","",1).replace("/del_custom_reply","",1).strip()
-                                        ori_msg = ori_msg.split(' ')
-                                        if(len(ori_msg)<2):
-                                            msg = "自定义命令参数过少（/add_custom_reply /$key $val）"
+                                    elif(receive["message"].find('/add_custom_reply')==0 or receive["message"].find('/del_custom_reply')==0):
+                                        if(user_info["role"]!="owner" and user_info["role"]!="admin" ):
+                                            msg = "仅群主与管理员有权限设置自定义回复"
                                         else:
-                                            custom_key = ori_msg[0]
-                                            if(custom_key[0]!='/'):
-                                                msg = "自定义命令以'/'开头"
+                                            ori_msg = receive["message"].replace("/add_custom_reply","",1).replace("/del_custom_reply","",1).strip()
+                                            ori_msg = ori_msg.split(' ')
+                                            if(len(ori_msg)<2):
+                                                msg = "自定义命令参数过少（/add_custom_reply /$key $val）"
                                             else:
-                                                custom_value = html.unescape(ori_msg[1])
-                                                customs = CustomReply.objects.filter(group=group,key=custom_key)
-                                                if(len(customs)>0):
-                                                    custom = customs[0]
-                                                    custom.value = custom_value
+                                                custom_key = ori_msg[0]
+                                                if(custom_key[0]!='/'):
+                                                    msg = "自定义命令以'/'开头"
                                                 else:
-                                                    custom = CustomReply(group=group,key=custom_key,value=custom_value)
-                                                custom.save()
-                                                msg = "自定义回复已添加成功，使用%s查看"%(custom_key)
-                                                if (receive["message"].find('/del_custom_reply')==0):
-                                                    msg = "自定义回复%s已删除"%(custom_key)
-                                                    custom.delete()
-                                    self.send_message("group", group_id, msg)
-           
-
-                                elif(receive["message"].find('/set_repeat_ban')==0):
-                                    user_info = get_group_member_info(group_id,user_id)
-                                    if(user_info["role"]!="owner" ):
-                                        msg = "仅群主有权限开启复读机检测系统"
-                                    else:
-                                        ori_msg = receive["message"].replace("/set_repeat_ban","",1).strip()
-                                        ori_msg = ori_msg.split(' ')
-                                        if(len(ori_msg)<1):
-                                            msg = "请设置复读机一分钟内的最大条数（/set_repeat_ban $times）"
-                                        else:
-                                            try:
-                                                group.repeat_ban = max(int(ori_msg[0]),2)
-                                            except Exception as e:
-                                                group.repeat_ban = 10
-                                            group.save()
-                                            msg = "复读机监控系统已启动，检测值为%s/min"
-                                    self.send_message("group", group_id, msg)
-                                elif(receive["message"].find('/disable_repeat_ban')==0):
-                                    if(user_info["role"]!="owner" and user_info["role"]!="admin" ):
-                                        msg = "仅群主与管理员有权限关闭复读机检测系统"
-                                    else:
-                                        group = group_list[0]
-                                        group.repeat_ban = -1
-                                        group.save()
-                                        msg = "复读机监控系统已关闭"
-                                    self.send_message("group", group_id, msg)
-                                
-                                elif(receive["message"].find('/repeat')==0):
-                                    if(user_info["role"]=="owner" or user_info["role"]=="admin" ):
-                                        msg = "仅非群主与管理员有权限开启复读机系统"
-                                    else:
-                                        ori_msg = receive["message"].replace("/repeat","",1).strip()
-                                        ori_msg = ori_msg.split(' ')
-                                        if(len(ori_msg)<2):
-                                            msg = "请复读机条数与复读概率（/repeat $times $prob）"
-                                        else:
-                                            try:
-                                                group.repeat_length = max(int(ori_msg[0]),2)
-                                                group.repeat_prob = min(int(ori_msg[1]),50)
-                                            except Exception as e:
-                                                group.repeat_length = 2
-                                                group.repeat_prob = 50
-                                            group.save()
-                                            msg = "复读机系统已启动，复读概率为%s/min后的%s%%"
-                                    self.send_message("group", group_id, msg)
-                                
-                                elif(receive["message"].find('/left_reply')==0):
-                                    msg = "本群剩余%s条%s聊天限额"%(group.left_reply_cnt,self.bot.name)
-                                    self.send_message("group", group_id, msg)
-
-                                elif(receive["message"].find('/set_ban')==0):
-                                    if(user_info["role"]!="owner" and user_info["role"]!="admin" ):
-                                        msg = "仅群主与管理员有权限设置禁言投票"
-                                    else:
-                                        ban_cnt = receive["message"].replace("/set_ban","",1).strip()
-                                        try:
-                                            group.ban_cnt = max(int(ban_cnt),2)
-                                            if(int(ban_cnt)==-1):
-                                                group.ban_cnt = -1
-                                        except:
-                                            group.ban_cnt = 10
-                                        group.save()
-                                        msg = "禁言投票基准被设置为%s"%(group.ban_cnt)
-                                        if(group.ban_cnt==-1):
-                                            msg = "禁言投票已关闭"
-                                    self.send_message("group", group_id, msg)
-                                elif(receive["message"].find('/ban')==0):
-                                    if(group.ban_cnt<=0):
-                                        msg = "本群未开放禁言投票功能"
-                                    else:
-                                        receive_msg = receive["message"].replace("/ban","",1).strip()
-                                        msg_list = receive_msg.split(' ')
-                                        if(len(msg_list)>=1):
-                                            pattern = "[CQ:at,qq="
-                                            qq_str = msg_list[0]
-                                            if(qq_str.find(pattern)>=0):
-                                                qq = qq_str[qq_str.find(pattern)+len(pattern):qq_str.find("]")]
-                                            else:
-                                                qq = qq_str
-                                            if not qq.isdecimal():
-                                                msg = "请艾特某人或输入其QQ号码"
-                                            else:
-                                                mems = BanMember.objects.filter(user_id=qq,group=group,timestamp__gt=time.time()-3600)
-                                                del_mems = BanMember.objects.filter(user_id=qq,group=group,timestamp__lt=time.time()-3600)
-                                                for item in del_mems:
-                                                    item.delete()
-                                                if(len(msg_list)==1):
-                                                    if(len(mems)==0):
-                                                        msg = "不存在针对 [CQ:at,qq=%s] 的禁言投票，请输入\"/ban %s $time\"开始时长为$time分钟的禁言投票"%(qq,qq)
+                                                    custom_value = html.unescape(ori_msg[1])
+                                                    customs = CustomReply.objects.filter(group=group,key=custom_key)
+                                                    if(len(customs)>0):
+                                                        custom = customs[0]
+                                                        custom.value = custom_value
                                                     else:
-                                                        mem = mems[0]
-                                                        vtlist = json.loads(mem.vote_list)
-                                                        if("voted_by" not in vtlist.keys()):
-                                                            vtlist["voted_by"] = []
-                                                        vtlist["voted_by"].append(str(receive["user_id"]))
-                                                        vtlist["voted_by"] = list(set(vtlist["voted_by"]))
-                                                        mem.vote_list = json.dumps(vtlist)
-                                                        mem.save()
-                                                        if(len(vtlist["voted_by"]) >= group.ban_cnt):
-                                                            target_user_info = None
-                                                            for item in member_list:
-                                                                if(int(item["user_id"])==int(user_id)):
-                                                                    target_user_info = item
-                                                                    break
-                                                            if not target_user_info:
-                                                                msg = "未找到%s成员信息"%(target_user_info)
-                                                            else:
-                                                                voted_msg = ""
-                                                                for item in vtlist["voted_by"]:
-                                                                    voted_msg += "[CQ:at,qq=%s] "%(item)
-                                                                msg = "被%s投票禁言%s分钟"%(voted_msg, mem.ban_time)
-                                                                msg += " 复仇请输入/revenge"
-                                                                if(target_user_info["role"]=="owner"):
-                                                                    msg = "虽然你是狗群主%s无法禁言，但是也被群友投票禁言，请闭嘴%s分钟[CQ:face,id=14]"%(self.bot.name, mem.ban_time)
-                                                                if(target_user_info["role"]=="admin"):
-                                                                    msg = "虽然你是狗管理%s无法禁言，但是也被群友投票禁言，请闭嘴%s分钟[CQ:face,id=14]"%(self.bot.name, mem.ban_time)
-                                                                if(str(mem.user_id) == str(receive["self_id"])):
-                                                                    msg = "%s竟然禁言了可爱的%s[CQ:face,id=111][CQ:face,id=111]好吧我闭嘴%s分钟[CQ:face,id=14]"%(voted_msg, self.bot.name, mem.ban_time)
-                                                                    group.ban_till = time.time()+int(mem.ban_time)*60
-                                                                    group.save()
-                                                                else:
-                                                                    self.group_ban(group_id,user_id,int(mem.ban_time)*60)
-                                                                    rev = Revenge(user_id=mem.user_id,group=group)
-                                                                    rev.timestamp = time.time()
-                                                                    rev.vote_list = mem.vote_list
-                                                                    rev.ban_time = mem.ban_time
-                                                                    rev.save()
-                                                                mem.delete()
-                                                        else:
-                                                            msg = "[CQ:at,qq=%s] 时长为%s分钟的禁言投票，目前进度：%s/%s"%(mem.user_id,mem.ban_time,len(vtlist["voted_by"]),group.ban_cnt)
+                                                        custom = CustomReply(group=group,key=custom_key,value=custom_value)
+                                                    custom.save()
+                                                    msg = "自定义回复已添加成功，使用%s查看"%(custom_key)
+                                                    if (receive["message"].find('/del_custom_reply')==0):
+                                                        msg = "自定义回复%s已删除"%(custom_key)
+                                                        custom.delete()
+                                        self.send_message("group", group_id, msg)
+               
 
-                                                elif(len(msg_list)==2):
-                                                    if not msg_list[1].isdecimal():
-                                                        msg = "禁言时长无效"
-                                                    else:
+                                    elif(receive["message"].find('/set_repeat_ban')==0):
+                                        if(user_info["role"]!="owner" ):
+                                            msg = "仅群主有权限开启复读机检测系统"
+                                        else:
+                                            ori_msg = receive["message"].replace("/set_repeat_ban","",1).strip()
+                                            ori_msg = ori_msg.split(' ')
+                                            if(len(ori_msg)<1):
+                                                msg = "请设置复读机一分钟内的最大条数（/set_repeat_ban $times）"
+                                            else:
+                                                try:
+                                                    group.repeat_ban = max(int(ori_msg[0]),2)
+                                                except Exception as e:
+                                                    group.repeat_ban = 10
+                                                group.save()
+                                                msg = "复读机监控系统已启动，检测值为%s/min"
+                                        self.send_message("group", group_id, msg)
+                                    elif(receive["message"].find('/disable_repeat_ban')==0):
+                                        if(user_info["role"]!="owner" and user_info["role"]!="admin" ):
+                                            msg = "仅群主与管理员有权限关闭复读机检测系统"
+                                        else:
+                                            group = group_list[0]
+                                            group.repeat_ban = -1
+                                            group.save()
+                                            msg = "复读机监控系统已关闭"
+                                        self.send_message("group", group_id, msg)
+                                    
+                                    elif(receive["message"].find('/repeat')==0):
+                                        if(user_info["role"]=="owner" or user_info["role"]=="admin" ):
+                                            msg = "仅非群主与管理员有权限开启复读机系统"
+                                        else:
+                                            ori_msg = receive["message"].replace("/repeat","",1).strip()
+                                            ori_msg = ori_msg.split(' ')
+                                            if(len(ori_msg)<2):
+                                                msg = "请复读机条数与复读概率（/repeat $times $prob）"
+                                            else:
+                                                try:
+                                                    group.repeat_length = max(int(ori_msg[0]),2)
+                                                    group.repeat_prob = min(int(ori_msg[1]),50)
+                                                except Exception as e:
+                                                    group.repeat_length = 2
+                                                    group.repeat_prob = 50
+                                                group.save()
+                                                msg = "复读机系统已启动，复读概率为%s/min后的%s%%"
+                                        self.send_message("group", group_id, msg)
+                                    
+                                    elif(receive["message"].find('/left_reply')==0):
+                                        msg = "本群剩余%s条%s聊天限额"%(group.left_reply_cnt,self.bot.name)
+                                        self.send_message("group", group_id, msg)
+
+                                    elif(receive["message"].find('/set_ban')==0):
+                                        if(user_info["role"]!="owner" and user_info["role"]!="admin" ):
+                                            msg = "仅群主与管理员有权限设置禁言投票"
+                                        else:
+                                            ban_cnt = receive["message"].replace("/set_ban","",1).strip()
+                                            try:
+                                                group.ban_cnt = max(int(ban_cnt),2)
+                                                if(int(ban_cnt)==-1):
+                                                    group.ban_cnt = -1
+                                            except:
+                                                group.ban_cnt = 10
+                                            group.save()
+                                            msg = "禁言投票基准被设置为%s"%(group.ban_cnt)
+                                            if(group.ban_cnt==-1):
+                                                msg = "禁言投票已关闭"
+                                        self.send_message("group", group_id, msg)
+                                    elif(receive["message"].find('/ban')==0):
+                                        if(group.ban_cnt<=0):
+                                            msg = "本群未开放禁言投票功能"
+                                        else:
+                                            receive_msg = receive["message"].replace("/ban","",1).strip()
+                                            msg_list = receive_msg.split(' ')
+                                            if(len(msg_list)>=1):
+                                                pattern = "[CQ:at,qq="
+                                                qq_str = msg_list[0]
+                                                if(qq_str.find(pattern)>=0):
+                                                    qq = qq_str[qq_str.find(pattern)+len(pattern):qq_str.find("]")]
+                                                else:
+                                                    qq = qq_str
+                                                if not qq.isdecimal():
+                                                    msg = "请艾特某人或输入其QQ号码"
+                                                else:
+                                                    mems = BanMember.objects.filter(user_id=qq,group=group,timestamp__gt=time.time()-3600)
+                                                    del_mems = BanMember.objects.filter(user_id=qq,group=group,timestamp__lt=time.time()-3600)
+                                                    for item in del_mems:
+                                                        item.delete()
+                                                    if(len(msg_list)==1):
                                                         if(len(mems)==0):
-                                                            default_ban_time = 2
-                                                            ban_time = min(int(msg_list[1]),default_ban_time) if int(qq)!=int(receive["self_id"]) else int(msg_list[1])
-                                                            mem = BanMember(user_id=qq,group=group,ban_time=ban_time)
-                                                            if(str(mem.user_id)==str(user_id)):
-                                                                mem.ban_time = max(mem.ban_time,default_ban_time)
+                                                            msg = "不存在针对 [CQ:at,qq=%s] 的禁言投票，请输入\"/ban %s $time\"开始时长为$time分钟的禁言投票"%(qq,qq)
+                                                        else:
+                                                            mem = mems[0]
                                                             vtlist = json.loads(mem.vote_list)
-                                                            vtlist["voted_by"] = []
+                                                            if("voted_by" not in vtlist.keys()):
+                                                                vtlist["voted_by"] = []
                                                             vtlist["voted_by"].append(str(receive["user_id"]))
                                                             vtlist["voted_by"] = list(set(vtlist["voted_by"]))
                                                             mem.vote_list = json.dumps(vtlist)
-                                                            mem.timestamp = time.time()
                                                             mem.save()
-                                                            msg = "开始了针对 [CQ:at,qq=%s] 时长为%s分钟的禁言投票，投票请发送/ban %s"%(qq,mem.ban_time,qq)
-                                                        else:
-                                                            mem = mems[0]
-                                                            msg = "已存在针对 [CQ:at,qq=%s] 时长为%s分钟的禁言投票，投票请发送/ban %s"%(qq,mem.ban_time,qq)
-                                    self.send_message("group", group_id, msg)
-
-                                elif(receive["message"]=='/revenge' or receive["message"]=="/revenge_confirm"):
-                                    revs = Revenge.objects.filter(user_id=user_id,group=group,timestamp__gt=time.time()-3600)
-                                    del_revs = Revenge.objects.filter(user_id=user_id,group=group,timestamp__lt=time.time()-3600)
-                                    for item in del_revs:
-                                        item.delete()
-                                    if(len(revs)>0):
-                                        rev = revs[0]
-                                        qq_list = (json.loads(rev.vote_list))["voted_by"]
-                                        msg = "[CQ:at,qq=%s]将要与"%(user_id)
-                                        for item in qq_list:
-                                            msg += "[CQ:at,qq=%s] "%(item)
-                                        msg += "展开复仇,您将被禁言%s分钟,其余众人将被禁言%s分钟，确认请发送/revenge_confirm"%(int(rev.ban_time)*(len(qq_list)),rev.ban_time)
-                                        if(receive["message"]=="/revenge_confirm"):
-                                            for item in qq_list:
-                                                if(str(item)==str(user_id)):
-                                                    continue
-                                                self.group_ban(group_id,item,int(rev.ban_time)*60)
-                                                time.sleep(1)
-                                            time.sleep(1)
-                                            self.group_ban(group_id,user_id,int(rev.ban_time)*(len(qq_list))*60)
-                                            msg = "[CQ:at,qq=%s]复仇完毕，嘻嘻嘻。"%(user_id)
-                                            rev.delete()
-                                    else:
-                                        msg = "不存在关于您的复仇机会。"
-                                    self.send_message("group", group_id, msg)
-            
-                                elif(receive["message"].find('/vote')==0):
-                                    receive_msg = receive["message"].replace('/vote','',1).strip()
-                                    if receive_msg=="list":
-                                        vs = Vote.objects.filter(group=group)
-                                        msg = ""
-                                        for item in vs:
-                                            starttime_str = time.strftime(TIMEFORMAT,time.localtime(item.starttime))
-                                            endtime_str = time.strftime(TIMEFORMAT,time.localtime(item.endtime))
-                                            msg = msg + "#%s:%s %s -- %s\n"%(item.id,item.name,starttime_str,endtime_str)
-                                        msg = msg.strip()
-                                    elif(receive_msg.find("#") == 0):
-                                        receive_msg = receive_msg.replace("#","",1).strip()
-                                        vote_id_str = ""
-                                        for item in receive_msg:
-                                            if(str.isdigit(item)):
-                                                vote_id_str += item
-                                            else:
-                                                break
-                                        vote_id = int(vote_id_str) if vote_id_str!="" else 0
-                                        votes = Vote.objects.filter(id=vote_id,group=group)
-                                        if(len(votes)==0):
-                                            msg = "不存在#%s号投票"%(vote_id)
-                                        else:
-                                            receive_msg = receive_msg.replace(vote_id_str,"",1).strip()
-                                            if(receive_msg.find("check")==0 or receive_msg==""):
-                                                vote = votes[0]
-                                                vote_json = json.loads(vote.vote)
-                                                sum_list = [{"qq":item[0],"tot":len(item[1]["voted_by"])} for item in vote_json.items()]
-                                                sum_list.sort(key=lambda x: x["tot"],reverse=True)
-
-                                                msg = "#%s:%s目前票数:\n"%(vote.id,vote.name)
-                                                for item in sum_list:
-                                                    msg += "[CQ:at,qq=%s] : %s\n"%(item["qq"],item["tot"])
-                                            else:
-                                                pattern = "[CQ:at,qq="
-                                                qq_str = receive_msg
-                                                qq = qq_str
-                                                if(qq_str.find(pattern)>=0):
-                                                    qq = qq_str[qq_str.find(pattern)+len(pattern):qq_str.find("]")]
-                                                
-                                                if (not qq.isdecimal()):
-                                                    msg = "请艾特某人进行投票"
-                                                else:
-                                                    vote = votes[0]
-                                                    if(time.time()<vote.starttime):
-                                                        msg = "投票 #%s:%s 未开始。"%(vote.id,vote.name)
-                                                    else:
-                                                        if(time.time()>vote.endtime):
-                                                            msg = "投票 #%s:%s 已结束。"%(vote.id,vote.name)
-                                                        else:
-                                                            vote_json = json.loads(vote.vote)
-                                                            can_vote = True
-                                                            for (k,v) in vote_json.items():
-                                                                # print(v)
-                                                                # print(str(user_id))
-                                                                # print(str(user_id) in v)
-                                                                if(str(user_id) in v["voted_by"]):
-                                                                    msg = "[CQ:at,qq=%s]在 #%s:%s 中已投票，不可重复投票。"%(user_id,vote.id,vote.name)
-                                                                    break
+                                                            if(len(vtlist["voted_by"]) >= group.ban_cnt):
+                                                                target_user_info = None
+                                                                for item in member_list:
+                                                                    if(int(item["user_id"])==int(qq)):
+                                                                        target_user_info = item
+                                                                        break
+                                                                if not target_user_info:
+                                                                    msg = "未找到%s成员信息"%(target_user_info)
+                                                                else:
+                                                                    voted_msg = ""
+                                                                    for item in vtlist["voted_by"]:
+                                                                        voted_msg += "[CQ:at,qq=%s] "%(item)
+                                                                    msg = "[CQ:at,qq=%s] 被%s投票禁言%s分钟"%(qq, voted_msg, mem.ban_time)
+                                                                    msg += " 复仇请输入/revenge"
+                                                                    if(target_user_info["role"]=="owner"):
+                                                                        msg = "[CQ:at,qq=%s] 虽然你是狗群主%s无法禁言，但是也被群友投票禁言，请闭嘴%s分钟[CQ:face,id=14]"%(qq, self.bot.name, mem.ban_time)
+                                                                    if(target_user_info["role"]=="admin"):
+                                                                        msg = "[CQ:at,qq=%s] 虽然你是狗管理%s无法禁言，但是也被群友投票禁言，请闭嘴%s分钟[CQ:face,id=14]"%(qq, self.bot.name, mem.ban_time)
+                                                                    if(str(mem.user_id) == str(receive["self_id"])):
+                                                                        msg = "%s竟然禁言了可爱的%s[CQ:face,id=111][CQ:face,id=111]好吧我闭嘴%s分钟[CQ:face,id=14]"%(voted_msg, self.bot.name, mem.ban_time)
+                                                                        group.ban_till = time.time()+int(mem.ban_time)*60
+                                                                        group.save()
+                                                                    else:
+                                                                        self.group_ban(group_id,qq,int(mem.ban_time)*60)
+                                                                        rev = Revenge(user_id=mem.user_id,group=group)
+                                                                        rev.timestamp = time.time()
+                                                                        rev.vote_list = mem.vote_list
+                                                                        rev.ban_time = mem.ban_time
+                                                                        rev.save()
+                                                                    mem.delete()
                                                             else:
-                                                                if(str(qq) not in vote_json.keys()):
-                                                                    vote_json[str(qq)] = {
-                                                                        "voted_by":[str(user_id)]
-                                                                    }
-                                                                vote_list = vote_json[str(qq)]["voted_by"]
-                                                                vote_list.append(str(user_id))
-                                                                vote_list = list(set(vote_list))
-                                                                vote_json[str(qq)]["voted_by"] = vote_list
-                                                                vote.vote = json.dumps(vote_json)
-                                                                vote.save()
-                                                                msg = "[CQ:at,qq=%s]在 #%s:%s 中给[CQ:at,qq=%s]投票成功，目前票数%s。"%(user_id,vote.id,vote.name,qq,len(vote_list))
-                                    else:
-                                        msg = "/vote list: 群内投票ID与内容\n/vote #$id check : 投票$id的目前结果\n/vote #$id @$member : 通过艾特给某人投票"
-                                    msg = msg.strip()
-                                    self.send_message("group", group_id, msg)
+                                                                msg = "[CQ:at,qq=%s] 时长为%s分钟的禁言投票，目前进度：%s/%s"%(mem.user_id,mem.ban_time,len(vtlist["voted_by"]),group.ban_cnt)
+
+                                                    elif(len(msg_list)==2):
+                                                        if not msg_list[1].isdecimal():
+                                                            msg = "禁言时长无效"
+                                                        else:
+                                                            if(len(mems)==0):
+                                                                default_ban_time = 2
+                                                                ban_time = min(int(msg_list[1]),default_ban_time) if int(qq)!=int(receive["self_id"]) else int(msg_list[1])
+                                                                mem = BanMember(user_id=qq,group=group,ban_time=ban_time)
+                                                                if(str(mem.user_id)==str(user_id)):
+                                                                    mem.ban_time = max(mem.ban_time,default_ban_time)
+                                                                vtlist = json.loads(mem.vote_list)
+                                                                vtlist["voted_by"] = []
+                                                                vtlist["voted_by"].append(str(receive["user_id"]))
+                                                                vtlist["voted_by"] = list(set(vtlist["voted_by"]))
+                                                                mem.vote_list = json.dumps(vtlist)
+                                                                mem.timestamp = time.time()
+                                                                mem.save()
+                                                                msg = "开始了针对 [CQ:at,qq=%s] 时长为%s分钟的禁言投票，投票请发送/ban %s"%(qq,mem.ban_time,qq)
+                                                            else:
+                                                                mem = mems[0]
+                                                                msg = "已存在针对 [CQ:at,qq=%s] 时长为%s分钟的禁言投票，投票请发送/ban %s"%(qq,mem.ban_time,qq)
+                                        self.send_message("group", group_id, msg)
+
+                                    elif(receive["message"]=='/revenge' or receive["message"]=="/revenge_confirm"):
+                                        revs = Revenge.objects.filter(user_id=user_id,group=group,timestamp__gt=time.time()-3600)
+                                        del_revs = Revenge.objects.filter(user_id=user_id,group=group,timestamp__lt=time.time()-3600)
+                                        for item in del_revs:
+                                            item.delete()
+                                        if(len(revs)>0):
+                                            rev = revs[0]
+                                            qq_list = (json.loads(rev.vote_list))["voted_by"]
+                                            msg = "[CQ:at,qq=%s]将要与"%(user_id)
+                                            for item in qq_list:
+                                                msg += "[CQ:at,qq=%s] "%(item)
+                                            msg += "展开复仇,您将被禁言%s分钟,其余众人将被禁言%s分钟，确认请发送/revenge_confirm"%(int(rev.ban_time)*(len(qq_list)),rev.ban_time)
+                                            if(receive["message"]=="/revenge_confirm"):
+                                                for item in qq_list:
+                                                    if(str(item)==str(user_id)):
+                                                        continue
+                                                    self.group_ban(group_id,item,int(rev.ban_time)*60)
+                                                    time.sleep(1)
+                                                time.sleep(1)
+                                                self.group_ban(group_id,user_id,int(rev.ban_time)*(len(qq_list))*60)
+                                                msg = "[CQ:at,qq=%s]复仇完毕，嘻嘻嘻。"%(user_id)
+                                                rev.delete()
+                                        else:
+                                            msg = "不存在关于您的复仇机会。"
+                                        self.send_message("group", group_id, msg)
+                
+                                    elif(receive["message"].find('/vote')==0):
+                                        receive_msg = receive["message"].replace('/vote','',1).strip()
+                                        if receive_msg=="list":
+                                            vs = Vote.objects.filter(group=group)
+                                            msg = ""
+                                            for item in vs:
+                                                starttime_str = time.strftime(TIMEFORMAT,time.localtime(item.starttime))
+                                                endtime_str = time.strftime(TIMEFORMAT,time.localtime(item.endtime))
+                                                msg = msg + "#%s:%s %s -- %s\n"%(item.id,item.name,starttime_str,endtime_str)
+                                            msg = msg.strip()
+                                        elif(receive_msg.find("#") == 0):
+                                            receive_msg = receive_msg.replace("#","",1).strip()
+                                            vote_id_str = ""
+                                            for item in receive_msg:
+                                                if(str.isdigit(item)):
+                                                    vote_id_str += item
+                                                else:
+                                                    break
+                                            vote_id = int(vote_id_str) if vote_id_str!="" else 0
+                                            votes = Vote.objects.filter(id=vote_id,group=group)
+                                            if(len(votes)==0):
+                                                msg = "不存在#%s号投票"%(vote_id)
+                                            else:
+                                                receive_msg = receive_msg.replace(vote_id_str,"",1).strip()
+                                                if(receive_msg.find("check")==0 or receive_msg==""):
+                                                    vote = votes[0]
+                                                    vote_json = json.loads(vote.vote)
+                                                    sum_list = [{"qq":item[0],"tot":len(item[1]["voted_by"])} for item in vote_json.items()]
+                                                    sum_list.sort(key=lambda x: x["tot"],reverse=True)
+
+                                                    msg = "#%s:%s目前票数:\n"%(vote.id,vote.name)
+                                                    for item in sum_list:
+                                                        msg += "[CQ:at,qq=%s] : %s\n"%(item["qq"],item["tot"])
+                                                else:
+                                                    pattern = "[CQ:at,qq="
+                                                    qq_str = receive_msg
+                                                    qq = qq_str
+                                                    if(qq_str.find(pattern)>=0):
+                                                        qq = qq_str[qq_str.find(pattern)+len(pattern):qq_str.find("]")]
+                                                    
+                                                    if (not qq.isdecimal()):
+                                                        msg = "请艾特某人进行投票"
+                                                    else:
+                                                        vote = votes[0]
+                                                        if(time.time()<vote.starttime):
+                                                            msg = "投票 #%s:%s 未开始。"%(vote.id,vote.name)
+                                                        else:
+                                                            if(time.time()>vote.endtime):
+                                                                msg = "投票 #%s:%s 已结束。"%(vote.id,vote.name)
+                                                            else:
+                                                                vote_json = json.loads(vote.vote)
+                                                                can_vote = True
+                                                                for (k,v) in vote_json.items():
+                                                                    # print(v)
+                                                                    # print(str(user_id))
+                                                                    # print(str(user_id) in v)
+                                                                    if(str(user_id) in v["voted_by"]):
+                                                                        msg = "[CQ:at,qq=%s]在 #%s:%s 中已投票，不可重复投票。"%(user_id,vote.id,vote.name)
+                                                                        break
+                                                                else:
+                                                                    if(str(qq) not in vote_json.keys()):
+                                                                        vote_json[str(qq)] = {
+                                                                            "voted_by":[str(user_id)]
+                                                                        }
+                                                                    vote_list = vote_json[str(qq)]["voted_by"]
+                                                                    vote_list.append(str(user_id))
+                                                                    vote_list = list(set(vote_list))
+                                                                    vote_json[str(qq)]["voted_by"] = vote_list
+                                                                    vote.vote = json.dumps(vote_json)
+                                                                    vote.save()
+                                                                    msg = "[CQ:at,qq=%s]在 #%s:%s 中给[CQ:at,qq=%s]投票成功，目前票数%s。"%(user_id,vote.id,vote.name,qq,len(vote_list))
+                                        else:
+                                            msg = "/vote list: 群内投票ID与内容\n/vote #$id check : 投票$id的目前结果\n/vote #$id @$member : 通过艾特给某人投票"
+                                        msg = msg.strip()
+                                        self.send_message("group", group_id, msg)
 
 
-                    custom_replys = CustomReply.objects.filter(group=group)
-                    #custom replys
-                    for item in custom_replys:
-                        if(receive["message"].find(item.key)==0):
-                            msg = item.value
-                            self.send_message("group", group_id, msg)
-                            break
+                        custom_replys = CustomReply.objects.filter(group=group)
+                        #custom replys
+                        for item in custom_replys:
+                            if(receive["message"].find(item.key)==0):
+                                msg = item.value
+                                self.send_message("group", group_id, msg)
+                                break
 
-                    #repeat_ban & repeat
-                    chats = ChatMessage.objects.filter(group=group,message=receive["message"].strip(),timestamp__gt=time.time()-60)
-                    del_chats = ChatMessage.objects.filter(group=group,timestamp__lt=time.time()-60)
-                    for item in del_chats:
-                        item.delete()
-                    if(len(chats)>0):
-                        chat = chats[0]
-                        chat.times = chat.times+1
-                        chat.save()
-                        if(group.repeat_ban>0 and chat.times>=group.repeat_ban):
-                            msg = "抓到你了，复读姬！╭(╯^╰)╮口球一分钟！"
-                            if(user_info["role"]=="owner"):
-                                msg = "虽然你是狗群主%s无法禁言，但是也触发了复读机检测系统，请闭嘴一分钟[CQ:face,id=14]"%(self.bot.name)
-                            if(user_info["role"]=="admin"):
-                                msg = "虽然你是狗管理%s无法禁言，但是也触发了复读机检测系统，请闭嘴一分钟[CQ:face,id=14]"%(self.bot.name)
-                            self.delete_message(receive["message_id"])
-                            self.send_message("group", group_id, msg)
-                        if(group.repeat_length>=1 and group.repeat_prob>0 and chat.times>=group.repeat_length and (not chat.repeated)):
-                            if(random.randint(1,100)<=group.repeat_prob):
-                                self.send_message("group", group_id, chat.message)
-                                chat.repeated = True
-                                chat.save()
-                    else:
-                        if(group.repeat_ban>0 or (group.repeat_length>=1 and group.repeat_prob>0) ):
-                            if(receive["self_id"]!=receive["user_id"]):
-                                chat = ChatMessage(group=group,message=receive["message"].strip(),timestamp=time.time())
-                                chat.save()
-
-                    #tuling chatbot
-                    if("[CQ:at,qq=%s]"%(receive["self_id"]) in receive["message"]):
-                        if(group.left_reply_cnt <= 0):
-                            msg = "聊天限额已耗尽，请等待回复。"
-                        elif(str(receive["user_id"]) in QQBOT_LIST):
-                            msg = "本%s不理机器人。"%(self.bot.name)
+                        #repeat_ban & repeat
+                        chats = ChatMessage.objects.filter(group=group,message=receive["message"].strip(),timestamp__gt=time.time()-60)
+                        del_chats = ChatMessage.objects.filter(group=group,timestamp__lt=time.time()-60)
+                        for item in del_chats:
+                            item.delete()
+                        if(len(chats)>0):
+                            chat = chats[0]
+                            chat.times = chat.times+1
+                            chat.save()
+                            if(group.repeat_ban>0 and chat.times>=group.repeat_ban):
+                                msg = "抓到你了，复读姬！╭(╯^╰)╮口球一分钟！"
+                                if(user_info["role"]=="owner"):
+                                    msg = "虽然你是狗群主%s无法禁言，但是也触发了复读机检测系统，请闭嘴一分钟[CQ:face,id=14]"%(self.bot.name)
+                                if(user_info["role"]=="admin"):
+                                    msg = "虽然你是狗管理%s无法禁言，但是也触发了复读机检测系统，请闭嘴一分钟[CQ:face,id=14]"%(self.bot.name)
+                                msg = "[CQ:at,qq=%s]"%(user_id) + msg
+                                self.delete_message(receive["message_id"])
+                                self.group_ban(group_id, user_id, 60)
+                                self.send_message("group", group_id, msg)
+                            if(group.repeat_length>=1 and group.repeat_prob>0 and chat.times>=group.repeat_length and (not chat.repeated)):
+                                if(random.randint(1,100)<=group.repeat_prob):
+                                    self.send_message("group", group_id, chat.message)
+                                    chat.repeated = True
+                                    chat.save()
                         else:
-                            print("Tuling reply")
-                            receive_msg = receive["message"]
-                            receive_msg = receive_msg.replace("[CQ:at,qq=%s]"%(receive["self_id"]),"")
-                            tuling_data = {}
-                            tuling_data["reqType"] = 0  #Text
-                            tuling_data["perception"] = {"inputText": {"text": receive_msg}}
-                            tuling_data["userInfo"] = {"apiKey": TULING_API_KEY if self.bot.tuling_token=="" else self.bot.tuling_token, "userId": receive["user_id"], "groupId": group.group_id}
-                            r = requests.post(url=TULING_API_URL,data=json.dumps(tuling_data),timeout=3)
-                            tuling_reply = json.loads(r.text)
-                            print("tuling reply:%s"%(r.text))
-                            tuling_results = tuling_reply["results"]
-                            msg = ""
-                            for item in tuling_results:
-                                if(item["resultType"]=="text"):
-                                    msg += item["values"]["text"]
-                            group.left_reply_cnt = max(group.left_reply_cnt - 1, 0)
-                            group.save()
-                            msg = "[CQ:at,qq=%s]"%(receive["user_id"])+msg
-                        self.send_message("group", group_id, msg)
-                    #baidu image censor
-                    # if("[CQ:image" in receive["message"]):
-                    #     print("censoring img")
-                    #     image_censor(receive)
+                            if(group.repeat_ban>0 or (group.repeat_length>=1 and group.repeat_prob>0) ):
+                                if(receive["self_id"]!=receive["user_id"]):
+                                    chat = ChatMessage(group=group,message=receive["message"].strip(),timestamp=time.time())
+                                    chat.save()
+
+                        #tuling chatbot
+                        if("[CQ:at,qq=%s]"%(receive["self_id"]) in receive["message"]):
+                            if(group.left_reply_cnt <= 0):
+                                msg = "聊天限额已耗尽，请等待回复。"
+                            elif(str(receive["user_id"]) in QQBOT_LIST):
+                                msg = "本%s不理机器人。"%(self.bot.name)
+                            else:
+                                print("Tuling reply")
+                                receive_msg = receive["message"]
+                                receive_msg = receive_msg.replace("[CQ:at,qq=%s]"%(receive["self_id"]),"")
+                                tuling_data = {}
+                                tuling_data["reqType"] = 0  #Text
+                                tuling_data["perception"] = {"inputText": {"text": receive_msg}}
+                                tuling_data["userInfo"] = {"apiKey": TULING_API_KEY if self.bot.tuling_token=="" else self.bot.tuling_token, "userId": receive["user_id"], "groupId": group.group_id}
+                                r = requests.post(url=TULING_API_URL,data=json.dumps(tuling_data),timeout=3)
+                                tuling_reply = json.loads(r.text)
+                                print("tuling reply:%s"%(r.text))
+                                tuling_results = tuling_reply["results"]
+                                msg = ""
+                                for item in tuling_results:
+                                    if(item["resultType"]=="text"):
+                                        msg += item["values"]["text"]
+                                if self.bot.tuling_token=="":
+                                    msg = msg.replace("图灵工程师爸爸","蓝色裂痕")
+                                    msg = msg.replace("图灵工程师妈妈","清夜夜")
+                                    msg = msg.replace("小主人","小光呆")
+                                group.left_reply_cnt = max(group.left_reply_cnt - 1, 0)
+                                group.save()
+                                msg = "[CQ:at,qq=%s]"%(receive["user_id"])+msg
+                            self.send_message("group", group_id, msg)
+                        #baidu image censor
+                        # if("[CQ:image" in receive["message"]):
+                        #     print("censoring img")
+                        #     image_censor(receive)
 
             if (receive["post_type"] == "request"):
                 if (receive["request_type"] == "friend"):   #Add Friend
@@ -1129,7 +1135,7 @@ class EventConsumer(WebsocketConsumer):
                     self.call_api("set_friend_add_request",reply_data)
                 if (receive["request_type"] == "group" and receive["sub_type"] == "invite"):    #Add Group
                     flag = receive["flag"]
-                    reply_data = {"flag":flag, "sub_type":"invite", "approve": bot.auto_accept_invite}
+                    reply_data = {"flag":flag, "sub_type":"invite", "approve": self.bot.auto_accept_invite}
                     self.call_api("set_group_add_request",reply_data)
             if (receive["post_type"] == "event"):
                 if (receive["event"] == "group_increase"):

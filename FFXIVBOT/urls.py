@@ -18,5 +18,5 @@ from django.urls import path
 from ffxivbot.views import *
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('qqpost/', qqpost),
+    path('', index),
 ]
