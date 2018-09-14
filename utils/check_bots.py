@@ -20,7 +20,6 @@ qqbots = QQBot.objects.all()
 for bot in qqbots:
     print("qq:{}channel:{}".format(bot.user_id,bot.api_channel_name))
     if bot.api_channel_name=='':
-        bot.delete()
         continue
     jdata = {
         "action":"get_group_list",

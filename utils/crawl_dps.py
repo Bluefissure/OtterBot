@@ -1,11 +1,11 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 import random
 import sys
 import os
 import codecs
 import urllib
 import base64
-sys.path.append('PATH_TO_FFXIVBOT')
+sys.path.append('/home/ubuntu/FFXIVBOT/')
 os.environ['DJANGO_SETTINGS_MODULE'] ='FFXIVBOT.settings'
 from FFXIVBOT import settings
 import django

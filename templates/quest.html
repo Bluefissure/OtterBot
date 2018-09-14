@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>任务流程 | 任务可视化系统</title>
+  <!-- Tell the browser to be responsive to screen width -->
+  <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+  <!-- Bootstrap 3.3.7 -->
+  <link rel="stylesheet" href="/static/bower_components/bootstrap/dist/css/bootstrap.min.css">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="/static/bower_components/font-awesome/css/font-awesome.min.css">
+  <!-- Ionicons -->
+  <link rel="stylesheet" href="/static/bower_components/Ionicons/css/ionicons.min.css">
+  <!-- DataTables -->
+  <link rel="stylesheet" href="/static/bower_components/datatables.net-bs/css/dataTables.bootstrap.min.css">
+  <!-- Theme style -->
+  <link rel="stylesheet" href="/static/dist/css/AdminLTE.min.css">
+  <!-- AdminLTE Skins. Choose a skin from the css/skins
+       folder instead of downloading all of them to reduce the load. -->
+  <link rel="stylesheet" href="/static/dist/css/skins/_all-skins.min.css">
+
+  <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+  <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+  <!--[if lt IE 9]>
+  <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+  <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+  <![endif]-->
+
+  <!-- Google Font -->
+  <link rel="stylesheet"
+        href="https://cdn.baomitu.com/index/fonts/css?family=Source+Sans+Pro:300,400,600,700,300italic,400italic,600italic">
+
+
+</head>
+<body class="hold-transition skin-blue sidebar-mini">
+<div class="wrapper">
+
+  <header class="main-header">
+    <!-- Logo -->
+    <a href="/static/index2.html" class="logo">
+      <!-- mini logo for sidebar mini 50x50 pixels -->
+      <span class="logo-mini"><b>獭</b>台</span>
+      <!-- logo for regular state and mobile devices -->
+      <span class="logo-lg"><b>獭の</b>后台</span>
+    </a>
+    <!-- Header Navbar: style can be found in header.less -->
+    <nav class="navbar navbar-static-top">
+      <!-- Sidebar toggle button-->
+      <a href="#" class="sidebar-toggle" data-toggle="push-menu" role="button">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </a>
+
+      
+    </nav>
+  </header>
+  <!-- Left side column. contains the logo and sidebar -->
+  <aside class="main-sidebar">
+    <!-- sidebar: style can be found in sidebar.less -->
+    <section class="sidebar">
+      <!-- Sidebar user panel -->
+      <div class="user-panel">
+        <div class="pull-left image">
+          <img src="/static/dist/img/tata.jpg" class="img-circle" alt="User Image">
+        </div>
+        <div class="pull-left info">
+          <p>獭獭の云主人</p>
+          <a href="#"><i class="fa fa-circle text-success"></i> 在线</a>
+        </div>
+      </div>
+      <!-- sidebar menu: : style can be found in sidebar.less -->
+      <ul class="sidebar-menu" data-widget="tree">
+        <li class="header">导航</li>
+        <li class="active">
+          <a href="#">
+            <i class="fa fa-table"></i> <span>任务流程图</span>
+            <span class="pull-right-container">
+                  <i class="fa fa-angle-left pull-right"></i>
+                </span>
+          </a>
+        </li>
+      </ul>
+    </section>
+    <!-- /.sidebar -->
+  </aside>
+
+  <!-- Content Wrapper. Contains page content -->
+  <div class="content-wrapper">
+    <!-- Content Header (Page header) -->
+    {% if err %}
+    <div class="alert alert-danger alert-dismissible">
+      <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+      <h4><i class="icon fa fa-ban"></i> {{ err.title }}</h4>
+      {{ err.message }}
+    </div>
+    {% endif %}
+    {% if success %}
+    <div class="alert alert-success alert-dismissible">
+      <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+      <h4><i class="icon fa fa-ban"></i> {{ success.title }}</h4>
+      {{ success.message }}
+    </div>
+    {% endif %}
+    <section class="content-header">
+      <h1>
+        任务流程
+      </h1>
+    </section>
+
+    <!-- Main content -->
+    <section class="content">
+      <div class="row">
+        <div class="col-md-6">
+
+          <div class="box">
+            <div class="box-header">
+              <h3 class="box-title">流程图</h3>
+            </div>
+            <!-- /.box-header -->
+            <div class="box-body">
+              <!-- <canvas id="canvasId" ></canvas> -->
+              <svg id="svgCanvas" height="900" width="900"></svg>
+            </div>
+            <!-- /.box-body -->
+          </div>
+          <!-- /.box -->
+        </div>
+        
+        <div class="col-md-6">
+          <div class="box box-primary">
+            <div class="box-header with-border">
+              <h3 class="box-title">筛选任务</h3>
+            </div>
+            <!-- /.box-header -->
+            <!-- form start -->
+            <div  method="post" role="form">
+              <div class="box-body">
+                <div class="form-group">
+                  <label for="questName">想秃哪个任务？</label>
+                  <input type="text" class="form-control" id="questName" placeholder="">
+                </div>
+                <div class="form-group">
+                  <label for="questName">想秃多少个任务？</label>
+                  <input type="text" class="form-control" id="maxIter" value="100">
+                </div>
+                <!-- <div class="form-group">
+                  <label for="botName">我还</label>
+                  <input type="text" class="form-control" id="botName" placeholder="">
+                </div>
+                <div class="form-group">
+                  <label for="botID">没有</label>
+                  <input type="text" class="form-control" id="botID" placeholder="">
+                </div><div class="form-group">
+                  <label for="ownerID">想好</label>
+                  <input type="text" class="form-control" id="ownerID" placeholder="">
+                </div>
+                <div class="form-group">
+                  <label for="accessToken">怎么</label>
+                  <input type="text" class="form-control" id="accessToken" placeholder="">
+                </div>
+                <div class="form-group">
+                  <label for="tulingToken">筛选</label>
+                  <input type="text" class="form-control" id="tulingToken" placeholder="">
+                </div> -->
+                <div class="checkbox">
+                  <label>
+                    <input type="checkbox" id="mainQuest" checked="true"> 秃主线任务
+                  </label>
+                </div>
+                <div class="checkbox">
+                  <label>
+                    <input type="checkbox" id="subQuest" > 秃支线任务
+                  </label>
+                </div>
+              </div>
+              <!-- /.box-body -->
+
+              <div class="box-footer">
+                <!-- <button class="btn btn-primary" onclick="search_quest()">秃<i class="fa fa-fw fa-trademark"></i>的！</button> -->
+                <button class="btn btn-primary" onclick="search_quest()">开始秃！</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+            <div class="box box-warning">
+                <div class="box-header with-border">
+                  <h3 class="box-title">碎碎念</h3>
+                </div>
+                <!-- /.box-header -->
+                <div class="box-body">
+                  <!-- Conversations are loaded here -->
+                  <div class="direct-chat-messages">
+                    <!-- Message. Default to the left -->
+                    <div class="direct-chat-msg">
+                      <div class="direct-chat-info clearfix">
+                        <span class="direct-chat-name pull-left">Bluefissure</span>
+                        <span class="direct-chat-timestamp pull-right">2018-9-12 20:17:00</span>
+                      </div>
+                      <!-- /.direct-chat-info -->
+                      <img class="direct-chat-img" src="/static/dist/img/bluefissure.jpg" alt="message user image">
+                      <!-- /.direct-chat-img -->
+                      <div class="direct-chat-text">
+                        想变强吗？
+                      </div>
+                      <!-- /.direct-chat-text -->
+                    </div>
+                    <div class="direct-chat-msg">
+                      <div class="direct-chat-info clearfix">
+                        <span class="direct-chat-name pull-left">Bluefissure</span>
+                        <span class="direct-chat-timestamp pull-right">2018-9-13 11:27:34</span>
+                      </div>
+                      <!-- /.direct-chat-info -->
+                      <img class="direct-chat-img" src="/static/dist/img/bluefissure.jpg" alt="message user image">
+                      <!-- /.direct-chat-img -->
+                      <div class="direct-chat-text">
+                        你变秃了，你也变强了！
+                      </div>
+                      <!-- /.direct-chat-text -->
+                    </div>
+                    <div class="direct-chat-msg">
+                      <div class="direct-chat-info clearfix">
+                        <span class="direct-chat-name pull-left">Bluefissure</span>
+                        <span class="direct-chat-timestamp pull-right">2018-9-13 12:30:00</span>
+                      </div>
+                      <!-- /.direct-chat-info -->
+                      <img class="direct-chat-img" src="/static/dist/img/bluefissure.jpg" alt="message user image">
+                      <!-- /.direct-chat-img -->
+                      <div class="direct-chat-text">
+                        喵~
+                      </div>
+                      <!-- /.direct-chat-text -->
+                    </div>
+                    <div class="direct-chat-msg">
+                      <div class="direct-chat-info clearfix">
+                        <span class="direct-chat-name pull-left">Bluefissure</span>
+                        <span class="direct-chat-timestamp pull-right">2018-9-13 13:34:25</span>
+                      </div>
+                      <!-- /.direct-chat-info -->
+                      <img class="direct-chat-img" src="/static/dist/img/bluefissure.jpg" alt="message user image">
+                      <!-- /.direct-chat-img -->
+                      <div class="direct-chat-text">
+                        主线列表:<a href="/static/svg/Quests_2.svg" target="_blank">2.X</a>, <a href="/static/svg/Quests_3.svg" target="_blank">3.X</a>, <a href="/static/svg/Quests_4.svg" target="_blank">4.X</a>, <a href="/static/svg/Quests_all.svg" target="_blank">ALL</a> (杀流量注意)
+                      </div>
+                      <!-- /.direct-chat-text -->
+                    </div>
+                  <!--/.direct-chat-messages-->
+                  </div>
+                <!-- /.box-body -->
+                </div>
+            </div>
+        </div>
+        <!-- /.col -->
+      </div>
+      <!-- /.row -->
+    </section>
+    <!-- /.content -->
+  </div>
+  <!-- /.content-wrapper -->
+  <footer class="main-footer">
+    <div class="pull-right hidden-xs">
+      <b>Version</b> 0.0.1
+    </div>
+    <strong>Copyright &copy; 2017-2018 <a href="https://bluefissure.com">Bluefissure</a>.</strong> All rights
+    reserved.
+  </footer>
+
+  <!-- Control Sidebar -->
+  
+  <!-- /.control-sidebar -->
+  <!-- Add the sidebar's background. This div must be placed
+       immediately after the control sidebar -->
+  <div class="control-sidebar-bg"></div>
+</div>
+
+
+<!-- ./wrapper -->
+
+<script src="https://d3js.org/d3.v4.min.js" charset="utf-8"></script>
+<script src="/static/dist/js/dagre-d3.js"></script>
+<!-- jQuery 3 -->
+<script src="/static/bower_components/jquery/dist/jquery.min.js"></script>
+
+<!-- <link rel="stylesheet" href="https://dagrejs.github.io/project/dagre-d3/latest/demo/tipsy.css">
+<script src="https://code.jquery.com/jquery-1.9.1.min.js"></script>
+<script src="https://dagrejs.github.io/project/dagre-d3/latest/demo/tipsy.js"></script>
+ -->
+<link rel="stylesheet" href="https://cdn.bootcss.com/tooltipster/3.3.0/css/tooltipster.min.css">
+<script type="text/javascript" src="https://cdn.bootcss.com/tooltipster/3.3.0/js/jquery.tooltipster.min.js"></script>
+<!-- <script src="https://cdn.bootcss.com/svg.js/2.6.5/svg.js"></script> -->
+<!-- <script type="text/javascript" src="/static/dist/js/svg.screenbbox.js"></script> -->
+<!-- <script type="text/javascript" src="/static/dist/js/tooltipster.bundle.min.js"></script> -->
+<!-- <script type="text/javascript" src="/static/dist/js/plugins/tooltipster/SVG/tooltipster-SVG.min.js"></script> -->
+
+<!-- Bootstrap 3.3.7 -->
+<script src="/static/bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+<!-- SlimScroll -->
+<script src="/static/bower_components/jquery-slimscroll/jquery.slimscroll.min.js"></script>
+<!-- FastClick -->
+<script src="/static/bower_components/fastclick/lib/fastclick.js"></script>
+<!-- AdminLTE App -->
+<script src="/static/dist/js/adminlte.min.js"></script>
+<!-- AdminLTE for demo purposes -->
+<script src="/static/dist/js/demo.js"></script>
+
+
+
+
+
+
+<style id="css">
+    text {
+      font-weight: 300;
+      font-family: "Helvetica Neue", Helvetica, Arial, sans-serf;
+      font-size: 14px;
+    }
+
+    .node rect {
+      stroke: #333;
+      fill: #fff;
+    }
+
+    .edgePath path {
+      stroke: #333;
+      fill: #333;
+      stroke-width: 1.5px;
+    }
+
+    .node text {
+      pointer-events: none;
+    }
+
+    /* This styles the title of the tooltip */
+    .tipsy .name {
+      font-size: 1.5em;
+      font-weight: bold;
+      color: #60b1fc;
+      margin: 0;
+    }
+
+    /* This styles the body of the tooltip */
+    .tipsy .description {
+      font-size: 1.2em;
+    }
+</style>
+
+<!-- page script -->
+<script>
+  // Create a new directed graph
+
+
+// var g = new dagreD3.graphlib.Graph().setGraph({});
+
+// States and transitions from RFC 793
+// var states = {
+//   CLOSED: {
+//     description: "represents no connection state at <a href=\"https://www.baidu.com\">all</a>.",
+//     style: "fill: #f77"
+//   },
+
+//   LISTEN: {
+//     description: "represents waiting for a connection request from any " +
+//                  "remote TCP and port."
+//   },
+
+//   "SYN SENT": {
+//     description: "represents waiting for a matching connection " +
+//                  "request after having sent a connection request."
+//   },
+
+//   "SYN RCVD": {
+//     description: "represents waiting for a confirming connection " +
+//                  "request acknowledgment after having both received and sent a " +
+//                  "connection request."
+//   },
+
+
+//   ESTAB: {
+//     description: "represents an open connection, data received " +
+//                  "can be delivered to the user.  The normal state for the data " +
+//                  "transfer phase of the connection.",
+//     style: "fill: #7f7"
+//   },
+
+//   "FINWAIT-1": {
+//     description: "represents waiting for a connection termination " +
+//                  "request from the remote TCP, or an acknowledgment of the " +
+//                  "connection termination request previously sent."
+
+//   },
+
+//   "FINWAIT-2": {
+//     description: "represents waiting for a connection termination " +
+//                  "request from the remote TCP."
+//   },
+
+
+//   "CLOSE WAIT": {
+//     description: "represents waiting for a connection termination " +
+//                  "request from the local user."
+//   },
+
+//   CLOSING: {
+//     description: "represents waiting for a connection termination " +
+//                  "request acknowledgment from the remote TCP."
+//   },
+
+//   "LAST-ACK": {
+//     description: "represents waiting for an acknowledgment of the " +
+//                  "connection termination request previously sent to the remote " +
+//                  "TCP (which includes an acknowledgment of its connection " +
+//                  "termination request)."
+//   },
+
+//   "TIME WAIT": {
+//     description: "represents waiting for enough time to pass to be " +
+//                  "sure the remote TCP received the acknowledgment of its " +
+//                  "connection termination request."
+//   }
+// };
+
+// Add states to the graph, set labels, and style
+// Object.keys(states).forEach(function(state) {
+//   var value = states[state];
+//   value.label = state;
+//   value.rx = value.ry = 5;
+//   g.setNode(state, value);
+// });
+
+// Set up the edges
+// g.setEdge("CLOSED",     "LISTEN",     { label: "open" });
+// g.setEdge("LISTEN",     "SYN RCVD",   { label: "rcv SYN" });
+// g.setEdge("LISTEN",     "SYN SENT",   { label: "send" });
+// g.setEdge("LISTEN",     "CLOSED",     { label: "close" });
+// g.setEdge("SYN RCVD",   "FINWAIT-1",  { label: "close" });
+// g.setEdge("SYN RCVD",   "ESTAB",      { label: "rcv ACK of SYN" });
+// g.setEdge("SYN SENT",   "SYN RCVD",   { label: "rcv SYN" });
+// g.setEdge("SYN SENT",   "ESTAB",      { label: "rcv SYN, ACK" });
+// g.setEdge("SYN SENT",   "CLOSED",     { label: "close" });
+// g.setEdge("ESTAB",      "FINWAIT-1",  { label: "close" });
+// g.setEdge("ESTAB",      "CLOSE WAIT", { label: "rcv FIN" });
+// g.setEdge("FINWAIT-1",  "FINWAIT-2",  { label: "rcv ACK of FIN" });
+// g.setEdge("FINWAIT-1",  "CLOSING",    { label: "rcv FIN" });
+// g.setEdge("CLOSE WAIT", "LAST-ACK",   { label: "close" });
+// g.setEdge("FINWAIT-2",  "TIME WAIT",  { label: "rcv FIN" });
+// g.setEdge("CLOSING",    "TIME WAIT",  { label: "rcv ACK of FIN" });
+// g.setEdge("LAST-ACK",   "CLOSED",     { label: "rcv ACK of FIN" });
+// g.setEdge("TIME WAIT",  "CLOSED",     { label: "timeout=2MSL" });
+
+// Create the renderer
+
+
+var g, svg, zoom, inner;
+
+function search_quest(){
+  var questName = document.getElementById("questName").value;
+  questName = "任务:"+questName;
+  var maxIter = document.getElementById("maxIter").value;
+  var mainQuest = document.getElementById("mainQuest").checked;
+  var subQuest = document.getElementById("subQuest").checked;
+  $.ajax({
+      type: 'POST',
+      url: '',
+      async: true,
+      data: {"optype":"search_quest", "max_iter":maxIter, "start_quest":questName,"main_quest":mainQuest, "sub_quest":subQuest, 'csrfmiddlewaretoken': '{{ csrf_token }}'},
+      success: function(data){
+        if(data.response!="success"){
+          if(data.response=="error"){
+            alert(data.msg);
+          }else{
+            alert(data.response);
+            console.log(data);
+          }
+        }else{
+            // console.log(data);
+
+            var ds = document.getElementsByClassName("col-md-6")[0];
+            svg = document.getElementById("svgCanvas");
+            svg.setAttribute('width', ds.children[0].offsetWidth-ds.children[0].offsetLeft);
+            svg.innerHTML="";
+
+            g = new dagreD3.graphlib.Graph().setGraph({});
+
+            for(var quest in data.quest_dict){
+                var value = data.quest_dict[quest];
+                value.label = quest;
+                value.rx = value.ry = 5;
+                if(typeof(quest)=="undefined"){
+                  console.log("undefined..");
+                }else{
+                  g.setNode(quest, value);
+                }
+            }
+
+            for(var i=0;i<data.edge_list.length;i++){
+                var edge = data.edge_list[i];
+                g.setEdge(edge.from, edge.to, {});
+            }
+            // console.log(g);
+
+
+
+            render = new dagreD3.render();
+
+            // Set up an SVG group so that we can translate the final graph.
+            svg = d3.select("svg");
+            inner = svg.append("g");
+
+            // Set up zoom support
+            zoom = d3.zoom()
+                .on("zoom", function() {
+                  inner.attr("transform", d3.event.transform);
+                });
+            svg.call(zoom);
+
+            // Simple function to style the tooltip for the given node.
+            var styleTooltip = function(name, quest) {
+              return "<p class='name'><a href='https://ff14.huijiwiki.com/wiki/" + encodeURI(name) + "' target='_blank'>" + name + "</a></p>"+
+                "<p class='description'>" + quest.description + "</p>"+
+                "<p class='startnpc'>起始NPC: " + quest.startnpc + "</p>"+
+                "<p class='endnpc'>结束NPC: " + quest.endnpc + "</p>";
+            };
+
+            // Run the renderer. This is what draws the final graph.
+            render(inner, g);
+
+            // inner.selectAll("g.node")
+            //   .attr("title", function(v) { return styleTooltip(v, g.node(v).description) })
+            //   .each(function(v) { $(this).tipsy({gravity: "w", opacity: 1, html: true, delayOut: 1000, }); });
+            inner.selectAll("g.node")
+              .attr("title", function(v) { return styleTooltip(v, g.node(v)) })
+              .each(function(v) { $(this).tooltipster({ 
+                interactive: true, 
+                animation:"grow", 
+                contentAsHTML: true,
+              }); 
+              // console.log(this);
+            });
+            // Center the graph
+            var initialScale = 1;
+            svg.call(zoom.transform, d3.zoomIdentity.translate((svg.attr("width") - g.graph().width * initialScale) / 2, 20).scale(initialScale));
+
+            svg.attr('height', g.graph().height * initialScale + 40);
+
+            alert("查询完毕，这可太秃啦！");
+        }
+      },
+    });
+}
+
+
+
+</script>
+</body>
+</html>

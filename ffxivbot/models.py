@@ -2,9 +2,19 @@ from django.db import models
 import json
 import time
 # Create your models here.
+
+class WeiboUser(models.Model):
+	name = models.CharField(default="",blank=True,max_length=16,unique=True)
+	uid = models.CharField(default="",max_length=16)
+	containerid = models.CharField(default="",max_length=32)
+	last_update_time = models.BigIntegerField(default=0)
+	def __str__(self):
+		return self.name
+
 class QQGroup(models.Model):
 	group_id = models.CharField(primary_key=True,max_length=16)
 	welcome_msg = models.TextField(default="",blank=True)
+	bots = models.TextField(default="[]")
 	repeat_ban = models.IntegerField(default=-1)
 	repeat_length = models.IntegerField(default=-1)
 	repeat_prob = models.IntegerField(default=0)
@@ -14,6 +24,20 @@ class QQGroup(models.Model):
 	last_reply_time = models.BigIntegerField(default=0)
 	member_list = models.TextField(default="[]")
 	registered = models.BooleanField(default=False)
+	subscription = models.ManyToManyField(WeiboUser, related_name="subscribed_by", blank=True)
+	def __str__(self):
+		return self.group_id
+
+class WeiboTile(models.Model):
+	itemid = models.CharField(default="",max_length=128)
+	owner = models.ForeignKey(WeiboUser, on_delete=models.CASCADE, related_name="tile")
+	content = models.TextField(default="{}")
+	crawled_time = models.BigIntegerField(default=0)
+	pushed_group = models.ManyToManyField(QQGroup, related_name="pushed_weibo")
+	def __str__(self):
+		return self.itemid
+
+
 
 class CustomReply(models.Model):
 	group = models.ForeignKey(QQGroup,on_delete=models.CASCADE)
@@ -99,54 +123,36 @@ class RandomScore(models.Model):
 class QQBot(models.Model):
 	name = models.CharField(max_length=16)
 	user_id = models.CharField(max_length=16,unique=True)
-	last_reply_time = models.BigIntegerField(default=0)
-	coolq_edition = models.CharField(max_length=4,default="air")
-	api_data = models.TextField(default="[]")
+	owner_id = models.CharField(max_length=16)
 	access_token = models.CharField(max_length=16,default="")
 	auto_accept_friend = models.BooleanField(default=False)
 	auto_accept_invite = models.BooleanField(default=False)
 	tuling_token = models.CharField(max_length=32,default="",blank=True)
-	api_last_time = models.BigIntegerField(default=0)
-	event_last_time = models.BigIntegerField(default=0)
 	api_channel_name = models.CharField(max_length=32,default="",blank=True)
 	event_channel_name = models.CharField(max_length=32,default="",blank=True)
+	group_list = models.TextField(default="[]")
+	plugin_status = models.TextField(default="{}")
+	version_info = models.TextField(default="{}")
+	event_time = models.BigIntegerField(default=0)
+	api_time = models.BigIntegerField(default=0)
+	friend_list = models.TextField(default="{}")
+	public = models.BooleanField(default=True)
 	def __str__(self):
 		return self.name
-	def clear_api_data(self):
-		self.api_data = "[]"
-		self.api_last_time = int(time.time())
-		self.save()
-	def send_ws_api(self,api,params,jdata=None):
-		self.refresh_from_db()
-		json_data = {
-			"action": api,
-			"params": params
-		}
-		if jdata:
-			json_data = jdata
-		print("%s api save:%s"%(self.user_id,json.dumps(json_data)))
-		api_data = json.loads(self.api_data)
-		if(type(api_data)==dict):
-			api_data = [api_data]
-		api_data.append(json_data)
-		api_data = api_data[:10]
-		self.api_data = json.dumps(api_data)
-		self.event_last_time = int(time.time())
-		self.save()
-	def send_message(self,private_group,uid,message):
-		message = "系统将于2018年8月13日 19:30:00开始维护，期间服务可能停止。"
-		if(private_group=="group"):
-			self.send_ws_api("send_group_msg",{"group_id":uid,"message":message})
-		if(private_group=="private"):
-			self.send_ws_api("send_private_msg",{"user_id":uid,"message":message})
-	def update_group_member_list(self,group):
-		jdata = {
-			"action": "get_group_member_list",
-			"params": {"group_id":group.group_id},
-			"echo": "get_group_member_list:%s"%(group.group_id)
-		}
-		self.send_ws_api(None,None,jdata)
-	def is_api_online(self):
-		return time.time() - self.api_last_time <= 30
-	def is_event_online(self):
-		return time.time() - self.event_last_time <= 60
+
+class PlotQuest(models.Model):
+	name = models.CharField(max_length=32,unique=True)
+	version = models.CharField(max_length=64)
+	area = models.CharField(max_length=16)
+	category = models.CharField(max_length=32)
+	sub_category = models.CharField(max_length=32)
+	job = models.CharField(max_length=64)
+	startnpc = models.CharField(max_length=64)
+	endnpc = models.CharField(max_length=64)
+	suf_quests = models.ManyToManyField("self",blank=True,symmetrical=False,related_name="pre_quests")
+	endpoint = models.BooleanField(default=False)
+	html = models.TextField(default="",blank=True)
+	crawl_status = models.IntegerField(default=0)
+	def __str__(self):
+		return self.name
+

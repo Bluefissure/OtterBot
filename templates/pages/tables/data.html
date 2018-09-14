@@ -7,18 +7,18 @@
   <!-- Tell the browser to be responsive to screen width -->
   <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
   <!-- Bootstrap 3.3.7 -->
-  <link rel="stylesheet" href="static/bower_components/bootstrap/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="/static/bower_components/bootstrap/dist/css/bootstrap.min.css">
   <!-- Font Awesome -->
-  <link rel="stylesheet" href="static/bower_components/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="/static/bower_components/font-awesome/css/font-awesome.min.css">
   <!-- Ionicons -->
-  <link rel="stylesheet" href="static/bower_components/Ionicons/css/ionicons.min.css">
+  <link rel="stylesheet" href="/static/bower_components/Ionicons/css/ionicons.min.css">
   <!-- DataTables -->
-  <link rel="stylesheet" href="static/bower_components/datatables.net-bs/css/dataTables.bootstrap.min.css">
+  <link rel="stylesheet" href="/static/bower_components/datatables.net-bs/css/dataTables.bootstrap.min.css">
   <!-- Theme style -->
-  <link rel="stylesheet" href="static/dist/css/AdminLTE.min.css">
+  <link rel="stylesheet" href="/static/dist/css/AdminLTE.min.css">
   <!-- AdminLTE Skins. Choose a skin from the css/skins
        folder instead of downloading all of them to reduce the load. -->
-  <link rel="stylesheet" href="static/dist/css/skins/_all-skins.min.css">
+  <link rel="stylesheet" href="/static/dist/css/skins/_all-skins.min.css">
 
   <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
   <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -36,7 +36,7 @@
 
   <header class="main-header">
     <!-- Logo -->
-    <a href="static/index2.html" class="logo">
+    <a href="/static/index2.html" class="logo">
       <!-- mini logo for sidebar mini 50x50 pixels -->
       <span class="logo-mini"><b>獭</b>台</span>
       <!-- logo for regular state and mobile devices -->
@@ -62,7 +62,7 @@
       <!-- Sidebar user panel -->
       <div class="user-panel">
         <div class="pull-left image">
-          <img src="static/dist/img/tata.jpg" class="img-circle" alt="User Image">
+          <img src="/static/dist/img/tata.jpg" class="img-circle" alt="User Image">
         </div>
         <div class="pull-left info">
           <p>獭獭の云主人</p>
@@ -131,6 +131,7 @@
                   <th><center>在线情况</center></th>
                   <th><center>公开</center></th>
                   <th><center>删除</center></th>
+                  <!-- <th><center>配置</center></th> -->
                 </tr>
                 </thead>
                 <tbody>
@@ -149,6 +150,7 @@
                       <td><button type="button" class="btn btn-block btn-success" onclick="switch_public({{bot.id}})">公开</button></td>
                       {% endif %}
                       <td><button type="button" class="btn btn-block btn-danger" onclick="del_bot({{bot.id}})">删除</button></td>
+                      <!-- <td><button type="button" class="btn btn-block btn-success" onclick="download_conf({{bot.id}})">下载</button></td> -->
                     </tr>
                   {% endfor%}
                 
@@ -227,10 +229,10 @@
                         <span class="direct-chat-timestamp pull-right">2018-8-21 11:28:02</span>
                       </div>
                       <!-- /.direct-chat-info -->
-                      <img class="direct-chat-img" src="static/dist/img/bluefissure.jpg" alt="message user image">
+                      <img class="direct-chat-img" src="/static/dist/img/bluefissure.jpg" alt="message user image">
                       <!-- /.direct-chat-img -->
                       <div class="direct-chat-text">
-                        每天机器人数量达到上限（目前为100）后会自动清除一周内未与服务器连接的机器人，如有需要请重新申请。
+                        每天机器人数量达到上限（目前为200）后会自动清除一周内未与服务器连接的机器人，如有需要请重新申请。
                       </div>
                       <!-- /.direct-chat-text -->
                     </div>
@@ -240,7 +242,7 @@
                         <span class="direct-chat-timestamp pull-right">2018-8-20 16:31:30</span>
                       </div>
                       <!-- /.direct-chat-info -->
-                      <img class="direct-chat-img" src="static/dist/img/bluefissure.jpg" alt="message user image">
+                      <img class="direct-chat-img" src="/static/dist/img/bluefissure.jpg" alt="message user image">
                       <!-- /.direct-chat-img -->
                       <div class="direct-chat-text">
                         出现问题请<a href="http://wpa.qq.com/msgrd?v=3&uin=306401806&site=qq&menu=yes" target="_blank">联系獭爹</a>
@@ -253,7 +255,7 @@
                         <span class="direct-chat-timestamp pull-right">2018-8-17 23:14:30</span>
                       </div>
                       <!-- /.direct-chat-info -->
-                      <img class="direct-chat-img" src="static/dist/img/bluefissure.jpg" alt="message user image">
+                      <img class="direct-chat-img" src="/static/dist/img/bluefissure.jpg" alt="message user image">
                       <!-- /.direct-chat-img -->
                       <div class="direct-chat-text">
                         领养教程<a href="http://bbs.ngacn.cc/read.php?tid=14726260" target="_blank">点击此处</a>
@@ -266,7 +268,7 @@
                         <span class="direct-chat-timestamp pull-right">2018-8-17 20:09:48</span>
                       </div>
                       <!-- /.direct-chat-info -->
-                      <img class="direct-chat-img" src="static/dist/img/bluefissure.jpg" alt="message user image">
+                      <img class="direct-chat-img" src="/static/dist/img/bluefissure.jpg" alt="message user image">
                       <!-- /.direct-chat-img -->
                       <div class="direct-chat-text">
                         大家要对獭獭温柔一点哦~
@@ -306,20 +308,20 @@
 <!-- ./wrapper -->
 
 <!-- jQuery 3 -->
-<script src="static/bower_components/jquery/dist/jquery.min.js"></script>
+<script src="/static/bower_components/jquery/dist/jquery.min.js"></script>
 <!-- Bootstrap 3.3.7 -->
-<script src="static/bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+<script src="/static/bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
 <!-- DataTables -->
-<script src="static/bower_components/datatables.net/js/jquery.dataTables.min.js"></script>
-<script src="static/bower_components/datatables.net-bs/js/dataTables.bootstrap.min.js"></script>
+<script src="/static/bower_components/datatables.net/js/jquery.dataTables.min.js"></script>
+<script src="/static/bower_components/datatables.net-bs/js/dataTables.bootstrap.min.js"></script>
 <!-- SlimScroll -->
-<script src="static/bower_components/jquery-slimscroll/jquery.slimscroll.min.js"></script>
+<script src="/static/bower_components/jquery-slimscroll/jquery.slimscroll.min.js"></script>
 <!-- FastClick -->
-<script src="static/bower_components/fastclick/lib/fastclick.js"></script>
+<script src="/static/bower_components/fastclick/lib/fastclick.js"></script>
 <!-- AdminLTE App -->
-<script src="static/dist/js/adminlte.min.js"></script>
+<script src="/static/dist/js/adminlte.min.js"></script>
 <!-- AdminLTE for demo purposes -->
-<script src="static/dist/js/demo.js"></script>
+<script src="/static/dist/js/demo.js"></script>
 <!-- page script -->
 <script>
   $(function () {

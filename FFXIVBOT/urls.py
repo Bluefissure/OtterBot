@@ -18,5 +18,10 @@ from django.urls import path
 from ffxivbot.views import *
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', index),
+    path('', tata),
+    path('tata/', tata),
+    path('quest/', quest),
+    # path('ws_event/', qqpost_ws_event),
+    # path('ws_api/', qqpost_ws_api),
+    # path('ws/', qqpost_ws),
 ]

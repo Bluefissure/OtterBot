@@ -1,5 +1,6 @@
 from channels.generic.websocket import WebsocketConsumer
 from channels.layers import get_channel_layer 
+from django.db import transaction
 channel_layer = get_channel_layer()
 from asgiref.sync import async_to_sync
 import json
@@ -57,7 +58,8 @@ BAIDU_IMAGE_CENSOR_URL = 'https://aip.baidubce.com/rest/2.0/solution/v1/img_cens
 
 
 
-QQBOT_LIST = ["2854196306"]
+
+QQBOT_LIST = ["2854196306","1480552943"]
 
 TIMEFORMAT = "%Y-%m-%d %H:%M:%S"
 TIMEFORMAT_MDHMS = "%m-%d %H:%M:%S"
@@ -130,6 +132,20 @@ def search_item(name):
             "image":item_img_url,
         }
     print("res_data:%s"%(res_data))
+    return res_data
+
+def get_weibotile_share(weibotile):
+    content_json = json.loads(weibotile.content)
+    mblog = content_json["mblog"]
+    bs = BeautifulSoup(mblog["text"],"html.parser")
+    res_data = {
+        "url":content_json["scheme"],
+        "title":bs.get_text().replace("\u200b","")[:32],
+        "content":"From {}\'s Weibo".format(weibotile.owner),
+        "image":mblog["user"]["profile_image_url"],
+    }
+    print("weibo_share")
+    print(json.dumps(res_data))
     return res_data
 
 
@@ -287,6 +303,7 @@ def eurekaWeather(weather, count):
 
 
 class APIConsumer(WebsocketConsumer):
+    @transaction.atomic 
     def connect(self):
         header_list = self.scope["headers"]
         headers = {}
@@ -295,7 +312,7 @@ class APIConsumer(WebsocketConsumer):
         ws_self_id = headers['x-self-id']
         ws_client_role = headers['x-client-role']
         ws_access_token = headers['authorization'].replace("Token","").strip()
-        bots = QQBot.objects.filter(user_id=ws_self_id,access_token=ws_access_token)
+        bots = QQBot.objects.select_for_update().filter(user_id=ws_self_id,access_token=ws_access_token)
         if(len(bots) == 0):
             print("%s:%s:API:AUTH_FAIL"%(ws_self_id, ws_access_token))
             self.close()
@@ -305,26 +322,35 @@ class APIConsumer(WebsocketConsumer):
             self.close()
             return
         self.bot = bots[0]
+        self.bot_user_id = self.bot.user_id
         self.bot.api_channel_name = self.channel_name
-        # print("New API Connection:%s"%(self.channel_name))
+        self.bot.api_time = int(time.time())
+        print("New API Connection:%s"%(self.channel_name))
         self.bot.save()
+        print("API Channel connect from {} by channel:{}".format(self.bot.user_id,self.bot.api_channel_name))
         self.accept()
 
     def disconnect(self, close_code):
-        pass
+        try:
+            print("API Channel disconnect from {} by channel:{}".format(self.bot.user_id,self.bot.api_channel_name))
+        except:
+            pass
+    @transaction.atomic 
     def receive(self, text_data):
-        self.bot.refresh_from_db()
+        # print("API Channel received from {} channel:{}".format(self.bot.user_id,self.bot.api_channel_name))
+        self.bot = QQBot.objects.select_for_update().get(user_id=self.bot_user_id)
+        self.bot.api_time = int(time.time())
+        self.bot.api_channel_name = self.channel_name
         receive = json.loads(text_data)
         if(int(receive["retcode"])!=0):
             print("API error:"+text_data)
         # print("API receive:{}".format(receive))
         if("echo" in receive.keys()):
             echo = receive["echo"]
-            print("echo")
-            print(receive)
+            print("echo:{} received".format(receive["echo"]))
             if(echo.find("get_group_member_list")==0):
                 group_id = echo.replace("get_group_member_list:","").strip()
-                groups = QQGroup.objects.filter(group_id=group_id)
+                groups = QQGroup.objects.select_for_update().filter(group_id=group_id)
                 if(len(groups)>0):
                     group = groups[0]
                     group.member_list = json.dumps(receive["data"]) if receive["data"] else "[]"
@@ -333,24 +359,24 @@ class APIConsumer(WebsocketConsumer):
             if(echo.find("get_group_list")==0):
                 # group_list = echo.replace("get_group_list:","").strip()
                 self.bot.group_list = json.dumps(receive["data"])
-                self.bot.save()
-                self.bot.refresh_from_db()
             if(echo.find("_get_friend_list")==0):
                 # friend_list = echo.replace("_get_friend_list:","").strip()
                 self.bot.friend_list = json.dumps(receive["data"])
-                self.bot.save()
-                self.bot.refresh_from_db()
             if(echo.find("get_version_info")==0):
                 self.bot.version_info = json.dumps(receive["data"])
-                self.bot.save()
-                self.bot.refresh_from_db()
+            if(echo.find("get_status")==0):
+                user_id = echo.split(":")[1]
+                if(not receive["data"] or not receive["data"]["good"]):
+                    print("{} offline at {}".format(user_id, int(time.time())))
+        self.bot.save()
 
     def send_event(self, event):
-        print("send_event with event:%s"%(event))
+        print("APIChannel {} send_event with event:{}".format(self.channel_name, event))
         self.send(text_data=event["text"])
 
 
 class EventConsumer(WebsocketConsumer):
+    @transaction.atomic
     def connect(self):
         header_list = self.scope["headers"]
         headers = {}
@@ -359,7 +385,7 @@ class EventConsumer(WebsocketConsumer):
         ws_self_id = headers['x-self-id']
         ws_client_role = headers['x-client-role']
         ws_access_token = headers['authorization'].replace("Token","").strip()
-        bots = QQBot.objects.filter(user_id=ws_self_id,access_token=ws_access_token)
+        bots = QQBot.objects.select_for_update().filter(user_id=ws_self_id,access_token=ws_access_token)
         if(len(bots) == 0):
             print("%s:%s:Event:AUTH_FAIL"%(ws_self_id, ws_access_token))
             return
@@ -367,14 +393,18 @@ class EventConsumer(WebsocketConsumer):
             print("%s:%s:Event:MULTIPLE_AUTH"%(ws_self_id, ws_access_token))
             return
         self.bot = bots[0]
+        self.bot_user_id = self.bot.user_id
         self.bot.event_channel_name = self.channel_name
-        self.bot.online_time = int(time.time())
+        self.bot.event_time = int(time.time())
         self.bot.save()
+        print("Event Channel connect from {} by channel:{}".format(self.bot.user_id,self.bot.event_channel_name))
         self.accept()
 
     def disconnect(self, close_code):
-        pass
-
+        try:
+            print("Event Channel disconnect from {} by channel:{}".format(self.bot.user_id,self.bot.event_channel_name))
+        except:
+            pass
 
     def call_api(self, action, params, echo=None):
         if("async" not in action and echo is None):
@@ -392,12 +422,32 @@ class EventConsumer(WebsocketConsumer):
         # channel_layer.send(self.bot.api_channel_name, {"type": "send.event","text": json.dumps(jdata),})
         async_to_sync(channel_layer.send)(self.bot.api_channel_name, {"type": "send.event","text": json.dumps(jdata),})
 
+    def call_event(self, action, params, echo=None):
+        if("async" not in action and echo is None):
+            action = action + "_async"
+        jdata = {
+            "action":action,
+            "params":params,
+        }
+        if echo:
+            jdata["echo"] = echo
+        self.bot.refresh_from_db()
+        if(self.bot.event_channel_name == ""):
+            print("empty channel for bot:{}".format(self.bot.user_id))
+            return
+        # channel_layer.send(self.bot.api_channel_name, {"type": "send.event","text": json.dumps(jdata),})
+        async_to_sync(channel_layer.send)(self.bot.event_channel_name, {"type": "send.event","text": json.dumps(jdata),})
+
     def send_message(self, private_group, uid, message):
         if(private_group=="group"):
             self.call_api("send_group_msg",{"group_id":uid,"message":message})
         if(private_group=="private"):
             self.call_api("send_private_msg",{"user_id":uid,"message":message})
 
+
+    def send_event(self, event):
+        print("EventChannel {} send_event with event:{}".format(self.channel_name, event))
+        self.send(text_data=event["text"])
 
     def update_group_member_list(self,group_id):
         self.call_api("get_group_member_list",{"group_id":group_id},"get_group_member_list:%s"%(group_id))
@@ -410,301 +460,299 @@ class EventConsumer(WebsocketConsumer):
         json_data = {"group_id":group_id,"user_id":user_id,"duration":duration}
         self.call_api("set_group_ban",json_data)
 
+    @transaction.atomic
     def receive(self, text_data):
-        self.bot.refresh_from_db()
-        self.bot.online_time = int(time.time())
-        self.bot.save()
-        self.bot.refresh_from_db()
-        print("received Event message:"+text_data)
+        # print("Event Channel receive from {} by channel:{}".format(self.bot.user_id,self.bot.event_channel_name))
+        self.bot = QQBot.objects.select_for_update().get(user_id=self.bot_user_id)
+        self.bot.event_time = int(time.time())
+        if(int(time.time()) > self.bot.api_time+60):
+            self.call_api("get_status",{},"get_status:{}".format(self.bot_user_id))
+        self.bot.event_channel_name = self.channel_name
+        # self.bot.save()
+        #print("received Event message:"+text_data)
         global GLOBAL_EVENT_HANDEL
         if(GLOBAL_EVENT_HANDEL):
-            receive = json.loads(text_data)
-            if (receive["post_type"] == "message"):
-                # Self-ban in group
-                user_id = receive["user_id"]
-                group_id = None
-                group = None
-                if (receive["message_type"]=="group"):
-                    group_id = receive["group_id"]
-                    group_list = QQGroup.objects.filter(group_id=group_id)
-                    if len(group_list)>0:
-                        group = group_list[0]
+            try:
+                receive = json.loads(text_data)
+                if (receive["post_type"] == "message"):
+                    # Self-ban in group
+                    user_id = receive["user_id"]
+                    group_id = None
+                    group = None
+                    if (receive["message_type"]=="group"):
+                        group_id = receive["group_id"]
+                        group_list = QQGroup.objects.filter(group_id=group_id)
+                        if len(group_list)>0:
+                            group = group_list[0]
+                            if(int(time.time())<group.ban_till):
+                                return
+                            group_bots = json.loads(group.bots)
+                            if(user_id in group_bots):
+                                return
 
-                if (receive["message"].find('/help')==0):
-                    msg = "/cat : 云吸猫\n/gakki : 云吸gakki\n/bird : 云吸飞鸟\n/random(gate) : 掷骰子\n/search $item : 在最终幻想XIV中查询物品$item\n/dps $boss $job $dps : 在最终幻想XIV中查询DPS在对应BOSS与职业的logs排名（国际服同期数据）\n/pzz $cnt : 在最终幻想XIV中查询尤雷卡接下来$cnt次强风时间\n/anime $img : 查询$img对应番剧(只支持1M以内静态全屏截图)\n/gif : 生成沙雕GIF\n/about : 关于%s\n/donate : 援助作者"%(BOT_NAME)
-                    msg = msg.strip()
-                    self.send_message(receive["message_type"], group_id or user_id, msg)
-                if (receive["message"] == '/cat'):
-                    msg = [{"type":"image","data":{"file":QQ_BASE_URL+"static/cat/%s.jpg"%(random.randint(0,750))}}]
-                    self.send_message(receive["message_type"], group_id or user_id, msg)
-                if (receive["message"] == '/gakki'):
-                    msg = [{"type":"image","data":{"file":QQ_BASE_URL+"static/gakki/%s.jpg"%(random.randint(1,1270))}}]
-                    self.send_message(receive["message_type"], group_id or user_id, msg)
-                if (receive["message"] == '/bird'):
-                    jpg_cnt = 182
-                    gif_cnt = 5
-                    png_cnt = 65
-                    idx = random.randint(1,jpg_cnt+gif_cnt+png_cnt)
-                    img_path = "static/bird/%s.jpg"%(idx) if idx<=jpg_cnt else ("static/bird/%s.gif"%(idx-jpg_cnt) if idx-jpg_cnt<=gif_cnt else "static/bird/%s.png"%(idx-jpg_cnt-gif_cnt))
-                    msg = [{"type":"image","data":{"file":QQ_BASE_URL+img_path}}]
-                    self.send_message(receive["message_type"], group_id or user_id, msg)
-                # if (receive["message"].find('/ineedtata')==0):
-                #     u_id = receive["message"].replace("/ineedtata",'').strip()
-                #     if(u_id==""):
-                #         u_id = receive["user_id"]
-                #     wait_days = calculate_add_delay(u_id)
-                #     msg = "%s请等待%s天后再请求獭獭为好友/入群哦~"%(u_id,wait_days) if wait_days>0 else "%s可以申请獭獭为好友/入群"%(u_id)
-                #     # print(msg)
-                #     reply_data = {"reply":msg}
-                #     if(receive["message_type"]=="group"):
-                #         reply_data["at_sender"] = "false"
-                #     return MyJsonResponse(reply_data)
-                if (receive["message"].find('/search')==0):
-                    name = receive["message"].replace('/search','')
-                    name = name.strip()
-                    res_data = search_item(name)
-                    if res_data:
-                        msg = [{"type":"share","data":res_data}]
-                    else:
-                        msg = "在最终幻想XIV中没有找到 %s"%(name)
-                    self.send_message(receive["message_type"], group_id or user_id, msg)
-                if (receive["message"].find('/about')==0):
-                    res_data = {
-                        "url":"https://github.com/Bluefissure/FFXIVBOT",
-                        "title":"FFXIVBOT",
-                        "content":"by Bluefissure",
-                        "image":"https://i.loli.net/2018/05/06/5aeeda6f1fd4f.png",
-                    }
-                    msg = [{"type":"share","data":res_data}]
-                    self.send_message(receive["message_type"], group_id or user_id, msg)
-                if (receive["message"].find('/donate')==0):
-                    # msg = [{"type":"text","data":{"text":"我很可爱(*╹▽╹*)请给我钱（来租服务器养活獭獭及其类似物）"}},{"type":"image","data":{"file":QQ_BASE_URL+"static/alipay.jpg"}}]
-                    msg = [{"type":"text","data":{"text":"我很可爱(*╹▽╹*)但是不要捐助辣獭獭买了好多零食吃"}}]
-                    self.send_message(receive["message_type"], group_id or user_id, msg)
-                if (receive["message"].find('/anime')==0):
-                    print("anime_msg:%s"%(receive["message"]))
-                    qq = int(receive["user_id"])
-                    if(receive["message"] == '/anime'):
-                        pass
-                    elif ("CQ" in receive["message"] and "url=" in receive["message"]):
-                        msg = whatanime(receive)
+
+                    if (receive["message"].find('/help')==0):
+                        msg = "/cat : 云吸猫\n/gakki : 云吸gakki\n/bird : 云吸飞鸟\n/random(gate) : 掷骰子\n/search $item : 在最终幻想XIV中查询物品$item\n/dps $boss $job $dps : 在最终幻想XIV中查询DPS在对应BOSS与职业的logs排名（国际服同期数据）\n/pzz $cnt : 在最终幻想XIV中查询尤雷卡接下来$cnt次强风时间\n/anime $img : 查询$img对应番剧(只支持1M以内静态全屏截图)\n/gif : 生成沙雕GIF\n/about : 关于%s\n/donate : 援助作者"%(BOT_NAME)
+                        msg = msg.strip()
                         self.send_message(receive["message_type"], group_id or user_id, msg)
-                if (receive["message"].find('/gate')==0):
-                    try:
-                        num = int(receive["message"].replace("/gate",""))
-                    except:
-                        num = 2
-                    num = min(num, 3)
-                    gate = random.randint(0,num-1)
-                    choose_list = [i for i in range(num)]
-                    random.shuffle(choose_list)
-                    gate_idx = choose_list.index(gate)
-                    gate_msg = "左边" if gate_idx==0 else "右边" if gate_idx==1 else "中间"
-                    msg = "掐指一算，[CQ:at,qq=%s] 应该走%s门，信%s没错！"%(receive["user_id"],gate_msg,BOT_NAME)
-                    self.send_message(receive["message_type"], group_id or user_id, msg)
-                if (receive["message"].find('/random')==0):
-                    score = random.randint(1,1000)
-                    msg = str(score)
-                    # Random Award
-                    # if(receive["message_type"]=="group"):
-                    #     group_id = receive["group_id"]
-                    #     grps = QQGroup.objects.filter(group_id=group_id)
-                    #     if(len(grps)>0):
-                    #         group = grps[0]
-                    #         rss = RandomScore.objects.filter(user_id=receive["user_id"],group=group)
-                    #         if(len(rss)>0):
-                    #             rs = rss[0]
-                    #         else:
-                    #             rs = RandomScore(user_id=receive["user_id"],group=group)
-                    #         rs.min_random = min(rs.min_random,score)
-                    #         rs.max_random = max(rs.max_random,score)
-                    #         rs.save()
-                    msg = "[CQ:at,qq=%s] 掷出了"%(receive["user_id"])+msg+"点！"
-                    self.send_message(receive["message_type"], group_id or user_id, msg)
-
-
-                if (receive["message"].find('/pzz')==0):
-                    receive_msg = receive["message"].replace("/eureka","").replace("/pzz","")
-                    try:
-                        cnt = int(receive_msg)
-                    except:
-                        cnt = 3
-                    msg = "接下来Eureka常风之地的强风天气如下：\n%s"%(eurekaWeather("Gale",cnt))
-                    self.send_message(receive["message_type"], group_id or user_id, msg)
-                if (receive["message"].find('/louhi')==0):
-                    receive_msg = receive["message"].replace("/louhi","")
-                    try:
-                        cnt = int(receive_msg)
-                    except:
-                        cnt = 3
-                    msg = "接下来Eureka常冰之地的暴雪天气如下：\n%s"%(eurekaWeather("Blizzard",cnt))
-                    self.send_message(receive["message_type"], group_id or user_id, msg)
-                if (receive["message"].find('/gif')==0):
-                    sorry_dict = {"sorry":"好啊|就算你是一流工程师|就算你出报告再完美|我叫你改报告你就要改|毕竟我是客户|客户了不起啊|sorry 客户真的了不起|以后叫他天天改报告|天天改 天天改","wangjingze":"我就是饿死|死外边 从这跳下去|也不会吃你们一点东西|真香","jinkela":"金坷垃好处都有啥|谁说对了就给他|肥料掺了金坷垃|不流失 不蒸发 零浪费|肥料掺了金坷垃|能吸收两米下的氮磷钾","marmot":"啊~|啊~~~","dagong":"没有钱啊 肯定要做的啊|不做的话没有钱用|那你不会去打工啊|有手有脚的|打工是不可能打工的|这辈子不可能打工的","diandongche":"戴帽子的首先进里边去|开始拿剪刀出来 拿那个手机|手机上有电筒 用手机照射|寻找那个比较新的电动车|六月六号 两名男子再次出现|民警立即将两人抓获"}
-                    sorry_name = {"sorry":"为所欲为","wangjingze":"王境泽","jinkela":"金坷垃","marmot":"土拨鼠","dagong":"窃格瓦拉","diandongche":"偷电动车"}
-                    receive_msg = receive["message"].replace('/gif','',1).strip()
-                    if receive_msg=="list":
-                        msg = ""
-                        for (k,v) in sorry_dict.items():
-                            msg = msg + "%s : %s\n"%(k,sorry_name[k])
-                    else:
-                        now_template = ""
-                        for (k,v) in sorry_dict.items():
-                            if (receive_msg.find(k)==0):
-                                now_template = k
-                                break
-                        if (now_template=="" or len(receive_msg)==0 or receive_msg=="help"):
-                            msg = "/gif list : 目前可用模板\n/gif $template example : 查看模板$template的样例\n/gif $template $msg0|$msg1|... : 按照$msg0,$msg1...生成沙雕GIF\nPowered by sorry.xuty.tk"
+                    if (receive["message"] == '/cat'):
+                        msg = [{"type":"image","data":{"file":QQ_BASE_URL+"static/cat/%s.jpg"%(random.randint(0,750))}}]
+                        self.send_message(receive["message_type"], group_id or user_id, msg)
+                    if (receive["message"] == '/gakki'):
+                        msg = [{"type":"image","data":{"file":QQ_BASE_URL+"static/gakki/%s.jpg"%(random.randint(1,1270))}}]
+                        self.send_message(receive["message_type"], group_id or user_id, msg)
+                    if (receive["message"] == '/bird'):
+                        jpg_cnt = 182
+                        gif_cnt = 5
+                        png_cnt = 65
+                        idx = random.randint(1,jpg_cnt+gif_cnt+png_cnt)
+                        img_path = "static/bird/%s.jpg"%(idx) if idx<=jpg_cnt else ("static/bird/%s.gif"%(idx-jpg_cnt) if idx-jpg_cnt<=gif_cnt else "static/bird/%s.png"%(idx-jpg_cnt-gif_cnt))
+                        msg = [{"type":"image","data":{"file":QQ_BASE_URL+img_path}}]
+                        self.send_message(receive["message_type"], group_id or user_id, msg)
+                    if (receive["message"].find('/search')==0):
+                        name = receive["message"].replace('/search','')
+                        name = name.strip()
+                        res_data = search_item(name)
+                        if res_data:
+                            msg = [{"type":"share","data":res_data}]
                         else:
-                            receive_msg = receive_msg.replace(now_template,"",1).strip()
-                            if(receive_msg=="example"):
-                                msg = sorry_dict[now_template]
-                            else:
-                                msgs = receive_msg.split('|')
-                                cnt = 0
-                                gen_data = {}
-                                for sentence in msgs:
-                                    sentence = sentence.strip()
-                                    if(sentence==""):
-                                        continue
-                                    gen_data[str(cnt)] = sentence
-                                    print("sentence#%s:%s"%(cnt,sentence))
-                                    cnt += 1
-                                if(cnt==0):
-                                    msg = "至少包含一条字幕消息"
-                                else:
-                                    print("gen_data:%s"%(json.dumps(gen_data)))
-                                    url = SORRY_BASE_URL + "/api/%s/make"%(now_template)
-                                    try:
-                                        s = requests.post(url=url,data=json.dumps(gen_data),timeout=2)
-                                        img_url = SORRY_BASE_URL + s.text
-                                        print("img_url:%s"%(img_url))
-                                        msg = '[CQ:image,cache=0,file='+img_url+']'
-                                    except Exception as e:
-                                        msg = "SORRY API ERROR:%s"%(e)
-                                        print(msg)
-                                        self.send_message(receive["message_type"], group_id or user_id, msg)
-                    msg = msg.strip()
-                    self.send_message(receive["message_type"], group_id or user_id, msg)
-                    # if(receive["message_type"]=="group"):
-                    #     reply_data["at_sender"] = "false"
-                    # return MyJsonResponse(reply_data)
-
-
-                if (receive["message"].find('/dps')==0):
-                    receive_msg = receive["message"].replace('/dpscheck','',1).strip()
-                    receive_msg = receive_msg.replace('/dps','',1).strip()
-                    boss_list = Boss.objects.all()
-                    boss_obj = None
-                    for boss in boss_list:
-                        try:
-                            boss_nicknames = json.loads(boss.nickname)["nickname"]
-                        except KeyError:
-                            boss_nicknames = []
-                        boss_nicknames.append(boss.name)
-                        boss_nicknames.append(boss.cn_name)
-                        boss_nicknames.sort(key=lambda x:len(x),reverse=True)
-                        for item in boss_nicknames:
-                            if(receive_msg.find(item)==0):
-                                receive_msg = receive_msg.replace(item,'',1).strip()
-                                boss_obj = boss
-                                break
-                        if(boss_obj):
-                            break
-                    if(not boss_obj):
-                        msg = "未能定位Boss:%s"%(receive_msg)
+                            msg = "在最终幻想XIV中没有找到 %s"%(name)
                         self.send_message(receive["message_type"], group_id or user_id, msg)
-                    else:
-                        job_list = Job.objects.all()
-                        job_obj = None
-                        for job in job_list:
+                    if (receive["message"].find('/about')==0):
+                        res_data = {
+                            "url":"https://github.com/Bluefissure/FFXIVBOT",
+                            "title":"FFXIVBOT",
+                            "content":"by Bluefissure",
+                            "image":"https://i.loli.net/2018/05/06/5aeeda6f1fd4f.png",
+                        }
+                        msg = [{"type":"share","data":res_data}]
+                        self.send_message(receive["message_type"], group_id or user_id, msg)
+                    if (receive["message"].find('/donate')==0):
+                        # msg = [{"type":"text","data":{"text":"我很可爱(*╹▽╹*)请给我钱（来租服务器养活獭獭及其类似物）"}},{"type":"image","data":{"file":QQ_BASE_URL+"static/alipay.jpg"}}]
+                        msg = [{"type":"text","data":{"text":"我很可爱(*╹▽╹*)但是不要捐助辣獭獭买了好多零食吃"}}]
+                        self.send_message(receive["message_type"], group_id or user_id, msg)
+                    if (receive["message"].find('/anime')==0):
+                        print("anime_msg:%s"%(receive["message"]))
+                        qq = int(receive["user_id"])
+                        if(receive["message"] == '/anime'):
+                            pass
+                        elif ("CQ" in receive["message"] and "url=" in receive["message"]):
+                            msg = whatanime(receive)
+                            self.send_message(receive["message_type"], group_id or user_id, msg)
+                    if (receive["message"].find('/gate')==0):
+                        try:
+                            num = int(receive["message"].replace("/gate",""))
+                        except:
+                            num = 2
+                        num = min(num, 3)
+                        gate = random.randint(0,num-1)
+                        choose_list = [i for i in range(num)]
+                        random.shuffle(choose_list)
+                        gate_idx = choose_list.index(gate)
+                        gate_msg = "左边" if gate_idx==0 else "右边" if gate_idx==1 else "中间"
+                        msg = "掐指一算，[CQ:at,qq=%s] 应该走%s门，信%s没错！"%(receive["user_id"],gate_msg,BOT_NAME)
+                        self.send_message(receive["message_type"], group_id or user_id, msg)
+                    if (receive["message"].find('/random')==0):
+                        score = random.randint(1,1000)
+                        msg = str(score)
+                        # Random Award
+                        # if(receive["message_type"]=="group"):
+                        #     group_id = receive["group_id"]
+                        #     grps = QQGroup.objects.filter(group_id=group_id)
+                        #     if(len(grps)>0):
+                        #         group = grps[0]
+                        #         rss = RandomScore.objects.filter(user_id=receive["user_id"],group=group)
+                        #         if(len(rss)>0):
+                        #             rs = rss[0]
+                        #         else:
+                        #             rs = RandomScore(user_id=receive["user_id"],group=group)
+                        #         rs.min_random = min(rs.min_random,score)
+                        #         rs.max_random = max(rs.max_random,score)
+                        #         rs.save()
+                        msg = "[CQ:at,qq=%s] 掷出了"%(receive["user_id"])+msg+"点！"
+                        self.send_message(receive["message_type"], group_id or user_id, msg)
+
+
+                    if (receive["message"].find('/pzz')==0):
+                        receive_msg = receive["message"].replace("/pzz","")
+                        try:
+                            cnt = int(receive_msg)
+                        except:
+                            cnt = 3
+                        msg = "接下来Eureka常风之地的强风天气如下：\n%s"%(eurekaWeather("Gale",cnt))
+                        self.send_message(receive["message_type"], group_id or user_id, msg)
+                    if (receive["message"].find('/blizzard')==0):
+                        receive_msg = receive["message"].replace("/blizzard","")
+                        try:
+                            cnt = int(receive_msg)
+                        except:
+                            cnt = 3
+                        msg = "接下来Eureka恒冰之地的暴雪天气如下：\n%s"%(eurekaWeather("Blizzard",cnt))
+                        self.send_message(receive["message_type"], group_id or user_id, msg)
+                    if (receive["message"].find('/gif')==0):
+                        sorry_dict = {"sorry":"好啊|就算你是一流工程师|就算你出报告再完美|我叫你改报告你就要改|毕竟我是客户|客户了不起啊|sorry 客户真的了不起|以后叫他天天改报告|天天改 天天改","wangjingze":"我就是饿死|死外边 从这跳下去|也不会吃你们一点东西|真香","jinkela":"金坷垃好处都有啥|谁说对了就给他|肥料掺了金坷垃|不流失 不蒸发 零浪费|肥料掺了金坷垃|能吸收两米下的氮磷钾","marmot":"啊~|啊~~~","dagong":"没有钱啊 肯定要做的啊|不做的话没有钱用|那你不会去打工啊|有手有脚的|打工是不可能打工的|这辈子不可能打工的","diandongche":"戴帽子的首先进里边去|开始拿剪刀出来 拿那个手机|手机上有电筒 用手机照射|寻找那个比较新的电动车|六月六号 两名男子再次出现|民警立即将两人抓获"}
+                        sorry_name = {"sorry":"为所欲为","wangjingze":"王境泽","jinkela":"金坷垃","marmot":"土拨鼠","dagong":"窃格瓦拉","diandongche":"偷电动车"}
+                        receive_msg = receive["message"].replace('/gif','',1).strip()
+                        if receive_msg=="list":
+                            msg = ""
+                            for (k,v) in sorry_dict.items():
+                                msg = msg + "%s : %s\n"%(k,sorry_name[k])
+                        else:
+                            now_template = ""
+                            for (k,v) in sorry_dict.items():
+                                if (receive_msg.find(k)==0):
+                                    now_template = k
+                                    break
+                            if (now_template=="" or len(receive_msg)==0 or receive_msg=="help"):
+                                msg = "/gif list : 目前可用模板\n/gif $template example : 查看模板$template的样例\n/gif $template $msg0|$msg1|... : 按照$msg0,$msg1...生成沙雕GIF\nPowered by sorry.xuty.tk"
+                            else:
+                                receive_msg = receive_msg.replace(now_template,"",1).strip()
+                                if(receive_msg=="example"):
+                                    msg = sorry_dict[now_template]
+                                else:
+                                    msgs = receive_msg.split('|')
+                                    cnt = 0
+                                    gen_data = {}
+                                    for sentence in msgs:
+                                        sentence = sentence.strip()
+                                        if(sentence==""):
+                                            continue
+                                        gen_data[str(cnt)] = sentence
+                                        print("sentence#%s:%s"%(cnt,sentence))
+                                        cnt += 1
+                                    if(cnt==0):
+                                        msg = "至少包含一条字幕消息"
+                                    else:
+                                        print("gen_data:%s"%(json.dumps(gen_data)))
+                                        url = SORRY_BASE_URL + "/api/%s/make"%(now_template)
+                                        try:
+                                            s = requests.post(url=url,data=json.dumps(gen_data),timeout=2)
+                                            img_url = SORRY_BASE_URL + s.text
+                                            print("img_url:%s"%(img_url))
+                                            msg = '[CQ:image,cache=0,file='+img_url+']'
+                                        except Exception as e:
+                                            msg = "SORRY API ERROR:%s"%(e)
+                                            print(msg)
+                                            self.send_message(receive["message_type"], group_id or user_id, msg)
+                        msg = msg.strip()
+                        self.send_message(receive["message_type"], group_id or user_id, msg)
+                        # if(receive["message_type"]=="group"):
+                        #     reply_data["at_sender"] = "false"
+                        # return MyJsonResponse(reply_data)
+
+
+                    if (receive["message"].find('/dps')==0):
+                        receive_msg = receive["message"].replace('/dpscheck','',1).strip()
+                        receive_msg = receive_msg.replace('/dps','',1).strip()
+                        boss_list = Boss.objects.all()
+                        boss_obj = None
+                        for boss in boss_list:
                             try:
-                                job_nicknames = json.loads(job.nickname)["nickname"]
+                                boss_nicknames = json.loads(boss.nickname)["nickname"]
                             except KeyError:
-                                job_nicknames = []
-                            job_nicknames.append(job.name)
-                            job_nicknames.append(job.cn_name)
-                            job_nicknames.sort(key=lambda x:len(x),reverse=True)
-                            for item in job_nicknames:
+                                boss_nicknames = []
+                            boss_nicknames.append(boss.name)
+                            boss_nicknames.append(boss.cn_name)
+                            boss_nicknames.sort(key=lambda x:len(x),reverse=True)
+                            for item in boss_nicknames:
                                 if(receive_msg.find(item)==0):
                                     receive_msg = receive_msg.replace(item,'',1).strip()
-                                    job_obj = job
+                                    boss_obj = boss
                                     break
-                            if(job_obj):
+                            if(boss_obj):
                                 break
-                        if(not job_obj):
-                            msg = "未能定位职业:%s"%(receive_msg)
+                        if(not boss_obj):
+                            msg = "未能定位Boss:%s"%(receive_msg)
                             self.send_message(receive["message_type"], group_id or user_id, msg)
                         else:
-                            day = math.ceil((int(time.time())-boss.cn_add_time)/(24*3600))
-                            if(receive_msg.find("#")==0):
-                                space_idx = receive_msg.find(" ")
-                                day = receive_msg[1:space_idx]
-                                receive_msg = receive_msg[space_idx:].strip()
-                            tiles = DPSTile.objects.filter(boss=boss_obj,job=job_obj,day=day)
-                            if(len(tiles)==0):
-                                msg = "Boss:%s职业:%s第%s日的数据未抓取，请联系管理员抓取。"%(boss,job,day)
+                            job_list = Job.objects.all()
+                            job_obj = None
+                            for job in job_list:
+                                try:
+                                    job_nicknames = json.loads(job.nickname)["nickname"]
+                                except KeyError:
+                                    job_nicknames = []
+                                job_nicknames.append(job.name)
+                                job_nicknames.append(job.cn_name)
+                                job_nicknames.sort(key=lambda x:len(x),reverse=True)
+                                for item in job_nicknames:
+                                    if(receive_msg.find(item)==0):
+                                        receive_msg = receive_msg.replace(item,'',1).strip()
+                                        job_obj = job
+                                        break
+                                if(job_obj):
+                                    break
+                            if(not job_obj):
+                                msg = "未能定位职业:%s"%(receive_msg)
                                 self.send_message(receive["message_type"], group_id or user_id, msg)
                             else:
-                                tile = tiles[0]
-                                if(receive_msg=="all"):
-                                    atk_dict = json.loads(tile.attack)
-                                    percentage_list = [10,25,50,75,95,99]
-                                    msg = "%s %s day#%s:\n"%(boss.cn_name,job.cn_name,day)
-                                    for perc in percentage_list:
-                                        msg += "%s%% : %.2f\n"%(perc,atk_dict[str(perc)])
-                                    msg = msg.strip()
+                                day = math.ceil((int(time.time())-boss.cn_add_time)/(24*3600))
+                                if(receive_msg.find("#")==0):
+                                    space_idx = receive_msg.find(" ")
+                                    day = receive_msg[1:space_idx]
+                                    receive_msg = receive_msg[space_idx:].strip()
+                                tiles = DPSTile.objects.filter(boss=boss_obj,job=job_obj,day=day)
+                                if(len(tiles)==0):
+                                    msg = "Boss:%s职业:%s第%s日的数据未抓取，请联系管理员抓取。"%(boss,job,day)
                                     self.send_message(receive["message_type"], group_id or user_id, msg)
                                 else:
-                                    try:
-                                        atk = float(receive_msg)
-                                        assert(atk > 0)
-                                    except:
-                                        msg = "DPS数值解析失败:%s"%(receive_msg)
+                                    tile = tiles[0]
+                                    if(receive_msg=="all"):
+                                        atk_dict = json.loads(tile.attack)
+                                        percentage_list = [10,25,50,75,95,99]
+                                        msg = "%s %s day#%s:\n"%(boss.cn_name,job.cn_name,day)
+                                        for perc in percentage_list:
+                                            msg += "%s%% : %.2f\n"%(perc,atk_dict[str(perc)])
+                                        msg = msg.strip()
                                         self.send_message(receive["message_type"], group_id or user_id, msg)
                                     else:
-                                        atk_dict = json.loads(tile.attack)
-                                        percentage_list = [0,10,25,50,75,95,99]
-                                        atk_dict.update({"0":0})
-                                        print("atk_dict:"+json.dumps(atk_dict))
-                                        atk_list = [atk_dict[str(i)] for i in percentage_list]
-                                        idx = 0
-                                        while(idx<len(percentage_list) and atk>atk_dict[str(percentage_list[idx])]):
-                                            idx += 1
-                                        if(idx >= len(percentage_list)):
-                                            #msg = "%s %s %.2f day#%s 99%%+"%(boss.cn_name,job.cn_name,atk,day)
-                                            msg = "%s %s %.2f 99%%+"%(boss.cn_name,job.cn_name,atk)
+                                        try:
+                                            atk = float(receive_msg)
+                                            assert(atk > 0)
+                                        except:
+                                            msg = "DPS数值解析失败:%s"%(receive_msg)
+                                            self.send_message(receive["message_type"], group_id or user_id, msg)
                                         else:
-                                            calc_perc = ((atk-atk_list[idx-1])/(atk_list[idx]-atk_list[idx-1]))*(percentage_list[idx]-percentage_list[idx-1])+percentage_list[idx-1]
-                                            if(calc_perc < 10):
-                                                msg = "%s %s %.2f 10%%-"%(boss.cn_name,job.cn_name,atk)
+                                            atk_dict = json.loads(tile.attack)
+                                            percentage_list = [0,10,25,50,75,95,99]
+                                            atk_dict.update({"0":0})
+                                            print("atk_dict:"+json.dumps(atk_dict))
+                                            atk_list = [atk_dict[str(i)] for i in percentage_list]
+                                            idx = 0
+                                            while(idx<len(percentage_list) and atk>atk_dict[str(percentage_list[idx])]):
+                                                idx += 1
+                                            if(idx >= len(percentage_list)):
+                                                #msg = "%s %s %.2f day#%s 99%%+"%(boss.cn_name,job.cn_name,atk,day)
+                                                msg = "%s %s %.2f 99%%+"%(boss.cn_name,job.cn_name,atk)
                                             else:
-                                                #msg = "%s %s %.2f day#%s %.2f%%"%(boss.cn_name,job.cn_name,atk,day,calc_perc)
-                                                msg = "%s %s %.2f %.2f%%"%(boss.cn_name,job.cn_name,atk,calc_perc)
-                                        self.send_message(receive["message_type"], group_id or user_id, msg)
+                                                calc_perc = ((atk-atk_list[idx-1])/(atk_list[idx]-atk_list[idx-1]))*(percentage_list[idx]-percentage_list[idx-1])+percentage_list[idx-1]
+                                                if(calc_perc < 10):
+                                                    msg = "%s %s %.2f 10%%-"%(boss.cn_name,job.cn_name,atk)
+                                                else:
+                                                    #msg = "%s %s %.2f day#%s %.2f%%"%(boss.cn_name,job.cn_name,atk,day,calc_perc)
+                                                    msg = "%s %s %.2f %.2f%%"%(boss.cn_name,job.cn_name,atk,calc_perc)
+                                            self.send_message(receive["message_type"], group_id or user_id, msg)
 
 
-                #Group Control Func
-                if (receive["message_type"]=="group"):
-                    group_id = receive["group_id"]
-                    user_id = receive["user_id"]
+                    #Group Control Func
+                    if (receive["message_type"]=="group"):
+                        group_id = receive["group_id"]
+                        user_id = receive["user_id"]
 
-                    (group, group_created) = QQGroup.objects.get_or_create(group_id=group_id)
-                    try:
-                        member_list = json.loads(group.member_list)
-                        if group_created or member_list is None or len(member_list)==0:
+                        (group, group_created) = QQGroup.objects.get_or_create(group_id=group_id)
+                        try:
+                            member_list = json.loads(group.member_list)
+                            if group_created or member_list is None or len(member_list)==0:
+                                self.update_group_member_list(group_id)
+                                time.sleep(1)
+                                group.refresh_from_db()
+                                member_list = json.loads(group.member_list)
+                        except:
                             self.update_group_member_list(group_id)
                             time.sleep(1)
-                            group.refresh_from_db()
-                            member_list = json.loads(group.member_list)
-                    except:
-                        self.update_group_member_list(group_id)
-                        time.sleep(1)
-                        
-                    user_info = None
-                    if member_list:
-
-                        keywords = ['/vote','/set_welcome_msg','/add_custom_reply','/del_custom_reply','/welcome_demo','/set_repeat_ban','/disable_repeat_ban','/repeat','/left_reply','/set_ban','/ban']
+                            
+                        user_info = None
+                        keywords = ['/revenge','/weibo','/vote','/set_welcome_msg','/add_custom_reply','/del_custom_reply','/welcome_demo','/set_repeat_ban','/disable_repeat_ban','/repeat','/left_reply','/set_ban','/ban']
                         if(receive["message"].find('/group_help')==0):
                             msg = "/register_group : 将此群注册到数据\n/update_group : 刷新群成员列表\n/set_welcome_msg $msg: 设置欢迎语$msg\n/welcome_demo : 查看欢迎示例\n/add_custom_reply /$key $val : 添加自定义回复\n/del_custom_reply /$key : 删除自定义回复\n/set_repeat_ban $times : 设置复读机检测条数\n/disable_repeat_ban : 关闭复读机检测\n/repeat $times $prob : 以百分之$prob的概率复读超过$times的对话\n/left_reply : 查看本群剩余聊天条数\n/set_ban $cnt : 设置禁言投票基准为$cnt\n/ban $member $time : 投票将$member禁言$time分钟\n/ban $member : 给$member禁言投票"
                             msg = msg.strip()
@@ -712,17 +760,21 @@ class EventConsumer(WebsocketConsumer):
                         if(receive["message"].find('/update_group')==0 or group.member_list=='[]'):
                             self.update_group_member_list(group_id)
                         #get sender's user_info
-                        for item in member_list:
-                            if(int(item["user_id"])==int(user_id)):
-                                user_info = item
-                                break
+                        if member_list:
+                            for item in member_list:
+                                if(int(item["user_id"])==int(user_id)):
+                                    user_info = item
+                                    break
                         if(receive["message"].find('/register_group')==0):
                             self.update_group_member_list(group_id)
+                            time.sleep(1)
                             group.refresh_from_db()
-                            member_list = json.loads(group.member_list)
+                            try:
+                                member_list = json.loads(group.member_list)
+                            except Exception as e:
+                                member_list = []
                             if(member_list==[] or member_list is None):
                                 msg = "群成员列表获取失败，请稍后重试"
-                                self.update_group_member_list(group_id)
                                 self.send_message("group", group_id, msg)
                             else:
                                 user_info = None
@@ -730,7 +782,7 @@ class EventConsumer(WebsocketConsumer):
                                     if(int(item["user_id"])==int(user_id)):
                                         user_info = item
                                         break
-                                if(not user_info):
+                                if(not user_info or user_info is None):
                                     msg = "未能获取到%s的信息，注册失败"%(user_id)
                                     self.send_message("group", group_id, msg)
                                 else:
@@ -812,7 +864,7 @@ class EventConsumer(WebsocketConsumer):
                                                 except Exception as e:
                                                     group.repeat_ban = 10
                                                 group.save()
-                                                msg = "复读机监控系统已启动，检测值为%s/min"
+                                                msg = "复读机监控系统已启动，检测值为%s/min"%(group.repeat_ban)
                                         self.send_message("group", group_id, msg)
                                     elif(receive["message"].find('/disable_repeat_ban')==0):
                                         if(user_info["role"]!="owner" and user_info["role"]!="admin" ):
@@ -953,13 +1005,13 @@ class EventConsumer(WebsocketConsumer):
 
                                     elif(receive["message"]=='/revenge' or receive["message"]=="/revenge_confirm"):
                                         revs = Revenge.objects.filter(user_id=user_id,group=group,timestamp__gt=time.time()-3600)
-                                        del_revs = Revenge.objects.filter(user_id=user_id,group=group,timestamp__lt=time.time()-3600)
+                                        del_revs = Revenge.objects.filter(timestamp__lt=time.time()-3600)
                                         for item in del_revs:
                                             item.delete()
                                         if(len(revs)>0):
                                             rev = revs[0]
                                             qq_list = (json.loads(rev.vote_list))["voted_by"]
-                                            msg = "[CQ:at,qq=%s]将要与"%(user_id)
+                                            msg = "[CQ:at,qq=%s] 将要与"%(user_id)
                                             for item in qq_list:
                                                 msg += "[CQ:at,qq=%s] "%(item)
                                             msg += "展开复仇,您将被禁言%s分钟,其余众人将被禁言%s分钟，确认请发送/revenge_confirm"%(int(rev.ban_time)*(len(qq_list)),rev.ban_time)
@@ -971,7 +1023,7 @@ class EventConsumer(WebsocketConsumer):
                                                     time.sleep(1)
                                                 time.sleep(1)
                                                 self.group_ban(group_id,user_id,int(rev.ban_time)*(len(qq_list))*60)
-                                                msg = "[CQ:at,qq=%s]复仇完毕，嘻嘻嘻。"%(user_id)
+                                                msg = "[CQ:at,qq=%s] 复仇完毕，嘻嘻嘻。"%(user_id)
                                                 rev.delete()
                                         else:
                                             msg = "不存在关于您的复仇机会。"
@@ -1034,7 +1086,7 @@ class EventConsumer(WebsocketConsumer):
                                                                     # print(str(user_id))
                                                                     # print(str(user_id) in v)
                                                                     if(str(user_id) in v["voted_by"]):
-                                                                        msg = "[CQ:at,qq=%s]在 #%s:%s 中已投票，不可重复投票。"%(user_id,vote.id,vote.name)
+                                                                        msg = "[CQ:at,qq=%s] 在 #%s:%s 中已投票，不可重复投票。"%(user_id,vote.id,vote.name)
                                                                         break
                                                                 else:
                                                                     if(str(qq) not in vote_json.keys()):
@@ -1047,12 +1099,56 @@ class EventConsumer(WebsocketConsumer):
                                                                     vote_json[str(qq)]["voted_by"] = vote_list
                                                                     vote.vote = json.dumps(vote_json)
                                                                     vote.save()
-                                                                    msg = "[CQ:at,qq=%s]在 #%s:%s 中给[CQ:at,qq=%s]投票成功，目前票数%s。"%(user_id,vote.id,vote.name,qq,len(vote_list))
+                                                                    msg = "[CQ:at,qq=%s] 在 #%s:%s 中给 [CQ:at,qq=%s] 投票成功，目前票数%s。"%(user_id,vote.id,vote.name,qq,len(vote_list))
                                         else:
                                             msg = "/vote list: 群内投票ID与内容\n/vote #$id check : 投票$id的目前结果\n/vote #$id @$member : 通过艾特给某人投票"
                                         msg = msg.strip()
                                         self.send_message("group", group_id, msg)
 
+                                    elif(receive["message"].find('/weibo')==0):
+                                        group.refresh_from_db()
+                                        receive_msg = receive["message"].replace('/weibo','',1).strip()
+                                        if(user_info["role"]!="owner" and user_info["role"]!="admin" ):
+                                            msg = "仅群主与管理员有权限设置微博订阅"
+                                            self.send_message("group", group_id, msg)
+                                        else:
+                                            if(receive_msg.find("add")==0):
+                                                weibo_name = receive_msg.replace('add','',1).strip()
+                                                wbus = WeiboUser.objects.filter(name=weibo_name)
+                                                if(len(wbus)==0):
+                                                    msg = "未设置 {} 的订阅计划，请联系机器人管理员添加".format(weibo_name)
+                                                else:
+                                                    wbu = wbus[0]
+                                                    group.subscription.add(wbu)
+                                                    group.save()
+                                                    msg = "{} 的订阅添加成功".format(weibo_name)
+                                                    wts = wbu.tile.all().order_by("-crawled_time")
+                                                    for wt in wts:
+                                                        wt.pushed_group.add(group)
+                                                    if(len(wts)>0):
+                                                        wt = wts[0]
+                                                        res_data = get_weibotile_share(wt)
+                                                        tmp_msg = [{"type":"share","data":res_data}]
+                                                        self.send_message("group", group_id, tmp_msg)
+                                                self.send_message("group", group_id, msg)
+                                            elif(receive_msg.find("del")==0):
+                                                weibo_name = receive_msg.replace('del','',1).strip()
+                                                wbus = WeiboUser.objects.filter(name=weibo_name)
+                                                if(len(wbus)==0):
+                                                    msg = "未设置 {} 的订阅计划，请联系机器人管理员添加".format(weibo_name)
+                                                else:
+                                                    wbu = wbus[0]
+                                                    group.subscription.remove(wbu)
+                                                    group.save()
+                                                    msg = "{} 的订阅删除成功".format(weibo_name)
+                                                self.send_message("group", group_id, msg)
+                                        if(receive_msg.find("list")==0):
+                                            wbus = group.subscription.all()
+                                            msg = "本群订阅的微博用户有：\n"
+                                            for wbu in wbus:
+                                                msg += "{}\n".format(wbu)
+                                            msg = msg.strip()
+                                            self.send_message("group", group_id, msg)
 
                         custom_replys = CustomReply.objects.filter(group=group)
                         #custom replys
@@ -1061,6 +1157,19 @@ class EventConsumer(WebsocketConsumer):
                                 msg = item.value
                                 self.send_message("group", group_id, msg)
                                 break
+
+                        wbus = group.subscription.all()
+                        for wbu in wbus:
+                            wbts = wbu.tile.all()
+                            for wbt in wbts:
+                                if group not in wbt.pushed_group.all():
+                                    wbt.pushed_group.add(group)
+                                    wbt.save()
+                                    res_data = get_weibotile_share(wbt)
+                                    tmp_msg = [{"type":"share","data":res_data}]
+                                    self.send_message("group", group_id, tmp_msg)
+                                    break
+
 
                         #repeat_ban & repeat
                         chats = ChatMessage.objects.filter(group=group,message=receive["message"].strip(),timestamp__gt=time.time()-60)
@@ -1077,7 +1186,7 @@ class EventConsumer(WebsocketConsumer):
                                     msg = "虽然你是狗群主%s无法禁言，但是也触发了复读机检测系统，请闭嘴一分钟[CQ:face,id=14]"%(self.bot.name)
                                 if(user_info["role"]=="admin"):
                                     msg = "虽然你是狗管理%s无法禁言，但是也触发了复读机检测系统，请闭嘴一分钟[CQ:face,id=14]"%(self.bot.name)
-                                msg = "[CQ:at,qq=%s]"%(user_id) + msg
+                                msg = "[CQ:at,qq=%s] "%(user_id) + msg
                                 self.delete_message(receive["message_id"])
                                 self.group_ban(group_id, user_id, 60)
                                 self.send_message("group", group_id, msg)
@@ -1120,35 +1229,39 @@ class EventConsumer(WebsocketConsumer):
                                     msg = msg.replace("小主人","小光呆")
                                 group.left_reply_cnt = max(group.left_reply_cnt - 1, 0)
                                 group.save()
-                                msg = "[CQ:at,qq=%s]"%(receive["user_id"])+msg
+                                msg = "[CQ:at,qq=%s] "%(receive["user_id"])+msg
                             self.send_message("group", group_id, msg)
                         #baidu image censor
                         # if("[CQ:image" in receive["message"]):
                         #     print("censoring img")
                         #     image_censor(receive)
 
-            if (receive["post_type"] == "request"):
-                if (receive["request_type"] == "friend"):   #Add Friend
-                    qq = receive["user_id"]
-                    flag = receive["flag"]
-                    reply_data = {"flag":flag, "approve": self.bot.auto_accept_friend}
-                    self.call_api("set_friend_add_request",reply_data)
-                if (receive["request_type"] == "group" and receive["sub_type"] == "invite"):    #Add Group
-                    flag = receive["flag"]
-                    reply_data = {"flag":flag, "sub_type":"invite", "approve": self.bot.auto_accept_invite}
-                    self.call_api("set_group_add_request",reply_data)
-            if (receive["post_type"] == "event"):
-                if (receive["event"] == "group_increase"):
-                    group_id = receive["group_id"]
-                    user_id = receive["user_id"]
-                    group_list = QQGroup.objects.filter(group_id=group_id)
-                    if len(group_list)>0:
-                        group = group_list[0]
-                        msg = group.welcome_msg.strip()
-                        if(msg!=""):
-                            msg = "[CQ:at,qq=%s]"%(user_id)+msg
-                            self.send_message("group", group_id, msg)
-        
+                if (receive["post_type"] == "request"):
+                    if (receive["request_type"] == "friend"):   #Add Friend
+                        qq = receive["user_id"]
+                        flag = receive["flag"]
+                        if(self.bot.auto_accept_friend):
+                            reply_data = {"flag":flag, "approve": True}
+                            self.call_api("set_friend_add_request",reply_data)
+                    if (receive["request_type"] == "group" and receive["sub_type"] == "invite"):    #Add Group
+                        flag = receive["flag"]
+                        if(self.bot.auto_accept_invite):
+                            reply_data = {"flag":flag, "sub_type":"invite", "approve": True}
+                            self.call_api("set_group_add_request",reply_data)
+                if (receive["post_type"] == "event"):
+                    if (receive["event"] == "group_increase"):
+                        group_id = receive["group_id"]
+                        user_id = receive["user_id"]
+                        group_list = QQGroup.objects.filter(group_id=group_id)
+                        if len(group_list)>0:
+                            group = group_list[0]
+                            msg = group.welcome_msg.strip()
+                            if(msg!=""):
+                                msg = "[CQ:at,qq=%s]"%(user_id)+msg
+                                self.send_message("group", group_id, msg)
+            except Exception as e:
+                traceback.print_exc() 
+        self.bot.save()
 class WSConsumer(WebsocketConsumer):
     def connect(self):
         pass
