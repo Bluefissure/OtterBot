@@ -8,8 +8,9 @@ A QQ bot of FFXIV
 - python 3.5.3+
 - redis-server 4.0+
 - django, channels and so on (see [requeirements.txt](https://github.com/Bluefissure/FFXIVBOT/blob/master/requirements.txt) for details)
-- [coolq-wine(docker)](https://hub.docker.com/r/coolq/wine-coolq/)
-- [coolq-http-api](https://github.com/richardchien/coolq-http-api)
+- [coolq-wine(docker)](https://hub.docker.com/r/coolq/wine-coolq/) for back-end bot
+- [coolq-http-api](https://github.com/richardchien/coolq-http-api) for web communication
+- [adminLTE](https://github.com/almasaeed2010/AdminLTE) for the front-end
 
 ## Use
 - /cat : require an image of cat (crawled from [pexels](https://www.pexels.com/search/cat))
@@ -19,12 +20,23 @@ A QQ bot of FFXIV
 - /gif : generate an shadiao gif via [sorry.xuty.tk](https://sorry.xuty.tk/) (/gif help : get help)
 - /dps : get the dps rank from fflogs
 
-## Examples
+
+## Demo
+[Configure site](http://ff14.bluefissure.com/tata)
+
 ![/cat](https://i.loli.net/2018/04/11/5acd9cd833831.png)
 ![/search](https://i.loli.net/2018/04/11/5acd9c2eef267.png)
 ![/anime](https://i.loli.net/2018/04/11/5acd9c2f2ceea.png)
 ![/random](https://i.loli.net/2018/04/11/5acd9c2f0da51.png)
 
-## Demo
-Add the demo bot above with keyword "FFXIV" 
+## Tips
+- This project is currently using [django-channels](https://github.com/django/channels) to support reverse websocket of http-api, if you prefer http, see [previous version](https://github.com/Bluefissure/FFXIVBOT/tree/be91c3fb3910479733db937f5f7f263dcef331a7)
 
+# FFXIV Quest Visualization
+
+A Visualization of FFXIV Quest
+
+## Demo
+[Demo site](http://ff14.bluefissure.com/quest)
+
+![](https://i.loli.net/2018/09/14/5b9b2dcabfc95.jpg)
