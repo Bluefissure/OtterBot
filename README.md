@@ -22,7 +22,7 @@ A QQ bot of FFXIV
 
 
 ## Demo
-[Configure site](http://ff14.bluefissure.com/tata)
+[Configure site](http://111.231.102.248/tata)
 
 ![/cat](https://i.loli.net/2018/04/11/5acd9cd833831.png)
 ![/search](https://i.loli.net/2018/04/11/5acd9c2eef267.png)
@@ -37,6 +37,6 @@ A QQ bot of FFXIV
 A Visualization of FFXIV Quest
 
 ## Demo
-[Demo site](http://ff14.bluefissure.com/quest)
+[Demo site](http://111.231.102.248/quest)
 
 ![](https://i.loli.net/2018/09/14/5b9b2dcabfc95.jpg)
