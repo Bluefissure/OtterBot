@@ -26,7 +26,7 @@ def progress(percent,width=50):
 
 
 def crawl_dps(boss,job):
-	fflogs_url = 'https://www.fflogs.com/zone/statistics/table/%s/dps/%s/100/8/1/75/1000/7/0/Global/%s/All/normalized/single/0/-1/'%(boss.quest.quest_id,boss.boss_id,job.name)
+	fflogs_url = 'https://www.fflogs.com/zone/statistics/table/%s/dps/%s/100/8/1/75/1000/7/0/Global/%s/All/0/normalized/single/0/-1/'%(boss.quest.quest_id,boss.boss_id,job.name)
 	r = requests.get(url=fflogs_url)
 	tot_days = 0
 	percentage_list = [99,95,75,50,25,10]
