@@ -60,17 +60,17 @@ BAIDU_IMAGE_CENSOR_URL = 'https://aip.baidubce.com/rest/2.0/solution/v1/img_cens
 
 
 QQBOT_LIST = ["2854196306","1480552943"]
-
+CONFIG_GROUP_ID = "660557003"
 TIMEFORMAT = "%Y-%m-%d %H:%M:%S"
 TIMEFORMAT_MDHMS = "%m-%d %H:%M:%S"
 
 
-BOT_NAME = "獭獭"
 FREQUENCY_LIMIT = 1
 BOT_QQ = "3005508491"
 GROUP_BAN_TILL = None
 GLOBAL_EVENT_HANDEL = True
 
+COMMAND = ["/reply","/chat","/help","/cat","/gakki","/10","/bird","/search","/about","/donate","/anime","/gate","/random","/revenge","/weibo","/vote","/set_welcome_msg","/add_custom_reply","/del_custom_reply","/set_left_reply_cnt","/welcome_demo","/set_repeat_ban","/disable_repeat_ban","/repeat","/left_reply","/set_ban","/ban"]
 
 def refresh_baidu_access_token():
     r = requests.post(url=BAIDU_RECORD_ACCESS_TOKEN_URL)
@@ -375,6 +375,7 @@ class APIConsumer(WebsocketConsumer):
         self.send(text_data=event["text"])
 
 
+
 class EventConsumer(WebsocketConsumer):
     @transaction.atomic
     def connect(self):
@@ -489,10 +490,16 @@ class EventConsumer(WebsocketConsumer):
                             group_bots = json.loads(group.bots)
                             if(user_id in group_bots):
                                 return
+                            group_commands = json.loads(group.commands)
+                            for item in COMMAND:
+                                if(item in group_commands.keys() and receive["message"].find(item)==0):
+                                    if(group_commands[item]=="disable"):
+                                        return
+
 
 
                     if (receive["message"].find('/help')==0):
-                        msg = "/cat : 云吸猫\n/gakki : 云吸gakki\n/bird : 云吸飞鸟\n/random(gate) : 掷骰子\n/search $item : 在最终幻想XIV中查询物品$item\n/dps $boss $job $dps : 在最终幻想XIV中查询DPS在对应BOSS与职业的logs排名（国际服同期数据）\n/pzz $cnt : 在最终幻想XIV中查询尤雷卡接下来$cnt次强风时间\n/anime $img : 查询$img对应番剧(只支持1M以内静态全屏截图)\n/gif : 生成沙雕GIF\n/about : 关于%s\n/donate : 援助作者"%(BOT_NAME)
+                        msg = "/cat : 云吸猫\n/gakki : 云吸gakki\n/bird : 云吸飞鸟\n/random(gate) : 掷骰子\n/search $item : 在最终幻想XIV中查询物品$item\n/dps $boss $job $dps : 在最终幻想XIV中查询DPS在对应BOSS与职业的logs排名（国际服同期数据）\n/pzz $cnt : 在最终幻想XIV中查询尤雷卡接下来$cnt次强风时间\n/anime $img : 查询$img对应番剧(只支持1M以内静态全屏截图)\n/gif : 生成沙雕GIF\n/about : 关于%s\n/donate : 援助作者"%(self.bot.name)
                         msg = msg.strip()
                         self.send_message(receive["message_type"], group_id or user_id, msg)
                     if (receive["message"] == '/cat'):
@@ -500,6 +507,9 @@ class EventConsumer(WebsocketConsumer):
                         self.send_message(receive["message_type"], group_id or user_id, msg)
                     if (receive["message"] == '/gakki'):
                         msg = [{"type":"image","data":{"file":QQ_BASE_URL+"static/gakki/%s.jpg"%(random.randint(1,1270))}}]
+                        self.send_message(receive["message_type"], group_id or user_id, msg)
+                    if (receive["message"] == '/10'):
+                        msg = [{"type":"image","data":{"file":QQ_BASE_URL+"static/10/%s.jpg"%(random.randint(1,281))}}]
                         self.send_message(receive["message_type"], group_id or user_id, msg)
                     if (receive["message"] == '/bird'):
                         jpg_cnt = 182
@@ -550,25 +560,16 @@ class EventConsumer(WebsocketConsumer):
                         random.shuffle(choose_list)
                         gate_idx = choose_list.index(gate)
                         gate_msg = "左边" if gate_idx==0 else "右边" if gate_idx==1 else "中间"
-                        msg = "掐指一算，[CQ:at,qq=%s] 应该走%s门，信%s没错！"%(receive["user_id"],gate_msg,BOT_NAME)
+                        msg = "掐指一算，[CQ:at,qq=%s] 应该走%s门，信%s没错！"%(receive["user_id"],gate_msg,self.bot.name)
                         self.send_message(receive["message_type"], group_id or user_id, msg)
                     if (receive["message"].find('/random')==0):
-                        score = random.randint(1,1000)
+                        try:
+                            num = int(receive["message"].replace("/random",""))
+                            num = max(num, 0)
+                        except:
+                            num = 1000
+                        score = random.randint(1,num)
                         msg = str(score)
-                        # Random Award
-                        # if(receive["message_type"]=="group"):
-                        #     group_id = receive["group_id"]
-                        #     grps = QQGroup.objects.filter(group_id=group_id)
-                        #     if(len(grps)>0):
-                        #         group = grps[0]
-                        #         rss = RandomScore.objects.filter(user_id=receive["user_id"],group=group)
-                        #         if(len(rss)>0):
-                        #             rs = rss[0]
-                        #         else:
-                        #             rs = RandomScore(user_id=receive["user_id"],group=group)
-                        #         rs.min_random = min(rs.min_random,score)
-                        #         rs.max_random = max(rs.max_random,score)
-                        #         rs.save()
                         msg = "[CQ:at,qq=%s] 掷出了"%(receive["user_id"])+msg+"点！"
                         self.send_message(receive["message_type"], group_id or user_id, msg)
 
@@ -697,7 +698,7 @@ class EventConsumer(WebsocketConsumer):
                                     self.send_message(receive["message_type"], group_id or user_id, msg)
                                 else:
                                     tile = tiles[0]
-                                    if(receive_msg=="all"):
+                                    if(receive_msg=="all" or receive_msg.strip()==""):
                                         atk_dict = json.loads(tile.attack)
                                         percentage_list = [10,25,50,75,95,99]
                                         msg = "%s %s day#%s:\n"%(boss.cn_name,job.cn_name,day)
@@ -740,6 +741,7 @@ class EventConsumer(WebsocketConsumer):
                         user_id = receive["user_id"]
 
                         (group, group_created) = QQGroup.objects.get_or_create(group_id=group_id)
+                        group_commands = json.loads(group.commands)
                         try:
                             member_list = json.loads(group.member_list)
                             if group_created or member_list is None or len(member_list)==0:
@@ -752,7 +754,7 @@ class EventConsumer(WebsocketConsumer):
                             time.sleep(1)
                             
                         user_info = None
-                        keywords = ['/revenge','/weibo','/vote','/set_welcome_msg','/add_custom_reply','/del_custom_reply','/welcome_demo','/set_repeat_ban','/disable_repeat_ban','/repeat','/left_reply','/set_ban','/ban']
+                        keywords = ['/set_left_reply_cnt','/revenge','/weibo','/vote','/set_welcome_msg','/add_custom_reply','/del_custom_reply','/welcome_demo','/set_repeat_ban','/disable_repeat_ban','/repeat','/left_reply','/set_ban','/ban','/command']
                         if(receive["message"].find('/group_help')==0):
                             msg = "/register_group : 将此群注册到数据\n/update_group : 刷新群成员列表\n/set_welcome_msg $msg: 设置欢迎语$msg\n/welcome_demo : 查看欢迎示例\n/add_custom_reply /$key $val : 添加自定义回复\n/del_custom_reply /$key : 删除自定义回复\n/set_repeat_ban $times : 设置复读机检测条数\n/disable_repeat_ban : 关闭复读机检测\n/repeat $times $prob : 以百分之$prob的概率复读超过$times的对话\n/left_reply : 查看本群剩余聊天条数\n/set_ban $cnt : 设置禁言投票基准为$cnt\n/ban $member $time : 投票将$member禁言$time分钟\n/ban $member : 给$member禁言投票"
                             msg = msg.strip()
@@ -829,27 +831,25 @@ class EventConsumer(WebsocketConsumer):
                                             ori_msg = receive["message"].replace("/add_custom_reply","",1).replace("/del_custom_reply","",1).strip()
                                             ori_msg = ori_msg.split(' ')
                                             if(len(ori_msg)<2):
-                                                msg = "自定义命令参数过少（/add_custom_reply /$key $val）"
-                                            else:
                                                 custom_key = ori_msg[0]
-                                                if(custom_key[0]!='/'):
-                                                    msg = "自定义命令以'/'开头"
-                                                else:
-                                                    custom_value = html.unescape(ori_msg[1])
+                                                msg = "自定义命令参数过少（/add_custom_reply /$key $val）"
+                                                if (receive["message"].find('/del_custom_reply')==0):
                                                     customs = CustomReply.objects.filter(group=group,key=custom_key)
-                                                    if(len(customs)>0):
-                                                        custom = customs[0]
-                                                        custom.value = custom_value
+                                                    for item in customs:
+                                                        item.delete()
+                                                    msg = "自定义回复%s已删除"%(custom_key)
+                                            else:
+                                                if (receive["message"].find('/add_custom_reply')==0):
+                                                    custom_key = ori_msg[0]
+                                                    if(custom_key[0]!='/'):
+                                                        msg = "自定义命令以'/'开头"
                                                     else:
+                                                        custom_value = html.unescape(ori_msg[1])
                                                         custom = CustomReply(group=group,key=custom_key,value=custom_value)
-                                                    custom.save()
-                                                    msg = "自定义回复已添加成功，使用%s查看"%(custom_key)
-                                                    if (receive["message"].find('/del_custom_reply')==0):
-                                                        msg = "自定义回复%s已删除"%(custom_key)
-                                                        custom.delete()
+                                                        custom.save()
+                                                        msg = "自定义回复已添加成功，使用%s查看"%(custom_key)
                                         self.send_message("group", group_id, msg)
                
-
                                     elif(receive["message"].find('/set_repeat_ban')==0):
                                         if(user_info["role"]!="owner" ):
                                             msg = "仅群主有权限开启复读机检测系统"
@@ -1150,13 +1150,82 @@ class EventConsumer(WebsocketConsumer):
                                             msg = msg.strip()
                                             self.send_message("group", group_id, msg)
 
+                                    elif(receive["message"].find('/set_left_reply_cnt')==0):
+                                        receive_msg = receive["message"].replace('/set_left_reply_cnt','',1).strip()
+                                        try:
+                                            num = int(receive_msg)
+                                        except:
+                                            num = 100
+                                        group.left_reply_cnt = num
+                                        group.save()
+                                        msg = "群聊天限额被设置成剩余{}条".format(group.left_reply_cnt)
+                                        self.send_message("group", group_id, msg)
+
+                                    elif(receive["message"].find('/command')==0):
+                                        group.refresh_from_db()
+                                        receive_msg = receive["message"].replace('/command','',1).strip()
+                                        if(user_info["role"]!="owner" and user_info["role"]!="admin" ):
+                                            msg = "仅群主与管理员有权限设置群功能控制"
+                                            self.send_message("group", group_id, msg)
+                                        else:
+                                            if(receive_msg.find("disable")==0):
+                                                commands = receive_msg.replace('disable','',1).split(" ")
+                                                ok_commands = []
+                                                for item in commands:
+                                                    if item in COMMAND:
+                                                        group_commands[item] = "disable"
+                                                        ok_commands.append(item)
+                                                group.commands = json.dumps(group_commands)
+                                                group.save()
+                                                msg = " ".join(ok_commands)
+                                                msg += "功能已关闭"
+                                                self.send_message("group", group_id, msg)
+                                            elif(receive_msg.find("enable")==0):
+                                                commands = receive_msg.replace('enable','',1).split(" ")
+                                                ok_commands = []
+                                                for item in commands:
+                                                    if item in COMMAND:
+                                                        group_commands[item] = "enable"
+                                                        ok_commands.append(item)
+                                                group.commands = json.dumps(group_commands)
+                                                group.save()
+                                                msg = " ".join(ok_commands)
+                                                msg += "功能已启用"
+                                                self.send_message("group", group_id, msg)
+                                            elif(receive_msg.find("clear")==0):
+                                                group.commands = "{}"
+                                                group.save()
+                                                msg = "群功能已重置"
+                                                self.send_message("group", group_id, msg)
+                                        if(receive_msg.find("list")==0):
+                                            msg = "本群机器人功能启用情况如下：(未赋值功能默认启用)\n"
+                                            for k in COMMAND:
+                                                if k in group_commands.keys():
+                                                    v = group_commands[k]
+                                                    msg += "{}:{}\n".format(k, v)
+                                                else:
+                                                    msg += "{}:\n".format(k)
+                                            msg = msg.strip()
+                                            self.send_message("group", group_id, msg)
+                                        if(receive_msg==""):
+                                            msg = "请使用\"/command (disable/enable) /$key\"来禁用/启用相关功能，某些不需要命令的功能关闭方法如下"
+                                            msg += "\n\t聊天功能：关闭/chat功能即可"
+                                            msg += "\n\t复读（禁言）功能：使用相关命令设置阈值为-1"
+                                            msg += "\n\t微博监控功能：清空群内订阅微博用户"
+                                            self.send_message("group", group_id, msg)
                         custom_replys = CustomReply.objects.filter(group=group)
+                        match_replys = []
                         #custom replys
-                        for item in custom_replys:
-                            if(receive["message"].find(item.key)==0):
+                        reply_enable = False if("/reply" in group_commands.keys() and group_commands["/reply"]=="disable") else True
+                        if reply_enable:
+                            for item in custom_replys:
+                                if(str(receive["message"].strip())==str(item.key)):
+                                    match_replys.append(item)
+                            if(len(match_replys)>0):
+                                item = match_replys[random.randint(0,len(match_replys)-1)]
                                 msg = item.value
                                 self.send_message("group", group_id, msg)
-                                break
+
 
                         wbus = group.subscription.all()
                         for wbu in wbus:
@@ -1167,7 +1236,8 @@ class EventConsumer(WebsocketConsumer):
                                     wbt.save()
                                     res_data = get_weibotile_share(wbt)
                                     tmp_msg = [{"type":"share","data":res_data}]
-                                    self.send_message("group", group_id, tmp_msg)
+                                    if(wbt.crawled_time>=int(time.time())-60*5):
+                                        self.send_message("group", group_id, tmp_msg)
                                     break
 
 
@@ -1202,7 +1272,8 @@ class EventConsumer(WebsocketConsumer):
                                     chat.save()
 
                         #tuling chatbot
-                        if("[CQ:at,qq=%s]"%(receive["self_id"]) in receive["message"]):
+                        chat_enable = False if("/chat" in group_commands.keys() and group_commands["/chat"]=="disable") else True
+                        if("[CQ:at,qq=%s]"%(receive["self_id"]) in receive["message"] and chat_enable):
                             if(group.left_reply_cnt <= 0):
                                 msg = "聊天限额已耗尽，请等待回复。"
                             elif(str(receive["user_id"]) in QQBOT_LIST):
@@ -1243,11 +1314,21 @@ class EventConsumer(WebsocketConsumer):
                         if(self.bot.auto_accept_friend):
                             reply_data = {"flag":flag, "approve": True}
                             self.call_api("set_friend_add_request",reply_data)
-                    if (receive["request_type"] == "group" and receive["sub_type"] == "invite"):    #Add Group
+                    if (receive["request_type"] == "group" and receive["sub_type"] == "invite"):    #Invite Group
                         flag = receive["flag"]
                         if(self.bot.auto_accept_invite):
                             reply_data = {"flag":flag, "sub_type":"invite", "approve": True}
                             self.call_api("set_group_add_request",reply_data)
+                    if (receive["request_type"] == "group" and receive["sub_type"] == "add" and str(receive["group_id"])==CONFIG_GROUP_ID):    #Add Group
+                        flag = receive["flag"]
+                        user_id = receive["user_id"]
+                        qs = QQBot.objects.filter(owner_id=user_id)
+                        if(len(qs)>0):
+                            reply_data = {"flag":flag, "sub_type":"add", "approve": True}
+                            self.call_api("set_group_add_request",reply_data)
+                            time.sleep(1)
+                            reply_data = {"group_id":CONFIG_GROUP_ID, "user_id":user_id, "special_title":"饲养员"}
+                            self.call_api("set_group_special_title", reply_data)
                 if (receive["post_type"] == "event"):
                     if (receive["event"] == "group_increase"):
                         group_id = receive["group_id"]

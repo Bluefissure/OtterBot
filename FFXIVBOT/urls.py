@@ -21,6 +21,7 @@ urlpatterns = [
     path('', tata),
     path('tata/', tata),
     path('quest/', quest),
+    path('api/', api),
     # path('ws_event/', qqpost_ws_event),
     # path('ws_api/', qqpost_ws_api),
     # path('ws/', qqpost_ws),

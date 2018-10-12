@@ -29,6 +29,7 @@ import html
 import hmac
 from bs4 import BeautifulSoup
 import urllib
+from websocket import create_connection
 def ren2res(template, req, dict={},post_token=True):
     dict.update({'user': False})
     dict.update(csrf(req))
@@ -138,6 +139,8 @@ def tata(req):
 		bb["online"] = time.time() - bot.api_time < 300
 		bb["id"] = bot.id
 		bb["public"] = bot.public
+		bb["autoinvite"] = bot.auto_accept_invite
+		bb["autofriend"] = bot.auto_accept_friend
 		bot_list.append(bb)
 	return ren2res("pages/tables/data.html",req,{"bots":bot_list})
 
@@ -175,9 +178,11 @@ def quest(req):
 				search_iter = 0
 				search_list.append((single_quest, 1, 1))
 				search_list.append((single_quest, 2, 1))
-				if ("主线" in single_quest.category and not main_quest) or ("支线" in single_quest.category and not sub_quest):
+				if ("主线" in single_quest.category and not main_quest) or (not "主线" in single_quest.category and not sub_quest):
 					dict["response"] = "查询任务类别与所选类别不符，清选择正确的类别。"
 					return JsonResponse(dict)	
+				done_cnt = 0
+				tot_cnt = 0
 				while(len(search_list)>0 and search_iter<=min(int(max_iter),1000)):
 					try:
 						(now_quest, direction, search_iter) = search_list[0]
@@ -187,6 +192,8 @@ def quest(req):
 								continue
 						elif not sub_quest:
 							continue
+						if(direction==2):
+							done_cnt += 1
 						now_quest_dict = {
 							"description":now_quest.category,
 							"startnpc":now_quest.startnpc,
@@ -219,11 +226,76 @@ def quest(req):
 					if edge["from"] in quest_dict.keys() and edge["to"] in quest_dict.keys():
 						edge_list.append(edge)
 				quest_dict[single_quest.name]["style"] = "fill: #7f7"
+				tot_cnt = len(quest_dict.keys())
+				perc = done_cnt/tot_cnt*100
+				perc = min(100, perc)
+				perc = max(0, perc)
+				dict["percentage"] = perc
+				dict["quest_dict"] = quest_dict
 				dict["quest_dict"] = quest_dict
 				dict["edge_list"] = edge_list
 				dict["response"] = "success"
 		return JsonResponse(dict)	
 	return ren2res("quest.html",req,{})
+
+def get_nm_id(tracker, nm_name):
+	if(tracker=="ffxiv-eureka"):
+		name_id = {
+			"科里多仙人刺":1,
+			"常风领主":2,
+			"忒勒斯":3,
+			"常风皇帝":4,
+			"卡利斯托":5,
+			"群偶":6,
+			"哲罕南":7,
+			"阿米特":8,
+			"盖因":9,
+			"庞巴德":10,
+			"塞尔凯特":11,
+			"武断魔花茱莉卡":12,
+			"白骑士":13,
+			"波吕斐摩斯":14,
+			"阔步西牟鸟":15,
+			"极其危险物质":16,
+			"法夫纳":17,
+			"阿玛洛克":18,
+			"拉玛什图":19,
+			"帕祖祖":20,
+		}
+		for (k,v) in name_id.items():
+			if(k in nm_name):
+				return v
+	return -1
+@csrf_exempt
+def api(req):
+	if req.method=="POST":
+		tracker = req.GET.get('tracker')
+		print("tracker:{}".format(tracker))
+		if(tracker and tracker=="ffxiv-eureka"):
+			instance = req.GET.get('instance')
+			password = req.GET.get('password')
+			print("ffxiv-eureka {}:{}".format(instance,password))
+			if(instance and password):
+				nm_name = req.POST.get('text')
+
+				if(nm_name):
+					nm_id = get_nm_id("ffxiv-eureka",nm_name)
+					print("nm_name:{} id:{}".format(nm_name,nm_id))
+					if(nm_id > 0):
+						print("nm_name:{} nm_id:{}".format(nm_name,nm_id))
+						ws = create_connection("wss://ffxiv-eureka.com/socket/websocket?vsn=2.0.0")
+						msg = '["1","1","instance:{}","phx_join",{{"password":"{}"}}]'.format(instance,password)
+						print(msg)
+						ws.send(msg)
+						msg = '["1","2","instance:{}","set_kill_time",{{"id":{},"time":{}}}]'.format(instance,nm_id,int(time.time()*1000))
+						print(msg)
+						ws.send(msg)
+						ws.close()
+						return HttpResponse("OK",status=200)
+				else:
+					print("no nm_name")
+	return HttpResponse(status=404)
+
 
 @csrf_exempt
 def qqpost(req):

@@ -25,6 +25,7 @@ class QQGroup(models.Model):
 	member_list = models.TextField(default="[]")
 	registered = models.BooleanField(default=False)
 	subscription = models.ManyToManyField(WeiboUser, related_name="subscribed_by", blank=True)
+	commands = models.TextField(default="{}")
 	def __str__(self):
 		return self.group_id
 
