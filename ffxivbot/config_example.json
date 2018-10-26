@@ -1,0 +1,20 @@
+{
+  "QQ_BASE_URL": "",
+  "ACCESS_TOKEN": "",
+  "SECRET_KEY": "",
+  "RANDOMORG_TOKEN": "",
+  "WHATANIME_TOKEN": "",
+  "WHATANIME_API_URL": "https://trace.moe/api/search?token={}",
+  "FF14WIKI_BASE_URL": "https://ff14.huijiwiki.com",
+  "FF14WIKI_API_URL": "https://cdn.huijiwiki.com/ff14/api.php",
+  "SORRY_BASE_URL": "https://sorry.xuty.tk",
+  "TULING_API_URL": "http://openapi.tuling123.com/openapi/api/v2",
+  "TULING_API_KEY": "",
+  "CONFIG_GROUP_ID": "",
+  "TIMEFORMAT": "%Y-%m-%d %H:%M:%S",
+  "TIMEFORMAT_MDHMS": "%m-%d %H:%M:%S",
+  "GLOBAL_EVENT_HANDLE": true,
+  "BOT_FATHER":"",
+  "BOT_MOTHER":"",
+  "USER_NICKNAME":"小光呆"
+}

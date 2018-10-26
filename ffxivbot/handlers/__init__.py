@@ -1,0 +1,80 @@
+from .QQEventHandler import QQEventHandler
+from .QQGroupEventHandler import QQGroupEventHandler
+
+commands = {
+  "/cat":"云吸猫",
+  "/gakki":"云吸gakki",
+  "/10":"云吸十元",
+  "/bird":"云吸飞鸟",
+  "/comment":"给作者留言",
+  "/search":"在最终幻想XIV中查询物品(\"/search 神龙\")",
+  "/about":"关于此项目",
+  "/donate":"援助作者",
+  "/anime":"以图搜番（\"/anime 图片\"）",
+  "/gate":"挖宝选门（\"/gate 3\"）",
+  "/random":"掷骰子",
+  "/weather":"天气信息（未完成，请使用\"/pzz\",\"/blizzard\"）",
+  "/gif":"生成沙雕图（已弃用）",
+  "/dps":"查询国际服同期DPS排名（\"/dps 8s 骑士\"）"
+}
+
+group_commands = {
+  "/group":"",
+  "/welcome":"",
+  "/custom_reply":"",
+  "/repeat_ban":"",
+  "/repeat":"",
+  "/left_reply":"",
+  "/ban":"",
+  "/revenge":"",
+  "/vote":"",
+  "/weibo":"",
+  "/command":"",
+}
+
+alter_commands = {
+  "/pzz":"/weather eureka pzz",
+  "/blizzard":"/weather eureka blizzard",
+  "/register_group":"/group register",
+  "/welcome_demo":"/welcome demo",
+  "/set_welcome_msg":"/welcome set",
+  "/add_custom_reply list":"/custom_reply list",
+  "/add_custom_reply":"/custom_reply add",
+  "/del_custom_reply":"/custom_reply del",
+  "/set_repeat_ban":"/repeat_ban set",
+  "/disable_repeat_ban":"/repeat_ban disable",
+  "/set_left_reply_cnt":"/left_reply set",
+  "/set_ban":"/ban set",
+  "/revenge_confirm":"/revenge confirm",
+}
+
+from .QQCommand_cat import QQCommand_cat
+from .QQCommand_gakki import QQCommand_gakki
+from .QQCommand_10 import QQCommand_10
+from .QQCommand_bird import QQCommand_bird
+from .QQCommand_comment import QQCommand_comment
+from .QQCommand_search import QQCommand_search
+from .QQCommand_about import QQCommand_about
+from .QQCommand_donate import QQCommand_donate
+from .QQCommand_anime import QQCommand_anime
+from .QQCommand_gate import QQCommand_gate
+from .QQCommand_random import QQCommand_random
+from .QQCommand_weather import QQCommand_weather
+from .QQCommand_gif import QQCommand_gif
+from .QQCommand_dps import QQCommand_dps
+
+
+from .QQGroupCommand_group import QQGroupCommand_group
+from .QQGroupCommand_welcome import QQGroupCommand_welcome
+from .QQGroupCommand_custom_reply import QQGroupCommand_custom_reply
+from .QQGroupCommand_repeat_ban import QQGroupCommand_repeat_ban
+from .QQGroupCommand_repeat import QQGroupCommand_repeat
+from .QQGroupCommand_left_reply import QQGroupCommand_left_reply
+from .QQGroupCommand_ban import QQGroupCommand_ban
+from .QQGroupCommand_revenge import QQGroupCommand_revenge
+from .QQGroupCommand_vote import QQGroupCommand_vote
+from .QQGroupCommand_weibo import QQGroupCommand_weibo
+from .QQGroupCommand_command import QQGroupCommand_command
+
+
+from .QQGroupChat import QQGroupChat
