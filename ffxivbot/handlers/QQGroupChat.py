@@ -4,7 +4,7 @@ import logging
 import json
 import random
 import requests
-
+from bs4 import BeautifulSoup
 def get_weibotile_share(weibotile):
     content_json = json.loads(weibotile.content)
     mblog = content_json["mblog"]

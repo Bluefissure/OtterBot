@@ -26,6 +26,7 @@ from bs4 import BeautifulSoup
 import urllib
 
 
+logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
 CONFIG_PATH = "/home/ubuntu/FFXIVBOT/ffxivbot/config.json"
 GLOBAL_EVENT_HANDLE = True
 
@@ -59,7 +60,15 @@ class APIConsumer(WebsocketConsumer):
 
     def disconnect(self, close_code):
         try:
-            logging.debug("API Channel disconnect from {} by channel:{}".format(self.bot.user_id,self.bot.api_channel_name))
+            logging.debug("API Channel disconnect from {} by channel:{} {}s".format(
+                self.bot.user_id,
+                self.channel_name,
+                int(time.time())-int(self.bot.api_time)))
+            self.bot.refresh_from_db()
+            disconnections = json.loads(self.bot.disconnections)
+            disconnections.append({"type":"api","time":int(time.time())})
+            self.bot.disconnections = json.dumps(disconnections)
+            self.bot.save()
         except:
             pass
     @transaction.atomic 
@@ -98,6 +107,9 @@ class APIConsumer(WebsocketConsumer):
                 user_id = echo.split(":")[1]
                 if(not receive["data"] or not receive["data"]["good"]):
                     logging.error("bot:{} offline at time:{}".format(user_id, int(time.time())))
+                else:
+                    logging.debug("bot:{} API heartbeat at time:{}".format(user_id, int(time.time())))
+
         self.bot.save()
 
     def send_event(self, event):
@@ -133,7 +145,15 @@ class EventConsumer(WebsocketConsumer):
 
     def disconnect(self, close_code):
         try:
-            logging.debug("Event Channel disconnect from {} by channel:{}".format(self.bot.user_id,self.bot.event_channel_name))
+            logging.debug("Event Channel disconnect from {} by channel:{} {}s".format(
+                self.bot.user_id,
+                self.channel_name,
+                int(time.time())-int(self.bot.event_time)))
+            self.bot.refresh_from_db()
+            disconnections = json.loads(self.bot.disconnections)
+            disconnections.append({"type":"event","time":int(time.time())})
+            self.bot.disconnections = json.dumps(disconnections)
+            self.bot.save()
         except:
             pass
 
@@ -201,11 +221,17 @@ class EventConsumer(WebsocketConsumer):
         self.bot.event_channel_name = self.channel_name
         self.config = json.load(open(CONFIG_PATH,encoding="utf-8"))
 
+
+
         #print("received Event message:"+text_data)
         global GLOBAL_EVENT_HANDLE
         if(GLOBAL_EVENT_HANDLE):
             try:
                 receive = json.loads(text_data)
+                if(receive["post_type"] == "meta_event" and receive["meta_event_type"] == "heartbeat"):
+                    logging.debug("bot:{} Event heartbeat at time:{}".format(self.bot.user_id, int(time.time())))
+                    self.call_api("get_status",{},"get_status:{}".format(self.bot_user_id))
+
                 if (receive["post_type"] == "message"):
                     # Self-ban in group
                     user_id = receive["user_id"]

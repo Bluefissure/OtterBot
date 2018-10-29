@@ -138,6 +138,8 @@ class QQBot(models.Model):
 	api_time = models.BigIntegerField(default=0)
 	friend_list = models.TextField(default="{}")
 	public = models.BooleanField(default=True)
+	r18 = models.BooleanField(default=False)
+	disconnections = models.TextField(default="[]")
 	def __str__(self):
 		return self.name
 
@@ -157,3 +159,18 @@ class PlotQuest(models.Model):
 	def __str__(self):
 		return self.name
 
+class Comment(models.Model):
+	left_by = models.CharField(max_length=16)
+	left_time = models.BigIntegerField(default=0)
+	content = models.TextField(default="",blank=True)
+	def __str__(self):
+		return self.content[:10]
+
+class Server(models.Model):
+	name = models.CharField(max_length=16)
+	areaId = models.IntegerField(default=1)
+	groupId = models.IntegerField(default=25)
+	alter_names = models.TextField(default="[]")
+
+	def __str__(self):
+		return self.name

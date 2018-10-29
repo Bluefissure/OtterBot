@@ -15,21 +15,24 @@ commands = {
   "/random":"掷骰子",
   "/weather":"天气信息（未完成，请使用\"/pzz\",\"/blizzard\"）",
   "/gif":"生成沙雕图（已弃用）",
-  "/dps":"查询国际服同期DPS排名（\"/dps 8s 骑士\"）"
+  "/dps":"查询国际服同期DPS排名（\"/dps 8s 骑士\"）",
+  "/raid":"查询零式英雄榜（\"/raid 蓝色裂痕 萌芽池\"）",
+  "/dice":"DnD掷骰子（\"/dice 3d12\"）",
+  "/hso":"hso"
 }
 
 group_commands = {
-  "/group":"",
-  "/welcome":"",
-  "/custom_reply":"",
-  "/repeat_ban":"",
-  "/repeat":"",
-  "/left_reply":"",
-  "/ban":"",
-  "/revenge":"",
-  "/vote":"",
-  "/weibo":"",
-  "/command":"",
+  "/group":"群相关功能控制",
+  "/welcome":"设置欢迎语",
+  "/custom_reply":"添加自定义命令",
+  "/repeat_ban":"复读姬口球系统",
+  "/repeat":"开启复读姬系统",
+  "/left_reply":"聊天限额剩余情况",
+  "/ban":"投票禁言",
+  "/revenge":"复仇",
+  "/vote":"投票系统",
+  "/weibo":"微博订阅系统",
+  "/command":"群功能停用/启用",
 }
 
 alter_commands = {
@@ -62,6 +65,9 @@ from .QQCommand_random import QQCommand_random
 from .QQCommand_weather import QQCommand_weather
 from .QQCommand_gif import QQCommand_gif
 from .QQCommand_dps import QQCommand_dps
+from .QQCommand_dice import QQCommand_dice
+from .QQCommand_hso import QQCommand_hso
+from .QQCommand_raid import QQCommand_raid
 
 
 from .QQGroupCommand_group import QQGroupCommand_group
