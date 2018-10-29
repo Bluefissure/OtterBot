@@ -10,4 +10,4 @@ channels-redis==2.2.1
 websocket-client==0.53.0
 websockets==6.0
 dice==2.3.5
-
+feedparser==5.2.1
