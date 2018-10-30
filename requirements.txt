@@ -3,7 +3,7 @@ bs4==0.0.1
 Django==2.0.8
 PyMySQL==0.8.0
 pytz==2018.3
-requests==2.9.1
+requests>=2.20.0
 uWSGI==2.0.17
 channels==2.1.2
 channels-redis==2.2.1
