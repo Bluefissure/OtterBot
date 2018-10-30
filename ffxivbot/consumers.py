@@ -40,16 +40,14 @@ class APIConsumer(WebsocketConsumer):
         ws_self_id = headers['x-self-id']
         ws_client_role = headers['x-client-role']
         ws_access_token = headers['authorization'].replace("Token","").strip()
-        bots = QQBot.objects.select_for_update().filter(user_id=ws_self_id,access_token=ws_access_token)
-        if(len(bots) == 0):
+        bot = None
+        try:
+            bot = QQBot.objects.select_for_update().get(user_id=ws_self_id,access_token=ws_access_token)
+        except QQBot.DoesNotExist:
             logging.error("%s:%s:API:AUTH_FAIL"%(ws_self_id, ws_access_token))
             self.close()
             return
-        if(len(bots) > 1):
-            logging.error("%s:%s:API:MULTIPLE_AUTH"%(ws_self_id, ws_access_token))
-            self.close()
-            return
-        self.bot = bots[0]
+        self.bot = bot
         self.bot_user_id = self.bot.user_id
         self.bot.api_channel_name = self.channel_name
         self.bot.api_time = int(time.time())
@@ -74,7 +72,11 @@ class APIConsumer(WebsocketConsumer):
     @transaction.atomic 
     def receive(self, text_data):
         # print("API Channel received from {} channel:{}".format(self.bot.user_id,self.bot.api_channel_name))
-        self.bot = QQBot.objects.select_for_update().get(user_id=self.bot_user_id)
+        try:
+            self.bot = QQBot.objects.select_for_update().get(user_id=self.bot_user_id)
+        except QQBot.DoesNotExist:
+            logging.error("QQBot.DoesNotExist:{}".format(self.bot_user_id))
+            return
         self.bot.api_time = int(time.time())
         self.bot.api_channel_name = self.channel_name
         receive = json.loads(text_data)
@@ -89,12 +91,15 @@ class APIConsumer(WebsocketConsumer):
             logging.debug("echo:{} received".format(receive["echo"]))
             if(echo.find("get_group_member_list")==0):
                 group_id = echo.replace("get_group_member_list:","").strip()
-                groups = QQGroup.objects.select_for_update().filter(group_id=group_id)
-                if(len(groups)>0):
-                    group = groups[0]
-                    group.member_list = json.dumps(receive["data"]) if receive["data"] else "[]"
-                    logging.debug("group %s member updated"%(group.group_id))
-                    group.save()
+                group = None
+                try:
+                    group = QQGroup.objects.select_for_update().get(group_id=group_id)
+                except QQGroup.DoesNotExist:
+                    logging.error("QQGroup.DoesNotExist:{}".format(self.group_id))
+                    return
+                group.member_list = json.dumps(receive["data"]) if receive["data"] else "[]"
+                logging.debug("group %s member updated"%(group.group_id))
+                group.save()
             if(echo.find("get_group_list")==0):
                 # group_list = echo.replace("get_group_list:","").strip()
                 self.bot.group_list = json.dumps(receive["data"])
@@ -128,14 +133,13 @@ class EventConsumer(WebsocketConsumer):
         ws_self_id = headers['x-self-id']
         ws_client_role = headers['x-client-role']
         ws_access_token = headers['authorization'].replace("Token","").strip()
-        bots = QQBot.objects.select_for_update().filter(user_id=ws_self_id,access_token=ws_access_token)
-        if(len(bots) == 0):
+        bot = None
+        try:
+            bot = QQBot.objects.select_for_update().get(user_id=ws_self_id,access_token=ws_access_token)
+        except QQBot.DoesNotExist:
             logging.error("%s:%s:Event:AUTH_FAIL"%(ws_self_id, ws_access_token))
             return
-        if(len(bots) > 1):
-            logging.error("%s:%s:Event:MULTIPLE_AUTH"%(ws_self_id, ws_access_token))
-            return
-        self.bot = bots[0]
+        self.bot = bot
         self.bot_user_id = self.bot.user_id
         self.bot.event_channel_name = self.channel_name
         self.bot.event_time = int(time.time())
@@ -214,7 +218,11 @@ class EventConsumer(WebsocketConsumer):
     @transaction.atomic
     def receive(self, text_data):
         # print("Event Channel receive from {} by channel:{}".format(self.bot.user_id,self.bot.event_channel_name))
-        self.bot = QQBot.objects.select_for_update().get(user_id=self.bot_user_id)
+        try:
+            self.bot = QQBot.objects.select_for_update().get(user_id=self.bot_user_id)
+        except QQBot.DoesNotExist:
+            logging.error("QQBot.DoesNotExist:{}".format(self.bot_user_id))
+            return
         self.bot.event_time = int(time.time())
         # if(int(time.time()) > self.bot.api_time+60):
         #     self.call_api("get_status",{},"get_status:{}".format(self.bot_user_id))
