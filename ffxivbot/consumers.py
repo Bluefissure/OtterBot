@@ -119,7 +119,7 @@ class APIConsumer(WebsocketConsumer):
 
     def send_event(self, event):
         logging.debug("APIChannel {} send_event with event:{}".format(self.channel_name, json.dumps(event)))
-        self.send(text_data=event["text"])
+        self.send(event["text"])
 
 
 
@@ -175,7 +175,9 @@ class EventConsumer(WebsocketConsumer):
             logging.error("empty channel for bot:{}".format(self.bot.user_id))
             return
         # channel_layer.send(self.bot.api_channel_name, {"type": "send.event","text": json.dumps(jdata),})
+
         async_to_sync(channel_layer.send)(self.bot.api_channel_name, {"type": "send.event","text": json.dumps(jdata),})
+        # async_to_sync(channel_layer.send)(self.bot.api_channel_name, {"type": "send.event","text": json.dumps(jdata),})
 
     def call_event(self, action, params, echo=None):
         if("async" not in action and echo is None):
@@ -200,9 +202,6 @@ class EventConsumer(WebsocketConsumer):
             self.call_api("send_private_msg",{"user_id":uid,"message":message})
 
 
-    def send_event(self, event):
-        logging.debug("EventChannel {} send_event with event:{}".format(self.channel_name, event))
-        self.send(text_data=event["text"])
 
     def update_group_member_list(self,group_id):
         self.call_api("get_group_member_list",{"group_id":group_id},"get_group_member_list:%s"%(group_id))
@@ -214,6 +213,13 @@ class EventConsumer(WebsocketConsumer):
     def group_ban(self,group_id,user_id,duration):
         json_data = {"group_id":group_id,"user_id":user_id,"duration":duration}
         self.call_api("set_group_ban",json_data)
+
+    def intercept_action(self, action_list):
+        modified_action_list = action_list
+        for i in range(len(modified_action_list)):
+            if "message" in modified_action_list[i]["params"].keys():
+                modified_action_list[i]["params"]["message"] = "此獭獭由于多次重连已被暂时停用，请联系开发者恢复，"
+        return modified_action_list
 
     @transaction.atomic
     def receive(self, text_data):
@@ -279,6 +285,8 @@ class EventConsumer(WebsocketConsumer):
                                     continue
                             handle_module = eval("handlers.QQCommand_{}()".format(command_key.replace("/","",1)))
                             action_list = handle_module(receive=receive, global_config=self.config, bot=self.bot)
+                            if(len(json.loads(self.bot.disconnections))>100):
+                                action_list = self.intercept_action(action_list)
                             for action in action_list:
                                 self.call_api(action["action"],action["params"],echo=action["echo"])
                             break
@@ -346,6 +354,8 @@ class EventConsumer(WebsocketConsumer):
                                                                     commands = handlers.commands,
                                                                     group_commands = handlers.group_commands,
                                                                     )
+                                        if(len(json.loads(self.bot.disconnections))>100):
+                                            action_list = self.intercept_action(action_list)
                                         for action in action_list:
                                             self.call_api(action["action"],action["params"],echo=action["echo"])
                                         break
