@@ -51,6 +51,7 @@ class RandomScoreAdmin(admin.ModelAdmin):
     search_fields = ['user_id']
 class QQBotAdmin(admin.ModelAdmin):
     list_display = ('name','user_id','access_token',"auto_accept_friend","auto_accept_invite")
+    search_fields = ['name','user_id','owner_id']
 class WeiboUserAdmin(admin.ModelAdmin):
     list_display = ('name','uid','containerid')
 class WeiboTileAdmin(admin.ModelAdmin):
@@ -61,6 +62,13 @@ class PlotQuestAdmin(admin.ModelAdmin):
     list_filter = ['area','category','sub_category']
     search_fields = ['name']
 
+class CommentAdmin(admin.ModelAdmin):
+    list_display = ("left_by", "content", "left_time")
+class ServerAdmin(admin.ModelAdmin):
+    list_display = ("name", "areaId", "groupId","alter_names")
+
+class SorryGIFAdmin(admin.ModelAdmin):
+    list_display = ("name", "api_name")
 
 admin.site.register(QQGroup,QQGroupAdmin)
 admin.site.register(CustomReply,CustomReplyAdmin)
@@ -77,3 +85,6 @@ admin.site.register(QQBot,QQBotAdmin)
 admin.site.register(WeiboUser,WeiboUserAdmin)
 admin.site.register(WeiboTile,WeiboTileAdmin)
 admin.site.register(PlotQuest,PlotQuestAdmin)
+admin.site.register(Comment,CommentAdmin)
+admin.site.register(Server,ServerAdmin)
+admin.site.register(SorryGIF,SorryGIFAdmin)

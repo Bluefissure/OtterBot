@@ -140,6 +140,7 @@ class QQBot(models.Model):
 	public = models.BooleanField(default=True)
 	r18 = models.BooleanField(default=False)
 	disconnections = models.TextField(default="[]")
+	disconnect_time = models.BigIntegerField(default=0)
 	def __str__(self):
 		return self.name
 
@@ -171,6 +172,14 @@ class Server(models.Model):
 	areaId = models.IntegerField(default=1)
 	groupId = models.IntegerField(default=25)
 	alter_names = models.TextField(default="[]")
+
+	def __str__(self):
+		return self.name
+
+class SorryGIF(models.Model):
+	name = models.CharField(max_length=16)
+	api_name = models.CharField(max_length=32)
+	example = models.TextField(default="")
 
 	def __str__(self):
 		return self.name
