@@ -18,6 +18,8 @@ import json
 import pymysql
 import time
 from ffxivbot.models import *
+from channels.layers import get_channel_layer 
+from asgiref.sync import async_to_sync
 from hashlib import md5
 import math
 import requests
@@ -31,10 +33,10 @@ from bs4 import BeautifulSoup
 import urllib
 from websocket import create_connection
 def ren2res(template, req, dict={},post_token=True):
-    dict.update({'user': False})
-    dict.update(csrf(req))
-    response = render(req, template, dict)
-    return response
+	dict.update({'user': False})
+	dict.update(csrf(req))
+	response = render(req, template, dict)
+	return response
 
 # Create your views here.
 
@@ -57,6 +59,9 @@ def tata(req):
 			elif(len(accessToken)<5):
 				dict = {"response":"error","msg":"Access Token太短"}
 				return JsonResponse(dict)
+			elif(len(ownerID.strip())==0):
+				dict = {"response":"error","msg":"领养者不能为空"}
+				return JsonResponse(dict)
 			bots = QQBot.objects.filter(user_id=botID)
 			bot = None
 			if(len(bots)==0):
@@ -75,7 +80,7 @@ def tata(req):
 				bot.tuling_token = tulingToken
 				bot.auto_accept_friend = autoFriend and "true" in autoFriend
 				bot.auto_accept_invite = autoInvite and "true" in autoInvite
-				if(len(QQBot.objects.all())>=200):
+				if(len(QQBot.objects.all())>=1 and bot_created):
 					dict = {"response":"error","msg":"机器人总数过多，请稍后再试"}
 					return JsonResponse(dict)
 				bot.save()
@@ -271,32 +276,61 @@ def api(req):
 	if req.method=="POST":
 		tracker = req.GET.get('tracker')
 		print("tracker:{}".format(tracker))
-		if(tracker and tracker=="ffxiv-eureka"):
-			instance = req.GET.get('instance')
-			password = req.GET.get('password')
-			print("ffxiv-eureka {}:{}".format(instance,password))
-			if(instance and password):
-				nm_name = req.POST.get('text')
+		if(tracker):
+			if(tracker=="ffxiv-eureka"):
+				instance = req.GET.get('instance')
+				password = req.GET.get('password')
+				print("ffxiv-eureka {}:{}".format(instance,password))
+				if(instance and password):
+					nm_name = req.POST.get('text')
 
-				if(nm_name):
-					nm_id = get_nm_id("ffxiv-eureka",nm_name)
-					print("nm_name:{} id:{}".format(nm_name,nm_id))
-					if(nm_id > 0):
-						print("nm_name:{} nm_id:{}".format(nm_name,nm_id))
-						ws = create_connection("wss://ffxiv-eureka.com/socket/websocket?vsn=2.0.0")
-						msg = '["1","1","instance:{}","phx_join",{{"password":"{}"}}]'.format(instance,password)
-						print(msg)
-						ws.send(msg)
-						msg = '["1","2","instance:{}","set_kill_time",{{"id":{},"time":{}}}]'.format(instance,nm_id,int(time.time()*1000))
-						print(msg)
-						ws.send(msg)
-						ws.close()
+					if(nm_name):
+						nm_id = get_nm_id("ffxiv-eureka",nm_name)
+						print("nm_name:{} id:{}".format(nm_name,nm_id))
+						if(nm_id > 0):
+							print("nm_name:{} nm_id:{}".format(nm_name,nm_id))
+							ws = create_connection("wss://ffxiv-eureka.com/socket/websocket?vsn=2.0.0")
+							msg = '["1","1","instance:{}","phx_join",{{"password":"{}"}}]'.format(instance,password)
+							print(msg)
+							ws.send(msg)
+							msg = '["1","2","instance:{}","set_kill_time",{{"id":{},"time":{}}}]'.format(instance,nm_id,int(time.time()*1000))
+							print(msg)
+							ws.send(msg)
+							ws.close()
+							return HttpResponse("OK",status=200)
+					else:
+						print("no nm_name")
+			elif(tracker=="qq"):
+				bot_qq = req.GET.get('bot_qq')
+				qq = req.GET.get('qq')
+				token = req.GET.get('token')
+				print("bot: {} qq:{} token:{}".format(bot_qq, qq, token))
+				if(bot_qq and qq and token):
+					bot = None
+					qquser = None
+					try:
+						bot = QQBot.objects.get(user_id=bot_qq)
+					except QQBot.DoesNotExist:
+						print("bot {} does not exist".format(bot_qq))
+					try:
+						qquser = QQUser.objects.get(user_id=qq, bot_token=token)
+					except QQUser.DoesNotExist:
+						print("qquser {}:{} auth fail".format(qq, token))
+					if bot and qquser:
+						channel_layer = get_channel_layer()
+						msg = req.POST.get('text')
+						jdata = {
+							"action":"send_private_msg",
+							"params":{"user_id":qquser.user_id,"message":msg},
+							"echo":"",
+						}
+						async_to_sync(channel_layer.send)(bot.api_channel_name, {"type": "send.event","text": json.dumps(jdata),})
 						return HttpResponse("OK",status=200)
-				else:
-					print("no nm_name")
+
+
 	return HttpResponse(status=404)
 
 
 @csrf_exempt
 def qqpost(req):
-    pass
+	pass

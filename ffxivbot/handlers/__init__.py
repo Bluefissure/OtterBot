@@ -18,6 +18,7 @@ commands = {
   "/dps":"查询国际服同期DPS排名（\"/dps 8s 骑士\"）",
   "/raid":"查询零式英雄榜（\"/raid 蓝色裂痕 萌芽池\"）",
   "/dice":"DnD掷骰子（\"/dice 3d12\"）",
+  "/bot":"机器人推送功能（/bot token 123）",
   "/hso":"hso"
 }
 
@@ -68,6 +69,7 @@ from .QQCommand_dps import QQCommand_dps
 from .QQCommand_dice import QQCommand_dice
 from .QQCommand_hso import QQCommand_hso
 from .QQCommand_raid import QQCommand_raid
+from .QQCommand_bot import QQCommand_bot
 
 
 from .QQGroupCommand_group import QQGroupCommand_group

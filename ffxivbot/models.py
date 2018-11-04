@@ -183,3 +183,10 @@ class SorryGIF(models.Model):
 
 	def __str__(self):
 		return self.name
+
+class QQUser(models.Model):
+	user_id = models.CharField(max_length=16,unique=True)
+	bot_token = models.CharField(max_length=16)
+
+	def __str__(self):
+		return str(self.user_id)

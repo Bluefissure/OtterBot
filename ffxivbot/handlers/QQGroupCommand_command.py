@@ -21,6 +21,7 @@ class QQGroupCommand_command(QQEventHandler):
 
             COMMAND = copy.deepcopy(kwargs["commands"])
             COMMAND.update(kwargs["group_commands"])
+            COMMAND.update(kwargs["alter_commands"])
             COMMAND = COMMAND.keys()
             group_commands = json.loads(group.commands)
             msg = "default msg"

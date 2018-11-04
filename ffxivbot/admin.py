@@ -69,6 +69,9 @@ class ServerAdmin(admin.ModelAdmin):
 
 class SorryGIFAdmin(admin.ModelAdmin):
     list_display = ("name", "api_name")
+class QQUserAdmin(admin.ModelAdmin):
+    list_display = ("user_id", "bot_token")
+
 
 admin.site.register(QQGroup,QQGroupAdmin)
 admin.site.register(CustomReply,CustomReplyAdmin)
@@ -88,3 +91,4 @@ admin.site.register(PlotQuest,PlotQuestAdmin)
 admin.site.register(Comment,CommentAdmin)
 admin.site.register(Server,ServerAdmin)
 admin.site.register(SorryGIF,SorryGIFAdmin)
+admin.site.register(QQUser,QQUserAdmin)

@@ -57,7 +57,7 @@ class QQCommand_raid(QQEventHandler):
                             else:
                                 msg += "{}{} : 仍未攻破\n".format(raid_name, l)
                     else:
-                        msg += "{}--{} 还没有突破过任何零式德尔塔幻境，请继续努力哦~\n".format(server.name, wol_name)
+                        msg += "{}--{} 还没有突破过任何零式西格玛幻境，请继续努力哦~\n".format(server.name, wol_name)
 
                 r = requests.post(url="http://act.ff.sdo.com/20171213HeroList/Server/HeroList171213.ashx",data=data)
                 res = json.loads(r.text)

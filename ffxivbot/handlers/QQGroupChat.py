@@ -57,10 +57,10 @@ class QQGroupChat(QQEventHandler):
                     return action_list
 
             #repeat_ban & repeat
-            chats = ChatMessage.objects.filter(group=group,message=receive["message"].strip(),timestamp__gt=time.time()-60)
-            del_chats = ChatMessage.objects.filter(group=group,timestamp__lt=time.time()-60)
-            for item in del_chats:
-                item.delete()
+            chats = ChatMessage.objects.filter(group=group,timestamp__gt=time.time()-60,message=receive["message"].strip())
+            # del_chats = ChatMessage.objects.filter(group=group,timestamp__lt=time.time()-60)
+            # for item in del_chats:
+            #     item.delete()
             if(len(chats)>0):
                 chat = chats[0]
                 chat.times = chat.times+1
