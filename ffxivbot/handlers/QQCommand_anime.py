@@ -1,4 +1,5 @@
 from .QQEventHandler import QQEventHandler
+from .QQUtils import *
 from ffxivbot.models import *
 import logging
 import json
@@ -55,31 +56,28 @@ def whatanime(receive, WHATANIME_API_URL):
     return msg
 
 
-class QQCommand_anime(QQEventHandler):
-    def __init__(self, **kwargs):
-        super(QQCommand_anime, self).__init__()
-    def __call__(self, **kwargs):
-        try:
-            global_config = kwargs["global_config"]
-            QQ_BASE_URL = global_config["QQ_BASE_URL"]
-            WHATANIME_TOKEN = global_config["WHATANIME_TOKEN"]
-            WHATANIME_API_URL = global_config["WHATANIME_API_URL"].format(WHATANIME_TOKEN)
-            action_list = []
-            receive = kwargs["receive"]
+def QQCommand_anime(*args, **kwargs):
+    try:
+        global_config = kwargs["global_config"]
+        QQ_BASE_URL = global_config["QQ_BASE_URL"]
+        WHATANIME_TOKEN = global_config["WHATANIME_TOKEN"]
+        WHATANIME_API_URL = global_config["WHATANIME_API_URL"].format(WHATANIME_TOKEN)
+        action_list = []
+        receive = kwargs["receive"]
 
-            logging.debug("anime_msg:%s"%(receive["message"]))
-            qq = int(receive["user_id"])
-            msg = ""
-            if ("CQ" in receive["message"] and "url=" in receive["message"]):
-                msg = whatanime(receive, WHATANIME_API_URL)
-            else:
-                msg = "请在命令后添加图片"
-            msg = msg.strip()
-            if msg:
-                reply_action = self.reply_message_action(receive, msg)
-                action_list.append(reply_action)
-            return action_list
-        except Exception as e:
-            msg = "Error: {}".format(type(e))
-            action_list.append(self.reply_message_action(receive, msg))
-            logging.error(e)
+        logging.debug("anime_msg:%s"%(receive["message"]))
+        qq = int(receive["user_id"])
+        msg = ""
+        if ("CQ" in receive["message"] and "url=" in receive["message"]):
+            msg = whatanime(receive, WHATANIME_API_URL)
+        else:
+            msg = "请在命令后添加图片"
+        msg = msg.strip()
+        if msg:
+            reply_action = reply_message_action(receive, msg)
+            action_list.append(reply_action)
+        return action_list
+    except Exception as e:
+        msg = "Error: {}".format(type(e))
+        action_list.append(reply_message_action(receive, msg))
+        logging.error(e)

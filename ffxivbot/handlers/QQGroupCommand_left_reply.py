@@ -1,13 +1,11 @@
 from .QQEventHandler import QQEventHandler
+from .QQUtils import *
 from ffxivbot.models import *
 import logging
 import json
 import random
 
-class QQGroupCommand_left_reply(QQEventHandler):
-    def __init__(self, **kwargs):
-        super(QQGroupCommand_left_reply, self).__init__()
-    def __call__(self, **kwargs):
+def QQGroupCommand_left_reply(*args, **kwargs):
         try:
             global_config = kwargs["global_config"]
             group = kwargs["group"]
@@ -41,10 +39,10 @@ class QQGroupCommand_left_reply(QQEventHandler):
                 else:
                     msg = "错误的命令，二级命令有:\"\",\"set\""
 
-            reply_action = self.reply_message_action(receive, msg)
+            reply_action = reply_message_action(receive, msg)
             action_list.append(reply_action)
             return action_list
         except Exception as e:
             msg = "Error: {}".format(type(e))
-            action_list.append(self.reply_message_action(receive, msg))
+            action_list.append(reply_message_action(receive, msg))
             logging.error(e)

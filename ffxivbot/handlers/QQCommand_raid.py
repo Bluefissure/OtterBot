@@ -1,14 +1,12 @@
 from .QQEventHandler import QQEventHandler
+from .QQUtils import *
 from ffxivbot.models import *
 import logging
 import json
 import random
 import requests
 
-class QQCommand_raid(QQEventHandler):
-    def __init__(self, **kwargs):
-        super(QQCommand_raid, self).__init__()
-    def __call__(self, **kwargs):
+def QQCommand_raid(*args, **kwargs):
         try:
             QQ_BASE_URL = kwargs["global_config"]["QQ_BASE_URL"]
             action_list = []
@@ -85,10 +83,10 @@ class QQCommand_raid(QQEventHandler):
 
                 msg = msg.strip()
 
-            reply_action = self.reply_message_action(receive, msg)
+            reply_action = reply_message_action(receive, msg)
             action_list.append(reply_action)
             return action_list
         except Exception as e:
             msg = "Error: {}".format(type(e))
-            action_list.append(self.reply_message_action(receive, msg))
+            action_list.append(reply_message_action(receive, msg))
             logging.error(e)

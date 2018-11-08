@@ -1,4 +1,5 @@
 from .QQEventHandler import QQEventHandler
+from .QQUtils import *
 from ffxivbot.models import *
 import logging
 import json
@@ -19,10 +20,7 @@ alter_tags = {
 }
 
 
-class QQCommand_hso(QQEventHandler):
-    def __init__(self, **kwargs):
-        super(QQCommand_hso, self).__init__()
-    def __call__(self, **kwargs):
+def QQCommand_hso(*args, **kwargs):
         try:
             QQ_BASE_URL = kwargs["global_config"]["QQ_BASE_URL"]
             action_list = []
@@ -57,11 +55,11 @@ class QQCommand_hso(QQEventHandler):
                     img = img_json[idx]
                     msg = "[CQ:image,file={}]".format(img["sample_url"])
 
-            reply_action = self.reply_message_action(receive, msg)
+            reply_action = reply_message_action(receive, msg)
             action_list.append(reply_action)
             return action_list
         except Exception as e:
             msg = "Error: {}".format(type(e))
-            action_list.append(self.reply_message_action(receive, msg))
+            action_list.append(reply_message_action(receive, msg))
             logging.error(e)
             traceback.print_exc()

@@ -1,4 +1,5 @@
 from .QQEventHandler import QQEventHandler
+from .QQUtils import *
 from ffxivbot.models import *
 import logging
 import json
@@ -62,37 +63,34 @@ def eurekaWeather(weather, count, TIMEFORMAT_MDHMS):
         now_time += 8 * 175 if count>=0 else -8 * 175
     return msg.strip()
 
-class QQCommand_weather(QQEventHandler):
-    def __init__(self, **kwargs):
-        super(QQCommand_weather, self).__init__()
-    def __call__(self, **kwargs):
-        try:
-            global_config = kwargs["global_config"]
-            QQ_BASE_URL = global_config["QQ_BASE_URL"]
-            TIMEFORMAT_MDHMS = global_config["TIMEFORMAT_MDHMS"]
-            action_list = []
-            receive = kwargs["receive"]
+def QQCommand_weather(*args, **kwargs):
+    try:
+        global_config = kwargs["global_config"]
+        QQ_BASE_URL = global_config["QQ_BASE_URL"]
+        TIMEFORMAT_MDHMS = global_config["TIMEFORMAT_MDHMS"]
+        action_list = []
+        receive = kwargs["receive"]
 
-            if receive["message"].find("/weather eureka")==0:
-                receive_msg = receive["message"].replace("/weather eureka","",1).strip()
-                if receive_msg.find("pzz")==0:
-                    receive_msg = receive_msg.replace("pzz","",1).strip()
-                    try:
-                        cnt = int(receive_msg)
-                    except:
-                        cnt = 3
-                    msg = "接下来Eureka常风之地的强风天气如下：\n%s"%(eurekaWeather("Gale",cnt,TIMEFORMAT_MDHMS))
-                elif receive_msg.find("blizzard")==0:
-                    receive_msg = receive_msg.replace("blizzard","",1).strip()
-                    try:
-                        cnt = int(receive_msg)
-                    except:
-                        cnt = 3
-                    msg = "接下来Eureka恒冰之地的暴雪天气如下：\n%s"%(eurekaWeather("Blizzard",cnt,TIMEFORMAT_MDHMS))
-                reply_action = self.reply_message_action(receive, msg)
-                action_list.append(reply_action)
-            return action_list
-        except Exception as e:
-            msg = "Error: {}".format(type(e))
-            action_list.append(self.reply_message_action(receive, msg))
-            logging.error(e)
+        if receive["message"].find("/weather eureka")==0:
+            receive_msg = receive["message"].replace("/weather eureka","",1).strip()
+            if receive_msg.find("pzz")==0:
+                receive_msg = receive_msg.replace("pzz","",1).strip()
+                try:
+                    cnt = int(receive_msg)
+                except:
+                    cnt = 3
+                msg = "接下来Eureka常风之地的强风天气如下：\n%s"%(eurekaWeather("Gale",cnt,TIMEFORMAT_MDHMS))
+            elif receive_msg.find("blizzard")==0:
+                receive_msg = receive_msg.replace("blizzard","",1).strip()
+                try:
+                    cnt = int(receive_msg)
+                except:
+                    cnt = 3
+                msg = "接下来Eureka恒冰之地的暴雪天气如下：\n%s"%(eurekaWeather("Blizzard",cnt,TIMEFORMAT_MDHMS))
+            reply_action = reply_message_action(receive, msg)
+            action_list.append(reply_action)
+        return action_list
+    except Exception as e:
+        msg = "Error: {}".format(type(e))
+        action_list.append(reply_message_action(receive, msg))
+        logging.error(e)
