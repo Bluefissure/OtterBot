@@ -6,6 +6,38 @@ import json
 import random
 import requests
 import math
+import re
+import traceback
+
+
+def crawl_dps(boss, job, day=0):
+    try:
+        print("boss:{} job:{} day:{}".format(boss,job,day))
+        fflogs_url = 'https://www.fflogs.com/zone/statistics/table/%s/dps/%s/100/8/1/75/1000/7/0/Global/%s/All/0/normalized/single/0/-1/'%(boss.quest.quest_id,boss.boss_id,job.name)
+        r = requests.get(url=fflogs_url)
+        tot_days = 0
+        percentage_list = [10,25,50,75,95,99]
+        atk_res = {}
+        for perc in percentage_list:
+            re_str = 'series%s'%(perc)+r'.data.push\([+-]?(0|([1-9]\d*))(\.\d+)?\)'
+            ptn = re.compile(re_str)
+            find_res = ptn.findall(r.text)
+            print("url:{}".format(fflogs_url))
+            # print("find_res:{}".format(json.dumps(find_res)))
+            # print("find_res[day]:{}".format(json.dumps(find_res[day])))
+            # print("id(find_res):{}".format(id(find_res)))
+            atk_res[str(perc)] = find_res[day]
+            ss = atk_res[str(perc)][1]+atk_res[str(perc)][2]
+            if(ss==""):
+                ss = "0"
+            atk = float(ss)
+            atk_res[str(perc)] = atk
+            # tot_days = len(find_res)
+        return atk_res
+    except IndexError as e:
+        return "Error: {}".format(e)
+
+
 
 def QQCommand_dps(*args, **kwargs):
     try:
@@ -58,17 +90,17 @@ def QQCommand_dps(*args, **kwargs):
                 msg = "未能定位职业:%s"%(receive_msg)
             else:
                 day = math.ceil((int(time.time())-boss.cn_add_time)/(24*3600))
-                if(receive_msg.find("#")==0):
-                    space_idx = receive_msg.find(" ")
-                    day = receive_msg[1:space_idx]
-                    receive_msg = receive_msg[space_idx:].strip()
-                tiles = DPSTile.objects.filter(boss=boss_obj,job=job_obj,day=day)
-                if(len(tiles)==0):
-                    msg = "Boss:%s职业:%s第%s日的数据未抓取，请联系管理员抓取。"%(boss,job,day)
+                if("国际服" in receive_msg):
+                    day = -1
+                    receive_msg = receive_msg.replace("国际服","")
+                atk_res = crawl_dps(boss=boss_obj,job=job_obj,day=day)
+                if type(atk_res)==str:
+                    msg = "\nBoss:{}职业:{}第{}日的数据未抓取，请联系管理员抓取\n".format(boss,job,day)
+                    msg += atk_res
                 else:
-                    tile = tiles[0]
                     if(receive_msg=="all" or receive_msg.strip()==""):
-                        atk_dict = json.loads(tile.attack)
+                        atk_dict = atk_res
+                        print(json.dumps(atk_dict))
                         percentage_list = [10,25,50,75,95,99]
                         msg = "%s %s day#%s:\n"%(boss.cn_name,job.cn_name,day)
                         for perc in percentage_list:
@@ -77,11 +109,11 @@ def QQCommand_dps(*args, **kwargs):
                     else:
                         try:
                             atk = float(receive_msg)
-                            assert(atk > 0)
+                            assert(atk >= 0)
                         except:
                             msg = "DPS数值解析失败:%s"%(receive_msg)
                         else:
-                            atk_dict = json.loads(tile.attack)
+                            atk_dict = atk_res
                             percentage_list = [0,10,25,50,75,95,99]
                             atk_dict.update({"0":0})
                             logging.debug("atk_dict:"+json.dumps(atk_dict))
@@ -105,6 +137,7 @@ def QQCommand_dps(*args, **kwargs):
             action_list.append(reply_action)
         return action_list
     except Exception as e:
+        traceback.print_exc()
         msg = "Error: {}".format(type(e))
         action_list.append(reply_message_action(receive, msg))
         logging.error(e)

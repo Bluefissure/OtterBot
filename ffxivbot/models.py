@@ -93,16 +93,6 @@ class Job(models.Model):
 	def __str__(self):
 		return str(self.name)
 
-class DPSTile(models.Model):
-	boss = models.ForeignKey(Boss,on_delete=models.CASCADE)
-	job = models.ForeignKey(Job,on_delete=models.CASCADE)
-	day = models.IntegerField(default=0)
-	attack = models.TextField(default="{}")
-	class Meta:
-		unique_together = ('boss', 'job', 'day',)
-	def __str__(self):
-		return str("%s_%s_%s_%s"%(self.boss,self.job,self.day))
-
 
 class Vote(models.Model):
 	group = models.ForeignKey(QQGroup,on_delete=models.CASCADE)

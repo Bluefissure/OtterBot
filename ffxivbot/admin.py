@@ -37,10 +37,6 @@ class JobAdmin(admin.ModelAdmin):
     list_display = ('name','cn_name')
     search_fields = ['name','cn_name']
 
-class DPSTileAdmin(admin.ModelAdmin):
-    list_display = ('boss','job','day','attack')
-    list_filter = ['boss','job','day']
-    search_fields = ['boss','job','day']
 class VoteAdmin(admin.ModelAdmin):
     list_display = ('name','starttime','endtime','group')
     list_filter = ['group']
@@ -81,7 +77,6 @@ admin.site.register(Revenge,RevengeAdmin)
 admin.site.register(Quest,QuestAdmin)
 admin.site.register(Boss,BossAdmin)
 admin.site.register(Job,JobAdmin)
-admin.site.register(DPSTile,DPSTileAdmin)
 admin.site.register(Vote,VoteAdmin)
 admin.site.register(RandomScore,RandomScoreAdmin)
 admin.site.register(QQBot,QQBotAdmin)
