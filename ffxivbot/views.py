@@ -50,6 +50,7 @@ def tata(req):
 			ownerID = req.POST.get("ownerID")
 			accessToken = req.POST.get("accessToken")
 			tulingToken = req.POST.get("tulingToken")
+			saucenaoToken = req.POST.get("saucenaoToken")
 			autoFriend = req.POST.get("autoFriend")
 			autoInvite = req.POST.get("autoInvite")
 			print("{},{},{},{},{},{},{}".format(botName,botID,ownerID,accessToken,tulingToken,autoFriend,autoInvite))
@@ -78,9 +79,10 @@ def tata(req):
 				bot.name = botName
 				bot.owner_id = ownerID
 				bot.tuling_token = tulingToken
+				bot.saucenao_token = saucenaoToken
 				bot.auto_accept_friend = autoFriend and "true" in autoFriend
 				bot.auto_accept_invite = autoInvite and "true" in autoInvite
-				if(len(QQBot.objects.all())>=1 and bot_created):
+				if(len(QQBot.objects.all())>=100 and bot_created):
 					dict = {"response":"error","msg":"机器人总数过多，请稍后再试"}
 					return JsonResponse(dict)
 				bot.save()

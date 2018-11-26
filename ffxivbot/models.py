@@ -119,6 +119,7 @@ class QQBot(models.Model):
 	auto_accept_friend = models.BooleanField(default=False)
 	auto_accept_invite = models.BooleanField(default=False)
 	tuling_token = models.CharField(max_length=32,default="",blank=True)
+	saucenao_token = models.CharField(max_length=32,default="",blank=True)
 	api_channel_name = models.CharField(max_length=32,default="",blank=True)
 	event_channel_name = models.CharField(max_length=32,default="",blank=True)
 	group_list = models.TextField(default="[]")
@@ -180,3 +181,10 @@ class QQUser(models.Model):
 
 	def __str__(self):
 		return str(self.user_id)
+
+class HsoAlterName(models.Model):
+	name = models.CharField(max_length=32,unique=True,default="")
+	key = models.CharField(max_length=64,default="")
+
+	def __str__(self):
+		return self.name

@@ -53,7 +53,15 @@
                 <tbody>
                   {% for bot in bots %}
                     <tr>
+                      {% if bot.autofriend and bot.autoinvite%}
+                      <td><center><p style="color:green">{{bot.name}}</p></center></td>
+                      {% elif bot.autoinvite%}
+                      <td><center><p style="color:#FF9900">{{bot.name}}</p></center></td>
+                      {% elif bot.autofriend%}
+                      <td><center><p style="color:#FF0099">{{bot.name}}</p></center></td>
+                      {% else %}
                       <td><center>{{bot.name}}</center></td>
+                      {% endif %}
                       <td><center>{{bot.user_id}}</center></td>
                       <td><center>{{bot.group_num}}</center></td>
                       <td><center>{{bot.friend_num}}</center></td>
@@ -101,11 +109,15 @@
                 </div>
                 <div class="form-group">
                   <label for="accessToken">Access Token(长度>5)</label>
-                  <input type="text" class="form-control" id="accessToken" placeholder="">
+                  <input type="text" class="form-control" id="accessToken" placeholder="" maxlength="16">
                 </div>
                 <div class="form-group">
-                  <label for="tulingToken">Tuling Token</label>
+                  <label for="tulingToken"><a href="http://www.tuling123.com/" target="_blank">Tuling</a> Token</label>
                   <input type="text" class="form-control" id="tulingToken" placeholder="">
+                </div>
+                <div class="form-group">
+                  <label for="saucenaoToken"><a href="https://saucenao.com/" target="_blank">Saucenao</a> Token</label>
+                  <input type="text" class="form-control" id="saucenaoToken" placeholder="">
                 </div>
                 <div class="checkbox">
                   <label>
@@ -148,7 +160,8 @@
                       <img class="direct-chat-img" src="/static/dist/img/bluefissure.jpg" alt="message user image">
                       <!-- /.direct-chat-img -->
                       <div class="direct-chat-text">
-                        每天机器人数量达到上限（目前为200）后会自动清除一周内未与服务器连接的机器人，如有需要请重新申请。
+                        机器人数量达到上限（目前为100）后会停止新的机器人申请。
+                        不同颜色表示：自动同意<font style="color:#FF9900">加群邀请</font>，<font style="color:#FF0099">好友邀请</font>，<font style="color:green">均同意</font>
                       </div>
                       <!-- /.direct-chat-text -->
                     </div>
@@ -161,7 +174,7 @@
                       <img class="direct-chat-img" src="/static/dist/img/bluefissure.jpg" alt="message user image">
                       <!-- /.direct-chat-img -->
                       <div class="direct-chat-text">
-                        出现问题请<a href="http://wpa.qq.com/msgrd?v=3&uin=306401806&site=qq&menu=yes" target="_blank">联系獭爹</a>
+                        出现问题请<a href="http://wpa.qq.com/msgrd?v=3&uin=306401806&site=qq&menu=yes" target="_blank">联系獭爹</a>，或<a href="https://jq.qq.com/?_wv=1027&k=5L3hY4w" target="_blank">加入群聊</a>
                       </div>
                       <!-- /.direct-chat-text -->
                     </div>
@@ -290,6 +303,7 @@
     var ownerID = document.getElementById("ownerID").value;
     var accessToken = document.getElementById("accessToken").value;
     var tulingToken = document.getElementById("tulingToken").value;
+    var saucenaoToken = document.getElementById("saucenaoToken").value;
     var autoFriend = document.getElementById("autoFriend").checked;
     var autoInvite = document.getElementById("autoInvite").checked;
     $.ajax({
@@ -303,6 +317,7 @@
           "ownerID":ownerID,
           "accessToken":accessToken,
           "tulingToken":tulingToken,
+          "saucenaoToken":saucenaoToken,
           "autoFriend":autoFriend,
           "autoInvite":autoInvite,
           'csrfmiddlewaretoken': '{{ csrf_token }}'
