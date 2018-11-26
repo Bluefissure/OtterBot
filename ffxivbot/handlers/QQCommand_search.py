@@ -8,6 +8,7 @@ import requests
 from bs4 import BeautifulSoup
 import urllib
 import logging
+import traceback
 
 def get_item_info(url):
     r = requests.get(url,timeout=3)

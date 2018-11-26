@@ -31,7 +31,7 @@ def QQCommand_gif(*args, **kwargs):
                     now_template = k
                     break
             if (now_template=="" or len(receive_msg)==0 or receive_msg=="help"):
-                msg = "/gif list : 目前可用模板\n/gif $template example : 查看模板$template的样例\n/gif $template $msg0|$msg1|... : 按照$msg0,$msg1...生成沙雕GIF\nPowered by sorry.xuty.tk"
+                msg = " /gif list : 目前可用模板\n/gif $template example : 查看模板$template的样例\n/gif $template $msg0|$msg1|... : 按照$msg0,$msg1...生成沙雕GIF\nPowered by sorry.xuty.tk"
             else:
                 receive_msg = receive_msg.replace(now_template,"",1).strip()
                 if(receive_msg=="example"):

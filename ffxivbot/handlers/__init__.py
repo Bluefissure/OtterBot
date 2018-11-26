@@ -20,6 +20,7 @@ commands = {
   "/dice":"DnD掷骰子（\"/dice 3d12\"）",
   "/bot":"机器人推送功能（\"/bot token 123\"）",
   "/pixiv":"Pixiv相关功能（\"/pixiv help\"）",
+  "/music":"网易云音乐搜索（\"/music 届不到的恋\"）",
   "/hso":"好色哦"
 }
 
@@ -72,6 +73,7 @@ from .QQCommand_hso import QQCommand_hso
 from .QQCommand_raid import QQCommand_raid
 from .QQCommand_bot import QQCommand_bot
 from .QQCommand_pixiv import QQCommand_pixiv
+from .QQCommand_music import QQCommand_music
 
 
 from .QQGroupCommand_group import QQGroupCommand_group

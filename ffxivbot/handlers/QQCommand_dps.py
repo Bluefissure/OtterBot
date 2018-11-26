@@ -13,19 +13,21 @@ import traceback
 def crawl_dps(boss, job, day=0):
     try:
         print("boss:{} job:{} day:{}".format(boss,job,day))
-        fflogs_url = 'https://www.fflogs.com/zone/statistics/table/%s/dps/%s/100/8/1/75/1000/7/0/Global/%s/All/0/normalized/single/0/-1/'%(boss.quest.quest_id,boss.boss_id,job.name)
+        fflogs_url = 'https://www.fflogs.com/zone/statistics/table/%s/dps/%s/100/8/1/100/1000/7/0/Global/%s/All/0/normalized/single/0/-1/'%(boss.quest.quest_id,boss.boss_id,job.name)
         r = requests.get(url=fflogs_url)
         tot_days = 0
-        percentage_list = [10,25,50,75,95,99]
+        percentage_list = [10,25,50,75,95,99,100]
         atk_res = {}
         for perc in percentage_list:
-            re_str = 'series%s'%(perc)+r'.data.push\([+-]?(0|([1-9]\d*))(\.\d+)?\)'
+            if perc==100:
+                re_str = 'series'+r'.data.push\([+-]?(0|([1-9]\d*))(\.\d+)?\)'
+            else:
+                re_str = 'series%s'%(perc)+r'.data.push\([+-]?(0|([1-9]\d*))(\.\d+)?\)'
             ptn = re.compile(re_str)
             find_res = ptn.findall(r.text)
-            print("url:{}".format(fflogs_url))
+            # print("url:{}".format(fflogs_url))
             # print("find_res:{}".format(json.dumps(find_res)))
             # print("find_res[day]:{}".format(json.dumps(find_res[day])))
-            # print("id(find_res):{}".format(id(find_res)))
             atk_res[str(perc)] = find_res[day]
             ss = atk_res[str(perc)][1]+atk_res[str(perc)][2]
             if(ss==""):
@@ -101,7 +103,7 @@ def QQCommand_dps(*args, **kwargs):
                     if(receive_msg=="all" or receive_msg.strip()==""):
                         atk_dict = atk_res
                         print(json.dumps(atk_dict))
-                        percentage_list = [10,25,50,75,95,99]
+                        percentage_list = [10,25,50,75,95,99,100]
                         msg = "%s %s day#%s:\n"%(boss.cn_name,job.cn_name,day)
                         for perc in percentage_list:
                             msg += "%s%% : %.2f\n"%(perc,atk_dict[str(perc)])
@@ -114,7 +116,7 @@ def QQCommand_dps(*args, **kwargs):
                             msg = "DPS数值解析失败:%s"%(receive_msg)
                         else:
                             atk_dict = atk_res
-                            percentage_list = [0,10,25,50,75,95,99]
+                            percentage_list = [0,10,25,50,75,95,99,100]
                             atk_dict.update({"0":0})
                             logging.debug("atk_dict:"+json.dumps(atk_dict))
                             atk_list = [atk_dict[str(i)] for i in percentage_list]

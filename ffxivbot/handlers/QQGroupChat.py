@@ -62,6 +62,7 @@ def QQGroupChat(*args, **kwargs):
         #     item.delete()
         if(len(chats)>0):
             chat = chats[0]
+            chat.timestamp = int(time.time())
             chat.times = chat.times+1
             chat.save()
             if(group.repeat_ban>0 and chat.times>=group.repeat_ban):
