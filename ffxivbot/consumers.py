@@ -1,8 +1,9 @@
 from channels.generic.websocket import WebsocketConsumer
-from channels.layers import get_channel_layer 
+from channels.layers import get_channel_layer
 from django.db import transaction
 channel_layer = get_channel_layer()
 from asgiref.sync import async_to_sync
+import os
 import json
 from collections import OrderedDict
 import datetime
@@ -17,21 +18,21 @@ import math
 import requests
 import base64
 import random,sys
-import traceback  
+import traceback
 import codecs
 import html
 import hmac
 import logging
 from bs4 import BeautifulSoup
 import urllib
-import objgraph
 import gc
+# import objgraph
 
 logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
-CONFIG_PATH = "/home/ubuntu/FFXIVBOT/ffxivbot/config.json"
+CONFIG_PATH = os.environ.get("FFXIVBOT_CONFIG", "/home/ubuntu/FFXIVBOT/ffxivbot/config.json")
 
 class APIConsumer(WebsocketConsumer):
-    @transaction.atomic 
+    @transaction.atomic
     def connect(self):
         header_list = self.scope["headers"]
         headers = {}
@@ -70,7 +71,7 @@ class APIConsumer(WebsocketConsumer):
             gc.collect()
         except:
             pass
-    @transaction.atomic 
+    @transaction.atomic
     def receive(self, text_data):
         # print("API Channel received from {} channel:{}".format(self.bot.user_id,self.bot.api_channel_name))
         try:
@@ -311,8 +312,8 @@ class EventConsumer(WebsocketConsumer):
                     except:
                         self.update_group_member_list(group_id)
                         member_list = []
-                        
-                    
+
+
                     if (receive["message"].find('/group_help')==0):
                         msg =  "" if member_list else "本群成员信息获取失败，请尝试重启酷Q并使用/update_group刷新群成员信息"
                         for (k, v) in handlers.group_commands.items():
@@ -351,11 +352,11 @@ class EventConsumer(WebsocketConsumer):
                                     break
                                 else:
                                     handle_method = getattr(handlers,"QQGroupCommand_{}".format(command_key.replace("/","",1)))
-                                    action_list = handle_method(receive = receive, 
-                                                                global_config = self.config, 
-                                                                bot = self.bot, 
-                                                                user_info = user_info, 
-                                                                member_list = member_list, 
+                                    action_list = handle_method(receive = receive,
+                                                                global_config = self.config,
+                                                                bot = self.bot,
+                                                                user_info = user_info,
+                                                                member_list = member_list,
                                                                 group = group,
                                                                 commands = handlers.commands,
                                                                 group_commands = handlers.group_commands,
@@ -368,18 +369,18 @@ class EventConsumer(WebsocketConsumer):
                                         self.call_api(action["action"],action["params"],echo=action["echo"])
                                     break
 
-                    action_list = handlers.QQGroupChat(receive = receive, 
-                                                        global_config = self.config, 
-                                                        bot = self.bot, 
-                                                        user_info = user_info, 
-                                                        member_list = member_list, 
+                    action_list = handlers.QQGroupChat(receive = receive,
+                                                        global_config = self.config,
+                                                        bot = self.bot,
+                                                        user_info = user_info,
+                                                        member_list = member_list,
                                                         group = group,
                                                         commands = handlers.commands,
                                                         alter_commands = handlers.alter_commands,
                                                         )
                     for action in action_list:
                         self.call_api(action["action"],action["params"],echo=action["echo"])
-            
+
 
 
             CONFIG_GROUP_ID = self.config["CONFIG_GROUP_ID"]
@@ -417,7 +418,7 @@ class EventConsumer(WebsocketConsumer):
                             msg = "[CQ:at,qq=%s]"%(user_id)+msg
                             self.send_message("group", group_id, msg)
         except Exception as e:
-            traceback.print_exc() 
+            traceback.print_exc()
         self.bot.save()
 class WSConsumer(WebsocketConsumer):
     def connect(self):
