@@ -5,7 +5,7 @@ import os
 import codecs
 import urllib
 import base64
-sys.path.append('/home/ubuntu/FFXIVBOT/')
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 os.environ['DJANGO_SETTINGS_MODULE'] ='FFXIVBOT.settings'
 from FFXIVBOT import settings
 import django
@@ -21,7 +21,7 @@ from ffxivbot.models import *
 def progress(percent,width=50):
     if percent >= 100:
         percent=100
-    show_str=('[%%-%ds]' %width) %(int(width * percent/100)*"#") 
+    show_str=('[%%-%ds]' %width) %(int(width * percent/100)*"#")
     print('\r%s %d%%' %(show_str,percent),end='')
 
 
@@ -48,7 +48,7 @@ def crawl_wb(weibouser):
 	else:
 		print("Error at crawling weibo:{}".format(jdata["ok"]))
 		pass
-	return 
+	return
 
 if __name__=="__main__":
 	wbus = WeiboUser.objects.all()

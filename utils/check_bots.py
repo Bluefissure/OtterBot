@@ -5,7 +5,7 @@ import os
 import codecs
 import urllib
 import base64
-sys.path.append('/home/ubuntu/FFXIVBOT/')
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 os.environ['DJANGO_SETTINGS_MODULE'] ='FFXIVBOT.settings'
 from FFXIVBOT import settings
 import django
@@ -13,7 +13,7 @@ import string
 from django.db import connection, connections
 django.setup()
 from ffxivbot.models import *
-from channels.layers import get_channel_layer 
+from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
 channel_layer = get_channel_layer()
 qqbots = QQBot.objects.all()
