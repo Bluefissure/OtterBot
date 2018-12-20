@@ -5,9 +5,14 @@ python:
   - "nightly" # currently points to 3.7-dev
 services:
   - redis-server
+  - rabbitmq
+  - mysql
 # command to install dependencies
 install: "pip install -r requirements.txt"
 before_script:
+  # - mysql -e 'CREATE DATABASE FFXIV_DEV;'
+  - mysql -u root -e "CREATE USER 'FFXIV_DEV'@'localhost' IDENTIFIED BY 'PASSWORD';"
+  - python manage.py makemigrations ffxivbot
   - python manage.py makemigrations
   - python manage.py migrate
 # command to run tests
