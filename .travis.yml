@@ -18,7 +18,6 @@ before_script:
   - python manage.py migrate
 # command to run tests
 script: 
-  - python manage.py test
   - python manage.py check
 
 after_success: 
