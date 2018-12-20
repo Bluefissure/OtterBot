@@ -4,6 +4,7 @@ from channels.exceptions import StopConsumer
 from django.db import transaction
 channel_layer = get_channel_layer()
 from asgiref.sync import async_to_sync
+import os
 import json
 from collections import OrderedDict
 import datetime
