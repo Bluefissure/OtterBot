@@ -15,6 +15,8 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
+from django.conf.urls.static import static
+from django.conf import settings
 from ffxivbot.views import *
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -22,7 +24,4 @@ urlpatterns = [
     path('tata/', tata),
     path('quest/', quest),
     path('api/', api),
-    # path('ws_event/', qqpost_ws_event),
-    # path('ws_api/', qqpost_ws_api),
-    # path('ws/', qqpost_ws),
-]
+] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

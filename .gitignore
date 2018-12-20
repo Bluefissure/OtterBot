@@ -1,8 +1,8 @@
 *.pyc
+.python-version
 *.log
 *.sqlite3
 config.json
-static/
 venv/
+static/
 __pycache__/
-ffxivbot/migrations
