@@ -10,13 +10,15 @@ services:
 # command to install dependencies
 install: "pip install -r requirements.txt"
 before_script:
-  # - mysql -e 'CREATE DATABASE FFXIV_DEV;'
+  - mysql -e 'CREATE DATABASE FFXIV_DEV;'
   - mysql -u root -e "CREATE USER 'FFXIV_DEV'@'localhost' IDENTIFIED BY 'PASSWORD';"
   - python manage.py makemigrations ffxivbot
   - python manage.py makemigrations
   - python manage.py migrate
 # command to run tests
-script: python manage.py test
+script: 
+  - python manage.py test
+  - python manage.py check
 
 after_success: 
   - bash <(curl -s https://codecov.io/bash)
