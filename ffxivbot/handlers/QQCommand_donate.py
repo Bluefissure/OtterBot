@@ -12,7 +12,9 @@ def QQCommand_donate(*args, **kwargs):
         action_list = []
         receive = kwargs["receive"]
 
-        msg = [{"type":"text","data":{"text":"我很可爱(*╹▽╹*)请给我钱（来租服务器养活獭獭及其类似物）"}},{"type":"image","data":{"file":QQ_BASE_URL+"static/alipay.jpg"}}]
+        msg = [{"type":"text","data":{"text":"我很可爱(*╹▽╹*)请给我钱"}},
+            {"type":"image","data":{"file":QQ_BASE_URL+"static/alipay.jpg"}},
+            {"type":"image","data":{"file":QQ_BASE_URL+"static/redpack.png"}}]
         # msg = [{"type":"text","data":{"text":"我很可爱(*╹▽╹*)但是不要捐助辣獭獭买了好多零食吃"}}]
 
         reply_action = reply_message_action(receive, msg)

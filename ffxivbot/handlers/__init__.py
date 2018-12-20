@@ -13,7 +13,7 @@ commands = {
   "/anime":"以图搜番（\"/anime 图片\"）",
   "/gate":"挖宝选门（\"/gate 3\"）",
   "/random":"掷骰子",
-  "/weather":"天气信息（未完成，请使用\"/pzz\",\"/blizzard\"）",
+  "/weather":"天气信息（快捷命令\"/fog\",\"/heat_wave\",\"/thunder\",\"/blizzard\"）",
   "/gif":"生成沙雕图（\"/gif help\"）",
   "/dps":"查询国际服同期DPS排名（\"/dps 8s 骑士\"）",
   "/raid":"查询零式英雄榜（\"/raid 蓝色裂痕 萌芽池\"）",
@@ -39,8 +39,11 @@ group_commands = {
 }
 
 alter_commands = {
-  "/pzz":"/weather eureka pzz",
-  "/blizzard":"/weather eureka blizzard",
+  "/pzz":"/weather 优雷卡常风之地 强风",
+  "/blizzard":"/weather 优雷卡恒冰之地 暴雪",
+  "/fog":"/weather 优雷卡恒冰之地 薄雾",
+  "/thunder":"/weather 优雷卡恒冰之地 打雷",
+  "/heat_wave":"/weather 优雷卡恒冰之地 热风",
   "/register_group":"/group register",
   "/welcome_demo":"/welcome demo",
   "/set_welcome_msg":"/welcome set",

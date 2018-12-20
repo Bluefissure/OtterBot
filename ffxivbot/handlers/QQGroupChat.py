@@ -41,25 +41,22 @@ def QQGroupChat(*args, **kwargs):
 
         
         #custom replys
-        custom_replys = CustomReply.objects.filter(group=group)
-        match_replys = []
         reply_enable = False if("/reply" in group_commands.keys() and group_commands["/reply"]=="disable") else True
         if reply_enable:
-            for item in custom_replys:
-                if(str(receive["message"].strip())==str(item.key)):
-                    match_replys.append(item)
-            if(len(match_replys)>0):
-                item = match_replys[random.randint(0,len(match_replys)-1)]
-                msg = item.value
-                msg_action = reply_message_action(receive, msg)
-                action_list.append(msg_action)
-                return action_list
-
+            try:
+                match_replys = CustomReply.objects.filter(group=group,key=receive["message"].strip().split(" ")[0])
+                if(len(match_replys)>0):
+                    item = match_replys[random.randint(0,len(match_replys)-1)]
+                    msg = item.value
+                    msg_action = reply_message_action(receive, msg)
+                    action_list.append(msg_action)
+                    return action_list
+            except Exception as e:
+                print("received message:{}".format(receive["message"]))
+                traceback.print_exc()
+        
         #repeat_ban & repeat
         chats = ChatMessage.objects.filter(group=group,timestamp__gt=time.time()-60,message=receive["message"].strip())
-        # del_chats = ChatMessage.objects.filter(group=group,timestamp__lt=time.time()-60)
-        # for item in del_chats:
-        #     item.delete()
         if(len(chats)>0):
             chat = chats[0]
             chat.timestamp = int(time.time())
@@ -83,7 +80,7 @@ def QQGroupChat(*args, **kwargs):
                     action = reply_message_action(receive, chat.message)
                     action_list.append(action)
                     chat.repeated = True
-                    chat.save()
+                    chat.save(update_fields=["repeated"])
         else:
             if(group.repeat_ban>0 or (group.repeat_length>=1 and group.repeat_prob>0) ):
                 if(receive["self_id"]!=receive["user_id"]):
@@ -110,8 +107,6 @@ def QQGroupChat(*args, **kwargs):
         if("[CQ:at,qq=%s]"%(receive["self_id"]) in receive["message"] and chat_enable):
             if(group.left_reply_cnt <= 0):
                 msg = "聊天限额已耗尽，请等待回复。"
-            # elif(str(receive["user_id"]) in group.bots):
-            #     msg = "本%s不理机器人。"%(bot.name)
             else:
                 logging.debug("Tuling reply")
                 receive_msg = receive["message"]
@@ -140,10 +135,9 @@ def QQGroupChat(*args, **kwargs):
                 msg = "[CQ:at,qq=%s] "%(receive["user_id"])+msg
             action = reply_message_action(receive, msg)
             action_list.append(action)
-
         return action_list
     except Exception as e:
         msg = "Error: {}".format(type(e))
         traceback.print_exc()
         logging.error(e)
-        return []
+    return []

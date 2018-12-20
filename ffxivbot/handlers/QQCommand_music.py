@@ -31,12 +31,14 @@ def search_word(word):
         msg = [{
                 "type": "music",
                 "data": {
-                    "type": "custom",
-                    "url":"https://music.163.com/#/song?id={}".format(song_id),
-                    "audio":song_data["url"],
-                    "title":song["name"],
-                    "content":song["alia"][0] if len(song["alia"])>0 else "",
-                    "image":song["al"]["picUrl"]
+                    "type": "163",
+                    "id": "{}".format(song_id)
+                    # "type": "custom",
+                    # "url":"https://music.163.com/#/song?id={}".format(song_id),
+                    # "audio":song_data["url"],
+                    # "title":song["name"],
+                    # "content":song["alia"][0] if len(song["alia"])>0 else "",
+                    # "image":song["al"]["picUrl"]
                 }
             }]
         # print("+++++++++++++++++++++++++++++++++++++++++{}".format(msg))
@@ -53,17 +55,20 @@ def QQCommand_music(*args, **kwargs):
         FF14WIKI_API_URL = global_config["FF14WIKI_API_URL"]
         FF14WIKI_BASE_URL = global_config["FF14WIKI_BASE_URL"]
         action_list = []
-
         receive = kwargs["receive"]
-        
-        message_content = receive["message"].replace('/music','',1).strip()
-        msg = "default msg"
-        if message_content.find("help")==0 or message_content=="":
-            msg = "/music $name : 搜索关键词$name的歌曲\n" + \
-                    "Powered by https://api.imjad.cn"
+
+        bot = kwargs["bot"]
+        if(time.time() < bot.api_time + bot.long_query_interval):
+            msg = "技能冷却中"
         else:
-            word = message_content
-            msg = search_word(word)
+            message_content = receive["message"].replace('/music','',1).strip()
+            msg = "default msg"
+            if message_content.find("help")==0 or message_content=="":
+                msg = "/music $name : 搜索关键词$name的歌曲\n" + \
+                        "Powered by https://api.imjad.cn"
+            else:
+                word = message_content
+                msg = search_word(word)
 
         if type(msg)==str:
             msg = msg.strip()

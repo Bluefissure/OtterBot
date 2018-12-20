@@ -1,9 +1,9 @@
-from channels.generic.websocket import WebsocketConsumer
-from channels.layers import get_channel_layer
+from channels.generic.websocket import WebsocketConsumer, AsyncWebsocketConsumer
+from channels.layers import get_channel_layer 
+from channels.exceptions import StopConsumer
 from django.db import transaction
 channel_layer = get_channel_layer()
 from asgiref.sync import async_to_sync
-import os
 import json
 from collections import OrderedDict
 import datetime
@@ -18,7 +18,7 @@ import math
 import requests
 import base64
 import random,sys
-import traceback
+import traceback  
 import codecs
 import html
 import hmac
@@ -26,148 +26,207 @@ import logging
 from bs4 import BeautifulSoup
 import urllib
 import gc
-# import objgraph
-
-logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
+import pika
+logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.ERROR)
 CONFIG_PATH = os.environ.get("FFXIVBOT_CONFIG", "/home/ubuntu/FFXIVBOT/ffxivbot/config.json")
 
-class APIConsumer(WebsocketConsumer):
-    @transaction.atomic
-    def connect(self):
-        header_list = self.scope["headers"]
-        headers = {}
-        for (k,v) in header_list:
-            headers[k.decode()] = v.decode()
-        ws_self_id = headers['x-self-id']
-        ws_client_role = headers['x-client-role']
-        ws_access_token = headers['authorization'].replace("Token","").strip()
-        bot = None
-        try:
-            bot = QQBot.objects.select_for_update().get(user_id=ws_self_id,access_token=ws_access_token)
-        except QQBot.DoesNotExist:
-            logging.error("%s:%s:API:AUTH_FAIL"%(ws_self_id, ws_access_token))
-            self.close()
-            return
-        self.bot = bot
-        self.bot_user_id = self.bot.user_id
-        self.bot.api_channel_name = self.channel_name
-        self.bot.api_time = int(time.time())
-        logging.debug("New API Connection:%s"%(self.channel_name))
-        self.bot.save()
-        logging.debug("API Channel connect from {} by channel:{}".format(self.bot.user_id,self.bot.api_channel_name))
-        self.accept()
+LOGGER = logging.getLogger(__name__)
 
-    def disconnect(self, close_code):
+class PikaPublisher():
+    def __init__(self, username="guest", password="guest", queue="ffxivbot"):
+        self.credentials = pika.PlainCredentials(username, password)
+        self.queue = queue
+        self.parameters =  pika.ConnectionParameters('127.0.0.1',5672,'/',self.credentials, heartbeat=0)
+        self.connection = pika.BlockingConnection(self.parameters)
+        self.channel = self.connection.channel()
+        self.priority_queue = {"x-max-priority":20,"x-message-ttl":60000}
+        self.channel.queue_declare(queue=self.queue, arguments=self.priority_queue)
+        
+
+    def send(self, body="null", priority=1):
+        if not self.connection.is_open:
+            self.connection = pika.BlockingConnection(self.parameters)
+            self.channel = self.connection.channel()
+            self.priority_queue = {"x-max-priority":20,"x-message-ttl":60000}
+            self.channel.queue_declare(queue=self.queue, arguments=self.priority_queue)
+        self.channel.basic_publish(exchange='',
+                      routing_key=self.queue,
+                      body=body,
+                      properties=pika.BasicProperties(content_type="text/plain",priority=priority))
+        # self.connection.close()
+
+    def exit(self):
+        if self.connection.is_open:
+            self.connection.close()
+
+
+class WSConsumer(AsyncWebsocketConsumer):
+    async def connect(self):
         try:
-            logging.debug("API Channel disconnect from {} by channel:{} {}s".format(
+            header_list = self.scope["headers"]
+            headers = {}
+            for (k,v) in header_list:
+                headers[k.decode()] = v.decode()
+            ws_self_id = headers['x-self-id']
+            ws_client_role = headers['x-client-role']
+            ws_access_token = headers['authorization'].replace("Token","").strip()
+            bot = None
+            # with transaction.atomic():
+        
+            # bot = QQBot.objects.select_for_update().get(user_id=ws_self_id,access_token=ws_access_token)
+            bot = QQBot.objects.get(user_id=ws_self_id,access_token=ws_access_token)
+        
+            self.bot = bot
+            self.bot_user_id = self.bot.user_id
+            self.bot.event_time = int(time.time())
+            self.bot.api_channel_name = self.channel_name
+            self.bot.event_channel_name = self.channel_name
+            LOGGER.debug("New Universal Connection:%s"%(self.channel_name))
+            self.bot.save(update_fields=["event_time","api_channel_name","event_channel_name"])
+            LOGGER.debug("Universal Channel connect from {} by channel:{}".format(self.bot.user_id,self.bot.api_channel_name))
+            self.pub = PikaPublisher()
+            await self.accept()
+        except QQBot.DoesNotExist:
+            LOGGER.error("%s:%s:API:AUTH_FAIL"%(ws_self_id, ws_access_token))
+            await self.close()
+            return
+        except Exception as e:
+            traceback.print_exc()
+            await self.close()
+            return
+        
+    async def disconnect(self, close_code):
+        try:
+            self.pub.exit()
+            LOGGER.debug("Universal Channel disconnect from {} by channel:{} {}s".format(
                 self.bot.user_id,
                 self.channel_name,
                 int(time.time())-int(self.bot.api_time)))
-            self.bot.refresh_from_db()
-            disconnections = json.loads(self.bot.disconnections)
-            disconnections.append({"type":"api","time":int(time.time())})
-            self.bot.disconnections = json.dumps(disconnections)
-            self.bot.save()
             gc.collect()
         except:
             pass
-    @transaction.atomic
-    def receive(self, text_data):
-        # print("API Channel received from {} channel:{}".format(self.bot.user_id,self.bot.api_channel_name))
-        try:
-            self.bot = QQBot.objects.select_for_update().get(user_id=self.bot_user_id)
-        except QQBot.DoesNotExist:
-            logging.error("QQBot.DoesNotExist:{}".format(self.bot_user_id))
-            return
-        self.bot.api_time = int(time.time())
-        self.bot.api_channel_name = self.channel_name
+        raise StopConsumer
+
+    async def receive(self, text_data):
+        # try:
+        #     # self.bot = QQBot.objects.select_for_update().get(user_id = self.bot_user_id)
+        #     self.bot = QQBot.objects.get(user_id = self.bot_user_id)
+        # except QQBot.DoesNotExist:
+        #     LOGGER.error("QQBot.DoesNotExist:{}".format(self.bot_user_id))
+        #     return
         receive = json.loads(text_data)
-        if(int(receive["retcode"])!=0):
-            if (int(receive["retcode"])==1 and receive["status"]=="async"):
-                logging.warning("API waring:"+text_data)
-            else:
-                logging.error("API error:"+text_data)
-        # print("API receive:{}".format(receive))
-        if("echo" in receive.keys()):
-            echo = receive["echo"]
-            logging.debug("echo:{} received".format(receive["echo"]))
-            if(echo.find("get_group_member_list")==0):
-                group_id = echo.replace("get_group_member_list:","").strip()
-                group = None
-                try:
-                    group = QQGroup.objects.select_for_update().get(group_id=group_id)
-                except QQGroup.DoesNotExist:
-                    logging.error("QQGroup.DoesNotExist:{}".format(self.group_id))
+        # print("receiving data:{}\n============================".format(json.dumps(receive)))
+        
+        if "post_type" in receive.keys():
+            self.bot.event_time = int(time.time())
+            self.bot.save(update_fields=["event_time"])
+            self.config = json.load(open(CONFIG_PATH,encoding="utf-8"))
+            already_reply = False
+            try:
+                receive = json.loads(text_data)
+                if(receive["post_type"] == "meta_event" and receive["meta_event_type"] == "heartbeat"):
+                    LOGGER.info("bot:{} Event heartbeat at time:{}".format(self.bot.user_id, int(time.time())))
+                    # await self.call_api("get_status",{},"get_status:{}".format(self.bot_user_id))
+                self_id = receive["self_id"]
+                if("message" in receive.keys()):
+                    if int(self_id)==3299510002:
+                        LOGGER.info("receving prototype message:{}".format(receive["message"]))
+                    priority = 1
+                    try:
+                        if len(json.loads(self.bot.group_list))>=10:
+                            priority += 1
+                        version_info = json.loads(self.bot.version_info)
+                        coolq_edition = version_info["coolq_edition"] if version_info and "coolq_edition" in version_info.keys() else ""
+                        if "Pro" in coolq_edition:
+                            priority += 1
+                    except:
+                        traceback.print_exc()
+                    if (receive["message"].find("/")==0 or receive["message"].find("\\")==0):
+                        priority += 1
+                        # command_stat = json.loads(self.bot.command_stat)
+                        # if "log" not in command_stat.keys():
+                        #     command_stat["log"] = []
+                        # command_stat["log"].append({
+                        #     "command":receive["message"].strip().split(" ")[0],
+                        #     "user":receive["user_id"],
+                        #     "time":int(time.time())
+                        #     })
+                        # self.bot.command_stat = json.dumps(command_stat)
+                        self.bot.save(update_fields=["event_time","command_stat"])
+                        self.pub.send(text_data, priority)
+                    else:
+                        push_to_mq = False
+                        if "group_id" in receive.keys():
+                            group_id = receive["group_id"]
+                            (group, group_created) = QQGroup.objects.get_or_create(group_id=group_id)
+                            push_to_mq = "[CQ:at,qq={}]".format(self_id) in receive["message"] or \
+                                            ((group.repeat_ban>0) or (group.repeat_length>1 and group.repeat_prob>0)) 
+                        if push_to_mq:
+                            self.pub.send(text_data, priority)
+
+
+                    # print("publishing to mq: {}".format(text_data))
                     return
-                group.member_list = json.dumps(receive["data"]) if receive["data"] else "[]"
-                logging.debug("group %s member updated"%(group.group_id))
-                group.save()
-            if(echo.find("get_group_list")==0):
-                # group_list = echo.replace("get_group_list:","").strip()
-                self.bot.group_list = json.dumps(receive["data"])
-            if(echo.find("_get_friend_list")==0):
-                # friend_list = echo.replace("_get_friend_list:","").strip()
-                self.bot.friend_list = json.dumps(receive["data"])
-            if(echo.find("get_version_info")==0):
-                self.bot.version_info = json.dumps(receive["data"])
-            if(echo.find("get_status")==0):
-                user_id = echo.split(":")[1]
-                if(not receive["data"] or not receive["data"]["good"]):
-                    logging.error("bot:{} offline at time:{}".format(user_id, int(time.time())))
+                
+                if(receive["post_type"] == "request" or receive["post_type"] == "event"):
+                    priority = 1
+                    self.pub.send(text_data, priority)
+
+            except Exception as e:
+                traceback.print_exc() 
+            # self.bot.save()
+        else:
+            self.bot.api_time = int(time.time())
+            self.bot.save(update_fields=["api_time"])
+            if(int(receive["retcode"])!=0):
+                if (int(receive["retcode"])==1 and receive["status"]=="async"):
+                    LOGGER.warning("API waring:"+text_data)
                 else:
-                    logging.debug("bot:{} API heartbeat at time:{}".format(user_id, int(time.time())))
+                    LOGGER.error("API error:"+text_data)
+            if("echo" in receive.keys()):
+                echo = receive["echo"]
+                LOGGER.debug("echo:{} received".format(receive["echo"]))
+                if(echo.find("get_group_member_list")==0):
+                    group_id = echo.replace("get_group_member_list:","").strip()
+                    try:
+                        # group = QQGroup.objects.select_for_update().get(group_id=group_id)
+                        group = QQGroup.objects.get(group_id=group_id)
+                        member_list = json.dumps(receive["data"]) if receive["data"] else "[]"
+                        group.member_list = member_list
+                        group.save(update_fields=["member_list"])
+                        #await self.send_message("group", group_id, "群成员信息刷新成功")
+                    except QQGroup.DoesNotExist:
+                        LOGGER.error("QQGroup.DoesNotExist:{}".format(self.group_id))
+                        return
+                    LOGGER.debug("group %s member updated"%(group.group_id))
+                if(echo.find("get_group_list")==0):
+                    self.bot.group_list = json.dumps(receive["data"])
+                    self.bot.save(update_fields=["group_list"])
+                if(echo.find("_get_friend_list")==0):
+                    # friend_list = echo.replace("_get_friend_list:","").strip()
+                    self.bot.friend_list = json.dumps(receive["data"])
+                    self.bot.save(update_fields=["friend_list"])
+                if(echo.find("get_version_info")==0):
+                    self.bot.version_info = json.dumps(receive["data"])
+                    self.bot.save(update_fields=["version_info"])
+                if(echo.find("get_status")==0):
+                    user_id = echo.split(":")[1]
+                    if(not receive["data"] or not receive["data"]["good"]):
+                        LOGGER.error("bot:{} not good at time:{}".format(user_id, int(time.time())))
+                    else:
+                        LOGGER.debug("bot:{} Universal heartbeat at time:{}".format(user_id, int(time.time())))
+            # self.bot.save()
 
-        self.bot.save()
-
-    def send_event(self, event):
-        logging.debug("APIChannel {} send_event with event:{}".format(self.channel_name, json.dumps(event)))
-        self.send(event["text"])
 
 
+    async def send_event(self, event):
+        LOGGER.debug("Universal Channel {} send_event with event:{}".format(self.channel_name, json.dumps(event)))
+        
+        # print("sending event:{}\n============================".format(json.dumps(event)))
+        await self.send(event["text"])
 
-class EventConsumer(WebsocketConsumer):
-    @transaction.atomic
-    def connect(self):
-        header_list = self.scope["headers"]
-        headers = {}
-        for (k,v) in header_list:
-            headers[k.decode()] = v.decode()
-        ws_self_id = headers['x-self-id']
-        ws_client_role = headers['x-client-role']
-        ws_access_token = headers['authorization'].replace("Token","").strip()
-        bot = None
-        try:
-            bot = QQBot.objects.select_for_update().get(user_id=ws_self_id,access_token=ws_access_token)
-        except QQBot.DoesNotExist:
-            logging.error("%s:%s:Event:AUTH_FAIL"%(ws_self_id, ws_access_token))
-            return
-        self.bot = bot
-        self.bot_user_id = self.bot.user_id
-        self.bot.event_channel_name = self.channel_name
-        self.bot.event_time = int(time.time())
-        self.bot.save()
-        logging.debug("Event Channel connect from {} by channel:{}".format(self.bot.user_id,self.bot.event_channel_name))
-        self.accept()
-
-    def disconnect(self, close_code):
-        try:
-            logging.debug("Event Channel disconnect from {} by channel:{} {}s".format(
-                self.bot.user_id,
-                self.channel_name,
-                int(time.time())-int(self.bot.event_time)))
-            self.bot.refresh_from_db()
-            disconnections = json.loads(self.bot.disconnections)
-            disconnections.append({"type":"event","time":int(time.time())})
-            self.bot.disconnections = json.dumps(disconnections)
-            self.bot.save()
-            gc.collect()
-        except:
-            pass
-
-    def call_api(self, action, params, echo=None):
-        # objgraph.show_growth()
-        # logging.debug("most types:")
-        # objgraph.show_most_common_types(10)
+    async def call_api(self, action, params, echo=None):
+        # print("calling api:{} {}\n============================".format(json.dumps(action),json.dumps(params)))
         if("async" not in action and not echo):
             action = action + "_async"
         jdata = {
@@ -176,49 +235,26 @@ class EventConsumer(WebsocketConsumer):
         }
         if echo:
             jdata["echo"] = echo
-        self.bot.refresh_from_db()
-        if(self.bot.api_channel_name == ""):
-            logging.error("empty channel for bot:{}".format(self.bot.user_id))
-            return
-        # channel_layer.send(self.bot.api_channel_name, {"type": "send.event","text": json.dumps(jdata),})
+        await self.send_event({"type": "send.event","text": json.dumps(jdata),})
 
-        async_to_sync(channel_layer.send)(self.bot.api_channel_name, {"type": "send.event","text": json.dumps(jdata),})
-        # async_to_sync(channel_layer.send)(self.bot.api_channel_name, {"type": "send.event","text": json.dumps(jdata),})
-
-    def call_event(self, action, params, echo=None):
-        if("async" not in action and echo is None):
-            action = action + "_async"
-        jdata = {
-            "action":action,
-            "params":params,
-        }
-        if echo:
-            jdata["echo"] = echo
-        self.bot.refresh_from_db()
-        if(self.bot.event_channel_name == ""):
-            logging.error("empty channel for bot:{}".format(self.bot.user_id))
-            return
-        # channel_layer.send(self.bot.api_channel_name, {"type": "send.event","text": json.dumps(jdata),})
-        async_to_sync(channel_layer.send)(self.bot.event_channel_name, {"type": "send.event","text": json.dumps(jdata),})
-
-    def send_message(self, private_group, uid, message):
+    async def send_message(self, private_group, uid, message):
         if(private_group=="group"):
-            self.call_api("send_group_msg",{"group_id":uid,"message":message})
+           await self.call_api("send_group_msg",{"group_id":uid,"message":message})
         if(private_group=="private"):
-            self.call_api("send_private_msg",{"user_id":uid,"message":message})
+           await self.call_api("send_private_msg",{"user_id":uid,"message":message})
 
 
 
-    def update_group_member_list(self,group_id):
-        self.call_api("get_group_member_list",{"group_id":group_id},"get_group_member_list:%s"%(group_id))
+    async def update_group_member_list(self,group_id):
+        await self.call_api("get_group_member_list",{"group_id":group_id},"get_group_member_list:%s"%(group_id))
 
-    def delete_message(self, message_id):
-        self.call_api("delete_msg",{"message_id":message_id})
+    async def delete_message(self, message_id):
+        await self.call_api("delete_msg",{"message_id":message_id})
 
 
-    def group_ban(self,group_id,user_id,duration):
+    async def group_ban(self,group_id,user_id,duration):
         json_data = {"group_id":group_id,"user_id":user_id,"duration":duration}
-        self.call_api("set_group_ban",json_data)
+        await self.call_api("set_group_ban",json_data)
 
     def intercept_action(self, action_list):
         modified_action_list = action_list
@@ -226,204 +262,3 @@ class EventConsumer(WebsocketConsumer):
             if "message" in modified_action_list[i]["params"].keys():
                 modified_action_list[i]["params"]["message"] = "此獭獭由于多次重连已被暂时停用，请联系开发者恢复，"
         return modified_action_list
-
-    @transaction.atomic
-    def receive(self, text_data):
-        # print("Event Channel receive from {} by channel:{}".format(self.bot.user_id,self.bot.event_channel_name))
-        try:
-            self.bot = QQBot.objects.select_for_update().get(user_id=self.bot_user_id)
-        except QQBot.DoesNotExist:
-            logging.error("QQBot.DoesNotExist:{}".format(self.bot_user_id))
-            return
-        self.bot.event_time = int(time.time())
-        # if(int(time.time()) > self.bot.api_time+60):
-        #     self.call_api("get_status",{},"get_status:{}".format(self.bot_user_id))
-        self.bot.event_channel_name = self.channel_name
-        self.config = json.load(open(CONFIG_PATH,encoding="utf-8"))
-
-        try:
-            receive = json.loads(text_data)
-            if(receive["post_type"] == "meta_event" and receive["meta_event_type"] == "heartbeat"):
-                logging.debug("bot:{} Event heartbeat at time:{}".format(self.bot.user_id, int(time.time())))
-                self.call_api("get_status",{},"get_status:{}".format(self.bot_user_id))
-
-            if (receive["post_type"] == "message"):
-                # Self-ban in group
-                user_id = receive["user_id"]
-                group_id = None
-                group = None
-                if (receive["message_type"]=="group"):
-                    group_id = receive["group_id"]
-                    group_list = QQGroup.objects.filter(group_id=group_id)
-                    if len(group_list)>0:
-                        group = group_list[0]
-                        if(int(time.time())<group.ban_till):
-                            return
-                        group_bots = json.loads(group.bots)
-                        if(user_id in group_bots):
-                            return
-                        group_commands = json.loads(group.commands)
-
-
-
-                if (receive["message"].find('/help')==0):
-                    msg =  ""
-                    for (k, v) in handlers.commands.items():
-                        msg += "{} : {}\n".format(k,v)
-                    msg = msg.strip()
-                    self.send_message(receive["message_type"], group_id or user_id, msg)
-
-                if (receive["message"].find('/ping')==0):
-                    msg =  ""
-                    msg += "[CQ:at,qq={}] {:.2f}s".format(receive["user_id"], time.time()-receive["time"])
-                    msg = msg.strip()
-                    self.send_message(receive["message_type"], group_id or user_id, msg)
-
-                for (alter_command, command) in handlers.alter_commands.items():
-                    if(receive["message"].find(alter_command)==0):
-                        receive["message"] = receive["message"].replace(alter_command, command, 1)
-
-                command_keys = sorted(handlers.commands.keys())
-                command_keys.reverse()
-                for command_key in command_keys:
-                    if(receive["message"].find(command_key)==0):
-                        if receive["message_type"]=="group" and group_commands:
-                            if command_key in group_commands.keys() and group_commands[command_key]=="disable":
-                                continue
-                        handle_method = getattr(handlers,"QQCommand_{}".format(command_key.replace("/","",1)))
-                        action_list = handle_method(receive=receive, global_config=self.config, bot=self.bot)
-                        # if(len(json.loads(self.bot.disconnections))>100):
-                        #     action_list = self.intercept_action(action_list)
-                        for action in action_list:
-                            self.call_api(action["action"],action["params"],echo=action["echo"])
-                        break
-
-                #Group Control Func
-                if (receive["message_type"]=="group"):
-                    (group, group_created) = QQGroup.objects.get_or_create(group_id=group_id)
-                    group_commands = json.loads(group.commands)
-                    try:
-                        member_list = json.loads(group.member_list)
-                        if group_created or not member_list:
-                            self.update_group_member_list(group_id)
-                            time.sleep(1)
-                            group.refresh_from_db()
-                            member_list = json.loads(group.member_list)
-                    except:
-                        self.update_group_member_list(group_id)
-                        member_list = []
-
-
-                    if (receive["message"].find('/group_help')==0):
-                        msg =  "" if member_list else "本群成员信息获取失败，请尝试重启酷Q并使用/update_group刷新群成员信息"
-                        for (k, v) in handlers.group_commands.items():
-                            msg += "{} : {}\n".format(k,v)
-                        msg = msg.strip()
-                        self.send_message(receive["message_type"], group_id or user_id, msg)
-                    else:
-                        if(receive["message"].find('/update_group')==0 or not member_list):
-                            self.update_group_member_list(group_id)
-                        #get sender's user_info
-                        if not group:
-                            logging.warning("No group:{}".format(group_id))
-                            return
-                        if not member_list:
-                            logging.warning("No member info for group:{}".format(group_id))
-                            return
-                        user_info = None
-                        for item in member_list:
-                            if(int(item["user_id"])==int(user_id)):
-                                user_info = item
-                                break
-                        if not user_info:
-                            logging.debug("No user info for user_id:{} in group:{}".format(user_id,group_id))
-                            return
-
-                        group_command_keys = sorted(handlers.group_commands.keys())
-                        group_command_keys.reverse()
-                        for command_key in group_command_keys:
-                            if(receive["message"].find(command_key)==0):
-                                if receive["message_type"]=="group" and group_commands:
-                                    if command_key in group_commands.keys() and group_commands[command_key]=="disable":
-                                        continue
-                                if not group.registered and command_key!="/group":
-                                    msg = "本群%s未在数据库注册，请群主使用/register_group命令注册"%(group_id)
-                                    self.send_message("group", group_id, msg)
-                                    break
-                                else:
-                                    handle_method = getattr(handlers,"QQGroupCommand_{}".format(command_key.replace("/","",1)))
-                                    action_list = handle_method(receive = receive,
-                                                                global_config = self.config,
-                                                                bot = self.bot,
-                                                                user_info = user_info,
-                                                                member_list = member_list,
-                                                                group = group,
-                                                                commands = handlers.commands,
-                                                                group_commands = handlers.group_commands,
-                                                                alter_commands = handlers.alter_commands,
-                                                                )
-                                    # self.send_message(receive["message_type"], group_id or user_id, "獭獭维护中")
-                                    # if(len(json.loads(self.bot.disconnections))>100):
-                                    #     action_list = self.intercept_action(action_list)
-                                    for action in action_list:
-                                        self.call_api(action["action"],action["params"],echo=action["echo"])
-                                    break
-
-                    action_list = handlers.QQGroupChat(receive = receive,
-                                                        global_config = self.config,
-                                                        bot = self.bot,
-                                                        user_info = user_info,
-                                                        member_list = member_list,
-                                                        group = group,
-                                                        commands = handlers.commands,
-                                                        alter_commands = handlers.alter_commands,
-                                                        )
-                    for action in action_list:
-                        self.call_api(action["action"],action["params"],echo=action["echo"])
-
-
-
-            CONFIG_GROUP_ID = self.config["CONFIG_GROUP_ID"]
-            if (receive["post_type"] == "request"):
-                if (receive["request_type"] == "friend"):   #Add Friend
-                    qq = receive["user_id"]
-                    flag = receive["flag"]
-                    if(self.bot.auto_accept_friend):
-                        reply_data = {"flag":flag, "approve": True}
-                        self.call_api("set_friend_add_request",reply_data)
-                if (receive["request_type"] == "group" and receive["sub_type"] == "invite"):    #Invite Group
-                    flag = receive["flag"]
-                    if(self.bot.auto_accept_invite):
-                        reply_data = {"flag":flag, "sub_type":"invite", "approve": True}
-                        self.call_api("set_group_add_request",reply_data)
-                if (receive["request_type"] == "group" and receive["sub_type"] == "add" and str(receive["group_id"])==CONFIG_GROUP_ID):    #Add Group
-                    flag = receive["flag"]
-                    user_id = receive["user_id"]
-                    qs = QQBot.objects.filter(owner_id=user_id)
-                    if(len(qs)>0):
-                        reply_data = {"flag":flag, "sub_type":"add", "approve": True}
-                        self.call_api("set_group_add_request",reply_data)
-                        time.sleep(1)
-                        reply_data = {"group_id":CONFIG_GROUP_ID, "user_id":user_id, "special_title":"饲养员"}
-                        self.call_api("set_group_special_title", reply_data)
-            if (receive["post_type"] == "event"):
-                if (receive["event"] == "group_increase"):
-                    group_id = receive["group_id"]
-                    user_id = receive["user_id"]
-                    group_list = QQGroup.objects.filter(group_id=group_id)
-                    if len(group_list)>0:
-                        group = group_list[0]
-                        msg = group.welcome_msg.strip()
-                        if(msg!=""):
-                            msg = "[CQ:at,qq=%s]"%(user_id)+msg
-                            self.send_message("group", group_id, msg)
-        except Exception as e:
-            traceback.print_exc()
-        self.bot.save()
-class WSConsumer(WebsocketConsumer):
-    def connect(self):
-        pass
-    def disconnect(self, close_code):
-        pass
-    def receive(self, text_data):
-        pass

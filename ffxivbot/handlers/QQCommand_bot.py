@@ -13,6 +13,7 @@ def QQCommand_bot(*args, **kwargs):
         QQ_BASE_URL = global_config["QQ_BASE_URL"]
         action_list = []
         receive = kwargs["receive"]
+        bot = kwargs["bot"]
 
         msg = ""
         receive_msg = receive["message"].replace('/bot','',1).strip()
@@ -27,12 +28,35 @@ def QQCommand_bot(*args, **kwargs):
                 qquser.save()
                 qquser.refresh_from_db()
                 msg = "用户 {} 的token已被设定为：{}".format(qquser,qquser.bot_token)
-        elif receive_msg=="":
-            msg = "/bot token $token: 申请接收ACT插件消息时认证的token"
-        else:
-            msg = "无效的二级命令，二级命令有:\"token\""
+        elif receive_msg=="update":
+            user_id = receive["user_id"]
+            if(int(user_id)!=int(bot.owner_id)):
+                msg = "仅机器人领养者能刷新机器人状态"
+            else:
+                action_list.append({
+                    "action":"get_group_list",
+                    "params":{},
+                    "echo":"get_group_list",
+                })
+                action_list.append({
+                    "action":"_get_friend_list",
+                    "params":{"flat":True},
+                    "echo":"_get_friend_list",
+                })
+                action_list.append({
+                    "action":"get_version_info",
+                    "params":{},
+                    "echo":"get_version_info",
+                })
+                msg = "机器人状态统计请求已发送"
 
-        msg = msg.strip()
+        elif receive_msg=="":
+            msg = "/bot token $token: 申请接收ACT插件消息时认证的token\n"+\
+                "/bot update: 更新机器人统计信息\n"
+        else:
+            msg = "无效的二级命令，二级命令有:\"token\",\"update\""
+
+        msg = msg.strip() 
         if msg:
             reply_action = reply_message_action(receive, msg)
             action_list.append(reply_action)
