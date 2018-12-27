@@ -45,7 +45,7 @@ def QQGroupChat(*args, **kwargs):
         if reply_enable:
             try:
                 match_replys = CustomReply.objects.filter(group=group,key=receive["message"].strip().split(" ")[0])
-                if(len(match_replys)>0):
+                if(match_replys.exists()):
                     item = match_replys[random.randint(0,len(match_replys)-1)]
                     msg = item.value
                     msg_action = reply_message_action(receive, msg)
@@ -57,11 +57,11 @@ def QQGroupChat(*args, **kwargs):
         
         #repeat_ban & repeat
         chats = ChatMessage.objects.filter(group=group,timestamp__gt=time.time()-60,message=receive["message"].strip())
-        if(len(chats)>0):
+        if(chats.exists()):
             chat = chats[0]
             chat.timestamp = int(time.time())
             chat.times = chat.times+1
-            chat.save()
+            chat.save(update_fields=["timestamp", "times"])
             if(group.repeat_ban>0 and chat.times>=group.repeat_ban):
                 msg = "抓到你了，复读姬！╭(╯^╰)╮口球一分钟！"
                 if(user_info["role"]=="owner"):
@@ -131,7 +131,7 @@ def QQGroupChat(*args, **kwargs):
                     msg = msg.replace("图灵工程师妈妈",BOT_MOTHER)
                     msg = msg.replace("小主人",USER_NICKNAME)
                 group.left_reply_cnt = max(group.left_reply_cnt - 1, 0)
-                group.save()
+                group.save(update_fields=["left_reply_cnt"])
                 msg = "[CQ:at,qq=%s] "%(receive["user_id"])+msg
             action = reply_message_action(receive, msg)
             action_list.append(action)
