@@ -17,8 +17,8 @@ before_script:
   - python manage.py makemigrations
   - python manage.py migrate
 # command to run tests
-script: 
+script:
   - python manage.py check
 
-after_success: 
+after_success:
   - bash <(curl -s https://codecov.io/bash)
