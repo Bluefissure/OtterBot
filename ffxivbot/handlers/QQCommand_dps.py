@@ -66,23 +66,22 @@ def QQCommand_dps(*args, **kwargs):
             if(not job_obj):
                 msg = "未能定位职业:%s"%(receive_msg)
             else:
-                day = math.floor((int(time.time())-boss.cn_add_time)/(24*3600))
+                boss = boss_obj
+                job = job_obj
+                day = math.floor((int(time.time())-boss_obj.cn_add_time)/(24*3600))
                 if "CN" in receive_msg or "国服" in receive_msg:
                     CN_source = True
                     receive_msg = receive_msg.replace("CN","",1).replace("国服","",1)
                 if("国际服" in receive_msg):
                     receive_msg = receive_msg.replace("国际服","day#-1")
                 if("day#" in receive_msg):
-                    try:
-                        tmp_day = int(receive_msg.split(" ")[0].replace("day#",""))
-                        day = tmp_day
-                        receive_msg = receive_msg.replace("day#{}".format(tmp_day),"",1)
-                    except:
-                        pass
+                    tmp_day = int(receive_msg.split(" ")[0].replace("day#",""))
+                    day = tmp_day
+                    receive_msg = receive_msg.replace("day#{}".format(tmp_day),"",1)
                 if boss.frozen:
                     day = -1
                 atk_res = crawl_dps(boss=boss_obj,job=job_obj,day=day,CN_source=CN_source)
-                if type(atk_res)==str:
+                if type(atk_res) is str:
                     msg = "\nBoss:{}职业:{}第{}日的数据未抓取，请联系管理员抓取\n".format(boss,job,day)
                     msg += atk_res
                 else:
@@ -98,7 +97,7 @@ def QQCommand_dps(*args, **kwargs):
                         try:
                             atk = float(receive_msg)
                             assert(atk >= 0)
-                        except:
+                        except ValueError:
                             msg = "DPS数值解析失败:%s"%(receive_msg)
                         else:
                             atk_dict = atk_res

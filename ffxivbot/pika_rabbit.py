@@ -1,9 +1,9 @@
 import random
 import sys
 import os
-sys.path.append('/home/ubuntu/FFXIV/')
-os.environ['DJANGO_SETTINGS_MODULE'] ='FFXIV.settings'
-from FFXIV import settings
+sys.path.append('/home/ubuntu/FFXIVBOT/')
+os.environ['DJANGO_SETTINGS_MODULE'] ='FFXIVBOT.settings'
+from FFXIVBOT import settings
 import django
 from django.db import transaction
 django.setup()
@@ -34,14 +34,13 @@ from bs4 import BeautifulSoup
 import urllib
 import pika
 
-CONFIG_PATH = "/home/ubuntu/FFXIV/ffxivbot/config.json"
+CONFIG_PATH = "/home/ubuntu/FFXIVBOT/ffxivbot/config.json"
 
 def handle_message(bot, message):
     new_message = message
-    if type(message)==list:
+    if type(message) is list:
         new_message = []
-        for idx in range(len(message)):
-            msg = message[idx]
+        for idx, msg in enumerate(message):
             if msg["type"]=="share" and bot.share_banned:
                 share_data = msg["data"]
                 new_message.append({
@@ -380,6 +379,7 @@ class PikaConsumer(object):
                 call_api(bot, "get_status",{},"get_status:{}".format(self_id))
 
             if (receive["post_type"] == "message"):
+                # LOGGER.info('%s Handling message %s', os.getpid(), receive["message"])
                 # Self-ban in group
                 user_id = receive["user_id"]
                 if(QQBot.objects.filter(user_id=user_id).count()>0):
@@ -387,6 +387,11 @@ class PikaConsumer(object):
                     # LOGGER.error("{} reply from another bot:{}".format(receive["self_id"], user_id))
                     # self.acknowledge_message(basic_deliver.delivery_tag)
                     # return
+
+                for (alter_command, command) in handlers.alter_commands.items():
+                    if(receive["message"].find(alter_command)==0):
+                        receive["message"] = receive["message"].replace(alter_command, command, 1)
+                        
                 group_id = None
                 group = None
                 group_created = False
@@ -406,12 +411,12 @@ class PikaConsumer(object):
                         member_list = json.loads(group.member_list)
                         if group_created or not member_list:
                             update_group_member_list(bot, group_id)
-                    except:
+                    except json.decoder.JSONDecodeError:
                         member_list = []
                         
                     
                     if (receive["message"].find('/group_help')==0):
-                        msg =  "" if member_list else "本群成员信息获取失败，请尝试重启酷Q并使用/update_group刷新群成员信息"
+                        msg =  "" if member_list else "本群成员信息获取失败，请尝试重启酷Q并使用/update_group刷新群成员信息\n"
                         for (k, v) in handlers.group_commands.items():
                             msg += "{} : {}\n".format(k,v)
                         msg = msg.strip()
@@ -422,6 +427,7 @@ class PikaConsumer(object):
                         #get sender's user_info
 
                         user_info = receive["sender"] if "sender" in receive.keys() else None
+                        user_info = user_info if user_info and "role" in user_info.keys() else None
                         if member_list and not user_info:
                             for item in member_list:
                                 if(int(item["user_id"])==int(user_id)):
@@ -433,8 +439,7 @@ class PikaConsumer(object):
                             # self.acknowledge_message(basic_deliver.delivery_tag)
                             # return
 
-                        group_command_keys = sorted(handlers.group_commands.keys())
-                        group_command_keys.reverse()
+                        group_command_keys = sorted(handlers.group_commands.keys(), key=lambda x:-len(x))
                         for command_key in group_command_keys:
                             if(receive["message"].find(command_key)==0):
                                 if receive["message_type"]=="group" and group_commands:
@@ -478,9 +483,7 @@ class PikaConsumer(object):
 
 
                 
-                for (alter_command, command) in handlers.alter_commands.items():
-                    if(receive["message"].find(alter_command)==0):
-                        receive["message"] = receive["message"].replace(alter_command, command, 1)
+                
 
                 if (receive["message"].find('/help')==0):
                     msg =  ""
@@ -492,15 +495,20 @@ class PikaConsumer(object):
 
                 if (receive["message"].find('/ping')==0):
                     msg =  ""
-                    msg += "[CQ:at,qq={}] {:.2f}s".format(receive["user_id"], time.time()-receive["time"])
+                    if "detail" in receive["message"]:
+                        msg += "[CQ:at,qq={}]\ncoolq->server: {:.2f}s\nserver->rabbitmq: {:.2f}s".format(
+                            receive["user_id"], 
+                            receive["consumer_time"]-receive["time"], 
+                            time.time()-receive["consumer_time"])
+                    else:
+                        msg += "[CQ:at,qq={}] {:.2f}s".format(receive["user_id"], time.time()-receive["time"])
                     msg = msg.strip()
                     LOGGER.debug("{} calling command: {}".format(user_id, "/ping"))
                     send_message(bot, receive["message_type"], group_id or user_id, msg)
 
                 
 
-                command_keys = sorted(handlers.commands.keys())
-                command_keys.reverse()
+                command_keys = sorted(handlers.commands.keys(), key=lambda x:-len(x))
                 for command_key in command_keys:
                     if(receive["message"].find(command_key)==0):
                         if receive["message_type"]=="group" and group_commands:
@@ -549,13 +557,11 @@ class PikaConsumer(object):
                         if(msg!=""):
                             msg = "[CQ:at,qq=%s]"%(user_id)+msg
                             send_message(bot, "group", group_id, msg)
-                    except:
+                    except Exception as e:
                         traceback.print_exc()
             # print(" [x] Received %r" % body)
         except PikaException as pe:
             LOGGER.error(pe)
-        except:
-            traceback.print_exc()
 
         self.acknowledge_message(basic_deliver.delivery_tag)
 

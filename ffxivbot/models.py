@@ -25,7 +25,9 @@ class QQGroup(models.Model):
 	member_list = models.TextField(default="[]")
 	registered = models.BooleanField(default=False)
 	subscription = models.ManyToManyField(WeiboUser, related_name="subscribed_by", blank=True)
+	subscription_trigger_time = models.IntegerField(default="300")
 	commands = models.TextField(default="{}")
+	antifukubukuro = models.BooleanField(default=False)
 	def __str__(self):
 		return self.group_id
 
@@ -83,6 +85,7 @@ class Boss(models.Model):
 	add_time = models.BigIntegerField(default=0)
 	cn_add_time = models.BigIntegerField(default=0)
 	parsed_days = models.IntegerField(default=0)
+	frozen = models.BooleanField(default=False)
 	def __str__(self):
 		return str(self.name)
 
@@ -182,6 +185,7 @@ class SorryGIF(models.Model):
 class QQUser(models.Model):
 	user_id = models.CharField(max_length=16,unique=True)
 	bot_token = models.CharField(max_length=16)
+	able_to_upload_image = models.BooleanField(default=True)
 
 	def __str__(self):
 		return str(self.user_id)
@@ -211,3 +215,24 @@ class Territory(models.Model):
 
 	def __str__(self):
 		return self.name
+
+
+class Image(models.Model):
+	key = models.CharField(max_length=16, default="")
+	name = models.CharField(max_length=32, default="")
+	path = models.CharField(max_length=64, default="", unique=True)
+	img_hash = models.CharField(max_length=32, default="")
+	timestamp = models.IntegerField(default=0)
+	add_by = models.ForeignKey(QQUser, on_delete=models.CASCADE, related_name="upload_images")
+
+	def __str__(self):
+		return self.name
+
+# class CommandCache(models.Model):
+# 	command = models.CharField(max_length=128, unique=True)
+# 	cache = models.TextField(default="{}")
+# 	expiration = models.IntegerField(default=3600)
+# 	last_update_time = models.BigIntegerField(default=0)
+
+# 	def __str__(self):
+# 		return self.command

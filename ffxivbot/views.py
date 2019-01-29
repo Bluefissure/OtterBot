@@ -17,7 +17,9 @@ import re
 import json
 import pymysql
 import time
+from time import strftime, localtime
 from ffxivbot.models import *
+from ffxivbot.webapi import webapi
 from channels.layers import get_channel_layer 
 from asgiref.sync import async_to_sync
 from hashlib import md5
@@ -143,7 +145,7 @@ def tata(req):
 		bb["friend_num"] = friend_num
 		bb["coolq_edition"] = coolq_edition
 		bb["owner_id"] = bot.owner_id
-		bb["online"] = time.time() - bot.api_time < 300
+		bb["online"] = time.time() - bot.event_time < 300
 		bb["id"] = bot.id
 		bb["public"] = bot.public
 		bb["autoinvite"] = bot.auto_accept_invite
@@ -268,41 +270,126 @@ def get_nm_id(tracker, nm_name):
 			"阿玛洛克":18,
 			"拉玛什图":19,
 			"帕祖祖":20,
+
+			"雪之女王":21,
+			"塔克西姆":22,
+			"灰烬龙":23,
+			"异形魔虫":24,
+			"安娜波":25,
+			"白泽":26,
+			"雪屋王":27,
+			"阿萨格":28,
+			"苏罗毗":29,
+			"亚瑟罗王":30,
+			"唇亡齿寒":31,
+			"优雷卡圣牛":32,
+			"哈达约什":33,
+			"荷鲁斯":34,
+			"总领安哥拉":35,
+			"复制魔花凯西":36,
+			"娄希":37
 		}
 		for (k,v) in name_id.items():
 			if(k in nm_name):
 				return v
+	if(tracker=="ffxivsc"):
+		name_id = {
+			"科里多仙人刺":{"level":1,"type":1},
+			"常风领主":{"level":2,"type":1},
+			"忒勒斯":{"level":3,"type":1},
+			"常风皇帝":{"level":4,"type":1},
+			"卡利斯托":{"level":5,"type":1},
+			"群偶":{"level":6,"type":1},
+			"哲罕南":{"level":7,"type":1},
+			"阿米特":{"level":8,"type":1},
+			"盖因":{"level":9,"type":1},
+			"庞巴德":{"level":10,"type":1},
+			"塞尔凯特":{"level":11,"type":1},
+			"武断魔花茱莉卡":{"level":12,"type":1},
+			"白骑士":{"level":13,"type":1},
+			"波吕斐摩斯":{"level":14,"type":1},
+			"阔步西牟鸟":{"level":15,"type":1},
+			"极其危险物质":{"level":16,"type":1},
+			"法夫纳":{"level":17,"type":1},
+			"阿玛洛克":{"level":18,"type":1},
+			"拉玛什图":{"level":19,"type":1},
+			"帕祖祖":{"level":20,"type":1},
+			"雪之女王":{"level":20,"type":2},
+			"塔克西姆":{"level":21,"type":2},
+			"灰烬龙":{"level":22,"type":2},
+			"异形魔虫":{"level":23,"type":2},
+			"安娜波":{"level":24,"type":2},
+			"白泽":{"level":25,"type":2},
+			"雪屋王":{"level":26,"type":2},
+			"阿萨格":{"level":27,"type":2},
+			"苏罗毗":{"level":28,"type":2},
+			"亚瑟罗王":{"level":29,"type":2},
+			"唇亡齿寒":{"level":30,"type":2},
+			"优雷卡圣牛":{"level":31,"type":2},
+			"哈达约什":{"level":32,"type":2},
+			"荷鲁斯":{"level":33,"type":2},
+			"总领安哥拉":{"level":34,"type":2},
+			"复制魔花凯西":{"level":35,"type":2},
+			"娄希":{"level":36,"type":2}
+		}
+		for (k,v) in name_id.items():
+			if(k in nm_name):
+				return v
+		return {"level":-1,"type":-1}
 	return -1
+
 @csrf_exempt
 def api(req):
+	httpresponse = None
 	if req.method=="POST":
 		tracker = req.GET.get('tracker')
+		trackers = tracker.split(',')
 		print("tracker:{}".format(tracker))
 		if(tracker):
-			if(tracker=="ffxiv-eureka"):
+			if("ffxiv-eureka" in trackers):
 				instance = req.GET.get('instance')
 				password = req.GET.get('password')
-				print("ffxiv-eureka {}:{}".format(instance,password))
+				# print("ffxiv-eureka {}:{}".format(instance,password))
 				if(instance and password):
 					nm_name = req.POST.get('text')
 
 					if(nm_name):
 						nm_id = get_nm_id("ffxiv-eureka",nm_name)
-						print("nm_name:{} id:{}".format(nm_name,nm_id))
+						# print("nm_name:{} id:{}".format(nm_name,nm_id))
 						if(nm_id > 0):
-							print("nm_name:{} nm_id:{}".format(nm_name,nm_id))
-							ws = create_connection("wss://ffxiv-eureka.com/socket/websocket?vsn=2.0.0")
+							# print("nm_name:{} nm_id:{}".format(nm_name,nm_id))
+							# ws = create_connection("wss://ffxiv-eureka.com/socket/websocket?vsn=2.0.0")
+							ws = create_connection("wss://eureka.bluefissure.com/socket/websocket?vsn=2.0.0")
 							msg = '["1","1","instance:{}","phx_join",{{"password":"{}"}}]'.format(instance,password)
-							print(msg)
+							# print(msg)
 							ws.send(msg)
 							msg = '["1","2","instance:{}","set_kill_time",{{"id":{},"time":{}}}]'.format(instance,nm_id,int(time.time()*1000))
-							print(msg)
+							# print(msg)
 							ws.send(msg)
 							ws.close()
-							return HttpResponse("OK",status=200)
+							httpresponse = HttpResponse("OK",status=200)
 					else:
 						print("no nm_name")
-			elif(tracker=="qq"):
+			if("ffxivsc" in trackers):
+				key = req.GET.get('key')
+				# print("ffxiv-eureka {}:{}".format(instance,password))
+				if(key):
+					nm_name = req.POST.get('text')
+					if(nm_name):
+						nm_level_type = get_nm_id("ffxivsc",nm_name)
+						if(int(nm_level_type["type"]) > 0):
+							url = 'https://api.ffxivsc.cn/EurekaService/lobby/addKillTime'
+							post_data = {
+										  "killTime": strftime('%Y-%m-%d %H:%M',time.localtime()),
+										  "level": "{}".format(nm_level_type["level"]),
+										  "key": key,
+										  "type": "{}".format(nm_level_type["type"])
+										}
+							r = requests.post(url=url, data=post_data)
+							httpresponse = HttpResponse(r)
+					else:
+						print("no nm_name")
+			if("qq" in trackers):
 				bot_qq = req.GET.get('bot_qq')
 				qq = req.GET.get('qq')
 				token = req.GET.get('token')
@@ -327,10 +414,26 @@ def api(req):
 							"echo":"",
 						}
 						async_to_sync(channel_layer.send)(bot.api_channel_name, {"type": "send.event","text": json.dumps(jdata),})
-						return HttpResponse("OK",status=200)
-
-
-	return HttpResponse(status=404)
+						httpresponse = HttpResponse("OK",status=200)
+			if("webapi" in trackers):
+				qq = req.GET.get('qq')
+				token = req.GET.get('token')
+				print("qq:{}\ntoken:{}".format(qq,token))
+				if(qq and token):
+					qquser = None
+					try:
+						qquser = QQUser.objects.get(user_id=qq, bot_token=token)
+					except QQUser.DoesNotExist:
+						res_dict = {"response":"error","msg":"Invalid API token", "rcode":"101"}
+						return JsonResponse(res_dict)
+					if qquser:
+						res_dict = webapi(req)
+						return JsonResponse(res_dict)
+				else:
+					res_dict = {"response":"error","msg":"Invalid request", "rcode":"100"}
+					return JsonResponse(res_dict)
+				return HttpResponse(status=500)
+	return httpresponse if httpresponse else HttpResponse(status=404)
 
 
 @csrf_exempt
