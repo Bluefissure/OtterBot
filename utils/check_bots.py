@@ -39,4 +39,3 @@ for bot in qqbots:
         "echo":"get_version_info",
     }
     async_to_sync(channel_layer.send)(bot.api_channel_name, {"type": "send.event","text": json.dumps(jdata),})
-

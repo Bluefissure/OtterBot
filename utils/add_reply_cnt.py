@@ -24,4 +24,3 @@ def add_reply_cnt(num):
 
 
 add_reply_cnt(60)
-
