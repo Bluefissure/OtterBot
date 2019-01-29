@@ -34,17 +34,17 @@ import hmac
 from bs4 import BeautifulSoup
 import urllib
 from websocket import create_connection
-def ren2res(template, req, dict={},post_token=True):
-	dict.update({'user': False})
-	dict.update(csrf(req))
-	response = render(req, template, dict)
+def ren2res(template, req, render_dict={},post_token=True):
+	render_dict.update({'user': False})
+	render_dict.update(csrf(req))
+	response = render(req, template, render_dict)
 	return response
 
 # Create your views here.
 
 def tata(req):
 	if req.is_ajax() and req.method=='POST':
-		dict = {"response":"No response."}
+		res_dict = {"response":"No response."}
 		optype = req.POST.get("optype")
 		if (optype=="add_or_update_bot"):
 			botName = req.POST.get("botName")
@@ -57,23 +57,22 @@ def tata(req):
 			autoInvite = req.POST.get("autoInvite")
 			print("{},{},{},{},{},{},{}".format(botName,botID,ownerID,accessToken,tulingToken,autoFriend,autoInvite))
 			if(len(botName)<2):
-				dict = {"response":"error","msg":"机器人昵称太短"}
-				return JsonResponse(dict)
+				res_dict = {"response":"error","msg":"机器人昵称太短"}
+				return JsonResponse(res_dict)
 			elif(len(accessToken)<5):
-				dict = {"response":"error","msg":"Access Token太短"}
-				return JsonResponse(dict)
-			elif(len(ownerID.strip())==0):
-				dict = {"response":"error","msg":"领养者不能为空"}
-				return JsonResponse(dict)
+				res_dict = {"response":"error","msg":"Access Token太短"}
+				return JsonResponse(res_dict)
+			elif(not ownerID.strip()):
+				res_dict = {"response":"error","msg":"领养者不能为空"}
+				return JsonResponse(res_dict)
 			bots = QQBot.objects.filter(user_id=botID)
-			bot = None
-			if(len(bots)==0):
+			if(not bots.exists()):
 				bot = QQBot(user_id=botID,access_token=accessToken)
 				bot_created = True
 			else:
 				if(bots[0].access_token!=accessToken):
-					dict = {"response":"error","msg":"Token错误，请确认后重试。"}
-					return JsonResponse(dict)
+					res_dict = {"response":"error","msg":"Token错误，请确认后重试。"}
+					return JsonResponse(res_dict)
 				else:
 					bot = bots[0]
 					bot_created = False
@@ -85,32 +84,32 @@ def tata(req):
 				bot.auto_accept_friend = autoFriend and "true" in autoFriend
 				bot.auto_accept_invite = autoInvite and "true" in autoInvite
 				if(len(QQBot.objects.all())>=100 and bot_created):
-					dict = {"response":"error","msg":"机器人总数过多，请稍后再试"}
-					return JsonResponse(dict)
+					res_dict = {"response":"error","msg":"机器人总数过多，请稍后再试"}
+					return JsonResponse(res_dict)
 				bot.save()
 				if(bot_created):
-					dict = {"response":"success","msg":"{}({})添加成功，Token为:".format(bot.name,bot.user_id),"token":bot.access_token}
+					res_dict = {"response":"success","msg":"{}({})添加成功，Token为:".format(bot.name,bot.user_id),"token":bot.access_token}
 				else:
-					dict = {"response":"success","msg":"{}({})更新成功，Token为:".format(bot.name,bot.user_id),"token":bot.access_token}
-			return JsonResponse(dict)
+					res_dict = {"response":"success","msg":"{}({})更新成功，Token为:".format(bot.name,bot.user_id),"token":bot.access_token}
+			return JsonResponse(res_dict)
 		else:
-			id = req.POST.get("id")
+			bot_id = req.POST.get("id")
 			token = req.POST.get("token")
 			try:
-				bot = QQBot.objects.get(id=id,access_token=token)
+				bot = QQBot.objects.get(id=bot_id,access_token=token)
 			except Exception as e:
 				if "QQBot matching query does not exist" in str(e):
-					dict = {"response":"error","msg":"Token错误，请确认后重试。"}
+					res_dict = {"response":"error","msg":"Token错误，请确认后重试。"}
 				else:
-					dict = {"response":"error","msg":str(e)}
-				return JsonResponse(dict)
+					res_dict = {"response":"error","msg":str(e)}
+				return JsonResponse(res_dict)
 			if(optype=="switch_public"):
 				bot.public = not bot.public
 				bot.save()
-				dict["response"] = "success"
+				res_dict["response"] = "success"
 			elif(optype=="del_bot"):
 				bot.delete()
-				dict["response"] = "success"
+				res_dict["response"] = "success"
 			elif(optype=="download_conf"):
 				response = HttpResponse(content_type='application/octet-stream')
 				response['Content-Disposition'] = 'attachment; filename="{}.json"'.format(bot.user_id)
@@ -120,7 +119,7 @@ def tata(req):
 				return response
 			print(optype)
 			print(req.POST)
-		return JsonResponse(dict)
+		return JsonResponse(res_dict)
 
 	bots = QQBot.objects.all()
 	bot_list = []
@@ -156,7 +155,7 @@ def tata(req):
 
 def quest(req):
 	if req.is_ajax() and req.method=='POST':
-		dict = {"response":"No response."}
+		res_dict = {"response":"No response."}
 		optype = req.POST.get("optype")
 		if(optype=="search_quest"):
 			max_iter = req.POST.get("max_iter")
@@ -166,10 +165,10 @@ def quest(req):
 			sub_quest = sub_quest and "true" in sub_quest
 			start_quest = req.POST.get("start_quest")
 			start_quest = PlotQuest.objects.filter(name=start_quest)
-			start_quest = start_quest[0] if len(start_quest)>0 else None
+			start_quest = start_quest[0] if start_quest else None
 			end_quest = req.POST.get("end_quest")
 			end_quest = PlotQuest.objects.filter(name=end_quest)
-			end_quest = end_quest[0] if len(end_quest)>0 else None
+			end_quest = end_quest[0] if end_quest else None
 			max_iter = req.POST.get("max_iter")
 			print("main_quest:{}".format(main_quest))
 			print("sub_quest:{}".format(sub_quest))
@@ -177,10 +176,9 @@ def quest(req):
 			tmp_edge_list = []
 			edge_list = []
 			if(not start_quest and not end_quest):
-				dict["response"] = "找不到对应任务"
+				res_dict["response"] = "找不到对应任务"
 			elif(start_quest and end_quest):
-				dict["response"] = "TODO: Double Quest Search"
-				pass
+				res_dict["response"] = "TODO: Double Quest Search"
 			else:
 				single_quest = start_quest or end_quest
 				search_list = []
@@ -188,11 +186,11 @@ def quest(req):
 				search_list.append((single_quest, 1, 1))
 				search_list.append((single_quest, 2, 1))
 				if ("主线" in single_quest.category and not main_quest) or (not "主线" in single_quest.category and not sub_quest):
-					dict["response"] = "查询任务类别与所选类别不符，清选择正确的类别。"
-					return JsonResponse(dict)	
+					res_dict["response"] = "查询任务类别与所选类别不符，清选择正确的类别。"
+					return JsonResponse(res_dict)	
 				done_cnt = 0
 				tot_cnt = 0
-				while(len(search_list)>0 and search_iter<=min(int(max_iter),1000)):
+				while(search_list and search_iter<=min(int(max_iter),1000)):
 					try:
 						(now_quest, direction, search_iter) = search_list[0]
 						search_list = search_list[1:]
@@ -239,12 +237,12 @@ def quest(req):
 				perc = done_cnt/tot_cnt*100
 				perc = min(100, perc)
 				perc = max(0, perc)
-				dict["percentage"] = perc
-				dict["quest_dict"] = quest_dict
-				dict["quest_dict"] = quest_dict
-				dict["edge_list"] = edge_list
-				dict["response"] = "success"
-		return JsonResponse(dict)	
+				res_dict["percentage"] = perc
+				res_dict["quest_dict"] = quest_dict
+				res_dict["quest_dict"] = quest_dict
+				res_dict["edge_list"] = edge_list
+				res_dict["response"] = "success"
+		return JsonResponse(res_dict)	
 	return ren2res("quest.html",req,{})
 
 def get_nm_id(tracker, nm_name):
