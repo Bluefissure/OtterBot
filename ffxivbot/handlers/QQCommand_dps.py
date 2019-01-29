@@ -11,10 +11,6 @@ import re
 import traceback
 
 
-
-
-
-
 def QQCommand_dps(*args, **kwargs):
     try:
         global_config = kwargs["global_config"]
@@ -35,7 +31,7 @@ def QQCommand_dps(*args, **kwargs):
                 boss_nicknames = []
             boss_nicknames.append(boss.name)
             boss_nicknames.append(boss.cn_name)
-            boss_nicknames.sort(key=lambda x:len(x),reverse=True)
+            boss_nicknames.sort(key=len, reverse=True)
             for item in boss_nicknames:
                 if(receive_msg.find(item)==0):
                     receive_msg = receive_msg.replace(item,'',1).strip()
@@ -55,7 +51,7 @@ def QQCommand_dps(*args, **kwargs):
                     job_nicknames = []
                 job_nicknames.append(job.name)
                 job_nicknames.append(job.cn_name)
-                job_nicknames.sort(key=lambda x:len(x),reverse=True)
+                job_nicknames.sort(key=len, reverse=True)
                 for item in job_nicknames:
                     if(receive_msg.find(item)==0):
                         receive_msg = receive_msg.replace(item,'',1).strip()
@@ -81,7 +77,7 @@ def QQCommand_dps(*args, **kwargs):
                 if boss.frozen:
                     day = -1
                 atk_res = crawl_dps(boss=boss_obj,job=job_obj,day=day,CN_source=CN_source)
-                if type(atk_res) is str:
+                if isinstance(atk_res, str):
                     msg = "\nBoss:{}职业:{}第{}日的数据未抓取，请联系管理员抓取\n".format(boss,job,day)
                     msg += atk_res
                 else:

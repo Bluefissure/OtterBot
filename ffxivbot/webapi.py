@@ -85,7 +85,7 @@ def webapi(req):
 					boss_nicknames = []
 				boss_nicknames.append(boss.name)
 				boss_nicknames.append(boss.cn_name)
-				boss_nicknames.sort(key=lambda x:len(x),reverse=True)
+				boss_nicknames.sort(key=len,reverse=True)
 				for item in boss_nicknames:
 					if(boss_name.find(item)==0):
 						boss_obj = boss
@@ -105,7 +105,7 @@ def webapi(req):
 						job_nicknames = []
 					job_nicknames.append(job.name)
 					job_nicknames.append(job.cn_name)
-					job_nicknames.sort(key=lambda x:len(x),reverse=True)
+					job_nicknames.sort(key=len,reverse=True)
 					for item in job_nicknames:
 						if(job_name.find(item)==0):
 							job_obj = job
@@ -118,7 +118,7 @@ def webapi(req):
 					CN = req_data["CN"] if "CN" in req_data.keys() else False
 					day = req_data["day"] if "day" in req_data.keys() else math.ceil((int(time.time())-boss_obj.cn_add_time)/(24*3600))
 					atk_res = crawl_dps(boss=boss_obj,job=job_obj,day=day,CN_source=CN)
-					if type(atk_res)==str:
+					if isinstance(atk_res, str):
 						res_msg = atk_res.replace("Error:","",1)
 						res_dict = {"response":"error","msg":"DPS parsing error: {}".format(res_msg), "rcode":"1013"}
 					else:
@@ -163,5 +163,4 @@ def webapi(req):
 		res_dict = {"response":"error","msg":"Parameter type error", "rcode":"105"}
 	except Exception as e:
 		res_dict = {"response":"error","msg":"Unhandled Exception: {}".format(e), "rcode":"-1"}
-
 	return res_dict

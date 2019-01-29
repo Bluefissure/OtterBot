@@ -58,7 +58,6 @@ def search_rank(mode, nsfw=False):
     if illusts:
         tot_num = len(illusts)
         illust = illusts[random.randint(0, tot_num-1)]
-        sfw_illusts
         img_url = illust["image_urls"]["large"]
         rev_img_url = img_url.replace('pximg.net', 'pixiv.cat')
         msg = '[CQ:image,file={}]'.format(rev_img_url)
@@ -81,7 +80,6 @@ def search_word(word, nsfw=False):
     if illusts:
         tot_num = len(illusts)
         illust = illusts[random.randint(0, tot_num-1)]
-        sfw_illusts
         img_url = illust["image_urls"]["large"]
         rev_img_url = img_url.replace('pximg.net', 'pixiv.cat')
         msg = '[CQ:image,file={}]'.format(rev_img_url)
@@ -164,7 +162,7 @@ def QQCommand_pixiv(*args, **kwargs):
                 msg = search_word(word, receive["message_type"]=="private")
 
         
-        if type(msg)==str:
+        if isinstance(msg, str):
             msg = msg.strip()
         reply_action = reply_message_action(receive, msg)
         action_list.append(reply_action)

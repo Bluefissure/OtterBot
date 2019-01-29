@@ -38,7 +38,7 @@ CONFIG_PATH = "/home/ubuntu/FFXIVBOT/ffxivbot/config.json"
 
 def handle_message(bot, message):
     new_message = message
-    if type(message) is list:
+    if isinstance(message, list):
         new_message = []
         for idx, msg in enumerate(message):
             if msg["type"]=="share" and bot.share_banned:
