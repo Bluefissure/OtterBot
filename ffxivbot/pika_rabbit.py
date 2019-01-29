@@ -1,9 +1,9 @@
 import random
 import sys
 import os
-sys.path.append('/home/ubuntu/FFXIVBOT/')
-os.environ['DJANGO_SETTINGS_MODULE'] ='FFXIVBOT.settings'
-from FFXIVBOT import settings
+sys.path.append('/home/ubuntu/FFXIV/')
+os.environ['DJANGO_SETTINGS_MODULE'] ='FFXIV.settings'
+from FFXIV import settings
 import django
 from django.db import transaction
 django.setup()
@@ -34,7 +34,7 @@ from bs4 import BeautifulSoup
 import urllib
 import pika
 
-CONFIG_PATH = "/home/ubuntu/FFXIVBOT/ffxivbot/config.json"
+CONFIG_PATH = "/home/ubuntu/FFXIV/ffxivbot/config.json"
 
 def handle_message(bot, message):
     new_message = message

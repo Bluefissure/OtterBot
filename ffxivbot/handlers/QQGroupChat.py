@@ -7,19 +7,7 @@ import random
 import requests
 from bs4 import BeautifulSoup
 import traceback
-def get_weibotile_share(weibotile):
-    content_json = json.loads(weibotile.content)
-    mblog = content_json["mblog"]
-    bs = BeautifulSoup(mblog["text"],"html.parser")
-    res_data = {
-        "url":content_json["scheme"],
-        "title":bs.get_text().replace("\u200b","")[:32],
-        "content":"From {}\'s Weibo".format(weibotile.owner),
-        "image":mblog["user"]["profile_image_url"],
-    }
-    logging.debug("weibo_share")
-    logging.debug(json.dumps(res_data))
-    return res_data
+
 
 def QQGroupChat(*args, **kwargs):
     try:
@@ -87,6 +75,14 @@ def QQGroupChat(*args, **kwargs):
                     chat = ChatMessage(group=group,message=receive["message"].strip(),timestamp=time.time())
                     chat.save()
 
+        #fudai
+        if("收到福袋，请使用新版手机QQ查看" in receive["message"] and group.antifukubukuro):
+            print("福袋iiiiiiiiiiiii")
+            action = delete_message_action(receive["message_id"])
+            action_list.append(action)
+
+
+
         #weibo subscription
         wbus = group.subscription.all()
         for wbu in wbus:
@@ -97,7 +93,7 @@ def QQGroupChat(*args, **kwargs):
                     wbt.save()
                     res_data = get_weibotile_share(wbt)
                     tmp_msg = [{"type":"share","data":res_data}]
-                    if(wbt.crawled_time>=int(time.time())-60*10):
+                    if(wbt.crawled_time>=int(time.time())-group.subscription_trigger_time):
                         action = reply_message_action(receive, tmp_msg)
                         action_list.append(action)
                     break

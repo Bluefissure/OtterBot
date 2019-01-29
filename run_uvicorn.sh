@@ -1,1 +1,1 @@
-uvicorn --port 8002 FFXIVBOT.asgi:application 
+uvicorn --port 8002 FFXIV.asgi:application 

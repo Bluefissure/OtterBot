@@ -29,7 +29,7 @@ import urllib
 import gc
 import pika
 logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.ERROR)
-CONFIG_PATH = os.environ.get("FFXIVBOT_CONFIG", "/home/ubuntu/FFXIVBOT/ffxivbot/config.json")
+CONFIG_PATH = os.environ.get("FFXIV_CONFIG", "/home/ubuntu/FFXIV/ffxivbot/config.json")
 
 LOGGER = logging.getLogger(__name__)
 

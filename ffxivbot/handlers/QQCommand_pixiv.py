@@ -5,6 +5,7 @@ import logging
 import json
 import random
 import requests
+import requests_cache
 from bs4 import BeautifulSoup
 import urllib
 import logging
@@ -15,7 +16,7 @@ def is_nsfw(illust):
     if int(illust["x_restrict"])!=0:
         return True
     for item in illust["tags"]:
-        if "R-18" in item["name"]:
+        if "R-18" in item["name"] or "R18" in item["name"]:
             return True
     return False
 
