@@ -256,3 +256,32 @@ def search_item(name, FF14WIKI_BASE_URL, FF14WIKI_API_URL, url_quote=True):
         }
     logging.debug("res_data:%s"%(res_data))
     return res_data
+
+def check_raid(api_url, raid_data, raid_name, wol_name, server_name):
+    data = raid_data
+    r = requests.post(url=api_url,data=data)
+    res = json.loads(r.text)
+    msg = ""
+    if(int(res["Code"])!=0):
+        msg += res["Message"]
+    else:
+        ok = False
+        raid_info = ""
+        for i in range(4):
+            l = i+1
+            level = "Level{}".format(l)
+            if res["Attach"][level]:
+                ok = True
+                if len(res["Attach"][level].strip())==8:
+                    date = res["Attach"][level]
+                    fdate = "{}-{}-{}".format(date[:4],date[4:6],date[6:8])
+                    raid_info += "{}{}: {}\n".format(raid_name, l, fdate)
+                else:
+                    raid_info += "{}{}: 数据缺失\n".format(raid_name, l)
+            else:
+                raid_info += "{}{} : 仍未攻破\n".format(raid_name, l)
+        if not ok:
+            msg += "{}--{} 还没有突破过任何零式{}，请继续努力哦~\n".format(server_name, wol_name, raid_name)
+        else:
+            msg = "{}--{} 的 {} 挑战情况如下：\n".format(server_name, wol_name, raid_name) + raid_info
+    return msg
