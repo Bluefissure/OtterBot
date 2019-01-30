@@ -5,8 +5,8 @@
 config.json
 venv/
 static/
-ffxivbot/config.json
 __pycache__/
 
 #production files
 FFXIV/settings.py
+ffxivbot/config.json
