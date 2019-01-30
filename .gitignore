@@ -5,4 +5,5 @@
 config.json
 venv/
 static/
+ffxivbot/config.json
 __pycache__/
