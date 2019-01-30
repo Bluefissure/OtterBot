@@ -154,5 +154,3 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "static"),
 ]
 
-# Overwrite production settings
-from .production.settings import *
