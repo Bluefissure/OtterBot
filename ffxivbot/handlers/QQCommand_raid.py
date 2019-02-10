@@ -7,15 +7,19 @@ import random
 import requests
 
 def QQCommand_raid(*args, **kwargs):
-        try:
-            QQ_BASE_URL = kwargs["global_config"]["QQ_BASE_URL"]
-            action_list = []
-            receive = kwargs["receive"]
+    action_list = []
+    try:
+        QQ_BASE_URL = kwargs["global_config"]["QQ_BASE_URL"]
+        
+        receive = kwargs["receive"]
 
-            msg = "default message"
-            receive_msg = receive["message"]
-            receive_msg = receive_msg.replace("/raid","",1).strip()
-            args = receive_msg.split(" ")
+        msg = "default message"
+        receive_msg = receive["message"]
+        receive_msg = receive_msg.replace("/raid","",1).strip()
+        args = receive_msg.split(" ")
+        if len(args)<2:
+            msg = "参数格式错误：/raid 角色名 服务器"
+        else:
             wol_name = args[0].strip()
             server_name = args[1].strip()
             server = None
@@ -57,10 +61,11 @@ def QQCommand_raid(*args, **kwargs):
                         )
                 msg = msg.strip()
 
-            reply_action = reply_message_action(receive, msg)
-            action_list.append(reply_action)
-            return action_list
-        except Exception as e:
-            msg = "Error: {}".format(type(e))
-            action_list.append(reply_message_action(receive, msg))
-            logging.error(e)
+        reply_action = reply_message_action(receive, msg)
+        action_list.append(reply_action)
+        return action_list
+    except Exception as e:
+        msg = "Error: {}".format(type(e))
+        action_list.append(reply_message_action(receive, msg))
+        logging.error(e)
+    return action_list

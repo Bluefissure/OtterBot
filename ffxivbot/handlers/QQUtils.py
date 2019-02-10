@@ -204,57 +204,81 @@ def crawl_dps(boss, job, day=0, CN_source=False):
         return "Error: {}".format(e)
 
 def get_item_info(url):
-    r = requests.get(url,timeout=3)
-    bs = BeautifulSoup(r.text,"html.parser")
-    item_info = bs.find_all(class_='infobox-item ff14-content-box')[0]
-    item_title = item_info.find_all(class_='infobox-item--name-title')[0]
-    item_title_text = item_title.get_text().strip()
-    if item_title.img and item_title.img.attrs["alt"]=="Hq.png":
-        item_title_text += "(HQ)"
-    logging.debug("item_title_text:%s"%(item_title_text))
-    item_img = item_info.find_all(class_='item-icon--img')[0]
-    item_img_url = item_img.img.attrs['src'] if item_img and item_img.img else ""
-    item_content = item_info.find_all(class_='ff14-content-box-block')[0]
-    #print(item_info.prettify())
-    item_content_text = item_title_text
     try:
-        item_content_text = item_content.p.get_text().strip()
-    except Exception as e:
-        traceback.print_exc() 
-    res_data = {
-        "url":url,
-        "title":item_title_text,
-        "content":item_content_text,
-        "image":item_img_url,
-    }
+        r = requests.get(url,timeout=3)
+        if r.status_code==200:
+            bs = BeautifulSoup(r.text,"html.parser")
+            item_info = bs.find_all(class_='infobox-item ff14-content-box')[0]
+            item_title = item_info.find_all(class_='infobox-item--name-title')[0]
+            item_title_text = item_title.get_text().strip()
+            if item_title.img and item_title.img.attrs["alt"]=="Hq.png":
+                item_title_text += "(HQ)"
+            logging.debug("item_title_text:%s"%(item_title_text))
+            item_img = item_info.find_all(class_='item-icon--img')[0]
+            item_img_url = item_img.img.attrs['src'] if item_img and item_img.img else ""
+            item_content = item_info.find_all(class_='ff14-content-box-block')[0]
+            #print(item_info.prettify())
+            item_content_text = item_title_text
+            try:
+                item_content_text = item_content.p.get_text().strip()
+            except Exception as e:
+                traceback.print_exc() 
+            res_data = {
+                "url":url,
+                "title":item_title_text,
+                "content":item_content_text,
+                "image":item_img_url,
+            }
+        else:
+            res_data = {
+                "url":url,
+                "title":"FF14 WIKI 炸了",
+                "content":"HTTP {}".format(r.status_code),
+                "image":"",
+            }
+    except requests.exceptions.ReadTimeout:
+        res_data = {
+                "url":url,
+                "title":"道具界面请求超时了"%(name),
+                "content":"不信你自己打开看看",
+                "image":"",
+            }
     return res_data
 
 def search_item(name, FF14WIKI_BASE_URL, FF14WIKI_API_URL, url_quote=True):
     search_url = FF14WIKI_API_URL+"?format=json&action=parse&title=ItemSearch&text={{ItemSearch|name=%s}}"%(name)
-    r = requests.get(search_url, timeout=3)
-    # print(r.text)
-    res_data = json.loads(r.text)
-    bs = BeautifulSoup(res_data["parse"]["text"]["*"],"html.parser")
-    if("没有" in bs.p.string):
-        return False
-    res_num = int(bs.p.string.split(" ")[1])
-    item_names = bs.find_all(class_="item-name")
-    if len(item_names) == 1:
-        item_name = item_names[0].a.string
-        item_url = FF14WIKI_BASE_URL + item_names[0].a.attrs['href']
-        logging.debug("%s %s"%(item_name,item_url))
-        res_data = get_item_info(item_url)
-    else:
-        item_img = bs.find_all(class_="item-icon--img")[0]
-        item_img_url = item_img.img.attrs['src']
-        search_url = FF14WIKI_BASE_URL+"/wiki/ItemSearch?name="+urllib.parse.quote(name)
+    try:
+        r = requests.get(search_url, timeout=3)
+        # print(r.text)
+        res_data = json.loads(r.text)
+        bs = BeautifulSoup(res_data["parse"]["text"]["*"],"html.parser")
+        if("没有" in bs.p.string):
+            return False
+        res_num = int(bs.p.string.split(" ")[1])
+        item_names = bs.find_all(class_="item-name")
+        if len(item_names) == 1:
+            item_name = item_names[0].a.string
+            item_url = FF14WIKI_BASE_URL + item_names[0].a.attrs['href']
+            logging.debug("%s %s"%(item_name,item_url))
+            res_data = get_item_info(item_url)
+        else:
+            item_img = bs.find_all(class_="item-icon--img")[0]
+            item_img_url = item_img.img.attrs['src']
+            search_url = FF14WIKI_BASE_URL+"/wiki/ItemSearch?name="+urllib.parse.quote(name)
+            res_data = {
+                "url":search_url,
+                "title":"%s 的搜索结果"%(name),
+                "content":"在最终幻想XIV中找到了 %s 个物品"%(res_num),
+                "image":item_img_url,
+            }
+        logging.debug("res_data:%s"%(res_data))
+    except requests.exceptions.ReadTimeout:
         res_data = {
-            "url":search_url,
-            "title":"%s 的搜索结果"%(name),
-            "content":"在最终幻想XIV中找到了 %s 个物品"%(res_num),
-            "image":item_img_url,
-        }
-    logging.debug("res_data:%s"%(res_data))
+                "url":FF14WIKI_BASE_URL+"/wiki/ItemSearch?name="+urllib.parse.quote(name),
+                "title":"%s 的搜索请求超时了"%(name),
+                "content":"不信你自己打开看看",
+                "image":"",
+            }
     return res_data
 
 def check_raid(api_url, raid_data, raid_name, wol_name, server_name):

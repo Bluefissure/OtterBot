@@ -6,6 +6,7 @@ config.json
 venv/
 static/
 __pycache__/
+ffxivbot/migrations/
 
 #production files
 FFXIV/settings.py

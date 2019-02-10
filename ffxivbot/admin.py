@@ -11,9 +11,9 @@ class CustomReplyAdmin(admin.ModelAdmin):
     list_filter = ['group__group_id']
     search_fields = ['group__group_id','key','value']
 class ChatMessageAdmin(admin.ModelAdmin):
-    list_display = ('group','message','timestamp','times','repeated')
+    list_display = ('group','message','timestamp','message_hash','times','repeated')
     list_filter = ['group__group_id']
-    search_fields = ['group__group_id']
+    search_fields = ['group__group_id','message']
 
 class BanMemberAdmin(admin.ModelAdmin):
     list_display = ('user_id','group','vote_list')
@@ -53,6 +53,7 @@ class WeiboUserAdmin(admin.ModelAdmin):
 class WeiboTileAdmin(admin.ModelAdmin):
     list_display = ('itemid','owner','crawled_time')
     search_fields = ['itemid']
+    list_filter = ['owner']
 class PlotQuestAdmin(admin.ModelAdmin):
     list_display = ('name','area')
     list_filter = ['area','category','sub_category']
@@ -68,6 +69,26 @@ class SorryGIFAdmin(admin.ModelAdmin):
 class QQUserAdmin(admin.ModelAdmin):
     list_display = ("user_id", "bot_token")
 
+class HsoAlterNameAdmin(admin.ModelAdmin):
+    list_display = ("name", "key")
+
+class WeatherAdmin(admin.ModelAdmin):
+    list_display = ("id", "name")
+
+class WeatherRateAdmin(admin.ModelAdmin):
+    list_display = ["id"]
+
+class TerritoryAdmin(admin.ModelAdmin):
+    list_display = ["name"]
+    search_fields = ['name']
+
+class ImageAdmin(admin.ModelAdmin):
+    list_display = ["name","key"]
+    search_fields = ['name','key']
+    
+# class CommandCacheAdmin(admin.ModelAdmin):
+#     list_display = ["command","expiration","last_update_time"]
+#     search_fields = ['command']
 
 admin.site.register(QQGroup,QQGroupAdmin)
 admin.site.register(CustomReply,CustomReplyAdmin)
@@ -87,3 +108,8 @@ admin.site.register(Comment,CommentAdmin)
 admin.site.register(Server,ServerAdmin)
 admin.site.register(SorryGIF,SorryGIFAdmin)
 admin.site.register(QQUser,QQUserAdmin)
+admin.site.register(HsoAlterName,HsoAlterNameAdmin)
+admin.site.register(Weather,WeatherAdmin)
+admin.site.register(WeatherRate,WeatherRateAdmin)
+admin.site.register(Territory,TerritoryAdmin)
+admin.site.register(Image,ImageAdmin)

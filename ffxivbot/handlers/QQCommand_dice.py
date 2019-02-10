@@ -7,9 +7,9 @@ import random
 import dice
 
 def QQCommand_dice(*args, **kwargs):
+    action_list = []
     try:
         QQ_BASE_URL = kwargs["global_config"]["QQ_BASE_URL"]
-        action_list = []
         receive = kwargs["receive"]
 
         dice_msg = receive["message"].replace("/dice","",1).strip()
@@ -28,3 +28,4 @@ def QQCommand_dice(*args, **kwargs):
         msg = "Error: {}".format(type(e))
         action_list.append(reply_message_action(receive, msg))
         logging.error(e)
+    return action_list

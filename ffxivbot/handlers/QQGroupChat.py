@@ -5,6 +5,7 @@ import logging
 import json
 import random
 import requests
+import hashlib
 from bs4 import BeautifulSoup
 import traceback
 
@@ -27,7 +28,7 @@ def QQGroupChat(*args, **kwargs):
         group_id = receive["group_id"]
         group_commands = json.loads(group.commands)
 
-        
+
         #custom replys
         reply_enable = False if("/reply" in group_commands.keys() and group_commands["/reply"]=="disable") else True
         if reply_enable:
@@ -44,7 +45,9 @@ def QQGroupChat(*args, **kwargs):
                 traceback.print_exc()
         
         #repeat_ban & repeat
-        chats = ChatMessage.objects.filter(group=group,timestamp__gt=time.time()-60,message=receive["message"].strip())
+        message = receive["message"].strip()
+        message_hash = hashlib.md5(message.encode()).hexdigest()
+        chats = ChatMessage.objects.filter(group=group, message_hash=message_hash, timestamp__gt=time.time()-60)
         if(chats.exists()):
             chat = chats[0]
             chat.timestamp = int(time.time())
@@ -72,23 +75,15 @@ def QQGroupChat(*args, **kwargs):
         else:
             if(group.repeat_ban>0 or (group.repeat_length>=1 and group.repeat_prob>0) ):
                 if(receive["self_id"]!=receive["user_id"]):
-                    chat = ChatMessage(group=group,message=receive["message"].strip(),timestamp=time.time())
+                    chat = ChatMessage(group=group,message=message,timestamp=time.time(),message_hash=message_hash)
                     chat.save()
-
-        #fudai
-        if("收到福袋，请使用新版手机QQ查看" in receive["message"] and group.antifukubukuro):
-            print("福袋iiiiiiiiiiiii")
-            action = delete_message_action(receive["message_id"])
-            action_list.append(action)
-
-
 
         #weibo subscription
         wbus = group.subscription.all()
         for wbu in wbus:
             wbts = wbu.tile.all()
             for wbt in wbts:
-                if group not in wbt.pushed_group.all():
+                if not wbt.pushed_group.filter(group_id=group.group_id).exists():
                     wbt.pushed_group.add(group)
                     wbt.save()
                     res_data = get_weibotile_share(wbt)

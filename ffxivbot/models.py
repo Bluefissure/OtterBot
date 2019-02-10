@@ -44,15 +44,24 @@ class WeiboTile(models.Model):
 
 class CustomReply(models.Model):
 	group = models.ForeignKey(QQGroup,on_delete=models.CASCADE)
-	key = models.TextField(default="",blank=True)
+	key = models.CharField(default="",max_length=64,blank=True)
 	value = models.TextField(default="",blank=True)
+	class Meta:
+		indexes = [
+			models.Index(fields=['group', 'key']),
+		]
 
 class ChatMessage(models.Model):
 	group = models.ForeignKey(QQGroup,on_delete=models.CASCADE)
-	message = models.TextField(default="",blank=True)
+	message = models.TextField(default="", blank=True)
+	message_hash = models.CharField(default="", max_length=32, blank=True)
 	timestamp = models.BigIntegerField(default=0)
 	times = models.IntegerField(default=1)
 	repeated = models.BooleanField(default=False)
+	class Meta:
+		indexes = [
+			models.Index(fields=['group', 'message_hash']),
+		]
 
 class BanMember(models.Model):
 	user_id = models.CharField(max_length=16)

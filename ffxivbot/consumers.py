@@ -29,7 +29,7 @@ import urllib
 import gc
 import pika
 logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.ERROR)
-CONFIG_PATH = os.environ.get("FFXIVBOT_CONFIG", "/home/ubuntu/FFXIVBOT/ffxivbot/config.json")
+CONFIG_PATH = os.environ.get("FFXIVBOT_CONFIG", "/root/FFXIVBOT/ffxivbot/config.json")
 
 LOGGER = logging.getLogger(__name__)
 
@@ -177,9 +177,6 @@ class WSConsumer(AsyncWebsocketConsumer):
                             (group, group_created) = QQGroup.objects.get_or_create(group_id=group_id)
                             push_to_mq = "[CQ:at,qq={}]".format(self_id) in receive["message"] or \
                                             ((group.repeat_ban>0) or (group.repeat_length>1 and group.repeat_prob>0)) 
-                        if "福袋" in receive["message"]:
-                            push_to_mq = True
-                            priority = 5
                         if push_to_mq:
                             receive["consumer_time"] = time.time()
                             text_data = json.dumps(receive)
