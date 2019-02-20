@@ -30,7 +30,7 @@ Please read [wiki](https://github.com/Bluefissure/FFXIVBOT/wiki/%E4%BD%BF%E7%94%
 
 ## Demo
 
-[Configure site](http://111.231.102.248/tata)
+[Configure site](https://xn--v9x.net/tata)
 
 ![/cat](https://i.loli.net/2018/04/11/5acd9cd833831.png)
 ![/search](https://i.loli.net/2018/04/11/5acd9c2eef267.png)
@@ -47,6 +47,6 @@ A Visualization of FFXIV Quest
 
 ## Demo
 
-[Demo site](http://111.231.102.248/quest)
+[Demo site](https://xn--v9x.net/quest)
 
 ![](https://i.loli.net/2018/09/14/5b9b2dcabfc95.jpg)
