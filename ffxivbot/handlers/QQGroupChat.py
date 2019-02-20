@@ -75,6 +75,7 @@ def QQGroupChat(*args, **kwargs):
         else:
             if(group.repeat_ban>0 or (group.repeat_length>=1 and group.repeat_prob>0) ):
                 if(receive["self_id"]!=receive["user_id"]):
+                    # print("creating new chat message:{}".format(message))
                     chat = ChatMessage(group=group,message=message,timestamp=time.time(),message_hash=message_hash)
                     chat.save()
 

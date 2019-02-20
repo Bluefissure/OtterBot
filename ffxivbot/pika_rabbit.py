@@ -398,7 +398,8 @@ class PikaConsumer(object):
                 group = None
                 group_created = False
                 #Group Control Func
-                receive["message"] = receive["message"].replace('\\', '/', 1)
+                if receive["message"].find('\\')==0:
+                    receive["message"] = receive["message"].replace('\\', '/', 1)
                 if (receive["message_type"]=="group"):
                     group_id = receive["group_id"]
                     (group, group_created) = QQGroup.objects.get_or_create(group_id=group_id)

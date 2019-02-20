@@ -391,10 +391,12 @@ def api(req):
 				bot_qq = req.GET.get('bot_qq')
 				qq = req.GET.get('qq')
 				token = req.GET.get('token')
+				group_id = req.GET.get('group')
 				print("bot: {} qq:{} token:{}".format(bot_qq, qq, token))
 				if(bot_qq and qq and token):
 					bot = None
 					qquser = None
+					group = None
 					try:
 						bot = QQBot.objects.get(user_id=bot_qq)
 					except QQBot.DoesNotExist:
@@ -406,11 +408,35 @@ def api(req):
 					if bot and qquser:
 						channel_layer = get_channel_layer()
 						msg = req.POST.get('text')
-						jdata = {
-							"action":"send_private_msg",
-							"params":{"user_id":qquser.user_id,"message":msg},
-							"echo":"",
-						}
+						reqbody = req.body
+						try:
+							if reqbody:
+								reqbody = reqbody.decode()
+								reqbody = json.loads(reqbody)
+								msg = msg or reqbody["content"]
+						except:
+							pass
+						print("body:{}".format(req.body.decode()))
+						if group_id:
+							try:
+								group = QQGroup.objects.get(group_id=group_id)
+								group_push_list = [user["user_id"] for user in json.loads(group.member_list) if user["role"]=="owner" or user["role"]=="admin"]
+								print("group push list:{}".format(group_push_list))
+							except QQGroup.DoesNotExist:
+								print("group:{} does not exist".format(group_id))
+
+						if group and group.api and int(qquser.user_id) in group_push_list:
+							jdata = {
+								"action":"send_group_msg",
+								"params":{"group_id":group.group_id,"message":"Message from [CQ:at,qq={}]:\n{}".format(qquser.user_id, msg)},
+								"echo":"",
+							}
+						else:
+							jdata = {
+								"action":"send_private_msg",
+								"params":{"user_id":qquser.user_id,"message":msg},
+								"echo":"",
+							}
 						async_to_sync(channel_layer.send)(bot.api_channel_name, {"type": "send.event","text": json.dumps(jdata),})
 						httpresponse = HttpResponse("OK",status=200)
 			if("webapi" in trackers):

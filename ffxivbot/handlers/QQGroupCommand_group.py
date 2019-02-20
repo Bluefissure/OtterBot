@@ -36,16 +36,16 @@ def QQGroupCommand_group(*args, **kwargs):
                     group.subscription_trigger_time = 300
                 group.save(update_fields=["subscription_trigger_time"])
                 msg = "微博订阅时间被设定为{}s".format(group.subscription_trigger_time)
-            elif(second_command=="fudai"):
+            elif(second_command=="api"):
                 enable = second_command_msg.replace(second_command,"",1)
                 if "enable" in enable:
-                    group.antifukubukuro = False
+                    group.api = True
                 elif "disable" in enable:
-                    group.antifukubukuro = True
-                group.save(update_fields=["antifukubukuro"])
-                msg = "群内已{}福袋".format("禁止" if group.antifukubukuro else "开启")
+                    group.api = False
+                group.save(update_fields=["api"])
+                msg = "群内已{}獭のAPI功能".format("开启" if group.api else "禁止")
             else:
-                msg = "错误的命令，二级命令有:\"register\", \"info\", \"weibo\", \"fudai\""
+                msg = "错误的命令，二级命令有:\"register\", \"info\", \"weibo\", \"api\""
         reply_action = reply_message_action(receive, msg)
         action_list.append(reply_action)
         return action_list

@@ -24,6 +24,7 @@ commands = {
   "/pixiv":"Pixiv相关功能（\"/pixiv help\"）",
   "/music":"网易云音乐搜索（\"/music 届不到的恋\"）",
   "/duilian":"对联（\"/duilian 稻花香里说丰年\"）",
+  "/tex":"生成tex图片（\"/tex e^{\\pi i}+1=0\"）",
   "/hso":"好色哦"
 }
 
@@ -83,6 +84,7 @@ from .QQCommand_music import QQCommand_music
 from .QQCommand_duilian import QQCommand_duilian
 from .QQCommand_image import QQCommand_image
 from .QQCommand_nuannuan import QQCommand_nuannuan
+from .QQCommand_tex import QQCommand_tex
 
 
 from .QQGroupCommand_group import QQGroupCommand_group

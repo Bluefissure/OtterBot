@@ -42,6 +42,9 @@ def QQGroupCommand_ban(*args, **kwargs):
             else:
                 receive_msg = second_command_msg.strip()
                 msg_list = receive_msg.split(' ')
+                while('' in msg_list):
+                    msg_list.remove('')
+                # print(msg_list)
                 if(len(msg_list)>=1):
                     pattern = "[CQ:at,qq="
                     qq_str = msg_list[0]
@@ -107,11 +110,9 @@ def QQGroupCommand_ban(*args, **kwargs):
                                 msg = "禁言时长无效"
                             else:
                                 if(len(mems)==0):
-                                    default_ban_time = 2
-                                    ban_time = min(int(msg_list[1]),default_ban_time) if int(qq)!=int(receive["self_id"]) else int(msg_list[1])
+                                    max_ban_time = 10
+                                    ban_time = min(int(msg_list[1]),max_ban_time) if int(qq)!=int(receive["self_id"]) else int(msg_list[1])
                                     mem = BanMember(user_id=qq,group=group,ban_time=ban_time)
-                                    if(str(mem.user_id)==str(user_id)):
-                                        mem.ban_time = max(mem.ban_time,default_ban_time)
                                     vtlist = json.loads(mem.vote_list)
                                     vtlist["voted_by"] = []
                                     vtlist["voted_by"].append(str(receive["user_id"]))

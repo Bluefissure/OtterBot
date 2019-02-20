@@ -27,7 +27,7 @@ class QQGroup(models.Model):
 	subscription = models.ManyToManyField(WeiboUser, related_name="subscribed_by", blank=True)
 	subscription_trigger_time = models.IntegerField(default="300")
 	commands = models.TextField(default="{}")
-	antifukubukuro = models.BooleanField(default=False)
+	api = models.BooleanField(default=False)
 	def __str__(self):
 		return self.group_id
 
@@ -169,8 +169,11 @@ class PlotQuest(models.Model):
 
 class Comment(models.Model):
 	left_by = models.CharField(max_length=16)
+	left_group = models.CharField(max_length=16, default="")
 	left_time = models.BigIntegerField(default=0)
+	bot_id = models.CharField(max_length=16, default="")
 	content = models.TextField(default="",blank=True)
+	reply = models.TextField(default="",blank=True)
 	def __str__(self):
 		return self.content[:10]
 
@@ -237,11 +240,27 @@ class Image(models.Model):
 	def __str__(self):
 		return self.name
 
-# class CommandCache(models.Model):
-# 	command = models.CharField(max_length=128, unique=True)
-# 	cache = models.TextField(default="{}")
-# 	expiration = models.IntegerField(default=3600)
-# 	last_update_time = models.BigIntegerField(default=0)
+class Lottery(models.Model):
+	name = models.CharField(max_length=32, default="")
+	description = models.TextField(default="")
+	group = models.ForeignKey(QQGroup, on_delete=models.CASCADE, related_name="lotteries")
+	host_user = models.CharField(max_length=16, default="")
+	participate_user = models.TextField(default="[]")
+	random_res = models.TextField(default="{}")
+	begin_time = models.BigIntegerField(default=0)
+	end_time = models.BigIntegerField(default=0)
+	req_time = models.BigIntegerField(default=0)
+	uuid = models.CharField(max_length=36, unique=True)   # uuid.uuid4()
+	mode = models.IntegerField(default=1)	# 0: system random shuffle 1: random.org
+	def __str__(self):
+		return self.name
 
-# 	def __str__(self):
-# 		return self.command
+
+class ContentFinderItem(models.Model):
+	id = models.IntegerField(primary_key=True)
+	name = models.CharField(max_length=64, default="")
+	nickname = models.TextField(default="{}")
+	guide = models.TextField(default="")
+	def __str__(self):
+		return self.name
+	
