@@ -7,15 +7,19 @@ import random
 import requests
 
 def QQCommand_raid(*args, **kwargs):
-        try:
-            QQ_BASE_URL = kwargs["global_config"]["QQ_BASE_URL"]
-            action_list = []
-            receive = kwargs["receive"]
+    action_list = []
+    try:
+        QQ_BASE_URL = kwargs["global_config"]["QQ_BASE_URL"]
+        
+        receive = kwargs["receive"]
 
-            msg = "default message"
-            receive_msg = receive["message"]
-            receive_msg = receive_msg.replace("/raid","",1).strip()
-            args = receive_msg.split(" ")
+        msg = "default message"
+        receive_msg = receive["message"]
+        receive_msg = receive_msg.replace("/raid","",1).strip()
+        args = receive_msg.split(" ")
+        if len(args)<2:
+            msg = "参数格式错误：/raid 角色名 服务器"
+        else:
             wol_name = args[0].strip()
             server_name = args[1].strip()
             server = None
@@ -29,64 +33,39 @@ def QQCommand_raid(*args, **kwargs):
                 msg = ""
                 data = {
                     "method":"queryhreodata",
+                    "stage":1,
                     "name":wol_name,
                     "areaId":server.areaId,
                     'groupId':server.groupId,
                     }
-                r = requests.post(url="http://act.ff.sdo.com/20180525HeroList/Server/HeroList171213.ashx",data=data)
-                res = json.loads(r.text)
-                if(int(res["Code"])!=0):
-                    msg += res["Message"]
-                else:
-                    if res["Attach"]["Level1"]:
-                        msg += "{}--{} 的 西格玛幻境 挑战情况如下：\n".format(server.name, wol_name)
-                        for i in range(4):
-                            l = i+1
-                            level = "Level{}".format(l)
-                            raid_name = "西格玛幻境"
-                            if res["Attach"][level]:
-                                if len(res["Attach"][level].strip())==8:
-                                    date = res["Attach"][level]
-                                    fdate = "{}-{}-{}".format(date[:4],date[4:6],date[6:8])
-                                    msg += "{}{}: {}\n".format(raid_name, l, fdate)
-                                else:
-                                    msg += "{}{}: 数据缺失\n".format(raid_name, l)
-
-                            else:
-                                msg += "{}{} : 仍未攻破\n".format(raid_name, l)
-                    else:
-                        msg += "{}--{} 还没有突破过任何零式西格玛幻境，请继续努力哦~\n".format(server.name, wol_name)
-
-                r = requests.post(url="http://act.ff.sdo.com/20171213HeroList/Server/HeroList171213.ashx",data=data)
-                res = json.loads(r.text)
-                if(int(res["Code"])!=0):
-                    msg += res["Message"]
-                else:
-                    if res["Attach"]["Level1"]:
-                        msg += "{}--{} 的 德尔塔幻境 挑战情况如下：\n".format(server.name, wol_name)
-                        for i in range(4):
-                            l = i+1
-                            level = "Level{}".format(l)
-                            raid_name = "德尔塔幻境"
-                            if res["Attach"][level]:
-                                if len(res["Attach"][level].strip())==8:
-                                    date = res["Attach"][level]
-                                    fdate = "{}-{}-{}".format(date[:4],date[4:6],date[6:8])
-                                    msg += "{}{}: {}\n".format(raid_name, l, fdate)
-                                else:
-                                    msg += "{}{}: 数据缺失\n".format(raid_name, l)
-
-                            else:
-                                msg += "{}{} : 仍未攻破\n".format(raid_name, l)
-                    else:
-                        msg += "{}--{} 还没有突破过任何零式德尔塔幻境，请继续努力哦~\n".format(server.name, wol_name)
-
+                msg += check_raid(
+                        api_url="http://act.ff.sdo.com/20180525HeroList/Server/HeroList190128.ashx",
+                        raid_data=data,
+                        raid_name="阿尔法幻境",
+                        wol_name=wol_name,
+                        server_name=server.name
+                        )
+                msg += check_raid(
+                        api_url="http://act.ff.sdo.com/20180525HeroList/Server/HeroList171213.ashx",
+                        raid_data=data,
+                        raid_name="西格玛幻境",
+                        wol_name=wol_name,
+                        server_name=server.name
+                        )
+                msg += check_raid(
+                        api_url="http://act.ff.sdo.com/20171213HeroList/Server/HeroList171213.ashx",
+                        raid_data=data,
+                        raid_name="德尔塔幻境",
+                        wol_name=wol_name,
+                        server_name=server.name
+                        )
                 msg = msg.strip()
 
-            reply_action = reply_message_action(receive, msg)
-            action_list.append(reply_action)
-            return action_list
-        except Exception as e:
-            msg = "Error: {}".format(type(e))
-            action_list.append(reply_message_action(receive, msg))
-            logging.error(e)
+        reply_action = reply_message_action(receive, msg)
+        action_list.append(reply_action)
+        return action_list
+    except Exception as e:
+        msg = "Error: {}".format(type(e))
+        action_list.append(reply_message_action(receive, msg))
+        logging.error(e)
+    return action_list

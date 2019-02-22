@@ -5,8 +5,7 @@ import os
 import codecs
 import urllib
 import base64
-
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.append('/root/FFXIVBOT/')
 os.environ['DJANGO_SETTINGS_MODULE'] ='FFXIV.settings'
 from FFXIV import settings
 import django
@@ -14,13 +13,9 @@ import string
 from django.db import connection, connections
 django.setup()
 from ffxivbot.models import *
+from channels.layers import get_channel_layer 
+from asgiref.sync import async_to_sync
+chats = ChatMessage.objects.filter(timestamp__lt=time.time()-600)
+for chat in chats:
+    chat.delete()
 
-
-def add_reply_cnt(num):
-	groups = QQGroup.objects.all()
-	for item in groups:
-		item.left_reply_cnt = min(100, item.left_reply_cnt+num)
-		item.save()
-
-
-add_reply_cnt(60)

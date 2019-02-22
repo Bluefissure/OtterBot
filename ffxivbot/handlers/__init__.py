@@ -6,6 +6,7 @@ commands = {
   "/gakki":"云吸gakki",
   "/10":"云吸十元",
   "/bird":"云吸飞鸟",
+  "/image":"獭獭传图",
   "/comment":"给作者留言",
   "/about":"关于此项目",
   "/donate":"援助作者",
@@ -14,14 +15,16 @@ commands = {
   "/gate":"挖宝选门（\"/gate 3\"）",
   "/search":"在最终幻想XIV中查询物品(\"/search 神龙\")",
   "/weather":"天气信息（快捷命令\"/fog\",\"/heat_wave\",\"/thunder\",\"/blizzard\"）",
-  "/gif":"生成沙雕图（\"/gif help\"）",
   "/dps":"查询国际服同期DPS排名（\"/dps 8s 骑士\"）",
   "/raid":"查询零式英雄榜（\"/raid 蓝色裂痕 萌芽池\"）",
+  "/nuannuan":"查看本周金蝶暖暖作业",
+  "/gif":"生成沙雕图（\"/gif help\"）",
   "/dice":"DnD掷骰子（\"/dice 3d12\"）",
   "/bot":"机器人推送功能（\"/bot token 123\"）",
   "/pixiv":"Pixiv相关功能（\"/pixiv help\"）",
   "/music":"网易云音乐搜索（\"/music 届不到的恋\"）",
   "/duilian":"对联（\"/duilian 稻花香里说丰年\"）",
+  "/tex":"生成tex图片（\"/tex e^{\\pi i}+1=0\"）",
   "/hso":"好色哦"
 }
 
@@ -79,6 +82,9 @@ from .QQCommand_bot import QQCommand_bot
 from .QQCommand_pixiv import QQCommand_pixiv
 from .QQCommand_music import QQCommand_music
 from .QQCommand_duilian import QQCommand_duilian
+from .QQCommand_image import QQCommand_image
+from .QQCommand_nuannuan import QQCommand_nuannuan
+from .QQCommand_tex import QQCommand_tex
 
 
 from .QQGroupCommand_group import QQGroupCommand_group

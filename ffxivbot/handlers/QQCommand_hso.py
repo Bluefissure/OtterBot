@@ -8,6 +8,7 @@ import dice
 import feedparser
 import traceback
 import requests
+import requests_cache
 import time
 from bs4 import BeautifulSoup
 
@@ -50,6 +51,7 @@ def QQCommand_hso(*args, **kwargs):
                             params = "tags={}".format(second_command_msg)
                         api_url = "https://konachan.com/post.json?{}".format(params)
                         # print(api_url+"===============================================")
+                        requests_cache.install_cache('hso_cache', backend='redis', expire_after=3600)
                         r = requests.get(api_url)
                         img_json = json.loads(r.text)
 

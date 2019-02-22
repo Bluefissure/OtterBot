@@ -29,7 +29,7 @@ import urllib
 import gc
 import pika
 logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.ERROR)
-CONFIG_PATH = os.environ.get("FFXIVBOT_CONFIG", "/home/ubuntu/FFXIVBOT/ffxivbot/config.json")
+CONFIG_PATH = os.environ.get("FFXIVBOT_CONFIG", "/root/FFXIVBOT/ffxivbot/config.json")
 
 LOGGER = logging.getLogger(__name__)
 
@@ -63,14 +63,25 @@ class PikaPublisher():
 
 class WSConsumer(AsyncWebsocketConsumer):
     async def connect(self):
+        header_list = self.scope["headers"]
+        headers = {}
+        for (k,v) in header_list:
+            headers[k.decode()] = v.decode()
+        true_ip = None
         try:
-            header_list = self.scope["headers"]
-            headers = {}
-            for (k,v) in header_list:
-                headers[k.decode()] = v.decode()
+            true_ip = headers['x-forwarded-for']
             ws_self_id = headers['x-self-id']
             ws_client_role = headers['x-client-role']
             ws_access_token = headers['authorization'].replace("Token","").strip()
+            client_role = headers['x-client-role']
+            user_agent = headers['user-agent']
+            if client_role!='Universal':
+                LOGGER.error("Uknown client_role: {}".format(client_role))
+                await self.accept()
+            if "CQHttp" not in user_agent:
+                LOGGER.error("Uknown user_agent: {}".format(user_agent))
+                await self.accept()
+
             bot = None
             # with transaction.atomic():
         
@@ -88,13 +99,15 @@ class WSConsumer(AsyncWebsocketConsumer):
             self.pub = PikaPublisher()
             await self.accept()
         except QQBot.DoesNotExist:
-            LOGGER.error("%s:%s:API:AUTH_FAIL"%(ws_self_id, ws_access_token))
+            true_ip = headers['x-forwarded-for']
+            LOGGER.error("%s:%s:API:AUTH_FAIL from %s"%(ws_self_id, ws_access_token, true_ip))
             await self.close()
-            return
         except Exception as e:
+            true_ip = headers['x-forwarded-for']
+            LOGGER.error("Unauthed connection from %s"%(true_ip))
+            LOGGER.error(headers)
             traceback.print_exc()
             await self.close()
-            return
         
     async def disconnect(self, close_code):
         try:
@@ -130,8 +143,8 @@ class WSConsumer(AsyncWebsocketConsumer):
                     # await self.call_api("get_status",{},"get_status:{}".format(self.bot_user_id))
                 self_id = receive["self_id"]
                 if("message" in receive.keys()):
-                    if int(self_id)==3299510002:
-                        LOGGER.info("receving prototype message:{}".format(receive["message"]))
+                    # if int(self_id)==3299510002:
+                    #     LOGGER.info("receving prototype message:{}".format(receive["message"]))
                     priority = 1
                     try:
                         if len(json.loads(self.bot.group_list))>=10:
@@ -154,6 +167,8 @@ class WSConsumer(AsyncWebsocketConsumer):
                         #     })
                         # self.bot.command_stat = json.dumps(command_stat)
                         self.bot.save(update_fields=["event_time","command_stat"])
+                        receive["consumer_time"] = time.time()
+                        text_data = json.dumps(receive)
                         self.pub.send(text_data, priority)
                     else:
                         push_to_mq = False
@@ -163,6 +178,8 @@ class WSConsumer(AsyncWebsocketConsumer):
                             push_to_mq = "[CQ:at,qq={}]".format(self_id) in receive["message"] or \
                                             ((group.repeat_ban>0) or (group.repeat_length>1 and group.repeat_prob>0)) 
                         if push_to_mq:
+                            receive["consumer_time"] = time.time()
+                            text_data = json.dumps(receive)
                             self.pub.send(text_data, priority)
 
 
@@ -170,7 +187,7 @@ class WSConsumer(AsyncWebsocketConsumer):
                     return
                 
                 if(receive["post_type"] == "request" or receive["post_type"] == "event"):
-                    priority = 1
+                    priority = 2
                     self.pub.send(text_data, priority)
 
             except Exception as e:

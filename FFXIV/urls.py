@@ -1,4 +1,4 @@
-"""FFXIVBOT URL Configuration
+"""FFXIV URL Configuration
 
 The `urlpatterns` list routes URLs to views. For more information please see:
     https://docs.djangoproject.com/en/2.0/topics/http/urls/
@@ -18,10 +18,13 @@ from django.urls import path
 from django.conf.urls.static import static
 from django.conf import settings
 from ffxivbot.views import *
+from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', tata),
     path('tata/', tata),
     path('quest/', quest),
     path('api/', api),
-] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+]
+if settings.DEBUG == True:
+    urlpatterns += staticfiles_urlpatterns()

@@ -25,7 +25,9 @@ class QQGroup(models.Model):
 	member_list = models.TextField(default="[]")
 	registered = models.BooleanField(default=False)
 	subscription = models.ManyToManyField(WeiboUser, related_name="subscribed_by", blank=True)
+	subscription_trigger_time = models.IntegerField(default="300")
 	commands = models.TextField(default="{}")
+	api = models.BooleanField(default=False)
 	def __str__(self):
 		return self.group_id
 
@@ -42,15 +44,24 @@ class WeiboTile(models.Model):
 
 class CustomReply(models.Model):
 	group = models.ForeignKey(QQGroup,on_delete=models.CASCADE)
-	key = models.TextField(default="",blank=True)
+	key = models.CharField(default="",max_length=64,blank=True)
 	value = models.TextField(default="",blank=True)
+	class Meta:
+		indexes = [
+			models.Index(fields=['group', 'key']),
+		]
 
 class ChatMessage(models.Model):
 	group = models.ForeignKey(QQGroup,on_delete=models.CASCADE)
-	message = models.TextField(default="",blank=True)
+	message = models.TextField(default="", blank=True)
+	message_hash = models.CharField(default="", max_length=32, blank=True)
 	timestamp = models.BigIntegerField(default=0)
 	times = models.IntegerField(default=1)
 	repeated = models.BooleanField(default=False)
+	class Meta:
+		indexes = [
+			models.Index(fields=['group', 'message_hash']),
+		]
 
 class BanMember(models.Model):
 	user_id = models.CharField(max_length=16)
@@ -83,6 +94,7 @@ class Boss(models.Model):
 	add_time = models.BigIntegerField(default=0)
 	cn_add_time = models.BigIntegerField(default=0)
 	parsed_days = models.IntegerField(default=0)
+	frozen = models.BooleanField(default=False)
 	def __str__(self):
 		return str(self.name)
 
@@ -157,8 +169,11 @@ class PlotQuest(models.Model):
 
 class Comment(models.Model):
 	left_by = models.CharField(max_length=16)
+	left_group = models.CharField(max_length=16, default="")
 	left_time = models.BigIntegerField(default=0)
+	bot_id = models.CharField(max_length=16, default="")
 	content = models.TextField(default="",blank=True)
+	reply = models.TextField(default="",blank=True)
 	def __str__(self):
 		return self.content[:10]
 
@@ -182,6 +197,7 @@ class SorryGIF(models.Model):
 class QQUser(models.Model):
 	user_id = models.CharField(max_length=16,unique=True)
 	bot_token = models.CharField(max_length=16)
+	able_to_upload_image = models.BooleanField(default=True)
 
 	def __str__(self):
 		return str(self.user_id)
@@ -211,3 +227,40 @@ class Territory(models.Model):
 
 	def __str__(self):
 		return self.name
+
+
+class Image(models.Model):
+	key = models.CharField(max_length=16, default="")
+	name = models.CharField(max_length=32, default="")
+	path = models.CharField(max_length=64, default="", unique=True)
+	img_hash = models.CharField(max_length=32, default="")
+	timestamp = models.IntegerField(default=0)
+	add_by = models.ForeignKey(QQUser, on_delete=models.CASCADE, related_name="upload_images")
+
+	def __str__(self):
+		return self.name
+
+class Lottery(models.Model):
+	name = models.CharField(max_length=32, default="")
+	description = models.TextField(default="")
+	group = models.ForeignKey(QQGroup, on_delete=models.CASCADE, related_name="lotteries")
+	host_user = models.CharField(max_length=16, default="")
+	participate_user = models.TextField(default="[]")
+	random_res = models.TextField(default="{}")
+	begin_time = models.BigIntegerField(default=0)
+	end_time = models.BigIntegerField(default=0)
+	req_time = models.BigIntegerField(default=0)
+	uuid = models.CharField(max_length=36, unique=True)   # uuid.uuid4()
+	mode = models.IntegerField(default=1)	# 0: system random shuffle 1: random.org
+	def __str__(self):
+		return self.name
+
+
+class ContentFinderItem(models.Model):
+	id = models.IntegerField(primary_key=True)
+	name = models.CharField(max_length=64, default="")
+	nickname = models.TextField(default="{}")
+	guide = models.TextField(default="")
+	def __str__(self):
+		return self.name
+	

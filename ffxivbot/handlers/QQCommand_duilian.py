@@ -15,7 +15,7 @@ import traceback
 def get_xialian(shanglian):
     url = 'https://duilian.msra.cn/app/CoupletsWS_V2.asmx/GetXiaLian'
     data = {"shanglian":shanglian,"xialianLocker":"0"*len(shanglian),"isUpdate":False}
-    r = requests.post(url=url,data=json.dumps(data), headers={'Content-Type': 'application/json'}, timeout=3)
+    r = requests.post(url=url,data=json.dumps(data), headers={'Content-Type': 'application/json'}, timeout=15)
     # print(r.text)
     jres = json.loads(r.text)
     if "d" in jres.keys():
@@ -28,7 +28,7 @@ def get_xialian(shanglian):
 def get_hengpi(shanglian, xialian):
     url = 'https://duilian.msra.cn/app/CoupletsWS_V2.asmx/GetHengPi'
     data = {"shanglian":shanglian, "xialian":xialian}
-    r = requests.post(url=url,data=json.dumps(data), headers={'Content-Type': 'application/json'}, timeout=3)
+    r = requests.post(url=url,data=json.dumps(data), headers={'Content-Type': 'application/json'}, timeout=15)
     # print(r.text)
     jres = json.loads(r.text)
     if "d" in jres.keys():
