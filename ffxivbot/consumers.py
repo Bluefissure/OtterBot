@@ -70,6 +70,9 @@ class WSConsumer(AsyncWebsocketConsumer):
         true_ip = None
         try:
             true_ip = headers['x-forwarded-for']
+        except:
+            pass
+        try:
             ws_self_id = headers['x-self-id']
             ws_client_role = headers['x-client-role']
             ws_access_token = headers['authorization'].replace("Token","").strip()
@@ -99,11 +102,9 @@ class WSConsumer(AsyncWebsocketConsumer):
             self.pub = PikaPublisher()
             await self.accept()
         except QQBot.DoesNotExist:
-            true_ip = headers['x-forwarded-for']
             LOGGER.error("%s:%s:API:AUTH_FAIL from %s"%(ws_self_id, ws_access_token, true_ip))
             await self.close()
         except Exception as e:
-            true_ip = headers['x-forwarded-for']
             LOGGER.error("Unauthed connection from %s"%(true_ip))
             LOGGER.error(headers)
             traceback.print_exc()
@@ -157,15 +158,6 @@ class WSConsumer(AsyncWebsocketConsumer):
                         traceback.print_exc()
                     if (receive["message"].find("/")==0 or receive["message"].find("\\")==0):
                         priority += 1
-                        # command_stat = json.loads(self.bot.command_stat)
-                        # if "log" not in command_stat.keys():
-                        #     command_stat["log"] = []
-                        # command_stat["log"].append({
-                        #     "command":receive["message"].strip().split(" ")[0],
-                        #     "user":receive["user_id"],
-                        #     "time":int(time.time())
-                        #     })
-                        # self.bot.command_stat = json.dumps(command_stat)
                         self.bot.save(update_fields=["event_time","command_stat"])
                         receive["consumer_time"] = time.time()
                         text_data = json.dumps(receive)
@@ -181,8 +173,6 @@ class WSConsumer(AsyncWebsocketConsumer):
                             receive["consumer_time"] = time.time()
                             text_data = json.dumps(receive)
                             self.pub.send(text_data, priority)
-
-
                     # print("publishing to mq: {}".format(text_data))
                     return
                 
