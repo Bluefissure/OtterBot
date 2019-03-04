@@ -20,6 +20,8 @@ from ffxivbot.models import *
 from channels.layers import get_channel_layer 
 from asgiref.sync import async_to_sync
 from ffxivbot.handlers.QQUtils import *
+import logging
+logging.basicConfig(level = logging.INFO,format = '%(asctime)s - %(name)s - %(levelname)s - %(message)s',filename="log/crawl_wb.log")
 
 def progress(percent,width=50):
     if percent >= 100:
@@ -28,7 +30,7 @@ def progress(percent,width=50):
     print('\r%s %d%%' %(show_str,percent),end='')
 
 
-def crawl_wb(weibouser):
+def crawl_wb(weibouser, push=False):
 	uid = weibouser.uid
 	containerid = weibouser.containerid
 	url = r'https://m.weibo.cn/api/container/getIndex?type=uid&value={}&containerid={}'.format(uid,containerid)
@@ -44,9 +46,10 @@ def crawl_wb(weibouser):
 			t.content = json.dumps(tile)
 			t.crawled_time = int(time.time())
 			if(tile["itemid"]==""):
-				print("pass {} of {} cuz empty itemid".format(t.itemid, t.owner))
+				logging.info("pass {} of {} cuz empty itemid".format(t.itemid, t.owner))
 				continue
 			channel_layer = get_channel_layer()
+			
 			groups = weibouser.subscribed_by.filter(subscription_trigger_time=-1)
 			# print("ready to push groups:{}".format(groups))
 			bots = QQBot.objects.all()
@@ -58,37 +61,43 @@ def crawl_wb(weibouser):
 					for group in groups:
 						if int(group.group_id) in group_id_list:
 							msg = get_weibotile_share(t, mode="text")
-							# print("Pushing {} to group: {}".format(t, group))
+							logging.info("Pushing {} to group: {}".format(t, group))
 							# print("msg: {}".format(msg))
-							t.pushed_group.add(group)
-							jdata = {
-								"action":"send_group_msg",
-								"params":{"group_id":int(group.group_id),"message":msg},
-								"echo":"",
-							}
-							async_to_sync(channel_layer.send)(bot.api_channel_name, {"type": "send.event","text": json.dumps(jdata),})
+							if push:
+								t.pushed_group.add(group)
+								jdata = {
+									"action":"send_group_msg",
+									"params":{"group_id":int(group.group_id),"message":msg},
+									"echo":"",
+								}
+								async_to_sync(channel_layer.send)(bot.api_channel_name, {"type": "send.event","text": json.dumps(jdata),})
 				t.save()
 			except Exception as e:
-				print("Error at pushing crawled weibo: {}".format(e))
+				logging.error("Error at pushing crawled weibo: {}".format(e))
 
-			print("crawled {} of {}".format(t.itemid, t.owner))
+			logging.info("crawled {} of {}".format(t.itemid, t.owner))
 	else:
-		print("Error at crawling weibo:{}".format(jdata["ok"]))
+		logging.error("Error at crawling weibo:{}".format(jdata["ok"]))
 		pass
 	return
 
 def crawl():
 	wbus = WeiboUser.objects.all()
 	for wbu in wbus:
-		print("Begin crawling {}".format(wbu.name))
+		logging.info("Begin crawling {}".format(wbu.name))
 		try:
-			crawl_wb(wbu)
+			crawl_wb(wbu, True)
 		except Exception as e:
-			print(e)
+			logging.error(e)
 		time.sleep(1)
-		print("Crawl {} finish".format(wbu.name))
+		logging.info("Crawl {} finish".format(wbu.name))
 
 
 
 if __name__=="__main__":
-	crawl()
+	while True:
+		try:
+			crawl()
+		except:
+			logging.error("Error")
+		time.sleep(60)

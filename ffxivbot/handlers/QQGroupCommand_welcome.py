@@ -4,6 +4,7 @@ from ffxivbot.models import *
 import logging
 import json
 import random
+import html
 
 def QQGroupCommand_welcome(*args, **kwargs):
     try:
@@ -24,7 +25,7 @@ def QQGroupCommand_welcome(*args, **kwargs):
                 msg = "仅群主与管理员有权限设置欢迎语"
             else:
                 welcome_msg = second_command_msg.replace("set","",1).strip()
-                group.welcome_msg = welcome_msg
+                group.welcome_msg = html.unescape(welcome_msg)
                 group.save()
                 msg = "欢迎语已设置成功，使用\"/welcome demo\"查看欢迎示例"
         elif(second_command=="test" or second_command=="demo"):

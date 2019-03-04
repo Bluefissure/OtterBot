@@ -6,6 +6,7 @@ commands = {
   "/gakki":"云吸gakki",
   "/10":"云吸十元",
   "/bird":"云吸飞鸟",
+  "/waifu":"云吸二次元老婆",
   "/image":"獭獭传图",
   "/comment":"给作者留言",
   "/about":"关于此项目",
@@ -85,6 +86,7 @@ from .QQCommand_duilian import QQCommand_duilian
 from .QQCommand_image import QQCommand_image
 from .QQCommand_nuannuan import QQCommand_nuannuan
 from .QQCommand_tex import QQCommand_tex
+from .QQCommand_waifu import QQCommand_waifu
 
 
 from .QQGroupCommand_group import QQGroupCommand_group

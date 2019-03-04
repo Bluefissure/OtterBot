@@ -97,34 +97,34 @@ def QQGroupChat(*args, **kwargs):
         #tuling chatbot
         chat_enable = False if("/chat" in group_commands.keys() and group_commands["/chat"]=="disable") else True
         if("[CQ:at,qq=%s]"%(receive["self_id"]) in receive["message"] and chat_enable):
-            if(group.left_reply_cnt <= 0):
-                msg = "聊天限额已耗尽，请等待回复。"
-            else:
-                logging.debug("Tuling reply")
-                receive_msg = receive["message"]
-                receive_msg = receive_msg.replace("[CQ:at,qq=%s]"%(receive["self_id"]),"")
-                tuling_data = {}
-                tuling_data["reqType"] = 0  #Text
-                tuling_data["perception"] = {"inputText": {"text": receive_msg}}
-                tuling_data["userInfo"] = {"apiKey": TULING_API_KEY if bot.tuling_token=="" else bot.tuling_token,
-                                             "userId": receive["user_id"], 
-                                             "groupId": group.group_id
-                                             }
-                r = requests.post(url=TULING_API_URL,data=json.dumps(tuling_data),timeout=3)
-                tuling_reply = json.loads(r.text)
-                logging.debug("tuling reply:%s"%(r.text))
-                tuling_results = tuling_reply["results"]
-                msg = ""
-                for item in tuling_results:
-                    if(item["resultType"]=="text"):
-                        msg += item["values"]["text"]
-                if bot.tuling_token=="":
-                    msg = msg.replace("图灵工程师爸爸",BOT_FATHER)
-                    msg = msg.replace("图灵工程师妈妈",BOT_MOTHER)
-                    msg = msg.replace("小主人",USER_NICKNAME)
-                group.left_reply_cnt = max(group.left_reply_cnt - 1, 0)
-                group.save(update_fields=["left_reply_cnt"])
-                msg = "[CQ:at,qq=%s] "%(receive["user_id"])+msg
+            # if(group.left_reply_cnt <= 0):
+            #     msg = "聊天限额已耗尽，请等待回复。"
+            # else:
+            logging.debug("Tuling reply")
+            receive_msg = receive["message"]
+            receive_msg = receive_msg.replace("[CQ:at,qq=%s]"%(receive["self_id"]),"")
+            tuling_data = {}
+            tuling_data["reqType"] = 0  #Text
+            tuling_data["perception"] = {"inputText": {"text": receive_msg}}
+            tuling_data["userInfo"] = {"apiKey": TULING_API_KEY if bot.tuling_token=="" else bot.tuling_token,
+                                         "userId": receive["user_id"], 
+                                         "groupId": group.group_id
+                                         }
+            r = requests.post(url=TULING_API_URL,data=json.dumps(tuling_data),timeout=3)
+            tuling_reply = json.loads(r.text)
+            logging.debug("tuling reply:%s"%(r.text))
+            tuling_results = tuling_reply["results"]
+            msg = ""
+            for item in tuling_results:
+                if(item["resultType"]=="text"):
+                    msg += item["values"]["text"]
+            if bot.tuling_token=="":
+                msg = msg.replace("图灵工程师爸爸",BOT_FATHER)
+                msg = msg.replace("图灵工程师妈妈",BOT_MOTHER)
+                msg = msg.replace("小主人",USER_NICKNAME)
+            # group.left_reply_cnt = max(group.left_reply_cnt - 1, 0)
+            # group.save(update_fields=["left_reply_cnt"])
+            msg = "[CQ:at,qq=%s] "%(receive["user_id"])+msg
             action = reply_message_action(receive, msg)
             action_list.append(action)
         return action_list

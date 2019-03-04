@@ -1,4 +1,5 @@
 {% extends 'index.html' %}
+{% load static %}
 
 
 {% block content %}
@@ -157,7 +158,7 @@
                         <span class="direct-chat-timestamp pull-right">2018-8-21 11:28:02</span>
                       </div>
                       <!-- /.direct-chat-info -->
-                      <img class="direct-chat-img" src="/static/dist/img/bluefissure.jpg" alt="message user image">
+                      <img class="direct-chat-img" src="{% static "dist/img/bluefissure.jpg" %}" alt="message user image">
                       <!-- /.direct-chat-img -->
                       <div class="direct-chat-text">
                         机器人数量达到上限（目前为100）后会停止新的机器人申请。
@@ -171,7 +172,7 @@
                         <span class="direct-chat-timestamp pull-right">2018-8-20 16:31:30</span>
                       </div>
                       <!-- /.direct-chat-info -->
-                      <img class="direct-chat-img" src="/static/dist/img/bluefissure.jpg" alt="message user image">
+                      <img class="direct-chat-img" src="{% static "dist/img/bluefissure.jpg" %}" alt="message user image">
                       <!-- /.direct-chat-img -->
                       <div class="direct-chat-text">
                         出现问题请<a href="http://wpa.qq.com/msgrd?v=3&uin=306401806&site=qq&menu=yes" target="_blank">联系獭爹</a>，或<a href="https://jq.qq.com/?_wv=1027&k=5L3hY4w" target="_blank">加入群聊</a>
@@ -184,7 +185,7 @@
                         <span class="direct-chat-timestamp pull-right">2018-8-17 23:14:30</span>
                       </div>
                       <!-- /.direct-chat-info -->
-                      <img class="direct-chat-img" src="/static/dist/img/bluefissure.jpg" alt="message user image">
+                      <img class="direct-chat-img" src="{% static "dist/img/bluefissure.jpg" %}" alt="message user image">
                       <!-- /.direct-chat-img -->
                       <div class="direct-chat-text">
                         领养教程<a href="http://bbs.ngacn.cc/read.php?tid=14726260" target="_blank">点击此处</a>
@@ -197,7 +198,7 @@
                         <span class="direct-chat-timestamp pull-right">2018-8-17 20:09:48</span>
                       </div>
                       <!-- /.direct-chat-info -->
-                      <img class="direct-chat-img" src="/static/dist/img/bluefissure.jpg" alt="message user image">
+                      <img class="direct-chat-img" src="{% static "dist/img/bluefissure.jpg" %}" alt="message user image">
                       <!-- /.direct-chat-img -->
                       <div class="direct-chat-text">
                         大家要对獭獭温柔一点哦~
@@ -223,20 +224,20 @@
 
 {% block script %}
 <!-- jQuery 3 -->
-<script src="/static/bower_components/jquery/dist/jquery.min.js"></script>
+<script src="{% static "bower_components/jquery/dist/jquery.min.js" %}"></script>
 <!-- Bootstrap 3.3.7 -->
-<script src="/static/bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+<script src="{% static "bower_components/bootstrap/dist/js/bootstrap.min.js" %}"></script>
 <!-- DataTables -->
-<script src="/static/bower_components/datatables.net/js/jquery.dataTables.min.js"></script>
-<script src="/static/bower_components/datatables.net-bs/js/dataTables.bootstrap.min.js"></script>
+<script src="{% static "bower_components/datatables.net/js/jquery.dataTables.min.js" %}"></script>
+<script src="{% static "bower_components/datatables.net-bs/js/dataTables.bootstrap.min.js" %}"></script>
 <!-- SlimScroll -->
-<script src="/static/bower_components/jquery-slimscroll/jquery.slimscroll.min.js"></script>
+<script src="{% static "bower_components/jquery-slimscroll/jquery.slimscroll.min.js" %}"></script>
 <!-- FastClick -->
-<script src="/static/bower_components/fastclick/lib/fastclick.js"></script>
+<script src="{% static "bower_components/fastclick/lib/fastclick.js" %}"></script>
 <!-- AdminLTE App -->
-<script src="/static/dist/js/adminlte.min.js"></script>
+<script src="{% static "dist/js/adminlte.min.js" %}"></script>
 <!-- AdminLTE for demo purposes -->
-<script src="/static/dist/js/demo.js"></script>
+<script src="{% static "dist/js/demo.js" %}"></script>
 <!-- page script -->
 <script>
   $(function () {

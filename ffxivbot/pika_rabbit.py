@@ -367,7 +367,7 @@ class PikaConsumer(object):
             receive = json.loads(body)
             receive["pika_time"] = time.time()
             self_id = receive["self_id"]
-            #print("receving message from {}".format(self_id))
+            # print("receving message from {}".format(self_id))
             try:
                 # get the bot
                 bot = QQBot.objects.get(user_id=self_id)
@@ -427,7 +427,8 @@ class PikaConsumer(object):
                         send_message(bot, receive["message_type"], group_id or user_id, msg)
                     else:
                         if(receive["message"].find('/update_group')==0):
-                            update_group_member_list(bot, group_id)
+                            #update_group_member_list(bot, group_id)
+                            pass
                         #get sender's user_info
                         user_info = receive["sender"] if "sender" in receive.keys() else None
                         user_info = user_info if (user_info and ("role" in user_info.keys())) else None

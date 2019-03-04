@@ -34,6 +34,7 @@ import hmac
 from bs4 import BeautifulSoup
 import urllib
 from websocket import create_connection
+import re
 def ren2res(template, req, render_dict={},post_token=True):
 	render_dict.update({'user': False})
 	render_dict.update(csrf(req))
@@ -83,7 +84,7 @@ def tata(req):
 				bot.saucenao_token = saucenaoToken
 				bot.auto_accept_friend = autoFriend and "true" in autoFriend
 				bot.auto_accept_invite = autoInvite and "true" in autoInvite
-				if(len(QQBot.objects.all())>=120 and bot_created):
+				if(len(QQBot.objects.all())>=100 and bot_created):
 					res_dict = {"response":"error","msg":"机器人总数过多，请稍后再试"}
 					return JsonResponse(res_dict)
 				bot.save()
@@ -336,6 +337,27 @@ def get_nm_id(tracker, nm_name):
 		return {"level":-1,"type":-1}
 	return -1
 
+def handle_hunt_msg(msg):
+	if msg.find("hunt")!=0:
+		return msg
+	new_msg = msg.replace("hunt","",1)
+	print(new_msg)
+	segs = new_msg.split("|")
+	print(segs)
+	if(len(segs)<3):
+		return msg
+	map_name = segs[0].strip()
+	map_pos = segs[1].strip()
+	ts = Territory.objects.filter(name__icontains=map_name.strip())
+	if(ts.exists()):
+		t = ts[0]
+		x, y = map(float, map_pos.replace("(","").replace(")","").split(","))
+		new_msg += "\nMap:https://map.wakingsands.com/#f=mark&x={}&y={}&id={}".format(x, y, t.mapid)
+	print(new_msg)
+	return new_msg
+
+
+
 @csrf_exempt
 def api(req):
 	httpresponse = None
@@ -397,15 +419,22 @@ def api(req):
 					bot = None
 					qquser = None
 					group = None
+					api_rate_limit = True
 					try:
 						bot = QQBot.objects.get(user_id=bot_qq)
 					except QQBot.DoesNotExist:
 						print("bot {} does not exist".format(bot_qq))
 					try:
 						qquser = QQUser.objects.get(user_id=qq, bot_token=token)
+						if (time.time()<qquser.last_api_time+qquser.api_interval):
+							api_rate_limit = False
+							print("qquser {} api rate limit exceed".format(qq))
+						qquser.last_api_time = int(time.time())
+						qquser.save(update_fields=["last_api_time"])
 					except QQUser.DoesNotExist:
 						print("qquser {}:{} auth fail".format(qq, token))
-					if bot and qquser:
+						qquser = None
+					if bot and qquser and api_rate_limit:
 						channel_layer = get_channel_layer()
 						msg = req.POST.get('text')
 						reqbody = req.body
@@ -414,17 +443,19 @@ def api(req):
 								reqbody = reqbody.decode()
 								reqbody = json.loads(reqbody)
 								msg = msg or reqbody["content"]
+								msg = re.compile('[\\x00-\\x08\\x0b-\\x0c\\x0e-\\x1f]').sub(' ', msg)
 						except:
 							pass
 						print("body:{}".format(req.body.decode()))
 						if group_id:
 							try:
 								group = QQGroup.objects.get(group_id=group_id)
-								group_push_list = [user["user_id"] for user in json.loads(group.member_list) if user["role"]=="owner" or user["role"]=="admin"]
+								group_push_list = [user["user_id"] for user in json.loads(group.member_list) if (user["role"]=="owner" or user["role"]=="admin")]
 								print("group push list:{}".format(group_push_list))
 							except QQGroup.DoesNotExist:
 								print("group:{} does not exist".format(group_id))
-
+						print(group and group.api and int(qquser.user_id) in group_push_list)
+						msg = handle_hunt_msg(msg)
 						if group and group.api and int(qquser.user_id) in group_push_list:
 							jdata = {
 								"action":"send_group_msg",

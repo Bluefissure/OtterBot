@@ -198,6 +198,8 @@ class QQUser(models.Model):
 	user_id = models.CharField(max_length=16,unique=True)
 	bot_token = models.CharField(max_length=16)
 	able_to_upload_image = models.BooleanField(default=True)
+	last_api_time = models.BigIntegerField(default=0)
+	api_interval = models.IntegerField(default=5)
 
 	def __str__(self):
 		return str(self.user_id)
@@ -224,6 +226,7 @@ class Territory(models.Model):
 	name = models.CharField(max_length=32,default="")
 	nickname = models.TextField(default="[]")
 	weather_rate = models.ForeignKey(WeatherRate,blank=True,null=True,on_delete=models.CASCADE)
+	mapid = models.IntegerField(default=0)
 
 	def __str__(self):
 		return self.name
@@ -251,6 +254,8 @@ class Lottery(models.Model):
 	end_time = models.BigIntegerField(default=0)
 	req_time = models.BigIntegerField(default=0)
 	uuid = models.CharField(max_length=36, unique=True)   # uuid.uuid4()
+	public = models.BooleanField(default=False)
+	max_participate = models.IntegerField(default=-1)
 	mode = models.IntegerField(default=1)	# 0: system random shuffle 1: random.org
 	def __str__(self):
 		return self.name
