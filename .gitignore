@@ -4,7 +4,6 @@
 *.sqlite3
 config.json
 venv/
-static/
 __pycache__/
 ffxivbot/migrations/
 
