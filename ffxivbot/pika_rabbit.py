@@ -1,7 +1,8 @@
 import random
 import sys
 import os
-sys.path.append('/root/FFXIVBOT/')
+FFXIVBOT_ROOT = os.environ.get("FFXIVBOT_ROOT", "/root/FFXIVBOT/")
+sys.path.append(FFXIVBOT_ROOT)
 os.environ['DJANGO_SETTINGS_MODULE'] ='FFXIV.settings'
 from FFXIV import settings
 import django
@@ -34,7 +35,7 @@ from bs4 import BeautifulSoup
 import urllib
 import pika
 
-CONFIG_PATH = "/root/FFXIVBOT/ffxivbot/config.json"
+CONFIG_PATH = os.environ.get("FFXIVBOT_CONFIG", FFXIVBOT_ROOT + "ffxivbot/config.json")
 
 def handle_message(bot, message):
     new_message = message
@@ -140,8 +141,8 @@ class PikaConsumer(object):
 
         """
         LOGGER.info('Connecting to %s', self._url)
-        # parameters = pika.URLParameters(self._url)
-        parameters = pika.ConnectionParameters(heartbeat_interval=600)
+        parameters = pika.URLParameters(self._url)
+        # parameters = pika.ConnectionParameters(heartbeat_interval=600)
 
         return pika.SelectConnection(parameters,
                                      self.on_connection_open,
