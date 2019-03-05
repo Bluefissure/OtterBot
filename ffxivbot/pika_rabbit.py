@@ -647,7 +647,7 @@ class PikaConsumer(object):
 def main():
     # logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
     logging.basicConfig(level=logging.INFO)
-    pikapika = PikaConsumer('amqp://guest:guest@localhost:5672/')
+    pikapika = PikaConsumer('amqp://guest:guest@localhost:5672/?heartbeat=600')
     try:
         pikapika.run()
     except KeyboardInterrupt:
