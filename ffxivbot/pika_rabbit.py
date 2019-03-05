@@ -142,7 +142,6 @@ class PikaConsumer(object):
         """
         LOGGER.info('Connecting to %s', self._url)
         parameters = pika.URLParameters(self._url)
-        # parameters = pika.ConnectionParameters(heartbeat_interval=600)
 
         return pika.SelectConnection(parameters,
                                      self.on_connection_open,
