@@ -37,8 +37,9 @@ def QQGroupCommand_lottery(*args, **kwargs):
 \n/lottery #$id halt: 终止$id号抽奖\
 \n/lottery #$id user add/del $user: 给$id号抽奖添加/删除参与者$user(需要@)\
 \n/lottery #$id prize add/del $prize: 给$id号抽奖添加/删除奖品$prize\
-\n/lottery #$id public: 将$id号抽奖公开化，群内所有人均可注册\
+\n/lottery #$id public/private: 将$id号抽奖公开/私密化，开放/禁止群内所有人自由注册\
 \n/lottery #$id register: 注册参与$id号抽奖\
+\n/lottery #$id leave: 退出$id号抽奖\
 \n/lottery #$id info: 输出$id号抽奖的信息\
 \n/lottery #$id finish: 结束$id号抽奖，返回抽奖结果\
 \n/lottery #$id verify: 确认$id号抽奖结果无黑幕"
@@ -62,7 +63,7 @@ def QQGroupCommand_lottery(*args, **kwargs):
                         lott.uuid = uuid.uuid4()
                         lott.begin_time = time.time()
                         lott.save()
-                        msg = "抽奖\"#{}: {}\"添加成功".format(lott.id, lott.name)
+                        msg = "抽奖\"#{}: {}\"创建成功，请注意添加奖品".format(lott.id, lott.name)
             elif command.find("#")==0:
                 lottery_id = receive_segs[0].replace("#","")
                 try:
@@ -118,9 +119,9 @@ def QQGroupCommand_lottery(*args, **kwargs):
                     elif sec_command=="user":
                         try:
                             user_command = receive_segs[2]
-                            user_name = receive_segs[3]
+                            user_name = "".join(receive_segs[3:])
                             assert lott.host_user==str(user_id), "您不是抽奖组织者，无权更改抽奖信息"
-                            assert lott.end_time==0, "抽奖已结束"
+                            assert lott.end_time==0, "抽奖\"#{}: {}\"已结束".format( lott.id, lott.name)
                         except IndexError:
                             msg = "缺少参数，请检查命令格式"
                         except AssertionError as e:
@@ -144,17 +145,27 @@ def QQGroupCommand_lottery(*args, **kwargs):
                     elif sec_command=="public":
                         try:
                             assert lott.host_user==str(user_id), "您不是抽奖组织者，无权更改抽奖信息"
-                            assert lott.end_time==0, "抽奖已结束"
+                            assert lott.end_time==0, "抽奖\"#{}: {}\"已结束".format( lott.id, lott.name)
                         except AssertionError as e:
                             msg = str(e)
                         else:
                             lott.public = True
                             lott.save(update_fields=["public"])
-                            msg = "抽奖\"#{}: {}\"已变更为可公开注册模式".format(lott.id, lott.name)
+                            msg = "抽奖\"#{}: {}\"已变更为可公开注册模式，请使用\"/lottery #{} register\"命令注册".format(lott.id, lott.name, lott.id)
+                    elif sec_command=="private":
+                        try:
+                            assert lott.host_user==str(user_id), "您不是抽奖组织者，无权更改抽奖信息"
+                            assert lott.end_time==0, "抽奖\"#{}: {}\"已结束".format( lott.id, lott.name)
+                        except AssertionError as e:
+                            msg = str(e)
+                        else:
+                            lott.public = False
+                            lott.save(update_fields=["public"])
+                            msg = "抽奖\"#{}: {}\"已变更为私密模式，请使用\"/lottery #{} user add/del @$user\"命令添加/删除指定用户".format(lott.id, lott.name, lott.id)
                     elif sec_command=="register":
                         try:
                             assert lott.public, "抽奖\"#{}: {}\"非公开可注册状态，无法报名".format( lott.id, lott.name)
-                            assert lott.end_time==0, "抽奖已结束"
+                            assert lott.end_time==0, "抽奖\"#{}: {}\"已结束".format( lott.id, lott.name)
                         except AssertionError as e:
                             msg = str(e)
                         else:
@@ -166,10 +177,25 @@ def QQGroupCommand_lottery(*args, **kwargs):
                                 lott.participate_user = json.dumps(members)
                                 lott.save(update_fields=["participate_user"])
                                 msg = "[CQ:at,qq={}] 您已报名抽奖\"#{}: {}\"".format(user_id, lott.id, lott.name)
+                    elif sec_command=="leave":
+                        try:
+                            assert lott.public, "抽奖\"#{}: {}\"非公开可注册状态，无法退出".format( lott.id, lott.name)
+                            assert lott.end_time==0, "抽奖\"#{}: {}\"已结束".format( lott.id, lott.name)
+                        except AssertionError as e:
+                            msg = str(e)
+                        else:
+                            members = json.loads(lott.participate_user)
+                            if str(user_id) not in members:
+                                msg = "[CQ:at,qq={}] 请不要重复退出".format(user_id)
+                            else:
+                                members.remove(str(user_id))
+                                lott.participate_user = json.dumps(members)
+                                lott.save(update_fields=["participate_user"])
+                                msg = "[CQ:at,qq={}] 您已退出抽奖\"#{}: {}\"".format(user_id, lott.id, lott.name)
                     elif sec_command=="finish":
                         try:
                             assert lott.host_user==str(user_id), "您不是抽奖组织者，无权更改抽奖信息"
-                            assert lott.end_time==0, "抽奖已结束，无法重复抽奖"
+                            assert lott.end_time==0, "抽奖\"#{}: {}\"已结束，无法重复抽奖".format( lott.id, lott.name)
                             assert lott.mode==1, "目前只支持random.org模式的随机发生器"
                         except AssertionError as e:
                             msg = str(e)
