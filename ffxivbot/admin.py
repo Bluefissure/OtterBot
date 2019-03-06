@@ -85,6 +85,10 @@ class TerritoryAdmin(admin.ModelAdmin):
 class ImageAdmin(admin.ModelAdmin):
     list_display = ["name","key"]
     search_fields = ['name','key']
+
+class LotteryAdmin(admin.ModelAdmin):
+    list_display = ["id", "name","group"]
+    search_fields = ['name','group']
     
 # class CommandCacheAdmin(admin.ModelAdmin):
 #     list_display = ["command","expiration","last_update_time"]
@@ -113,3 +117,4 @@ admin.site.register(Weather,WeatherAdmin)
 admin.site.register(WeatherRate,WeatherRateAdmin)
 admin.site.register(Territory,TerritoryAdmin)
 admin.site.register(Image,ImageAdmin)
+admin.site.register(Lottery,LotteryAdmin)

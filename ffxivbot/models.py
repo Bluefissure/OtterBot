@@ -245,20 +245,64 @@ class Image(models.Model):
 
 class Lottery(models.Model):
 	name = models.CharField(max_length=32, default="")
-	description = models.TextField(default="")
+	description = models.TextField(default="",blank=True, null=True)
 	group = models.ForeignKey(QQGroup, on_delete=models.CASCADE, related_name="lotteries")
 	host_user = models.CharField(max_length=16, default="")
 	participate_user = models.TextField(default="[]")
+	prize = models.TextField(default="[]")
 	random_res = models.TextField(default="{}")
 	begin_time = models.BigIntegerField(default=0)
 	end_time = models.BigIntegerField(default=0)
-	req_time = models.BigIntegerField(default=0)
 	uuid = models.CharField(max_length=36, unique=True)   # uuid.uuid4()
 	public = models.BooleanField(default=False)
 	max_participate = models.IntegerField(default=-1)
 	mode = models.IntegerField(default=1)	# 0: system random shuffle 1: random.org
 	def __str__(self):
 		return self.name
+
+	def winner_info(self):
+		res_json = json.loads(self.random_res)
+		msg = ""
+		try:
+			random_list = res_json["result"]["random"]["data"]
+		except KeyError:
+			return "KeyError"
+		else:
+			member_score_list = []
+			members = json.loads(self.participate_user)
+			prizes = json.loads(self.prize)
+			for member, score in zip(members, random_list):
+				member_score_list.append((member, score))
+			member_score_list.sort(key=lambda x: x[1], reverse=True)
+			for member, prize in zip(member_score_list, prizes):
+				msg += "[CQ:at,qq={}] --- {}\n".format(member[0], prize)
+		return msg
+
+
+	def prize_info(self):
+		prizes = json.loads(self.prize)
+		prize_dict = {}
+		for p in prizes:
+			if p not in prize_dict.keys():
+				prize_dict[p] = 1
+			else:
+				prize_dict[p] += 1
+		return ", ".join(["{}*{}".format(item[0], item[1]) for item in prize_dict.items()])
+
+	def info(self, **kwargs):
+		msg = "抽奖 #{}: {} 的信息如下：".format(self.id, self.name)
+		TIMEFORMAT = kwargs.get("TIMEFORMAT", None)
+		import time
+		msg += "\n开始时间：{}".format(time.strftime(TIMEFORMAT,time.localtime(self.begin_time)) if TIMEFORMAT else self.begin_time)
+		if self.end_time > 0:
+			msg += "\n结束时间：{}".format(time.strftime(TIMEFORMAT,time.localtime(self.end_time)) if TIMEFORMAT else self.end_time)
+		prizes = self.prize_info()
+		msg += "\n奖品：{}".format(prizes)
+		mems = " ".join(["[CQ:at,qq={}]".format(qq) for qq in json.loads(self.participate_user)])
+		msg += "\n参与人：{}".format(mems)
+		if time.time() > self.end_time and self.end_time>0:
+			msg += "\n获奖者：{}".format(self.winner_info())
+		return msg
 
 
 class ContentFinderItem(models.Model):
