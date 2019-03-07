@@ -14,6 +14,7 @@ import pymysql
 import time
 from ffxivbot.models import *
 import ffxivbot.handlers as handlers
+from FFXIV import settings
 from hashlib import md5
 import math
 import requests
@@ -30,7 +31,7 @@ import gc
 import pika
 logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.ERROR)
 
-FFXIVBOT_ROOT = os.environ.get("FFXIVBOT_ROOT", "/root/FFXIVBOT/")
+FFXIVBOT_ROOT = os.environ.get("FFXIVBOT_ROOT", settings.BASE_DIR)
 CONFIG_PATH = os.environ.get("FFXIVBOT_CONFIG", FFXIVBOT_ROOT + "ffxivbot/config.json")
 
 LOGGER = logging.getLogger(__name__)
