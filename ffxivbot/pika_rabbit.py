@@ -35,7 +35,7 @@ from bs4 import BeautifulSoup
 import urllib
 import pika
 
-CONFIG_PATH = os.environ.get("FFXIVBOT_CONFIG", FFXIVBOT_ROOT + "ffxivbot/config.json")
+CONFIG_PATH = os.environ.get("FFXIVBOT_CONFIG", os.path.join(FFXIVBOT_ROOT, "ffxivbot/config.json"))
 
 def handle_message(bot, message):
     new_message = message

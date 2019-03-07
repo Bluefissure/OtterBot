@@ -32,7 +32,7 @@ import pika
 logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.ERROR)
 
 FFXIVBOT_ROOT = os.environ.get("FFXIVBOT_ROOT", settings.BASE_DIR)
-CONFIG_PATH = os.environ.get("FFXIVBOT_CONFIG", FFXIVBOT_ROOT + "ffxivbot/config.json")
+CONFIG_PATH = os.environ.get("FFXIVBOT_CONFIG", os.path.join(FFXIVBOT_ROOT, "ffxivbot/config.json"))
 
 LOGGER = logging.getLogger(__name__)
 
