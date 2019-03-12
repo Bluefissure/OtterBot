@@ -66,7 +66,7 @@ def QQGroupChat(*args, **kwargs):
                 action_list.append(action)
                 action = reply_message_action(receive, msg)
                 action_list.append(action)
-            if(group.repeat_length>=1 and group.repeat_prob>0 and chat.times>=group.repeat_length and (not chat.repeated)):
+            if((not str.startswith(message, "/")) and group.repeat_length>=1 and group.repeat_prob>0 and chat.times>=group.repeat_length and (not chat.repeated)):
                 if(random.randint(1,100)<=group.repeat_prob):
                     action = reply_message_action(receive, chat.message)
                     action_list.append(action)

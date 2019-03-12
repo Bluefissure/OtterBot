@@ -4,46 +4,46 @@ import os
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 FFXIVBOT_ROOT = os.environ.get("FFXIVBOT_ROOT", BASE_DIR)
 sys.path.append(FFXIVBOT_ROOT)
-os.environ['DJANGO_SETTINGS_MODULE'] ='FFXIV.settings'
+os.environ['DJANGO_SETTINGS_MODULE'] = 'FFXIV.settings'
 from FFXIV import settings
 import django
 from django.db import transaction
 django.setup()
-from channels.layers import get_channel_layer 
+from channels.layers import get_channel_layer
 from channels.exceptions import StopConsumer
 channel_layer = get_channel_layer()
-from asgiref.sync import async_to_sync
-import json
-from collections import OrderedDict
-import datetime
-import pytz
-import re
-import pymysql
-import time
-from ffxivbot.models import *
-import ffxivbot.handlers as handlers
-from hashlib import md5
-import math
-import requests
-import base64
-import random,sys
-import traceback  
-import codecs
-import html
-import hmac
-import logging
-from bs4 import BeautifulSoup
-import urllib
+import traceback
 import pika
+import urllib
+from bs4 import BeautifulSoup
+import logging
+import hmac
+import html
+import codecs
+import base64
+import requests
+import math
+from hashlib import md5
+import time
+import pymysql
+import re
+import pytz
+import datetime
+from collections import OrderedDict
+import json
+from asgiref.sync import async_to_sync
+import ffxivbot.handlers as handlers
+from ffxivbot.models import *
 
 CONFIG_PATH = os.environ.get("FFXIVBOT_CONFIG", os.path.join(FFXIVBOT_ROOT, "ffxivbot/config.json"))
+
 
 def handle_message(bot, message):
     new_message = message
     if isinstance(message, list):
         new_message = []
         for idx, msg in enumerate(message):
-            if msg["type"]=="share" and bot.share_banned:
+            if msg["type"] == "share" and bot.share_banned:
                 share_data = msg["data"]
                 new_message.append({
                     "type": "image",
@@ -53,18 +53,19 @@ def handle_message(bot, message):
                     }
                 })
                 new_message.append({
-                    "type":"text",
-                    "data":{
-                        "text":"{}\n{}\n{}".format(
-                                            share_data["title"],
-                                            share_data["content"],
-                                            share_data["url"])
+                    "type": "text",
+                    "data": {
+                        "text": "{}\n{}\n{}".format(
+                            share_data["title"],
+                            share_data["content"],
+                            share_data["url"])
                     }
                 })
             else:
                 new_message.append(msg)
 
     return new_message
+
 
 def call_api(bot, action, params, echo=None):
     # print("calling api:{} {}\n============================".format(json.dumps(action),json.dumps(params)))
@@ -73,29 +74,33 @@ def call_api(bot, action, params, echo=None):
     if "send_" in action and "_msg" in action:
         params["message"] = handle_message(bot, params["message"])
     jdata = {
-        "action":action,
-        "params":params,
+        "action": action,
+        "params": params,
     }
     if echo:
         jdata["echo"] = echo
-    async_to_sync(channel_layer.send)(bot.api_channel_name, {"type": "send.event","text": json.dumps(jdata),})
+    async_to_sync(channel_layer.send)(bot.api_channel_name, {"type": "send.event", "text": json.dumps(jdata), })
+
 
 def send_message(bot, private_group, uid, message):
-    if(private_group=="group"):
-       call_api(bot, "send_group_msg", {"group_id":uid,"message":message})
-    if(private_group=="private"):
-       call_api(bot, "send_private_msg", {"user_id":uid,"message":message})
+    if(private_group == "group"):
+        call_api(bot, "send_group_msg", {"group_id": uid, "message": message})
+    if(private_group == "private"):
+        call_api(bot, "send_private_msg", {"user_id": uid, "message": message})
+
 
 def update_group_member_list(bot, group_id):
-    call_api(bot, "get_group_member_list",{"group_id":group_id},"get_group_member_list:%s"%(group_id))
+    call_api(bot, "get_group_member_list", {"group_id": group_id}, "get_group_member_list:%s" % (group_id))
 
 
 class PikaException(Exception):
     '''
     Custom exception types
     '''
+
     def __init__(self, message="Default PikaException"):
         Exception.__init__(self, message)
+
 
 # LOG_FORMAT = ('%(levelname) -10s %(asctime)s %(name) -30s %(funcName) '
 #               '-35s %(lineno) -5d: %(message)s')
@@ -283,7 +288,7 @@ class PikaConsumer(object):
         """
         LOGGER.info('Declaring queue %s', queue_name)
         self._channel.queue_declare(self.on_queue_declareok, queue_name,
-                                     arguments={"x-max-priority":20,"x-message-ttl":60000})
+                                    arguments={"x-max-priority": 20, "x-message-ttl": 60000})
 
     def on_queue_declareok(self, method_frame):
         """Method invoked by pika when the Queue.Declare RPC call made in
@@ -375,13 +380,13 @@ class PikaConsumer(object):
             except QQBot.DoesNotExist as e:
                 LOGGER.error("bot {} does not exsit.".format(self_id))
                 raise e
-            config = json.load(open(CONFIG_PATH,encoding="utf-8"))
+            config = json.load(open(CONFIG_PATH, encoding="utf-8"))
             already_reply = False
 
-            #heart beat
+            # heart beat
             if(receive["post_type"] == "meta_event" and receive["meta_event_type"] == "heartbeat"):
                 LOGGER.debug("bot:{} Event heartbeat at time:{}".format(self_id, int(time.time())))
-                call_api(bot, "get_status",{},"get_status:{}".format(self_id))
+                call_api(bot, "get_status", {}, "get_status:{}".format(self_id))
 
             if (receive["post_type"] == "message"):
                 user_id = receive["user_id"]
@@ -391,17 +396,17 @@ class PikaConsumer(object):
 
                 # replace alter commands
                 for (alter_command, command) in handlers.alter_commands.items():
-                    if(receive["message"].find(alter_command)==0):
+                    if(receive["message"].find(alter_command) == 0):
                         receive["message"] = receive["message"].replace(alter_command, command, 1)
                         break
-                        
+
                 group_id = None
                 group = None
                 group_created = False
-                #Group Control Func
-                if receive["message"].find('\\')==0:
+                # Group Control Func
+                if receive["message"].find('\\') == 0:
                     receive["message"] = receive["message"].replace('\\', '/', 1)
-                if (receive["message_type"]=="group"):
+                if (receive["message_type"] == "group"):
                     group_id = receive["group_id"]
                     (group, group_created) = QQGroup.objects.get_or_create(group_id=group_id)
                     # self-ban in group
@@ -418,24 +423,23 @@ class PikaConsumer(object):
                             update_group_member_list(bot, group_id)
                     except json.decoder.JSONDecodeError:
                         member_list = []
-                        
-                    
-                    if (receive["message"].find('/group_help')==0):
-                        msg =  "" if member_list else "本群成员信息获取失败，请尝试重启酷Q并使用/update_group刷新群成员信息\n"
+
+                    if (receive["message"].find('/group_help') == 0):
+                        msg = "" if member_list else "本群成员信息获取失败，请尝试重启酷Q并使用/update_group刷新群成员信息\n"
                         for (k, v) in handlers.group_commands.items():
-                            msg += "{} : {}\n".format(k,v)
+                            msg += "{} : {}\n".format(k, v)
                         msg = msg.strip()
                         send_message(bot, receive["message_type"], group_id or user_id, msg)
                     else:
-                        if(receive["message"].find('/update_group')==0):
+                        if(receive["message"].find('/update_group') == 0):
                             #update_group_member_list(bot, group_id)
                             pass
-                        #get sender's user_info
+                        # get sender's user_info
                         user_info = receive["sender"] if "sender" in receive.keys() else None
                         user_info = user_info if (user_info and ("role" in user_info.keys())) else None
                         if member_list and not user_info:
                             for item in member_list:
-                                if(int(item["user_id"])==int(user_id)):
+                                if(int(item["user_id"]) == int(user_id)):
                                     user_info = item
                                     break
                         if not user_info:
@@ -444,115 +448,106 @@ class PikaConsumer(object):
                             # self.acknowledge_message(basic_deliver.delivery_tag)
                             # return
 
-                        group_command_keys = sorted(handlers.group_commands.keys(), key=lambda x:-len(x))
+                        group_command_keys = sorted(handlers.group_commands.keys(), key=lambda x: -len(x))
                         for command_key in group_command_keys:
-                            if(receive["message"].find(command_key)==0):
-                                if receive["message_type"]=="group" and group_commands:
-                                    if command_key in group_commands.keys() and group_commands[command_key]=="disable":
+                            if(receive["message"].find(command_key) == 0):
+                                if receive["message_type"] == "group" and group_commands:
+                                    if command_key in group_commands.keys() and group_commands[command_key] == "disable":
                                         continue
-                                if not group.registered and command_key!="/group":
-                                    msg = "本群%s未在数据库注册，请群主使用/register_group命令注册"%(group_id)
+                                if not group.registered and command_key != "/group":
+                                    msg = "本群%s未在数据库注册，请群主使用/register_group命令注册" % (group_id)
                                     send_message(bot, "group", group_id, msg)
                                     break
                                 else:
-                                    handle_method = getattr(handlers,"QQGroupCommand_{}".format(command_key.replace("/","",1)))
-                                    action_list = handle_method(receive = receive, 
-                                                                global_config = config, 
-                                                                bot = bot, 
-                                                                user_info = user_info, 
-                                                                member_list = member_list, 
-                                                                group = group,
-                                                                commands = handlers.commands,
-                                                                group_commands = handlers.group_commands,
-                                                                alter_commands = handlers.alter_commands,
+                                    handle_method = getattr(handlers, "QQGroupCommand_{}".format(command_key.replace("/", "", 1)))
+                                    action_list = handle_method(receive=receive,
+                                                                global_config=config,
+                                                                bot=bot,
+                                                                user_info=user_info,
+                                                                member_list=member_list,
+                                                                group=group,
+                                                                commands=handlers.commands,
+                                                                group_commands=handlers.group_commands,
+                                                                alter_commands=handlers.alter_commands,
                                                                 )
                                     for action in action_list:
-                                        call_api(bot, action["action"],action["params"],echo=action["echo"])
+                                        call_api(bot, action["action"], action["params"], echo=action["echo"])
                                         already_reply = True
                                     if already_reply:
                                         break
 
                     if not already_reply:
-                        action_list = handlers.QQGroupChat(receive = receive, 
-                                                            global_config = config, 
-                                                            bot = bot, 
-                                                            user_info = user_info, 
-                                                            member_list = member_list, 
-                                                            group = group,
-                                                            commands = handlers.commands,
-                                                            alter_commands = handlers.alter_commands,
-                                                            )
+                        action_list = handlers.QQGroupChat(receive=receive,
+                                                           global_config=config,
+                                                           bot=bot,
+                                                           user_info=user_info,
+                                                           member_list=member_list,
+                                                           group=group,
+                                                           commands=handlers.commands,
+                                                           alter_commands=handlers.alter_commands,
+                                                           )
                         for action in action_list:
-                            call_api(bot, action["action"],action["params"],echo=action["echo"])
-            
+                            call_api(bot, action["action"], action["params"], echo=action["echo"])
 
-
-
-                
-                
-
-                if (receive["message"].find('/help')==0):
-                    msg =  ""
+                if (receive["message"].find('/help') == 0):
+                    msg = ""
                     for (k, v) in handlers.commands.items():
-                        msg += "{} : {}\n".format(k,v)
+                        msg += "{} : {}\n".format(k, v)
                     msg += "具体介绍详见Wiki使用手册: {}\n".format("https://github.com/Bluefissure/FFXIVBOT/wiki/")
                     msg = msg.strip()
                     send_message(bot, receive["message_type"], group_id or user_id, msg)
 
-                if (receive["message"].find('/ping')==0):
-                    msg =  ""
+                if (receive["message"].find('/ping') == 0):
+                    msg = ""
                     if "detail" in receive["message"]:
                         msg += "[CQ:at,qq={}]\ncoolq->server: {:.2f}s\nserver->rabbitmq: {:.2f}s\nhandle init: {:.2f}s".format(
-                            receive["user_id"], 
-                            receive["consumer_time"]-receive["time"], 
-                            receive["pika_time"]-receive["consumer_time"],
-                            time.time()-receive["pika_time"])
+                            receive["user_id"],
+                            receive["consumer_time"] - receive["time"],
+                            receive["pika_time"] - receive["consumer_time"],
+                            time.time() - receive["pika_time"])
                     else:
-                        msg += "[CQ:at,qq={}] {:.2f}s".format(receive["user_id"], time.time()-receive["time"])
+                        msg += "[CQ:at,qq={}] {:.2f}s".format(receive["user_id"], time.time() - receive["time"])
                     msg = msg.strip()
                     LOGGER.debug("{} calling command: {}".format(user_id, "/ping"))
                     send_message(bot, receive["message_type"], group_id or user_id, msg)
 
-                
-
-                command_keys = sorted(handlers.commands.keys(), key=lambda x:-len(x))
+                command_keys = sorted(handlers.commands.keys(), key=lambda x: -len(x))
                 for command_key in command_keys:
-                    if(receive["message"].find(command_key)==0):
-                        if receive["message_type"]=="group" and group_commands:
-                            if command_key in group_commands.keys() and group_commands[command_key]=="disable":
+                    if(receive["message"].find(command_key) == 0):
+                        if receive["message_type"] == "group" and group_commands:
+                            if command_key in group_commands.keys() and group_commands[command_key] == "disable":
                                 continue
                         LOGGER.debug("{} calling command: {}".format(user_id, command_key))
-                        handle_method = getattr(handlers,"QQCommand_{}".format(command_key.replace("/","",1)))
+                        handle_method = getattr(handlers, "QQCommand_{}".format(command_key.replace("/", "", 1)))
                         action_list = handle_method(receive=receive, global_config=config, bot=bot)
                         # if(len(json.loads(bot.disconnections))>100):
                         #     action_list = self.intercept_action(action_list)
                         for action in action_list:
-                            call_api(bot, action["action"],action["params"],echo=action["echo"])
+                            call_api(bot, action["action"], action["params"], echo=action["echo"])
                             already_reply = True
                         break
 
-                
             CONFIG_GROUP_ID = config["CONFIG_GROUP_ID"]
             if (receive["post_type"] == "request"):
-                if (receive["request_type"] == "friend"):   #Add Friend
+                if (receive["request_type"] == "friend"):  # Add Friend
                     qq = receive["user_id"]
                     flag = receive["flag"]
                     if(bot.auto_accept_friend):
-                        reply_data = {"flag":flag, "approve": True}
-                        call_api(bot, "set_friend_add_request",reply_data)
-                if (receive["request_type"] == "group" and receive["sub_type"] == "invite"):    #Invite Group
+                        reply_data = {"flag": flag, "approve": True}
+                        call_api(bot, "set_friend_add_request", reply_data)
+                if (receive["request_type"] == "group" and receive["sub_type"] == "invite"):  # Invite Group
                     flag = receive["flag"]
                     if(bot.auto_accept_invite):
-                        reply_data = {"flag":flag, "sub_type":"invite", "approve": True}
-                        call_api(bot, "set_group_add_request",reply_data)
-                if (receive["request_type"] == "group" and receive["sub_type"] == "add" and str(receive["group_id"])==CONFIG_GROUP_ID):    #Add Group
+                        reply_data = {"flag": flag, "sub_type": "invite", "approve": True}
+                        call_api(bot, "set_group_add_request", reply_data)
+                if (receive["request_type"] == "group" and receive["sub_type"] == "add" and str(receive["group_id"]) == CONFIG_GROUP_ID):  # Add Group
                     flag = receive["flag"]
                     user_id = receive["user_id"]
                     qs = QQBot.objects.filter(owner_id=user_id)
-                    if(qs.count()>0):
-                        reply_data = {"flag":flag, "sub_type":"add", "approve": True}
-                        call_api(bot, "set_group_add_request",reply_data)
-                        reply_data = {"group_id":CONFIG_GROUP_ID, "user_id":user_id, "special_title":"饲养员"}
+                    if(qs.count() > 0):
+                        reply_data = {"flag": flag, "sub_type": "add", "approve": True}
+                        call_api(bot, "set_group_add_request", reply_data)
+                        reply_data = {"group_id": CONFIG_GROUP_ID, "user_id": user_id, "special_title": "饲养员"}
                         call_api(bot, "set_group_special_title", reply_data)
             if (receive["post_type"] == "event"):
                 if (receive["event"] == "group_increase"):
@@ -561,8 +556,8 @@ class PikaConsumer(object):
                     try:
                         group = QQGroup.objects.get(group_id=group_id)
                         msg = group.welcome_msg.strip()
-                        if(msg!=""):
-                            msg = "[CQ:at,qq=%s]"%(user_id)+msg
+                        if(msg != ""):
+                            msg = "[CQ:at,qq=%s]" % (user_id) + msg
                             send_message(bot, "group", group_id, msg)
                     except Exception as e:
                         traceback.print_exc()

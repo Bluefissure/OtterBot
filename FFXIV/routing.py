@@ -6,9 +6,9 @@ application = ProtocolTypeRouter({
     # (http->django views is added by default)
     'websocket': AuthMiddlewareStack(
         URLRouter([
-	    	# url(r'^ws_api', consumers.APIConsumer),
-	    	# url(r'^ws_event', consumers.EventConsumer),
-	    	url(r'^ws(?!_)', consumers.WSConsumer),
-	    ])
+            # url(r'^ws_api', consumers.APIConsumer),
+            # url(r'^ws_event', consumers.EventConsumer),
+            url(r'^ws(?!_)', consumers.WSConsumer),
+            ])
     )
 })
