@@ -58,15 +58,15 @@ MIDDLEWARE_CLASSES = [
 ]
 
 CHANNEL_LAYERS = {
-   "default": {
-       "BACKEND": "channels_redis.core.RedisChannelLayer",
-       "CONFIG": {
-           "hosts": [("127.0.0.1", 6379)],
-           "prefix": "ffxivbot",
-           "capacity": 200,
-           "expiry": 600,
-       },
-   },
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("127.0.0.1", 6379)],
+            "prefix": "ffxivbot",
+            "capacity": 200,
+            "expiry": 600,
+            },
+        },
 }
 # CHANNEL_LAYERS = {
 #     "default": {
@@ -153,4 +153,3 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'collectstatic')
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "static"),
 ]
-
