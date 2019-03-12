@@ -517,11 +517,6 @@ def api(req):
                                 print("group push list:{}".format(group_push_list))
                             except QQGroup.DoesNotExist:
                                 print("group:{} does not exist".format(group_id))
-                        print(
-                            group
-                            and group.api
-                            and int(qquser.user_id) in group_push_list
-                        )
                         msg = handle_hunt_msg(msg)
                         if (
                             group
