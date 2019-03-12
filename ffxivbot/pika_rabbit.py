@@ -8,8 +8,6 @@ os.environ['DJANGO_SETTINGS_MODULE'] = 'FFXIV.settings'
 from FFXIV import settings
 import django
 from django.db import transaction
-import ffxivbot.handlers as handlers
-from ffxivbot.models import *
 django.setup()
 from channels.layers import get_channel_layer
 from channels.exceptions import StopConsumer
@@ -34,6 +32,8 @@ import datetime
 from collections import OrderedDict
 import json
 from asgiref.sync import async_to_sync
+import ffxivbot.handlers as handlers
+from ffxivbot.models import *
 
 CONFIG_PATH = os.environ.get("FFXIVBOT_CONFIG", os.path.join(FFXIVBOT_ROOT, "ffxivbot/config.json"))
 
