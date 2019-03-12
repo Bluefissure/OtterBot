@@ -1,10 +1,10 @@
 import random
 import sys
 import os
-from FFXIV import settings
-FFXIVBOT_ROOT = os.environ.get("FFXIVBOT_ROOT", settings.BASE_DIR)
+FFXIVBOT_ROOT = os.environ.get("FFXIVBOT_ROOT", "/root/FFXIVBOT")
 sys.path.append(FFXIVBOT_ROOT)
 os.environ['DJANGO_SETTINGS_MODULE'] ='FFXIV.settings'
+from FFXIV import settings
 import django
 from django.db import transaction
 django.setup()

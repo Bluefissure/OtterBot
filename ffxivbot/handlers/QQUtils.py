@@ -205,7 +205,7 @@ def crawl_dps(boss, job, day=0, CN_source=False):
 
 def get_item_info(url):
     try:
-        r = requests.get(url,timeout=3)
+        r = requests.get(url,timeout=5)
         if r.status_code==200:
             bs = BeautifulSoup(r.text,"html.parser")
             item_info = bs.find_all(class_='infobox-item ff14-content-box')[0]
