@@ -151,16 +151,16 @@ class WSConsumer(AsyncWebsocketConsumer):
                     # if int(self_id)==3299510002:
                     #     LOGGER.info("receving prototype message:{}".format(receive["message"]))
                     priority = 1
-                    try:
-                        if len(json.loads(self.bot.group_list)) >= 10:
-                            priority += 1
-                        version_info = json.loads(self.bot.version_info)
-                        coolq_edition = version_info["coolq_edition"] if version_info and "coolq_edition" in version_info.keys() else ""
-                        if "Pro" in coolq_edition:
-                            priority += 1
-                    except BaseException:
-                        traceback.print_exc()
-                    if (receive["message"].find("/") == 0 or receive["message"].find("\\") == 0):
+                    # try:
+                    #     if len(json.loads(self.bot.group_list)) >= 10:
+                    #         priority += 1
+                    #     version_info = json.loads(self.bot.version_info)
+                    #     coolq_edition = version_info["coolq_edition"] if version_info and "coolq_edition" in version_info.keys() else ""
+                    #     if "Pro" in coolq_edition:
+                    #         priority += 1
+                    # except BaseException:
+                    #     traceback.print_exc()
+                    if (receive["message"].startswith("/") or receive["message"].startswith("\\")):
                         priority += 1
                         self.bot.save(update_fields=["event_time", "command_stat"])
                         receive["consumer_time"] = time.time()
@@ -168,12 +168,13 @@ class WSConsumer(AsyncWebsocketConsumer):
                         self.pub.send(text_data, priority)
                     else:
                         push_to_mq = False
-                        if "group_id" in receive.keys():
+                        if "group_id" in receive:
                             group_id = receive["group_id"]
                             (group, group_created) = QQGroup.objects.get_or_create(group_id=group_id)
                             push_to_mq = "[CQ:at,qq={}]".format(self_id) in receive["message"] or \
-                                ((group.repeat_ban > 0) or (group.repeat_length > 1 and group.repeat_prob > 0))
-                            push_to_mq = "[CQ:at,qq={}]".format(self_id) in receive["message"]
+                                        ((group.repeat_ban > 0) or \
+                                        (group.repeat_length > 1 and group.repeat_prob > 0))
+                            # push_to_mq = "[CQ:at,qq={}]".format(self_id) in receive["message"]
                         if push_to_mq:
                             receive["consumer_time"] = time.time()
                             text_data = json.dumps(receive)
@@ -182,7 +183,7 @@ class WSConsumer(AsyncWebsocketConsumer):
                     return
 
                 if(receive["post_type"] == "request" or receive["post_type"] == "event"):
-                    priority = 2
+                    priority = 3
                     self.pub.send(text_data, priority)
 
             except Exception as e:
