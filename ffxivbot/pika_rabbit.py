@@ -11,8 +11,6 @@ import base64
 import requests
 import math
 from hashlib import md5
-import ffxivbot.handlers as handlers
-from ffxivbot.models import *
 import time
 import pymysql
 import re
@@ -24,14 +22,16 @@ from asgiref.sync import async_to_sync
 from channels.exceptions import StopConsumer
 from django.db import transaction
 import django
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-FFXIVBOT_ROOT = os.environ.get("FFXIVBOT_ROOT", BASE_DIR)
-sys.path.append(FFXIVBOT_ROOT)
-from FFXIV import settings
 import random
 import sys
 import os
 os.environ['DJANGO_SETTINGS_MODULE'] = 'FFXIV.settings'
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+FFXIVBOT_ROOT = os.environ.get("FFXIVBOT_ROOT", BASE_DIR)
+sys.path.append(FFXIVBOT_ROOT)
+from FFXIV import settings
+import ffxivbot.handlers as handlers
+from ffxivbot.models import *
 django.setup()
 channel_layer = get_channel_layer()
 
