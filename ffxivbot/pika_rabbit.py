@@ -1,5 +1,20 @@
-import traceback
+import random
+import sys
+import os
+os.environ['DJANGO_SETTINGS_MODULE'] = 'FFXIV.settings'
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+FFXIVBOT_ROOT = os.environ.get("FFXIVBOT_ROOT", BASE_DIR)
+sys.path.append(FFXIVBOT_ROOT)
+from FFXIV import settings
+import django
+from django.db import transaction
+import ffxivbot.handlers as handlers
+from ffxivbot.models import *
+django.setup()
 from channels.layers import get_channel_layer
+from channels.exceptions import StopConsumer
+channel_layer = get_channel_layer()
+import traceback
 import pika
 import urllib
 from bs4 import BeautifulSoup
@@ -19,21 +34,6 @@ import datetime
 from collections import OrderedDict
 import json
 from asgiref.sync import async_to_sync
-from channels.exceptions import StopConsumer
-from django.db import transaction
-import django
-import random
-import sys
-import os
-os.environ['DJANGO_SETTINGS_MODULE'] = 'FFXIV.settings'
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-FFXIVBOT_ROOT = os.environ.get("FFXIVBOT_ROOT", BASE_DIR)
-sys.path.append(FFXIVBOT_ROOT)
-from FFXIV import settings
-import ffxivbot.handlers as handlers
-from ffxivbot.models import *
-django.setup()
-channel_layer = get_channel_layer()
 
 CONFIG_PATH = os.environ.get("FFXIVBOT_CONFIG", os.path.join(FFXIVBOT_ROOT, "ffxivbot/config.json"))
 
