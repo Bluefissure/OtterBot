@@ -1,6 +1,7 @@
 from django.db import models
 import json
 import time
+
 # Create your models here.
 
 
@@ -27,7 +28,9 @@ class QQGroup(models.Model):
     last_reply_time = models.BigIntegerField(default=0)
     member_list = models.TextField(default="[]")
     registered = models.BooleanField(default=False)
-    subscription = models.ManyToManyField(WeiboUser, related_name="subscribed_by", blank=True)
+    subscription = models.ManyToManyField(
+        WeiboUser, related_name="subscribed_by", blank=True
+    )
     subscription_trigger_time = models.IntegerField(default="300")
     commands = models.TextField(default="{}")
     api = models.BooleanField(default=False)
@@ -53,9 +56,7 @@ class CustomReply(models.Model):
     value = models.TextField(default="", blank=True)
 
     class Meta:
-        indexes = [
-            models.Index(fields=['group', 'key']),
-        ]
+        indexes = [models.Index(fields=["group", "key"])]
 
 
 class ChatMessage(models.Model):
@@ -67,9 +68,7 @@ class ChatMessage(models.Model):
     repeated = models.BooleanField(default=False)
 
     class Meta:
-        indexes = [
-            models.Index(fields=['group', 'message_hash']),
-        ]
+        indexes = [models.Index(fields=["group", "message_hash"])]
 
 
 class BanMember(models.Model):
@@ -178,7 +177,9 @@ class PlotQuest(models.Model):
     job = models.CharField(max_length=64)
     startnpc = models.CharField(max_length=64)
     endnpc = models.CharField(max_length=64)
-    suf_quests = models.ManyToManyField("self", blank=True, symmetrical=False, related_name="pre_quests")
+    suf_quests = models.ManyToManyField(
+        "self", blank=True, symmetrical=False, related_name="pre_quests"
+    )
     endpoint = models.BooleanField(default=False)
     html = models.TextField(default="", blank=True)
     crawl_status = models.IntegerField(default=0)
@@ -253,7 +254,9 @@ class WeatherRate(models.Model):
 class Territory(models.Model):
     name = models.CharField(max_length=32, default="")
     nickname = models.TextField(default="[]")
-    weather_rate = models.ForeignKey(WeatherRate, blank=True, null=True, on_delete=models.CASCADE)
+    weather_rate = models.ForeignKey(
+        WeatherRate, blank=True, null=True, on_delete=models.CASCADE
+    )
     mapid = models.IntegerField(default=0)
 
     def __str__(self):
@@ -266,7 +269,9 @@ class Image(models.Model):
     path = models.CharField(max_length=64, default="", unique=True)
     img_hash = models.CharField(max_length=32, default="")
     timestamp = models.IntegerField(default=0)
-    add_by = models.ForeignKey(QQUser, on_delete=models.CASCADE, related_name="upload_images")
+    add_by = models.ForeignKey(
+        QQUser, on_delete=models.CASCADE, related_name="upload_images"
+    )
 
     def __str__(self):
         return self.name
@@ -275,14 +280,16 @@ class Image(models.Model):
 class Lottery(models.Model):
     name = models.CharField(max_length=32, default="")
     description = models.TextField(default="", blank=True, null=True)
-    group = models.ForeignKey(QQGroup, on_delete=models.CASCADE, related_name="lotteries")
+    group = models.ForeignKey(
+        QQGroup, on_delete=models.CASCADE, related_name="lotteries"
+    )
     host_user = models.CharField(max_length=16, default="")
     participate_user = models.TextField(default="[]")
     prize = models.TextField(default="[]")
     random_res = models.TextField(default="{}")
     begin_time = models.BigIntegerField(default=0)
     end_time = models.BigIntegerField(default=0)
-    uuid = models.CharField(max_length=36, unique=True)   # uuid.uuid4()
+    uuid = models.CharField(max_length=36, unique=True)  # uuid.uuid4()
     public = models.BooleanField(default=False)
     max_participate = models.IntegerField(default=-1)
     mode = models.IntegerField(default=1)  # 0: system random shuffle 1: random.org
@@ -316,18 +323,31 @@ class Lottery(models.Model):
                 prize_dict[p] = 1
             else:
                 prize_dict[p] += 1
-        return ", ".join(["{}*{}".format(item[0], item[1]) for item in prize_dict.items()])
+        return ", ".join(
+            ["{}*{}".format(item[0], item[1]) for item in prize_dict.items()]
+        )
 
     def info(self, **kwargs):
         msg = "抽奖 #{}: {} 的信息如下：".format(self.id, self.name)
         TIMEFORMAT = kwargs.get("TIMEFORMAT", None)
         import time
-        msg += "\n开始时间：{}".format(time.strftime(TIMEFORMAT, time.localtime(self.begin_time)) if TIMEFORMAT else self.begin_time)
+
+        msg += "\n开始时间：{}".format(
+            time.strftime(TIMEFORMAT, time.localtime(self.begin_time))
+            if TIMEFORMAT
+            else self.begin_time
+        )
         if self.end_time > 0:
-            msg += "\n结束时间：{}".format(time.strftime(TIMEFORMAT, time.localtime(self.end_time)) if TIMEFORMAT else self.end_time)
+            msg += "\n结束时间：{}".format(
+                time.strftime(TIMEFORMAT, time.localtime(self.end_time))
+                if TIMEFORMAT
+                else self.end_time
+            )
         prizes = self.prize_info()
         msg += "\n奖品：{}".format(prizes)
-        mems = " ".join(["[CQ:at,qq={}]".format(qq) for qq in json.loads(self.participate_user)])
+        mems = " ".join(
+            ["[CQ:at,qq={}]".format(qq) for qq in json.loads(self.participate_user)]
+        )
         msg += "\n参与人：{}".format(mems)
         if time.time() > self.end_time and self.end_time > 0:
             msg += "\n获奖者：{}".format(self.winner_info())

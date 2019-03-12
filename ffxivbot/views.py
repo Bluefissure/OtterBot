@@ -39,19 +39,20 @@ import re
 
 
 def ren2res(template, req, render_dict={}, post_token=True):
-    render_dict.update({'user': False})
+    render_dict.update({"user": False})
     render_dict.update(csrf(req))
     response = render(req, template, render_dict)
     return response
+
 
 # Create your views here.
 
 
 def tata(req):
-    if req.is_ajax() and req.method == 'POST':
+    if req.is_ajax() and req.method == "POST":
         res_dict = {"response": "No response."}
         optype = req.POST.get("optype")
-        if (optype == "add_or_update_bot"):
+        if optype == "add_or_update_bot":
             botName = req.POST.get("botName")
             botID = req.POST.get("botID")
             ownerID = req.POST.get("ownerID")
@@ -60,22 +61,32 @@ def tata(req):
             saucenaoToken = req.POST.get("saucenaoToken")
             autoFriend = req.POST.get("autoFriend")
             autoInvite = req.POST.get("autoInvite")
-            print("{},{},{},{},{},{},{}".format(botName, botID, ownerID, accessToken, tulingToken, autoFriend, autoInvite))
-            if(len(botName) < 2):
+            print(
+                "{},{},{},{},{},{},{}".format(
+                    botName,
+                    botID,
+                    ownerID,
+                    accessToken,
+                    tulingToken,
+                    autoFriend,
+                    autoInvite,
+                )
+            )
+            if len(botName) < 2:
                 res_dict = {"response": "error", "msg": "机器人昵称太短"}
                 return JsonResponse(res_dict)
-            elif(len(accessToken) < 5):
+            elif len(accessToken) < 5:
                 res_dict = {"response": "error", "msg": "Access Token太短"}
                 return JsonResponse(res_dict)
-            elif(not ownerID.strip()):
+            elif not ownerID.strip():
                 res_dict = {"response": "error", "msg": "领养者不能为空"}
                 return JsonResponse(res_dict)
             bots = QQBot.objects.filter(user_id=botID)
-            if(not bots.exists()):
+            if not bots.exists():
                 bot = QQBot(user_id=botID, access_token=accessToken)
                 bot_created = True
             else:
-                if(bots[0].access_token != accessToken):
+                if bots[0].access_token != accessToken:
                     res_dict = {"response": "error", "msg": "Token错误，请确认后重试。"}
                     return JsonResponse(res_dict)
                 else:
@@ -88,14 +99,22 @@ def tata(req):
                 bot.saucenao_token = saucenaoToken
                 bot.auto_accept_friend = autoFriend and "true" in autoFriend
                 bot.auto_accept_invite = autoInvite and "true" in autoInvite
-                if(len(QQBot.objects.all()) >= 120 and bot_created):
+                if len(QQBot.objects.all()) >= 120 and bot_created:
                     res_dict = {"response": "error", "msg": "机器人总数过多，请稍后再试"}
                     return JsonResponse(res_dict)
                 bot.save()
-                if(bot_created):
-                    res_dict = {"response": "success", "msg": "{}({})添加成功，Token为:".format(bot.name, bot.user_id), "token": bot.access_token}
+                if bot_created:
+                    res_dict = {
+                        "response": "success",
+                        "msg": "{}({})添加成功，Token为:".format(bot.name, bot.user_id),
+                        "token": bot.access_token,
+                    }
                 else:
-                    res_dict = {"response": "success", "msg": "{}({})更新成功，Token为:".format(bot.name, bot.user_id), "token": bot.access_token}
+                    res_dict = {
+                        "response": "success",
+                        "msg": "{}({})更新成功，Token为:".format(bot.name, bot.user_id),
+                        "token": bot.access_token,
+                    }
             return JsonResponse(res_dict)
         else:
             bot_id = req.POST.get("id")
@@ -108,17 +127,21 @@ def tata(req):
                 else:
                     res_dict = {"response": "error", "msg": str(e)}
                 return JsonResponse(res_dict)
-            if(optype == "switch_public"):
+            if optype == "switch_public":
                 bot.public = not bot.public
                 bot.save()
                 res_dict["response"] = "success"
-            elif(optype == "del_bot"):
+            elif optype == "del_bot":
                 bot.delete()
                 res_dict["response"] = "success"
-            elif(optype == "download_conf"):
-                response = HttpResponse(content_type='application/octet-stream')
-                response['Content-Disposition'] = 'attachment; filename="{}.json"'.format(bot.user_id)
-                bot_conf = json.loads('{"host":"0.0.0.0","port":5700,"use_http":false,"ws_host":"0.0.0.0","ws_port":6700,"use_ws":false,"ws_reverse_api_url":"ws://111.231.102.248/ws_api/","ws_reverse_event_url":"ws://111.231.102.248/ws_event/","use_ws_reverse":"yes","ws_reverse_reconnect_interval":5000,"ws_reverse_reconnect_on_code_1000":"yes","post_url":"","access_token":"SECRET","secret":"","post_message_format":"string","serve_data_files":false,"update_source":"github","update_channel":"stable","auto_check_update":false,"auto_perform_update":false,"thread_pool_size":4,"server_thread_pool_size":1,"show_log_console":false,"enable_backward_compatibility":true}')
+            elif optype == "download_conf":
+                response = HttpResponse(content_type="application/octet-stream")
+                response[
+                    "Content-Disposition"
+                ] = 'attachment; filename="{}.json"'.format(bot.user_id)
+                bot_conf = json.loads(
+                    '{"host":"0.0.0.0","port":5700,"use_http":false,"ws_host":"0.0.0.0","ws_port":6700,"use_ws":false,"ws_reverse_api_url":"ws://111.231.102.248/ws_api/","ws_reverse_event_url":"ws://111.231.102.248/ws_event/","use_ws_reverse":"yes","ws_reverse_reconnect_interval":5000,"ws_reverse_reconnect_on_code_1000":"yes","post_url":"","access_token":"SECRET","secret":"","post_message_format":"string","serve_data_files":false,"update_source":"github","update_channel":"stable","auto_check_update":false,"auto_perform_update":false,"thread_pool_size":4,"server_thread_pool_size":1,"show_log_console":false,"enable_backward_compatibility":true}'
+                )
                 bot_conf["secret"] = bot.access_token
                 response.write(json.dumps(bot_conf, indent=4))
                 return response
@@ -131,11 +154,19 @@ def tata(req):
     for bot in bots:
         bb = {}
         version_info = json.loads(bot.version_info)
-        coolq_edition = version_info["coolq_edition"] if version_info and "coolq_edition" in version_info.keys() else ""
+        coolq_edition = (
+            version_info["coolq_edition"]
+            if version_info and "coolq_edition" in version_info.keys()
+            else ""
+        )
         if coolq_edition != "":
             coolq_edition = coolq_edition[0].upper() + coolq_edition[1:]
         friend_list = json.loads(bot.friend_list)
-        friend_num = len(friend_list["friends"]) if friend_list and "friends" in friend_list.keys() else "-1"
+        friend_num = (
+            len(friend_list["friends"])
+            if friend_list and "friends" in friend_list.keys()
+            else "-1"
+        )
         group_list = json.loads(bot.group_list)
         group_num = len(group_list)
         bb["name"] = bot.name
@@ -143,7 +174,7 @@ def tata(req):
             bb["user_id"] = bot.user_id
         else:
             mid = len(bot.user_id) // 2
-            user_id = bot.user_id[:mid - 2] + "*" * 4 + bot.user_id[mid + 2:]
+            user_id = bot.user_id[: mid - 2] + "*" * 4 + bot.user_id[mid + 2 :]
             bb["user_id"] = user_id
         bb["group_num"] = group_num
         bb["friend_num"] = friend_num
@@ -159,10 +190,10 @@ def tata(req):
 
 
 def quest(req):
-    if req.is_ajax() and req.method == 'POST':
+    if req.is_ajax() and req.method == "POST":
         res_dict = {"response": "No response."}
         optype = req.POST.get("optype")
-        if(optype == "search_quest"):
+        if optype == "search_quest":
             max_iter = req.POST.get("max_iter")
             main_quest = req.POST.get("main_quest")
             main_quest = main_quest and "true" in main_quest
@@ -180,9 +211,9 @@ def quest(req):
             quest_dict = {}
             tmp_edge_list = []
             edge_list = []
-            if(not start_quest and not end_quest):
+            if not start_quest and not end_quest:
                 res_dict["response"] = "找不到对应任务"
-            elif(start_quest and end_quest):
+            elif start_quest and end_quest:
                 res_dict["response"] = "TODO: Double Quest Search"
             else:
                 single_quest = start_quest or end_quest
@@ -190,21 +221,23 @@ def quest(req):
                 search_iter = 0
                 search_list.append((single_quest, 1, 1))
                 search_list.append((single_quest, 2, 1))
-                if ("主线" in single_quest.category and not main_quest) or (not "主线" in single_quest.category and not sub_quest):
+                if ("主线" in single_quest.category and not main_quest) or (
+                    not "主线" in single_quest.category and not sub_quest
+                ):
                     res_dict["response"] = "查询任务类别与所选类别不符，清选择正确的类别。"
                     return JsonResponse(res_dict)
                 done_cnt = 0
                 tot_cnt = 0
-                while(search_list and search_iter <= min(int(max_iter), 1000)):
+                while search_list and search_iter <= min(int(max_iter), 1000):
                     try:
                         (now_quest, direction, search_iter) = search_list[0]
                         search_list = search_list[1:]
                         if "主线" in now_quest.category:
-                            if(not main_quest):
+                            if not main_quest:
                                 continue
                         elif not sub_quest:
                             continue
-                        if(direction == 2):
+                        if direction == 2:
                             done_cnt += 1
                         now_quest_dict = {
                             "description": now_quest.category,
@@ -214,28 +247,33 @@ def quest(req):
                         if now_quest.name not in quest_dict.keys():
                             quest_dict[now_quest.name] = now_quest_dict
                         else:
-                            if(now_quest.name != single_quest.name):
+                            if now_quest.name != single_quest.name:
                                 continue
                         if not now_quest.endpoint:
                             if direction == 1:
                                 for quest in now_quest.suf_quests.all():
-                                    if(quest.name not in quest_dict.keys()):
+                                    if quest.name not in quest_dict.keys():
                                         search_list.append((quest, 1, search_iter + 1))
-                                    edge = {"from": now_quest.name, "to": quest.name, }
+                                    edge = {"from": now_quest.name, "to": quest.name}
                                     if edge not in edge_list:
                                         tmp_edge_list.append(edge)
-                        if not now_quest.endpoint or (now_quest.endpoint and now_quest.name == single_quest.name):
+                        if not now_quest.endpoint or (
+                            now_quest.endpoint and now_quest.name == single_quest.name
+                        ):
                             if direction == 2:
                                 for quest in now_quest.pre_quests.all():
-                                    if(quest.name not in quest_dict.keys()):
+                                    if quest.name not in quest_dict.keys():
                                         search_list.append((quest, 2, search_iter + 1))
-                                    edge = {"from": quest.name, "to": now_quest.name, }
+                                    edge = {"from": quest.name, "to": now_quest.name}
                                     if edge not in edge_list:
                                         tmp_edge_list.append(edge)
                     except Exception as e:
                         print(e)
                 for edge in tmp_edge_list:
-                    if edge["from"] in quest_dict.keys() and edge["to"] in quest_dict.keys():
+                    if (
+                        edge["from"] in quest_dict.keys()
+                        and edge["to"] in quest_dict.keys()
+                    ):
                         edge_list.append(edge)
                 quest_dict[single_quest.name]["style"] = "fill: #7f7"
                 tot_cnt = len(quest_dict.keys())
@@ -252,7 +290,7 @@ def quest(req):
 
 
 def get_nm_id(tracker, nm_name):
-    if(tracker == "ffxiv-eureka"):
+    if tracker == "ffxiv-eureka":
         name_id = {
             "科里多仙人刺": 1,
             "常风领主": 2,
@@ -274,7 +312,6 @@ def get_nm_id(tracker, nm_name):
             "阿玛洛克": 18,
             "拉玛什图": 19,
             "帕祖祖": 20,
-
             "雪之女王": 21,
             "塔克西姆": 22,
             "灰烬龙": 23,
@@ -291,12 +328,12 @@ def get_nm_id(tracker, nm_name):
             "荷鲁斯": 34,
             "总领安哥拉": 35,
             "复制魔花凯西": 36,
-            "娄希": 37
+            "娄希": 37,
         }
         for (k, v) in name_id.items():
-            if(k in nm_name):
+            if k in nm_name:
                 return v
-    if(tracker == "ffxivsc"):
+    if tracker == "ffxivsc":
         name_id = {
             "科里多仙人刺": {"level": 1, "type": 1},
             "常风领主": {"level": 2, "type": 1},
@@ -334,10 +371,10 @@ def get_nm_id(tracker, nm_name):
             "荷鲁斯": {"level": 33, "type": 2},
             "总领安哥拉": {"level": 34, "type": 2},
             "复制魔花凯西": {"level": 35, "type": 2},
-            "娄希": {"level": 36, "type": 2}
+            "娄希": {"level": 36, "type": 2},
         }
         for (k, v) in name_id.items():
-            if(k in nm_name):
+            if k in nm_name:
                 return v
         return {"level": -1, "type": -1}
     return -1
@@ -350,15 +387,17 @@ def handle_hunt_msg(msg):
     print(new_msg)
     segs = new_msg.split("|")
     print(segs)
-    if(len(segs) < 3):
+    if len(segs) < 3:
         return msg
     map_name = segs[0].strip()
     map_pos = segs[1].strip()
     ts = Territory.objects.filter(name__icontains=map_name.strip())
-    if(ts.exists()):
+    if ts.exists():
         t = ts[0]
         x, y = map(float, map_pos.replace("(", "").replace(")", "").split(","))
-        new_msg += "\nMap:https://map.wakingsands.com/#f=mark&x={}&y={}&id={}".format(x, y, t.mapid)
+        new_msg += "\nMap:https://map.wakingsands.com/#f=mark&x={}&y={}&id={}".format(
+            x, y, t.mapid
+        )
     print(new_msg)
     return new_msg
 
@@ -367,60 +406,70 @@ def handle_hunt_msg(msg):
 def api(req):
     httpresponse = None
     if req.method == "POST":
-        tracker = req.GET.get('tracker')
-        trackers = tracker.split(',')
+        tracker = req.GET.get("tracker")
+        trackers = tracker.split(",")
         print("tracker:{}".format(tracker))
-        if(tracker):
-            if("ffxiv-eureka" in trackers):
-                instance = req.GET.get('instance')
-                password = req.GET.get('password')
+        if tracker:
+            if "ffxiv-eureka" in trackers:
+                instance = req.GET.get("instance")
+                password = req.GET.get("password")
                 # print("ffxiv-eureka {}:{}".format(instance,password))
-                if(instance and password):
-                    nm_name = req.POST.get('text')
+                if instance and password:
+                    nm_name = req.POST.get("text")
 
-                    if(nm_name):
+                    if nm_name:
                         nm_id = get_nm_id("ffxiv-eureka", nm_name)
                         # print("nm_name:{} id:{}".format(nm_name,nm_id))
-                        if(nm_id > 0):
+                        if nm_id > 0:
                             # print("nm_name:{} nm_id:{}".format(nm_name,nm_id))
                             # ws = create_connection("wss://ffxiv-eureka.com/socket/websocket?vsn=2.0.0")
-                            ws = create_connection("wss://eureka.bluefissure.com/socket/websocket?vsn=2.0.0")
-                            msg = '["1","1","instance:{}","phx_join",{{"password":"{}"}}]'.format(instance, password)
+                            ws = create_connection(
+                                "wss://eureka.bluefissure.com/socket/websocket?vsn=2.0.0"
+                            )
+                            msg = '["1","1","instance:{}","phx_join",{{"password":"{}"}}]'.format(
+                                instance, password
+                            )
                             # print(msg)
                             ws.send(msg)
-                            msg = '["1","2","instance:{}","set_kill_time",{{"id":{},"time":{}}}]'.format(instance, nm_id, int(time.time() * 1000))
+                            msg = '["1","2","instance:{}","set_kill_time",{{"id":{},"time":{}}}]'.format(
+                                instance, nm_id, int(time.time() * 1000)
+                            )
                             # print(msg)
                             ws.send(msg)
                             ws.close()
                             httpresponse = HttpResponse("OK", status=200)
                     else:
                         print("no nm_name")
-            if("ffxivsc" in trackers):
-                key = req.GET.get('key')
+            if "ffxivsc" in trackers:
+                key = req.GET.get("key")
                 # print("ffxiv-eureka {}:{}".format(instance,password))
-                if(key):
-                    nm_name = req.POST.get('text')
-                    if(nm_name):
+                if key:
+                    nm_name = req.POST.get("text")
+                    if nm_name:
                         nm_level_type = get_nm_id("ffxivsc", nm_name)
-                        if(int(nm_level_type["type"]) > 0):
-                            url = 'https://api.ffxivsc.cn/EurekaService/lobby/addKillTime'
+                        if int(nm_level_type["type"]) > 0:
+                            url = (
+                                "https://api.ffxivsc.cn/EurekaService/lobby/addKillTime"
+                            )
                             post_data = {
-                                "killTime": strftime('%Y-%m-%d %H:%M', time.localtime()),
+                                "killTime": strftime(
+                                    "%Y-%m-%d %H:%M", time.localtime()
+                                ),
                                 "level": "{}".format(nm_level_type["level"]),
                                 "key": key,
-                                "type": "{}".format(nm_level_type["type"])
-                                }
+                                "type": "{}".format(nm_level_type["type"]),
+                            }
                             r = requests.post(url=url, data=post_data)
                             httpresponse = HttpResponse(r)
                     else:
                         print("no nm_name")
-            if("qq" in trackers):
-                bot_qq = req.GET.get('bot_qq')
-                qq = req.GET.get('qq')
-                token = req.GET.get('token')
-                group_id = req.GET.get('group')
+            if "qq" in trackers:
+                bot_qq = req.GET.get("bot_qq")
+                qq = req.GET.get("qq")
+                token = req.GET.get("token")
+                group_id = req.GET.get("group")
                 print("bot: {} qq:{} token:{}".format(bot_qq, qq, token))
-                if(bot_qq and qq and token):
+                if bot_qq and qq and token:
                     bot = None
                     qquser = None
                     group = None
@@ -431,7 +480,7 @@ def api(req):
                         print("bot {} does not exist".format(bot_qq))
                     try:
                         qquser = QQUser.objects.get(user_id=qq, bot_token=token)
-                        if (time.time() < qquser.last_api_time + qquser.api_interval):
+                        if time.time() < qquser.last_api_time + qquser.api_interval:
                             api_rate_limit = False
                             print("qquser {} api rate limit exceed".format(qq))
                         qquser.last_api_time = int(time.time())
@@ -441,30 +490,52 @@ def api(req):
                         qquser = None
                     if bot and qquser and api_rate_limit:
                         channel_layer = get_channel_layer()
-                        msg = req.POST.get('text')
+                        msg = req.POST.get("text")
                         reqbody = req.body
                         try:
                             if reqbody:
                                 reqbody = reqbody.decode()
                                 reqbody = json.loads(reqbody)
                                 msg = msg or reqbody["content"]
-                                msg = re.compile('[\\x00-\\x08\\x0b-\\x0c\\x0e-\\x1f]').sub(' ', msg)
+                                msg = re.compile(
+                                    "[\\x00-\\x08\\x0b-\\x0c\\x0e-\\x1f]"
+                                ).sub(" ", msg)
                         except BaseException:
                             pass
                         print("body:{}".format(req.body.decode()))
                         if group_id:
                             try:
                                 group = QQGroup.objects.get(group_id=group_id)
-                                group_push_list = [user["user_id"] for user in json.loads(group.member_list) if (user["role"] == "owner" or user["role"] == "admin")]
+                                group_push_list = [
+                                    user["user_id"]
+                                    for user in json.loads(group.member_list)
+                                    if (
+                                        user["role"] == "owner"
+                                        or user["role"] == "admin"
+                                    )
+                                ]
                                 print("group push list:{}".format(group_push_list))
                             except QQGroup.DoesNotExist:
                                 print("group:{} does not exist".format(group_id))
-                        print(group and group.api and int(qquser.user_id) in group_push_list)
+                        print(
+                            group
+                            and group.api
+                            and int(qquser.user_id) in group_push_list
+                        )
                         msg = handle_hunt_msg(msg)
-                        if group and group.api and int(qquser.user_id) in group_push_list:
+                        if (
+                            group
+                            and group.api
+                            and int(qquser.user_id) in group_push_list
+                        ):
                             jdata = {
                                 "action": "send_group_msg",
-                                "params": {"group_id": group.group_id, "message": "Message from [CQ:at,qq={}]:\n{}".format(qquser.user_id, msg)},
+                                "params": {
+                                    "group_id": group.group_id,
+                                    "message": "Message from [CQ:at,qq={}]:\n{}".format(
+                                        qquser.user_id, msg
+                                    ),
+                                },
                                 "echo": "",
                             }
                         else:
@@ -473,24 +544,35 @@ def api(req):
                                 "params": {"user_id": qquser.user_id, "message": msg},
                                 "echo": "",
                             }
-                        async_to_sync(channel_layer.send)(bot.api_channel_name, {"type": "send.event", "text": json.dumps(jdata), })
+                        async_to_sync(channel_layer.send)(
+                            bot.api_channel_name,
+                            {"type": "send.event", "text": json.dumps(jdata)},
+                        )
                         httpresponse = HttpResponse("OK", status=200)
-            if("webapi" in trackers):
-                qq = req.GET.get('qq')
-                token = req.GET.get('token')
+            if "webapi" in trackers:
+                qq = req.GET.get("qq")
+                token = req.GET.get("token")
                 print("qq:{}\ntoken:{}".format(qq, token))
-                if(qq and token):
+                if qq and token:
                     qquser = None
                     try:
                         qquser = QQUser.objects.get(user_id=qq, bot_token=token)
                     except QQUser.DoesNotExist:
-                        res_dict = {"response": "error", "msg": "Invalid API token", "rcode": "101"}
+                        res_dict = {
+                            "response": "error",
+                            "msg": "Invalid API token",
+                            "rcode": "101",
+                        }
                         return JsonResponse(res_dict)
                     if qquser:
                         res_dict = webapi(req)
                         return JsonResponse(res_dict)
                 else:
-                    res_dict = {"response": "error", "msg": "Invalid request", "rcode": "100"}
+                    res_dict = {
+                        "response": "error",
+                        "msg": "Invalid request",
+                        "rcode": "100",
+                    }
                     return JsonResponse(res_dict)
                 return HttpResponse(status=500)
     return httpresponse if httpresponse else HttpResponse(status=404)
