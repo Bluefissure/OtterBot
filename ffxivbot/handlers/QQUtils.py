@@ -177,11 +177,11 @@ def crawl_dps(boss, job, day=0, CN_source=False):
         "3" if CN_source else "1",
         job.name,
     )
-    requests_cache.install_cache(
-        "dps_cache",
-        backend="redis",
-        expire_after=3600 * 12,
-    )
+    # requests_cache.install_cache(
+    #     "dps_cache",
+    #     backend="redis",
+    #     expire_after=3600 * 12,
+    # )
     r = requests.get(url=fflogs_url)
     # print("from cache:{}".format(r.from_cache))
     tot_days = 0

@@ -24,9 +24,16 @@ def QQCommand_hso(*args, **kwargs):
         else:
             msg = "好色哦"
             second_command_msg = receive["message"].replace("/hso", "", 1).strip()
-            if not bot.r18:
+            if second_command_msg.startswith("enable") or second_command_msg.startswith("disable"):
+                if int(bot.owner_id) != int(receive["user_id"]):
+                    msg = "您不是 {} 的领养者，无法修改该功能"
+                else:
+                    bot.r18 = second_command_msg.startswith("enable")
+                    bot.save(update_fields=["r18"])
+                    msg = "真的好色哦" if bot.r18 else "不能再色了"
+            elif not bot.r18:
                 msg = "好色哦"
-            elif second_command_msg.find("add") == 0:
+            elif second_command_msg.startswith("add"):
                 second_command_msg = second_command_msg.replace("add", "", 1).strip()
                 segs = second_command_msg.split(" ")
                 if len(segs) >= 2:
