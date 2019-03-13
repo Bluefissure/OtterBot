@@ -5,7 +5,6 @@ import logging
 import json
 import random
 import requests
-import requests_cache
 import math
 import re
 import traceback
