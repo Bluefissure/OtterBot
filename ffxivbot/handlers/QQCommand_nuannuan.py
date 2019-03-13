@@ -7,6 +7,7 @@ import random
 import requests
 import requests_cache
 
+
 def QQCommand_nuannuan(*args, **kwargs):
     try:
         QQ_BASE_URL = kwargs["global_config"]["QQ_BASE_URL"]

@@ -170,42 +170,60 @@ def getSpecificWeatherTimes(territory, weathers, cnt=5, TIMEFORMAT_MDHMS="%m-%d 
     return times
 
 def crawl_dps(boss, job, day=0, CN_source=False):
-    try:
-        day = max(day - 1, 0)
-        print("boss:{} job:{} day:{}".format(boss,job,day))
-        fflogs_url = 'https://www.fflogs.com/zone/statistics/table/%s/dps/%s/100/8/1/100/1000/7/0/Global/%s/All/0/normalized/single/0/-1/'%(boss.quest.quest_id,boss.boss_id,job.name)
-        if CN_source:
-            fflogs_url = 'https://www.fflogs.com/zone/statistics/table/%s/dps/%s/100/8/3/100/1000/7/0/Global/%s/All/0/normalized/single/0/-1/'%(boss.quest.quest_id,boss.boss_id,job.name)
-        requests_cache.install_cache('dps_cache', backend='redis', expire_after=3600*12)
-        r = requests.get(url=fflogs_url)
-        print("from cache:{}".format(r.from_cache))
-        tot_days = 0
-        percentage_list = [10,25,50,75,95,99,100]
-        atk_res = {}
-        for perc in percentage_list:
-            if perc==100:
-                re_str = 'series'+r'.data.push\([+-]?(0|([1-9]\d*))(\.\d+)?\)'
-            else:
-                re_str = 'series%s'%(perc)+r'.data.push\([+-]?(0|([1-9]\d*))(\.\d+)?\)'
-            ptn = re.compile(re_str)
-            find_res = ptn.findall(r.text)
-            # print("url:{}".format(fflogs_url))
-            # print("find_res:{}".format(json.dumps(find_res)))
-            # print("find_res[day]:{}".format(json.dumps(find_res[day])))
+    print("boss:{} job:{} day:{}".format(boss, job, day))
+    fflogs_url = "https://www.fflogs.com/zone/statistics/table/{}/dps/{}/100/8/{}/100/1000/7/0/Global/{}/All/0/normalized/single/0/-1/".format(
+        boss.quest.quest_id,
+        boss.boss_id,
+        "3" if CN_source else "1",
+        job.name,
+    )
+    requests_cache.install_cache(
+        "dps_cache",
+        backend="redis",
+        expire_after=3600 * 12,
+    )
+    r = requests.get(url=fflogs_url)
+    # print("from cache:{}".format(r.from_cache))
+    tot_days = 0
+    percentage_list = [10, 25, 50, 75, 95, 99, 100]
+    atk_res = {}
+    for perc in percentage_list:
+        if perc == 100:
+            re_str = (
+                "series"
+                + r".data.push\([+-]?(0|([1-9]\d*))(\.\d+)?\)"
+            )
+        else:
+            re_str = (
+                "series%s" % (perc)
+                + r".data.push\([+-]?(0|([1-9]\d*))(\.\d+)?\)"
+            )
+        ptn = re.compile(re_str)
+        find_res = ptn.findall(r.text)
+        try:
+            if day == -1:
+                day = len(find_res) - 1
             atk_res[str(perc)] = find_res[day]
-            ss = atk_res[str(perc)][1]+atk_res[str(perc)][2]
-            if(ss==""):
-                ss = "0"
-            atk = float(ss)
-            atk_res[str(perc)] = atk
-            # tot_days = len(find_res)
-        return atk_res
-    except IndexError as e:
-        return "Error: {}".format(e)
+        except IndexError as e:
+            day = len(find_res)
+            if day:
+                atk_res[str(perc)] = find_res[-1]
+            else:
+                return "No data found"
+        ss = (
+            atk_res[str(perc)][1]
+            + atk_res[str(perc)][2]
+        )
+        if ss == "":
+            ss = "0"
+        atk = float(ss)
+        atk_res[str(perc)] = atk
+        atk_res["day"] = day
+    return atk_res
 
 def get_item_info(url):
     try:
-        r = requests.get(url,timeout=3)
+        r = requests.get(url,timeout=5)
         if r.status_code==200:
             bs = BeautifulSoup(r.text,"html.parser")
             item_info = bs.find_all(class_='infobox-item ff14-content-box')[0]

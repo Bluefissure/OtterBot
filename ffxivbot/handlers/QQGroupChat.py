@@ -12,15 +12,15 @@ import traceback
 
 def QQGroupChat(*args, **kwargs):
     try:
-        global_config = kwargs["global_config"]
-        group = kwargs["group"]
-        user_info = kwargs["user_info"]
-        QQ_BASE_URL = global_config["QQ_BASE_URL"]
-        TULING_API_URL = global_config["TULING_API_URL"]
-        TULING_API_KEY = global_config["TULING_API_KEY"]
-        BOT_FATHER = global_config["BOT_FATHER"]
-        BOT_MOTHER = global_config["BOT_MOTHER"]
-        USER_NICKNAME = global_config["USER_NICKNAME"]
+        global_config = kwargs.get("global_config", None)
+        group = kwargs.get("group", None)
+        user_info = kwargs.get("user_info", None)
+        QQ_BASE_URL = global_config.get("QQ_BASE_URL", None)
+        TULING_API_URL = global_config.get("TULING_API_URL", None)
+        TULING_API_KEY = global_config.get("TULING_API_KEY", None)
+        BOT_FATHER = global_config.get("BOT_FATHER", None)
+        BOT_MOTHER = global_config.get("BOT_MOTHER", None)
+        USER_NICKNAME = global_config.get("USER_NICKNAME", "小光呆")
         action_list = []
         receive = kwargs["receive"]
         bot = kwargs["bot"]
@@ -28,17 +28,14 @@ def QQGroupChat(*args, **kwargs):
         group_id = receive["group_id"]
         group_commands = json.loads(group.commands)
 
-
         #custom replys
-        reply_enable = False if("/reply" in group_commands.keys() and group_commands["/reply"]=="disable") else True
+        reply_enable = group_commands.get("/reply", "enable") != "disable"
         if reply_enable:
             try:
                 match_replys = CustomReply.objects.filter(group=group,key=receive["message"].strip().split(" ")[0])
                 if(match_replys.exists()):
-                    item = match_replys[random.randint(0,len(match_replys)-1)]
-                    msg = item.value
-                    msg_action = reply_message_action(receive, msg)
-                    action_list.append(msg_action)
+                    item = random.choice(match_replys)
+                    action_list.append(reply_message_action(receive, item.value))
                     return action_list
             except Exception as e:
                 print("received message:{}".format(receive["message"]))
@@ -47,11 +44,11 @@ def QQGroupChat(*args, **kwargs):
         #repeat_ban & repeat
         message = receive["message"].strip()
         message_hash = hashlib.md5(message.encode()).hexdigest()
-        chats = ChatMessage.objects.filter(group=group, message_hash=message_hash, timestamp__gt=time.time()-60)
+        chats = ChatMessage.objects.filter(group=group, message_hash=message_hash, timestamp__gt=int(time.time())-60)
         if(chats.exists()):
             chat = chats[0]
             chat.timestamp = int(time.time())
-            chat.times = chat.times+1
+            chat.times = chat.times + 1
             chat.save(update_fields=["timestamp", "times"])
             if(group.repeat_ban>0 and chat.times>=group.repeat_ban):
                 msg = "抓到你了，复读姬！╭(╯^╰)╮口球一分钟！"
@@ -60,14 +57,11 @@ def QQGroupChat(*args, **kwargs):
                 if(user_info["role"]=="admin"):
                     msg = "虽然你是狗管理%s无法禁言，但是也触发了复读机检测系统，请闭嘴一分钟[CQ:face,id=14]"%(bot.name)
                 msg = "[CQ:at,qq=%s] "%(user_id) + msg
-                action = delete_message_action(receive["message_id"])
-                action_list.append(action)
-                action = group_ban_action(group_id, user_id, 60)
-                action_list.append(action)
-                action = reply_message_action(receive, msg)
-                action_list.append(action)
-            if(group.repeat_length>=1 and group.repeat_prob>0 and chat.times>=group.repeat_length and (not chat.repeated)):
-                if(random.randint(1,100)<=group.repeat_prob):
+                action_list.append(delete_message_action(receive["message_id"]))
+                action_list.append(group_ban_action(group_id, user_id, 60))
+                action_list.append(reply_message_action(receive, msg))
+            if((not str.startswith(message, "/")) and group.repeat_length>=1 and group.repeat_prob>0 and chat.times>=group.repeat_length and (not chat.repeated)):
+                if(random.randint(1, 100) <= group.repeat_prob):
                     action = reply_message_action(receive, chat.message)
                     action_list.append(action)
                     chat.repeated = True
@@ -87,43 +81,37 @@ def QQGroupChat(*args, **kwargs):
                 if not wbt.pushed_group.filter(group_id=group.group_id).exists():
                     wbt.pushed_group.add(group)
                     wbt.save()
-                    res_data = get_weibotile_share(wbt)
-                    tmp_msg = [{"type":"share","data":res_data}]
                     if(wbt.crawled_time>=int(time.time())-group.subscription_trigger_time):
+                        res_data = get_weibotile_share(wbt)
+                        tmp_msg = [{"type":"share","data":res_data}]
                         action = reply_message_action(receive, tmp_msg)
                         action_list.append(action)
                     break
 
         #tuling chatbot
-        chat_enable = False if("/chat" in group_commands.keys() and group_commands["/chat"]=="disable") else True
+        chat_enable = group_commands.get("/chat", "enable") != "disable"
         if("[CQ:at,qq=%s]"%(receive["self_id"]) in receive["message"] and chat_enable):
-            # if(group.left_reply_cnt <= 0):
-            #     msg = "聊天限额已耗尽，请等待回复。"
-            # else:
-            logging.debug("Tuling reply")
+            # logging.debug("Tuling reply")
             receive_msg = receive["message"]
             receive_msg = receive_msg.replace("[CQ:at,qq=%s]"%(receive["self_id"]),"")
             tuling_data = {}
-            tuling_data["reqType"] = 0  #Text
+            tuling_data["reqType"] = 0 
             tuling_data["perception"] = {"inputText": {"text": receive_msg}}
             tuling_data["userInfo"] = {"apiKey": TULING_API_KEY if bot.tuling_token=="" else bot.tuling_token,
                                          "userId": receive["user_id"], 
                                          "groupId": group.group_id
                                          }
             r = requests.post(url=TULING_API_URL,data=json.dumps(tuling_data),timeout=3)
-            tuling_reply = json.loads(r.text)
-            logging.debug("tuling reply:%s"%(r.text))
-            tuling_results = tuling_reply["results"]
+            tuling_reply = r.json()
+            # logging.debug("tuling reply:%s"%(r.text))
             msg = ""
-            for item in tuling_results:
+            for item in tuling_reply["results"]:
                 if(item["resultType"]=="text"):
                     msg += item["values"]["text"]
             if bot.tuling_token=="":
-                msg = msg.replace("图灵工程师爸爸",BOT_FATHER)
-                msg = msg.replace("图灵工程师妈妈",BOT_MOTHER)
-                msg = msg.replace("小主人",USER_NICKNAME)
-            # group.left_reply_cnt = max(group.left_reply_cnt - 1, 0)
-            # group.save(update_fields=["left_reply_cnt"])
+                msg = msg.replace("图灵工程师爸爸", BOT_FATHER)
+                msg = msg.replace("图灵工程师妈妈", BOT_MOTHER)
+                msg = msg.replace("小主人", USER_NICKNAME)
             msg = "[CQ:at,qq=%s] "%(receive["user_id"])+msg
             action = reply_message_action(receive, msg)
             action_list.append(action)

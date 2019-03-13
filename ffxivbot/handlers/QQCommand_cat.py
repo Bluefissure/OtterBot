@@ -5,12 +5,20 @@ import logging
 import json
 import random
 
+
 def QQCommand_cat(*args, **kwargs):
     try:
         QQ_BASE_URL = kwargs["global_config"]["QQ_BASE_URL"]
         action_list = []
         receive = kwargs["receive"]
-        msg = [{"type":"image","data":{"file":QQ_BASE_URL+"static/cat/%s.jpg"%(random.randint(0,750))}}]
+        msg = [
+            {
+                "type": "image",
+                "data": {
+                    "file": QQ_BASE_URL + "static/cat/%s.jpg" % (random.randint(0, 750))
+                },
+            }
+        ]
         reply_action = reply_message_action(receive, msg)
         action_list.append(reply_action)
         return action_list

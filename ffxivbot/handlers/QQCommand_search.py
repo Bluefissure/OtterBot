@@ -10,6 +10,7 @@ import urllib
 import logging
 import traceback
 
+
 def QQCommand_search(*args, **kwargs):
     try:
         global_config = kwargs["global_config"]
@@ -19,14 +20,14 @@ def QQCommand_search(*args, **kwargs):
         action_list = []
 
         receive = kwargs["receive"]
-        
-        name = receive["message"].replace('/search','')
+
+        name = receive["message"].replace("/search", "")
         name = name.strip()
         res_data = search_item(name, FF14WIKI_BASE_URL, FF14WIKI_API_URL)
         if res_data:
-            msg = [{"type":"share","data":res_data}]
+            msg = [{"type": "share", "data": res_data}]
         else:
-            msg = "在最终幻想XIV中没有找到\"{}\"".format(name)
+            msg = '在最终幻想XIV中没有找到"{}"'.format(name)
         reply_action = reply_message_action(receive, msg)
         action_list.append(reply_action)
         return action_list

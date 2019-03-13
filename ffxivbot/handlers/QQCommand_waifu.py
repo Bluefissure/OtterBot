@@ -5,11 +5,21 @@ import logging
 import json
 import random
 
+
 def QQCommand_waifu(*args, **kwargs):
     action_list = []
     try:
         receive = kwargs["receive"]
-        msg = [{"type":"image","data":{"file":"https://www.thiswaifudoesnotexist.net/example-{}.jpg".format(random.randint(0, 70000))}}]
+        msg = [
+            {
+                "type": "image",
+                "data": {
+                    "file": "https://www.thiswaifudoesnotexist.net/example-{}.jpg".format(
+                        random.randint(0, 70000)
+                    )
+                },
+            }
+        ]
         print(msg)
         reply_action = reply_message_action(receive, msg)
         action_list.append(reply_action)

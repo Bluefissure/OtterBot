@@ -9,6 +9,7 @@ A QQ bot of FFXIV
 ## Install
 
 Please read [wiki](https://github.com/Bluefissure/FFXIVBOT/wiki/%E5%BC%80%E5%8F%91%E6%96%87%E6%A1%A3) for more details.
+For Windows enviroment please check [Windows下的开发文档](https://github.com/a08381/FFXIVBOT/wiki/Windows%E4%B8%8B%E7%9A%84%E5%BC%80%E5%8F%91%E6%96%87%E6%A1%A3) for more information.
 
 - python 3.5.3+
 - redis-server 4.0+
