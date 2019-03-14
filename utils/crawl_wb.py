@@ -1,26 +1,35 @@
 #!/usr/bin/env python3
-from channels.layers import get_channel_layer
-import logging
+import argparse
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-d', '--directory', dest='directory', type=str, default="/root/FFXIV")
+    parser.add_argument('-r', '--refresh_interval', dest='refresh_interval', type=int, default=60)
+    args = parser.parse_args()
+else:
+    raise RuntimeError("This script must be run as __main__.")
+
+import sys
+import os
+import django
+sys.path.append(args.directory)
+os.environ['DJANGO_SETTINGS_MODULE'] = 'FFXIV.settings'
+from FFXIV import settings
+django.setup()
 from ffxivbot.handlers.QQUtils import *
 from asgiref.sync import async_to_sync
 from ffxivbot.models import *
-from django.db import connection, connections
 import re
 import json
 import time
 import requests
 import string
-import django
-from FFXIV import settings
 import random
-import sys
-import os
 import codecs
 import urllib
 import base64
-sys.path.append(settings.BASE_DIR)
-os.environ['DJANGO_SETTINGS_MODULE'] = 'FFXIV.settings'
-django.setup()
+import logging
+from channels.layers import get_channel_layer
+from django.db import connection, connections
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', filename="log/crawl_wb.log")
 
 
@@ -101,4 +110,4 @@ if __name__ == "__main__":
             crawl()
         except BaseException:
             logging.error("Error")
-        time.sleep(60)
+        time.sleep(args.refresh_interval)
