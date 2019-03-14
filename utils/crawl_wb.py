@@ -1,17 +1,8 @@
 #!/usr/bin/env python3
-import argparse
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument('-d', '--directory', dest='directory', type=str, default="/root/FFXIV")
-    parser.add_argument('-r', '--refresh_interval', dest='refresh_interval', type=int, default=60)
-    args = parser.parse_args()
-else:
-    raise RuntimeError("This script must be run as __main__.")
-
 import sys
 import os
 import django
-sys.path.append(args.directory)
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 os.environ['DJANGO_SETTINGS_MODULE'] = 'FFXIV.settings'
 from FFXIV import settings
 django.setup()
@@ -110,4 +101,4 @@ if __name__ == "__main__":
             crawl()
         except BaseException:
             logging.error("Error")
-        time.sleep(args.refresh_interval)
+        time.sleep(60)
