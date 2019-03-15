@@ -24,6 +24,7 @@ urlpatterns = [
     path('', tata),
     path('tata/', tata),
     path('quest/', quest),
+    path('quest/tooltip/', quest_tooltip),
     path('api/', api),
 ]
 if settings.DEBUG == True:

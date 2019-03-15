@@ -36,6 +36,7 @@ from bs4 import BeautifulSoup
 import urllib
 from websocket import create_connection
 import re
+from PIL import Image
 
 
 def ren2res(template, req, render_dict={}, post_token=True):
@@ -288,6 +289,50 @@ def quest(req):
         return JsonResponse(res_dict)
     return ren2res("quest.html", req, {})
 
+def quest_tooltip(req):
+    quest_id = req.GET.get("id", 0)
+    nocache = req.GET.get("nocache", "False") == "True"
+    res_type = req.GET.get("type", "web")
+    print("quest_id:{}".format(quest_id))
+    try:
+        if quest_id:
+            if res_type=="web":
+                r = requests.get("https://cdn.huijiwiki.com/ff14/api.php?format=json&action=parse&disablelimitreport=true&prop=text&title=%E9%A6%96%E9%A1%B5&smaxage=86400&maxage=86400&text=%7B%7B%E4%BB%BB%E5%8A%A1%2F%E6%B5%AE%E5%8A%A8%E6%91%98%E8%A6%81%7C{}%7D%7D".format(
+                    quest_id
+                    ))
+                r_json = r.json()
+                print(r_json)
+                html = r_json["parse"]["text"]["*"]
+                html = html.replace("class=\"tooltip-item\"", "class=\"tooltip-item\" id=\"tooltip\"", 1)
+                html = html.replace("href=\"/","href=\"https://ff14.huijiwiki.com/")
+                return ren2res("quest_tooltip.html", req, {"parsed_html":html})
+            elif res_type=="img" or res_type=="image":
+                return HttpResponse("TODO", status=500)
+                from selenium import webdriver
+                options = webdriver.ChromeOptions()
+                options.add_argument('--kiosk')
+                options.add_argument('--headless') 
+                options.add_argument('--no-sandbox') 
+                options.add_argument('--disable-gpu')
+                driver = webdriver.Chrome(chrome_options=options)
+                driver.get("https://xn--v9x.net/quest/tooltip/?id={}".format(quest_id))
+                tooltip = driver.find_element_by_id("tooltip")
+                valid_image = "tooltip.png"
+                if tooltip.screenshot(valid_image):
+                    try:
+                        with open(valid_image, "rb") as f:
+                            return HttpResponse(f.read(), content_type="image/png")
+                    except IOError:
+                        red = Image.new('RGBA', (1, 1), (255,0,0,0))
+                        response = HttpResponse(content_type="image/png")
+                        red.save(response, "PNG")
+                        return response
+                else:
+                    return HttpResponse("Image save failed", status=500)
+
+    except KeyError:
+        return HttpResponse("KeyError", status=500)
+    return HttpResponse(status=500)
 
 def get_nm_id(tracker, nm_name):
     if tracker == "ffxiv-eureka":

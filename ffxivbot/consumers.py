@@ -46,7 +46,7 @@ class PikaPublisher:
         self.credentials = pika.PlainCredentials(username, password)
         self.queue = queue
         self.parameters = pika.ConnectionParameters(
-            "127.0.0.1", 5672, "/", self.credentials, heartbeat=0
+            "127.0.0.1", 5672, "/", self.credentials, heartbeat=600
         )
         self.connection = pika.BlockingConnection(self.parameters)
         self.channel = self.connection.channel()

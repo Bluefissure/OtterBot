@@ -10,3 +10,4 @@ ffxivbot/migrations/
 #production files
 FFXIV/settings.py
 ffxivbot/config.json
+tooltip.png
