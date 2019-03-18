@@ -94,6 +94,7 @@ class SorryGIFAdmin(admin.ModelAdmin):
 
 class QQUserAdmin(admin.ModelAdmin):
     list_display = ("user_id", "bot_token")
+    search_fields = ['user_id']
 
 
 class HsoAlterNameAdmin(admin.ModelAdmin):

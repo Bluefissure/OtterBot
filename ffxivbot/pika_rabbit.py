@@ -426,6 +426,13 @@ class PikaConsumer(object):
                             receive["self_id"], user_id
                         )
                     )
+                (user, created) = QQUser.objects.get_or_create(user_id=user_id)
+                if 0 < time.time() < user.ban_till:
+                    raise PikaException(
+                        "User {} get banned till {}".format(
+                            user_id, user.ban_till
+                        )
+                    )
 
                 # replace alter commands
                 for (alter_command, command) in handlers.alter_commands.items():

@@ -225,6 +225,7 @@ class QQUser(models.Model):
     able_to_upload_image = models.BooleanField(default=True)
     last_api_time = models.BigIntegerField(default=0)
     api_interval = models.IntegerField(default=5)
+    ban_till = models.BigIntegerField(default=0)
 
     def __str__(self):
         return str(self.user_id)
