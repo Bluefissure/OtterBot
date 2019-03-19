@@ -75,9 +75,8 @@ class WeiboTileAdmin(admin.ModelAdmin):
 
 
 class PlotQuestAdmin(admin.ModelAdmin):
-    list_display = ('name', 'area')
-    list_filter = ['area', 'category', 'sub_category']
-    search_fields = ['name']
+    list_display = ['id', 'name']
+    search_fields = ['id', 'name']
 
 
 class CommentAdmin(admin.ModelAdmin):

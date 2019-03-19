@@ -19,6 +19,7 @@ commands = {
   "/dps":"查询国际服同期DPS排名（\"/dps 8s 骑士\"）",
   "/raid":"查询零式英雄榜（\"/raid 蓝色裂痕 萌芽池\"）",
   "/nuannuan":"查看本周金蝶暖暖作业",
+  "/quest":"任务查询(/quest 狂乱前奏)",
   "/gif":"生成沙雕图（\"/gif help\"）",
   "/dice":"DnD掷骰子（\"/dice 3d12\"）",
   "/bot":"机器人推送功能（\"/bot token 123\"）",
@@ -47,6 +48,7 @@ group_commands = {
 alter_commands = {
   "/pzz":"/weather 优雷卡常风之地 强风",
   "/blizzard":"/weather 优雷卡恒冰之地 暴雪",
+  "/kx":"/weather 优雷卡恒冰之地 暴雪",
   "/fog":"/weather 优雷卡恒冰之地 薄雾",
   "/thunder":"/weather 优雷卡恒冰之地 打雷",
   "/heat_wave":"/weather 优雷卡恒冰之地 热风",
@@ -88,6 +90,7 @@ from .QQCommand_image import QQCommand_image
 from .QQCommand_nuannuan import QQCommand_nuannuan
 from .QQCommand_tex import QQCommand_tex
 from .QQCommand_waifu import QQCommand_waifu
+from .QQCommand_quest import QQCommand_quest
 
 
 from .QQGroupCommand_group import QQGroupCommand_group

@@ -200,7 +200,7 @@ def quest(req):
             main_quest = main_quest and "true" in main_quest
             sub_quest = req.POST.get("sub_quest")
             sub_quest = sub_quest and "true" in sub_quest
-            start_quest = req.POST.get("start_quest")
+            start_quest = req.POST.get("start_quest").replace("任务:", "", 1)
             start_quest = PlotQuest.objects.filter(name=start_quest)
             start_quest = start_quest[0] if start_quest else None
             end_quest = req.POST.get("end_quest")
@@ -208,7 +208,7 @@ def quest(req):
             end_quest = end_quest[0] if end_quest else None
             max_iter = req.POST.get("max_iter")
             print("main_quest:{}".format(main_quest))
-            print("sub_quest:{}".format(sub_quest))
+            print("start_quest:{}".format(start_quest))
             quest_dict = {}
             tmp_edge_list = []
             edge_list = []
@@ -222,8 +222,8 @@ def quest(req):
                 search_iter = 0
                 search_list.append((single_quest, 1, 1))
                 search_list.append((single_quest, 2, 1))
-                if ("主线" in single_quest.category and not main_quest) or (
-                    not "主线" in single_quest.category and not sub_quest
+                if (single_quest.is_main_scenario() and not main_quest) or (
+                    not single_quest.is_main_scenario() and not sub_quest
                 ):
                     res_dict["response"] = "查询任务类别与所选类别不符，清选择正确的类别。"
                     return JsonResponse(res_dict)
@@ -233,7 +233,7 @@ def quest(req):
                     try:
                         (now_quest, direction, search_iter) = search_list[0]
                         search_list = search_list[1:]
-                        if "主线" in now_quest.category:
+                        if single_quest.is_main_scenario():
                             if not main_quest:
                                 continue
                         elif not sub_quest:
@@ -241,9 +241,9 @@ def quest(req):
                         if direction == 2:
                             done_cnt += 1
                         now_quest_dict = {
-                            "description": now_quest.category,
-                            "startnpc": now_quest.startnpc,
-                            "endnpc": now_quest.endnpc,
+                            "description": "",
+                            "startnpc": "",
+                            "endnpc": "",
                         }
                         if now_quest.name not in quest_dict.keys():
                             quest_dict[now_quest.name] = now_quest_dict
@@ -296,40 +296,56 @@ def quest_tooltip(req):
     print("quest_id:{}".format(quest_id))
     try:
         if quest_id:
-            if res_type=="web":
-                r = requests.get("https://cdn.huijiwiki.com/ff14/api.php?format=json&action=parse&disablelimitreport=true&prop=text&title=%E9%A6%96%E9%A1%B5&smaxage=86400&maxage=86400&text=%7B%7B%E4%BB%BB%E5%8A%A1%2F%E6%B5%AE%E5%8A%A8%E6%91%98%E8%A6%81%7C{}%7D%7D".format(
-                    quest_id
-                    ))
-                r_json = r.json()
-                print(r_json)
-                html = r_json["parse"]["text"]["*"]
-                html = html.replace("class=\"tooltip-item\"", "class=\"tooltip-item\" id=\"tooltip\"", 1)
-                html = html.replace("href=\"/","href=\"https://ff14.huijiwiki.com/")
-                return ren2res("quest_tooltip.html", req, {"parsed_html":html})
-            elif res_type=="img" or res_type=="image":
-                return HttpResponse("TODO", status=500)
-                from selenium import webdriver
-                options = webdriver.ChromeOptions()
-                options.add_argument('--kiosk')
-                options.add_argument('--headless') 
-                options.add_argument('--no-sandbox') 
-                options.add_argument('--disable-gpu')
-                driver = webdriver.Chrome(chrome_options=options)
-                driver.get("https://xn--v9x.net/quest/tooltip/?id={}".format(quest_id))
-                tooltip = driver.find_element_by_id("tooltip")
-                valid_image = "tooltip.png"
-                if tooltip.screenshot(valid_image):
-                    try:
-                        with open(valid_image, "rb") as f:
-                            return HttpResponse(f.read(), content_type="image/png")
-                    except IOError:
-                        red = Image.new('RGBA', (1, 1), (255,0,0,0))
-                        response = HttpResponse(content_type="image/png")
-                        red.save(response, "PNG")
-                        return response
-                else:
-                    return HttpResponse("Image save failed", status=500)
-
+            try:
+                quest = PlotQuest.objects.get(id=quest_id)
+            except PlotQuest.DoesNotExist:
+                return HttpResponse("No such quest", status=500)
+            else:
+                if res_type=="web":
+                    if quest.tooltip_html=="" or nocache:
+                        r = requests.get("https://ff14.huijiwiki.com/ff14/api.php?format=json&action=parse&disablelimitreport=true&prop=text&title=%E9%A6%96%E9%A1%B5&smaxage=86400&maxage=86400&text=%7B%7B%E4%BB%BB%E5%8A%A1%2F%E6%B5%AE%E5%8A%A8%E6%91%98%E8%A6%81%7C{}%7D%7D".format(
+                            quest_id
+                            ))
+                        r_json = r.json()
+                        # print(r_json)
+                        html = r_json["parse"]["text"]["*"]
+                        html = html.replace("class=\"tooltip-item\"", "class=\"tooltip-item\" id=\"tooltip\"", 1)
+                        html = html.replace("href=\"/","href=\"https://ff14.huijiwiki.com/")
+                        soup = BeautifulSoup(html,'html.parser')
+                        quest_name = soup.p.span.string
+                        a = soup.new_tag('a', href='https://ff14.huijiwiki.com/wiki/%E4%BB%BB%E5%8A%A1:{}'.format( urllib.parse.quote(quest_name)))
+                        a.string = quest_name
+                        soup.p.span.string = ""
+                        soup.p.span.append(a)
+                        html = str(soup)
+                        quest.tooltip_html = html
+                        quest.save(update_fields=["tooltip_html"])
+                    else:
+                        html = quest.tooltip_html
+                    return ren2res("quest_tooltip.html", req, {"parsed_html":html})
+                elif res_type=="img" or res_type=="image":
+                    return HttpResponse("TODO", status=500)
+                    from selenium import webdriver
+                    options = webdriver.ChromeOptions()
+                    options.add_argument('--kiosk')
+                    options.add_argument('--headless') 
+                    options.add_argument('--no-sandbox') 
+                    options.add_argument('--disable-gpu')
+                    driver = webdriver.Chrome(chrome_options=options)
+                    driver.get("https://xn--v9x.net/quest/tooltip/?id={}".format(quest_id))
+                    tooltip = driver.find_element_by_id("tooltip")
+                    valid_image = "tooltip.png"
+                    if tooltip.screenshot(valid_image):
+                        try:
+                            with open(valid_image, "rb") as f:
+                                return HttpResponse(f.read(), content_type="image/png")
+                        except IOError:
+                            red = Image.new('RGBA', (1, 1), (255,0,0,0))
+                            response = HttpResponse(content_type="image/png")
+                            red.save(response, "PNG")
+                            return response
+                    else:
+                        return HttpResponse("Image save failed", status=500)
     except KeyError:
         return HttpResponse("KeyError", status=500)
     return HttpResponse(status=500)

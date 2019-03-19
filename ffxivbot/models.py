@@ -169,23 +169,24 @@ class QQBot(models.Model):
 
 
 class PlotQuest(models.Model):
-    name = models.CharField(max_length=32, unique=True)
-    version = models.CharField(max_length=64)
-    area = models.CharField(max_length=16)
-    category = models.CharField(max_length=32)
-    sub_category = models.CharField(max_length=32)
-    job = models.CharField(max_length=64)
-    startnpc = models.CharField(max_length=64)
-    endnpc = models.CharField(max_length=64)
-    suf_quests = models.ManyToManyField(
-        "self", blank=True, symmetrical=False, related_name="pre_quests"
+    name = models.CharField(max_length=32)
+    tooltip_url = models.TextField(default="", blank=True)
+    tooltip_html = models.TextField(default="", blank=True)
+    pre_quests = models.ManyToManyField(
+        "self", blank=True, symmetrical=False, related_name="suf_quests"
     )
     endpoint = models.BooleanField(default=False)
-    html = models.TextField(default="", blank=True)
-    crawl_status = models.IntegerField(default=0)
+    endpoint_desc = models.CharField(max_length=16, default="", blank=True)
+    quest_type = models.IntegerField(default=0) # 0:nothing 3:main-scenario 8:special 1,10:other
 
     def __str__(self):
         return self.name
+
+    def is_main_scenario(self):
+        return self.quest_type == 3
+
+    def is_special(self):
+        return self.quest_type == 8
 
 
 class Comment(models.Model):

@@ -26,7 +26,7 @@ def QQCommand_hso(*args, **kwargs):
             second_command_msg = receive["message"].replace("/hso", "", 1).strip()
             if second_command_msg.startswith("enable") or second_command_msg.startswith("disable"):
                 if int(bot.owner_id) != int(receive["user_id"]):
-                    msg = "您不是 {} 的领养者，无法修改该功能"
+                    msg = "您不是 {} 的领养者，无法修改该功能".format(bot)
                 else:
                     bot.r18 = second_command_msg.startswith("enable")
                     bot.save(update_fields=["r18"])
