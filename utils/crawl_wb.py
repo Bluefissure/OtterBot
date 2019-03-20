@@ -71,7 +71,14 @@ def crawl_wb(weibouser, push=False):
                                     "params": {"group_id": int(group.group_id), "message": msg},
                                     "echo": "",
                                 }
-                                async_to_sync(channel_layer.send)(bot.api_channel_name, {"type": "send.event", "text": json.dumps(jdata), })
+                                if not bot.api_post_url:
+                                    async_to_sync(channel_layer.send)(bot.api_channel_name, {"type": "send.event", "text": json.dumps(jdata), })
+                                else:
+                                    url = os.path.join(bot.api_post_url, "{}?access_token={}".format(jdata["action"], bot.access_token))
+                                    headers = {'Content-Type': 'application/json'} 
+                                    r = requests.post(url=url, headers=headers, data=json.dumps(jdata["params"]))
+                                    if r.status_code!=200:
+                                        logging.error(r.text)
                 t.save()
             except Exception as e:
                 logging.error("Error at pushing crawled weibo: {}".format(e))

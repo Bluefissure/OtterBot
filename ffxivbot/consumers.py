@@ -32,21 +32,22 @@ from django.db import transaction
 
 channel_layer = get_channel_layer()
 logging.basicConfig(format="%(levelname)s:%(message)s", level=logging.ERROR)
-
+LOGGER = logging.getLogger(__name__)
 FFXIVBOT_ROOT = os.environ.get("FFXIVBOT_ROOT", settings.BASE_DIR)
 CONFIG_PATH = os.environ.get(
     "FFXIVBOT_CONFIG", os.path.join(FFXIVBOT_ROOT, "ffxivbot/config.json")
 )
 
-LOGGER = logging.getLogger(__name__)
+
 
 
 class PikaPublisher:
     def __init__(self, username="guest", password="guest", queue="ffxivbot"):
+        print("initializing pika publisher")
         self.credentials = pika.PlainCredentials(username, password)
         self.queue = queue
         self.parameters = pika.ConnectionParameters(
-            "127.0.0.1", 5672, "/", self.credentials, heartbeat=600
+            "127.0.0.1", 5672, "/", self.credentials, heartbeat=300
         )
         self.connection = pika.BlockingConnection(self.parameters)
         self.channel = self.connection.channel()
@@ -246,7 +247,7 @@ class WSConsumer(AsyncWebsocketConsumer):
                         group.save(update_fields=["member_list"])
                         # await self.send_message("group", group_id, "群成员信息刷新成功")
                     except QQGroup.DoesNotExist:
-                        LOGGER.error("QQGroup.DoesNotExist:{}".format(self.group_id))
+                        LOGGER.error("QQGroup.DoesNotExist:{}".format(group_id))
                         return
                     LOGGER.debug("group %s member updated" % (group.group_id))
                 if echo.find("get_group_list") == 0:

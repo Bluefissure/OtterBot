@@ -18,8 +18,11 @@ import json
 import pymysql
 import time
 from time import strftime, localtime
+from FFXIV import settings
 from ffxivbot.models import *
 from ffxivbot.webapi import webapi
+from ffxivbot.consumers import PikaPublisher
+import ffxivbot.handlers as handlers
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
 from hashlib import md5
@@ -36,6 +39,8 @@ from bs4 import BeautifulSoup
 import urllib
 from websocket import create_connection
 import re
+import pika
+import os
 from PIL import Image
 
 
@@ -600,10 +605,17 @@ def api(req):
                                 "params": {"user_id": qquser.user_id, "message": msg},
                                 "echo": "",
                             }
-                        async_to_sync(channel_layer.send)(
-                            bot.api_channel_name,
-                            {"type": "send.event", "text": json.dumps(jdata)},
-                        )
+                        if not bot.api_post_url:
+                            async_to_sync(channel_layer.send)(
+                                bot.api_channel_name,
+                                {"type": "send.event", "text": json.dumps(jdata)},
+                            )
+                        else:
+                            url = os.path.join(bot.api_post_url, "{}?access_token={}".format(jdata["action"], bot.access_token))
+                            headers = {'Content-Type': 'application/json'} 
+                            r = requests.post(url=url, headers=headers, data=json.dumps(jdata["params"]))
+                            if r.status_code!=200:
+                                logging.error(r.text)
                         httpresponse = HttpResponse("OK", status=200)
             if "webapi" in trackers:
                 qq = req.GET.get("qq")
@@ -634,6 +646,134 @@ def api(req):
     return httpresponse if httpresponse else HttpResponse(status=404)
 
 
+import logging
+FFXIVBOT_ROOT = os.environ.get("FFXIVBOT_ROOT", settings.BASE_DIR)
+CONFIG_PATH = os.environ.get(
+    "FFXIVBOT_CONFIG", os.path.join(FFXIVBOT_ROOT, "ffxivbot/config.json")
+)
+pub = PikaPublisher()
+logging.basicConfig(format="%(levelname)s:%(message)s", level=logging.DEBUG)
+LOGGER = logging.getLogger(__name__)
 @csrf_exempt
 def qqpost(req):
-    pass
+    try:
+        receive = json.loads(req.body.decode())
+        receive["reply_api_type"] = "http"
+        text_data = json.dumps(receive)
+        self_id = received_sig = req.META.get("HTTP_X_SELF_ID","NULL")
+        try:
+            bot = QQBot.objects.get(user_id=self_id)
+            assert bot.api_post_url
+        except QQBot.DoesNotExist:
+            print("bot {} does not exist".format(self_id))
+        except AssertionError:
+            print("bot {} does not provide api url".format(self_id))
+        else:
+            sig = hmac.new(str(bot.access_token).encode(), req.body, 'sha1').hexdigest()
+            received_sig = req.META.get("HTTP_X_SIGNATURE","NULL")[len('sha1='):]
+            # print(req.META)
+            # print("sig:{}\nreceived_sig:{}".format(sig, received_sig))
+            if(sig == received_sig):
+                # print("QQBot {}:{} authencation success".format(bot, self_id))
+                if "post_type" in receive.keys():
+                    bot.event_time = int(time.time())
+                    bot.save(update_fields=["event_time"])
+                    config = json.load(open(CONFIG_PATH, encoding="utf-8"))
+                    already_reply = False
+                    try:
+                        self_id = receive["self_id"]
+                        if "message" in receive.keys():
+                            priority = 1
+                            if receive["message"].startswith("/") or receive[
+                                "message"
+                            ].startswith("\\"):
+                                # print(receive["message"])
+                                priority += 1
+                                bot.save(update_fields=["event_time"])
+                                receive["consumer_time"] = time.time()
+                                text_data = json.dumps(receive)
+                                pub.send(text_data, priority)
+                            else:
+                                push_to_mq = False
+                                if "group_id" in receive:
+                                    group_id = receive["group_id"]
+                                    (group, group_created) = QQGroup.objects.get_or_create(
+                                        group_id=group_id
+                                    )
+                                    push_to_mq = "[CQ:at,qq={}]".format(self_id) in receive[
+                                        "message"
+                                    ] or (
+                                        (group.repeat_ban > 0)
+                                        or (group.repeat_length > 1 and group.repeat_prob > 0)
+                                    )
+                                    # push_to_mq = "[CQ:at,qq={}]".format(self_id) in receive["message"]
+                                if push_to_mq:
+                                    receive["consumer_time"] = time.time()
+                                    text_data = json.dumps(receive)
+                                    pub.send(text_data, priority)
+                            return HttpResponse(status=200)
+
+                        if receive["post_type"] == "request" or receive["post_type"] == "event":
+                            priority = 3
+                            pub.send(text_data, priority)
+
+                    except Exception as e:
+                        traceback.print_exc()
+                else:
+                    bot.api_time = int(time.time())
+                    bot.save(update_fields=["api_time"])
+                    if int(receive["retcode"]) != 0:
+                        if int(receive["retcode"]) == 1 and receive["status"] == "async":
+                            print("API waring:" + text_data)
+                        else:
+                            print("API error:" + text_data)
+                    if "echo" in receive.keys():
+                        echo = receive["echo"]
+                        LOGGER.debug("echo:{} received".format(receive["echo"]))
+                        if echo.find("get_group_member_list") == 0:
+                            group_id = echo.replace("get_group_member_list:", "").strip()
+                            try:
+                                # group = QQGroup.objects.select_for_update().get(group_id=group_id)
+                                group = QQGroup.objects.get(group_id=group_id)
+                                member_list = (
+                                    json.dumps(receive["data"]) if receive["data"] else "[]"
+                                )
+                                group.member_list = member_list
+                                group.save(update_fields=["member_list"])
+                                # await send_message("group", group_id, "群成员信息刷新成功")
+                            except QQGroup.DoesNotExist:
+                                print("QQGroup.DoesNotExist:{}".format(group_id))
+                                return HttpResponse(status=200)
+                            LOGGER.debug("group %s member updated" % (group.group_id))
+                        if echo.find("get_group_list") == 0:
+                            bot.group_list = json.dumps(receive["data"])
+                            bot.save(update_fields=["group_list"])
+                        if echo.find("_get_friend_list") == 0:
+                            # friend_list = echo.replace("_get_friend_list:","").strip()
+                            bot.friend_list = json.dumps(receive["data"])
+                            bot.save(update_fields=["friend_list"])
+                        if echo.find("get_version_info") == 0:
+                            bot.version_info = json.dumps(receive["data"])
+                            bot.save(update_fields=["version_info"])
+                        if echo.find("get_status") == 0:
+                            user_id = echo.split(":")[1]
+                            if not receive["data"] or not receive["data"]["good"]:
+                                print(
+                                    "bot:{} not good at time:{}".format(
+                                        user_id, int(time.time())
+                                    )
+                                )
+                            else:
+                                LOGGER.debug(
+                                    "bot:{} Universal heartbeat at time:{}".format(
+                                        user_id, int(time.time())
+                                    )
+                                )
+                    # bot.save()
+
+            else:
+                return HttpResponse("Error access_token", status=500)
+        return HttpResponse("Not implemented", status=500)
+    except Exception as e:
+        traceback.print_exc()
+        return HttpResponse(status=500)

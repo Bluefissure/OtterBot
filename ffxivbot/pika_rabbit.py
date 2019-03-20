@@ -77,7 +77,7 @@ def handle_message(bot, message):
     return new_message
 
 
-def call_api(bot, action, params, echo=None):
+def call_api(bot, action, params, echo=None, **kwargs):
     # print("calling api:{} {}\n============================".format(json.dumps(action),json.dumps(params)))
     if "async" not in action and not echo:
         action = action + "_async"
@@ -86,24 +86,35 @@ def call_api(bot, action, params, echo=None):
     jdata = {"action": action, "params": params}
     if echo:
         jdata["echo"] = echo
-    async_to_sync(channel_layer.send)(
-        bot.api_channel_name, {"type": "send.event", "text": json.dumps(jdata)}
-    )
+    post_type = kwargs.get("post_type", "websocket")
+    if post_type=="websocket":
+        async_to_sync(channel_layer.send)(
+            bot.api_channel_name, {"type": "send.event", "text": json.dumps(jdata)}
+        )
+    elif post_type=="http":
+        url = os.path.join(bot.api_post_url, "{}?access_token={}".format(action, bot.access_token))
+        print("calling http api:{} {}\n============================".format(url, json.dumps(params)))
+        headers = {'Content-Type': 'application/json'} 
+        r = requests.post(url=url, headers=headers, data=json.dumps(params))
+        if r.status_code!=200:
+            print(r.text)
+        #TODO
 
 
-def send_message(bot, private_group, uid, message):
+def send_message(bot, private_group, uid, message, **kwargs):
     if private_group == "group":
-        call_api(bot, "send_group_msg", {"group_id": uid, "message": message})
+        call_api(bot, "send_group_msg", {"group_id": uid, "message": message}, **kwargs)
     if private_group == "private":
-        call_api(bot, "send_private_msg", {"user_id": uid, "message": message})
+        call_api(bot, "send_private_msg", {"user_id": uid, "message": message}, **kwargs)
 
 
-def update_group_member_list(bot, group_id):
+def update_group_member_list(bot, group_id, **kwargs):
     call_api(
         bot,
         "get_group_member_list",
         {"group_id": group_id},
         "get_group_member_list:%s" % (group_id),
+        **kwargs,
     )
 
 
@@ -415,7 +426,7 @@ class PikaConsumer(object):
                         self_id, int(time.time())
                     )
                 )
-                call_api(bot, "get_status", {}, "get_status:{}".format(self_id))
+                call_api(bot, "get_status", {}, "get_status:{}".format(self_id), post_type=receive.get("reply_api_type", "websocket"))
 
             if receive["post_type"] == "message":
                 user_id = receive["user_id"]
@@ -466,7 +477,7 @@ class PikaConsumer(object):
                     try:
                         member_list = json.loads(group.member_list)
                         if group_created or not member_list:
-                            update_group_member_list(bot, group_id)
+                            update_group_member_list(bot, group_id, post_type=receive.get("reply_api_type", "websocket") )
                     except json.decoder.JSONDecodeError:
                         member_list = []
 
@@ -484,7 +495,6 @@ class PikaConsumer(object):
                         )
                     else:
                         if receive["message"].find("/update_group") == 0:
-                            # update_group_member_list(bot, group_id)
                             pass
                         # get sender's user_info
                         user_info = (
@@ -554,6 +564,7 @@ class PikaConsumer(object):
                                             action["action"],
                                             action["params"],
                                             echo=action["echo"],
+                                            post_type=receive.get("reply_api_type", "websocket")
                                         )
                                         already_reply = True
                                     if already_reply:
@@ -576,6 +587,7 @@ class PikaConsumer(object):
                                 action["action"],
                                 action["params"],
                                 echo=action["echo"],
+                                post_type=receive.get("reply_api_type", "websocket")
                             )
 
                 if receive["message"].find("/help") == 0:
@@ -603,7 +615,8 @@ class PikaConsumer(object):
                         )
                     msg = msg.strip()
                     LOGGER.debug("{} calling command: {}".format(user_id, "/ping"))
-                    send_message(bot, receive["message_type"], group_id or user_id, msg)
+                    print(("{} calling command: {}".format(user_id, "/ping")))
+                    send_message(bot, receive["message_type"], group_id or user_id, msg, post_type=receive.get("reply_api_type", "websocket"))
 
                 command_keys = sorted(handlers.commands.keys(), key=lambda x: -len(x))
                 for command_key in command_keys:
@@ -632,6 +645,7 @@ class PikaConsumer(object):
                                 action["action"],
                                 action["params"],
                                 echo=action["echo"],
+                                post_type=receive.get("reply_api_type", "websocket")
                             )
                             already_reply = True
                         break
@@ -643,7 +657,7 @@ class PikaConsumer(object):
                     flag = receive["flag"]
                     if bot.auto_accept_friend:
                         reply_data = {"flag": flag, "approve": True}
-                        call_api(bot, "set_friend_add_request", reply_data)
+                        call_api(bot, "set_friend_add_request", reply_data, post_type=receive.get("reply_api_type", "websocket"))
                 if (
                     receive["request_type"] == "group"
                     and receive["sub_type"] == "invite"
@@ -655,7 +669,7 @@ class PikaConsumer(object):
                             "sub_type": "invite",
                             "approve": True,
                         }
-                        call_api(bot, "set_group_add_request", reply_data)
+                        call_api(bot, "set_group_add_request", reply_data, post_type=receive.get("reply_api_type", "websocket"))
                 if (
                     receive["request_type"] == "group"
                     and receive["sub_type"] == "add"
@@ -666,13 +680,13 @@ class PikaConsumer(object):
                     qs = QQBot.objects.filter(owner_id=user_id)
                     if qs.count() > 0:
                         reply_data = {"flag": flag, "sub_type": "add", "approve": True}
-                        call_api(bot, "set_group_add_request", reply_data)
+                        call_api(bot, "set_group_add_request", reply_data, post_type=receive.get("reply_api_type", "websocket"))
                         reply_data = {
                             "group_id": CONFIG_GROUP_ID,
                             "user_id": user_id,
                             "special_title": "饲养员",
                         }
-                        call_api(bot, "set_group_special_title", reply_data)
+                        call_api(bot, "set_group_special_title", reply_data, post_type=receive.get("reply_api_type", "websocket"))
             if receive["post_type"] == "event":
                 if receive["event"] == "group_increase":
                     group_id = receive["group_id"]
@@ -682,7 +696,7 @@ class PikaConsumer(object):
                         msg = group.welcome_msg.strip()
                         if msg != "":
                             msg = "[CQ:at,qq=%s]" % (user_id) + msg
-                            send_message(bot, "group", group_id, msg)
+                            send_message(bot, "group", group_id, msg, post_type=receive.get("reply_api_type", "websocket"))
                     except Exception as e:
                         traceback.print_exc()
             # print(" [x] Received %r" % body)

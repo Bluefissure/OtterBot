@@ -149,6 +149,7 @@ class QQBot(models.Model):
     saucenao_token = models.CharField(max_length=32, default="", blank=True)
     api_channel_name = models.CharField(max_length=32, default="", blank=True)
     event_channel_name = models.CharField(max_length=32, default="", blank=True)
+    api_post_url = models.CharField(max_length=64, default="", blank=True)
     group_list = models.TextField(default="[]")
     plugin_status = models.TextField(default="{}")
     version_info = models.TextField(default="{}")
