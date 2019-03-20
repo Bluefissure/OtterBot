@@ -64,7 +64,7 @@ def tata(req):
             ownerID = req.POST.get("ownerID")
             accessToken = req.POST.get("accessToken")
             tulingToken = req.POST.get("tulingToken")
-            saucenaoToken = req.POST.get("saucenaoToken")
+            api_post_url = req.POST.get("api_post_url","").strip()
             autoFriend = req.POST.get("autoFriend")
             autoInvite = req.POST.get("autoInvite")
             print(
@@ -102,7 +102,7 @@ def tata(req):
                 bot.name = botName
                 bot.owner_id = ownerID
                 bot.tuling_token = tulingToken
-                bot.saucenao_token = saucenaoToken
+                bot.api_post_url = api_post_url
                 bot.auto_accept_friend = autoFriend and "true" in autoFriend
                 bot.auto_accept_invite = autoInvite and "true" in autoInvite
                 if len(QQBot.objects.all()) >= 120 and bot_created:
