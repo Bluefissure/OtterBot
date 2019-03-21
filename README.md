@@ -42,7 +42,8 @@ Please read [wiki](https://github.com/Bluefissure/FFXIVBOT/wiki/%E4%BD%BF%E7%94%
 
 ## Tips
 
-- This project is currently using [django-channels](https://github.com/django/channels) to support reverse websocket of http-api, if you prefer http, see [previous version](https://github.com/Bluefissure/FFXIVBOT/tree/be91c3fb3910479733db937f5f7f263dcef331a7)
+- <del>This project is currently using [django-channels](https://github.com/django/channels) to support reverse websocket of http-api, if you prefer http, see [previous version](https://github.com/Bluefissure/FFXIVBOT/tree/be91c3fb3910479733db937f5f7f263dcef331a7) </del>
+- The http support is available since [this](https://github.com/Bluefissure/FFXIVBOT/commit/be453f0b2388b2d12d51de286c77b27b9d7d2dca) commit.
 
 # FFXIV Quest Visualization
 
