@@ -61,7 +61,7 @@ def QQCommand_hso(*args, **kwargs):
                     requests_cache.install_cache(
                         "hso_cache", backend="redis", expire_after=3600
                     )
-                    r = requests.get(api_url)
+                    r = requests.get(api_url, timeout=(5, 60))
                     img_json = json.loads(r.text)
 
                     if receive["message_type"] == "group":
