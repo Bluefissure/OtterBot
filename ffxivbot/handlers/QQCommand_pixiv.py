@@ -27,7 +27,7 @@ def search_image(img_url, qq=None):
     url = "https://saucenao.com/search.php?db=5&output_type=2&testmode=1&numres=16&url={}".format(
         url_img_url
     )
-    r = requests.get(url=url)
+    r = requests.get(url=url, timeout=(5, 30))
     jres = json.loads(r.text)
     print("++++++++++++++++++\n{}".format(json.dumps(jres)))
     msg = "default msg"
@@ -55,7 +55,7 @@ def search_rank(mode, nsfw=False):
     date = time.strftime("%Y-%m-%d", time.localtime(the_day_before_yesterday_time))
     url = "https://api.imjad.cn/pixiv/v2/?type=rank&mode={}&date={}".format(mode, date)
     print("url:{}====================".format(url))
-    r = requests.get(url=url)
+    r = requests.get(url=url, timeout=(5, 30))
     jres = json.loads(r.text)
     illusts = jres["illusts"]
     sfw_illusts = []
@@ -78,7 +78,7 @@ def search_rank(mode, nsfw=False):
 def search_word(word, nsfw=False):
     urlword = urllib.parse.quote(word)
     url = "https://api.imjad.cn/pixiv/v2/?type=search&word={}&page=1".format(urlword)
-    r = requests.get(url=url)
+    r = requests.get(url=url, timeout=(5, 30))
     jres = json.loads(r.text)
     illusts = jres["illusts"]
     sfw_illusts = []
@@ -101,7 +101,7 @@ def search_word(word, nsfw=False):
 
 def search_ID(ID):
     url = "https://api.imjad.cn/pixiv/v2/?type=illust&id={}".format(ID)
-    r = requests.get(url=url)
+    r = requests.get(url=url, timeout=(5, 30))
     jres = json.loads(r.text)
     if "error" in jres.keys():
         msg = jres["error"]["user_message"] or jres["error"]["message"]
@@ -117,7 +117,7 @@ def search_gif_ID(ID):
     url = "http://ugoira.dataprocessingclub.org/convert?url=https%3A%2F%2Fwww.pixiv.net%2Fmember_illust.php%3Fmode%3Dmedium%26illust_id%3D{}&format=gif".format(
         ID
     )
-    r = requests.get(url=url, timeout=60)
+    r = requests.get(url=url, timeout=(5, 60))
     jres = json.loads(r.text)
     if "url" in jres.keys():
         sz_M = int(jres["size_bytes"]) / 1024 / 1024
