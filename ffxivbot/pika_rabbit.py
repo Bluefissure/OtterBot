@@ -495,7 +495,7 @@ class PikaConsumer(object):
                         )
                     else:
                         if receive["message"].find("/update_group") == 0:
-                            pass
+                            update_group_member_list(bot, group_id, post_type=receive.get("reply_api_type", "websocket") )
                         # get sender's user_info
                         user_info = (
                             receive["sender"] if "sender" in receive.keys() else None

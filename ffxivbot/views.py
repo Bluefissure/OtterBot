@@ -105,7 +105,7 @@ def tata(req):
                 bot.api_post_url = api_post_url
                 bot.auto_accept_friend = autoFriend and "true" in autoFriend
                 bot.auto_accept_invite = autoInvite and "true" in autoInvite
-                if len(QQBot.objects.all()) >= 120 and bot_created:
+                if len(QQBot.objects.all()) >= 100 and bot_created:
                     res_dict = {"response": "error", "msg": "机器人总数过多，请稍后再试"}
                     return JsonResponse(res_dict)
                 bot.save()
@@ -395,6 +395,23 @@ def get_nm_id(tracker, nm_name):
             "总领安哥拉": 35,
             "复制魔花凯西": 36,
             "娄希": 37,
+            "琉科西亚": 38,
+            "佛劳洛斯": 39,
+            "诡辩者": 40,
+            "格拉菲亚卡内": 41,
+            "阿斯卡拉福斯": 42,
+            "巴钦大公爵": 43,
+            "埃托洛斯": 44,
+            "来萨特": 45,
+            "火巨人": 46,
+            "伊丽丝": 47,
+            "佣兵雷姆普里克斯": 48,
+            "闪电督军": 49,
+            "樵夫杰科": 50,
+            "明眸": 51,
+            "阴·阳": 52,
+            "斯库尔": 53,
+            "彭忒西勒亚": 54
         }
         for (k, v) in name_id.items():
             if k in nm_name:
@@ -438,6 +455,23 @@ def get_nm_id(tracker, nm_name):
             "总领安哥拉": {"level": 34, "type": 2},
             "复制魔花凯西": {"level": 35, "type": 2},
             "娄希": {"level": 36, "type": 2},
+            "琉科西亚": {"level": 35, "type": 3},
+            "佛劳洛斯": {"level": 36, "type": 3},
+            "诡辩者": {"level": 37, "type": 3},
+            "格拉菲亚卡内": {"level": 38, "type": 3},
+            "阿斯卡拉福斯": {"level": 39, "type": 3},
+            "巴钦大公爵": {"level": 40, "type": 3},
+            "埃托洛斯": {"level": 41, "type": 3},
+            "来萨特": {"level": 42, "type": 3},
+            "火巨人": {"level": 43, "type": 3},
+            "伊丽丝": {"level": 44, "type": 3},
+            "佣兵雷姆普里克斯": {"level": 45, "type": 3},
+            "闪电督军": {"level": 46, "type": 3},
+            "樵夫杰科": {"level": 47, "type": 3},
+            "明眸": {"level": 48, "type": 3},
+            "阴·阳": {"level": 49, "type": 3},
+            "斯库尔": {"level": 50, "type": 3},
+            "彭忒西勒亚": {"level": 51, "type": 3},
         }
         for (k, v) in name_id.items():
             if k in nm_name:

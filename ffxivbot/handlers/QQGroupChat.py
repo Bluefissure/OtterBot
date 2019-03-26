@@ -44,7 +44,7 @@ def QQGroupChat(*args, **kwargs):
         #repeat_ban & repeat
         message = receive["message"].strip()
         message_hash = hashlib.md5(message.encode()).hexdigest()
-        chats = ChatMessage.objects.filter(group=group, message_hash=message_hash, timestamp__gt=int(time.time())-60)
+        chats = ChatMessage.objects.filter(group=group, message_hash=message_hash).filter(timestamp__gt=int(time.time())-60)
         if(chats.exists()):
             chat = chats[0]
             chat.timestamp = int(time.time())
@@ -70,7 +70,7 @@ def QQGroupChat(*args, **kwargs):
             if(group.repeat_ban>0 or (group.repeat_length>=1 and group.repeat_prob>0) ):
                 if(receive["self_id"]!=receive["user_id"]):
                     # print("creating new chat message:{}".format(message))
-                    chat = ChatMessage(group=group,message=message,timestamp=time.time(),message_hash=message_hash)
+                    chat = ChatMessage(group=group,timestamp=time.time(),message_hash=message_hash)
                     chat.save()
 
         #weibo subscription
@@ -92,7 +92,7 @@ def QQGroupChat(*args, **kwargs):
         chat_enable = group_commands.get("/chat", "enable") != "disable"
         if("[CQ:at,qq=%s]"%(receive["self_id"]) in receive["message"] and chat_enable):
             # logging.debug("Tuling reply")
-            receive_msg = receive["message"]
+            receive_msg = message
             receive_msg = receive_msg.replace("[CQ:at,qq=%s]"%(receive["self_id"]),"")
             tuling_data = {}
             tuling_data["reqType"] = 0 
