@@ -1,7 +1,7 @@
 beautifulsoup4==4.6.0
 bs4==0.0.1
-Django>=2.0.10
-PyMySQL==0.8.0
+Django==2.0.10
+PyMySQL==0.9.3
 pytz==2018.3
 requests>=2.20.0
 uWSGI==2.0.17
