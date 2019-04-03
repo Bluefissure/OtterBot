@@ -47,7 +47,7 @@ class PikaPublisher:
         self.credentials = pika.PlainCredentials(username, password)
         self.queue = queue
         self.parameters = pika.ConnectionParameters(
-            "127.0.0.1", 5672, "/", self.credentials, heartbeat=300
+            "127.0.0.1", 5672, "/", self.credentials, heartbeat=0
         )
         self.connection = pika.BlockingConnection(self.parameters)
         self.channel = self.connection.channel()
@@ -73,6 +73,9 @@ class PikaPublisher:
     def exit(self):
         if self.connection.is_open:
             self.connection.close()
+
+    def ping(self):
+        self.connection.process_data_events()
 
 # PUB = PikaPublisher()
 
@@ -174,6 +177,7 @@ class WSConsumer(AsyncWebsocketConsumer):
                             self.bot.user_id, int(time.time())
                         )
                     )
+                    self.pub.ping()
                     # await self.call_api("get_status",{},"get_status:{}".format(self.bot_user_id))
                 self_id = receive["self_id"]
                 if "message" in receive.keys():

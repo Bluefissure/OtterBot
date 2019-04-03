@@ -76,7 +76,7 @@ def QQCommand_hso(*args, **kwargs):
                     else:
                         idx = random.randint(0, len(img_json) - 1)
                         img = img_json[idx]
-                        msg = "[CQ:image,file={}]".format(img["sample_url"])
+                        msg = "[CQ:image,file={},destruct=0]".format(img["sample_url"])
 
         reply_action = reply_message_action(receive, msg)
         action_list.append(reply_action)
