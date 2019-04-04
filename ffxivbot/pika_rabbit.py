@@ -38,6 +38,10 @@ from asgiref.sync import async_to_sync
 import ffxivbot.handlers as handlers
 from ffxivbot.models import *
 
+
+USE_GRAFANA = getattr(settings, "USE_GRAFANA", False)
+
+
 CONFIG_PATH = os.environ.get(
     "FFXIVBOT_CONFIG", os.path.join(FFXIVBOT_ROOT, "ffxivbot/config.json")
 )
@@ -558,6 +562,16 @@ class PikaConsumer(object):
                                         group_commands=handlers.group_commands,
                                         alter_commands=handlers.alter_commands,
                                     )
+                                    if USE_GRAFANA:
+                                        command_log = CommandLog(
+                                                time = int(time.time()),
+                                                bot_id = str(self_id),
+                                                user_id = str(user_id),
+                                                group_id = str(group_id),
+                                                command = str(command_key),
+                                                message = receive["message"]
+                                            )
+                                        command_log.save()
                                     for action in action_list:
                                         call_api(
                                             bot,
@@ -570,25 +584,7 @@ class PikaConsumer(object):
                                     if already_reply:
                                         break
 
-                    if not already_reply:
-                        action_list = handlers.QQGroupChat(
-                            receive=receive,
-                            global_config=config,
-                            bot=bot,
-                            user_info=user_info,
-                            member_list=member_list,
-                            group=group,
-                            commands=handlers.commands,
-                            alter_commands=handlers.alter_commands,
-                        )
-                        for action in action_list:
-                            call_api(
-                                bot,
-                                action["action"],
-                                action["params"],
-                                echo=action["echo"],
-                                post_type=receive.get("reply_api_type", "websocket")
-                            )
+                    
 
                 if receive["message"].find("/help") == 0:
                     msg = ""
@@ -627,9 +623,6 @@ class PikaConsumer(object):
                                 and group_commands[command_key] == "disable"
                             ):
                                 continue
-                        LOGGER.debug(
-                            "{} calling command: {}".format(user_id, command_key)
-                        )
                         handle_method = getattr(
                             handlers,
                             "QQCommand_{}".format(command_key.replace("/", "", 1)),
@@ -637,8 +630,16 @@ class PikaConsumer(object):
                         action_list = handle_method(
                             receive=receive, global_config=config, bot=bot
                         )
-                        # if(len(json.loads(bot.disconnections))>100):
-                        #     action_list = self.intercept_action(action_list)
+                        if USE_GRAFANA:
+                            command_log = CommandLog(
+                                    time = int(time.time()),
+                                    bot_id = str(self_id),
+                                    user_id = str(user_id),
+                                    group_id = "private" if receive["message_type"] != "group" else str(group_id),
+                                    command = str(command_key),
+                                    message = receive["message"]
+                                )
+                            command_log.save()
                         for action in action_list:
                             call_api(
                                 bot,
@@ -649,6 +650,38 @@ class PikaConsumer(object):
                             )
                             already_reply = True
                         break
+
+                # handling chat
+                if receive["message_type"] == "group":
+                    if not already_reply:
+                        action_list = handlers.QQGroupChat(
+                            receive=receive,
+                            global_config=config,
+                            bot=bot,
+                            user_info=user_info,
+                            member_list=member_list,
+                            group=group,
+                            commands=handlers.commands,
+                            alter_commands=handlers.alter_commands,
+                        )
+                        if USE_GRAFANA:
+                            command_log = CommandLog(
+                                time = int(time.time()),
+                                bot_id = str(self_id),
+                                user_id = str(user_id),
+                                group_id = "private" if receive["message_type"] != "group" else str(group_id),
+                                command = "/chat",
+                                message = receive["message"]
+                            )
+                            command_log.save()
+                        for action in action_list:
+                            call_api(
+                                bot,
+                                action["action"],
+                                action["params"],
+                                echo=action["echo"],
+                                post_type=receive.get("reply_api_type", "websocket")
+                            )
 
             CONFIG_GROUP_ID = config["CONFIG_GROUP_ID"]
             if receive["post_type"] == "request":

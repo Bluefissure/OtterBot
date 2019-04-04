@@ -365,3 +365,11 @@ class ContentFinderItem(models.Model):
 
     def __str__(self):
         return self.name
+
+class CommandLog(models.Model):
+    time = models.BigIntegerField(default=0)
+    command = models.CharField(max_length=32)
+    message = models.TextField(default="")
+    bot_id = models.CharField(max_length=16)
+    user_id = models.CharField(max_length=16)
+    group_id = models.CharField(max_length=16)
