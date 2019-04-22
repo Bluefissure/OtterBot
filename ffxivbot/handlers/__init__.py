@@ -29,6 +29,7 @@ commands = {
   "/tex":"生成tex图片（\"/tex e^{\\pi i}+1=0\"）",
   "/hso":"好色哦"
 }
+  # "/joke":"讽刺笑话（\"/joke 996|强东|建设一流公司|程序员|公司\"）",
 
 group_commands = {
   "/group":"群相关功能控制",
@@ -91,6 +92,7 @@ from .QQCommand_nuannuan import QQCommand_nuannuan
 from .QQCommand_tex import QQCommand_tex
 from .QQCommand_waifu import QQCommand_waifu
 from .QQCommand_quest import QQCommand_quest
+# from .QQCommand_joke import QQCommand_joke
 
 
 from .QQGroupCommand_group import QQGroupCommand_group

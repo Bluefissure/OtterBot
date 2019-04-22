@@ -55,8 +55,9 @@ def crawl_wb(weibouser, push=False):
             # print("ready to push groups:{}".format(groups))
             bots = QQBot.objects.all()
             t.save()
-            try:
-                for bot in bots:
+            
+            for bot in bots:
+                try:
                     group_id_list = [item["group_id"] for item in json.loads(bot.group_list)]
                     # print("group_id_list:{}".format(group_id_list))
                     for group in groups:
@@ -79,14 +80,12 @@ def crawl_wb(weibouser, push=False):
                                     r = requests.post(url=url, headers=headers, data=json.dumps(jdata["params"]))
                                     if r.status_code!=200:
                                         logging.error(r.text)
-                t.save()
-            except Exception as e:
-                logging.error("Error at pushing crawled weibo: {}".format(e))
+                except Exception as e:
+                    logging.error("Error at pushing crawled weibo: {}".format(e))
 
             logging.info("crawled {} of {}".format(t.itemid, t.owner))
     else:
-        logging.error("Error at crawling weibo:{}".format(jdata["ok"]))
-        pass
+        logging.error("Error at crawling weibo:{}".format(jdata.get("ok", "NULL")))
     return
 
 

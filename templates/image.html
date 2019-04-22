@@ -1,0 +1,181 @@
+{% extends 'index.html' %}
+
+
+{% block content %}
+   <!-- Content Header (Page header) -->
+      <section class="content-header">
+        <h1>
+          獭の图库
+          <small></small>
+        </h1>
+      </section>
+
+      <!-- Main content -->
+      <section class="content">
+
+        <!-- Default box -->
+        <div class="box">
+          <div class="box-header with-border">
+            <h3 class="box-title">图库</h3>
+
+            <div class="box-tools pull-right">
+              <button type="button" class="btn btn-box-tool" data-widget="collapse" data-toggle="tooltip" title="" data-original-title="Collapse">
+                <i class="fa fa-minus"></i></button>
+              <button type="button" class="btn btn-box-tool" data-widget="remove" data-toggle="tooltip" title="" data-original-title="Remove">
+                <i class="fa fa-times"></i></button>
+            </div>
+          </div>
+          <div class="box-body">
+            <div class="row">
+              <div id="images" class="col-xs-12 text-center">
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-xs-12 text-center">
+                <button type="button" class="btn btn-default btn-lrg ajax" title="Ajax Request" onclick="get_images()">
+                  <i class="fa fa-spin fa-refresh"></i>&nbsp; 刷新
+                </button>
+              </div>
+            </div>
+          </div>
+          <!-- /.box-body -->
+          <div class="box-footer">
+            Powered by <a href="https://sm.ms/" target="_blank">sm.ms</a>
+          </div>
+          <!-- /.box-footer-->
+        </div>
+        <!-- /.box -->
+        
+        </section>
+    <!-- /.content -->
+
+    
+{% endblock %}
+
+<!-- ./wrapper -->
+{% block script %}
+<script src="https://d3js.org/d3.v4.min.js" charset="utf-8"></script>
+<script src="/static/dist/js/dagre-d3.js"></script>
+<!-- jQuery 3 -->
+<script src="/static/bower_components/jquery/dist/jquery.min.js"></script>
+
+<!-- <link rel="stylesheet" href="https://dagrejs.github.io/project/dagre-d3/latest/demo/tipsy.css">
+<script src="https://code.jquery.com/jquery-1.9.1.min.js"></script>
+<script src="https://dagrejs.github.io/project/dagre-d3/latest/demo/tipsy.js"></script>
+ -->
+<link rel="stylesheet" href="https://cdn.bootcss.com/tooltipster/3.3.0/css/tooltipster.min.css">
+<script type="text/javascript" src="https://cdn.bootcss.com/tooltipster/3.3.0/js/jquery.tooltipster.min.js"></script>
+<!-- <script src="https://cdn.bootcss.com/svg.js/2.6.5/svg.js"></script> -->
+<!-- <script type="text/javascript" src="/static/dist/js/svg.screenbbox.js"></script> -->
+<!-- <script type="text/javascript" src="/static/dist/js/tooltipster.bundle.min.js"></script> -->
+<!-- <script type="text/javascript" src="/static/dist/js/plugins/tooltipster/SVG/tooltipster-SVG.min.js"></script> -->
+
+<!-- Bootstrap 3.3.7 -->
+<script src="/static/bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+<!-- SlimScroll -->
+<script src="/static/bower_components/jquery-slimscroll/jquery.slimscroll.min.js"></script>
+<!-- FastClick -->
+<script src="/static/bower_components/fastclick/lib/fastclick.js"></script>
+<!-- AdminLTE App -->
+<script src="/static/dist/js/adminlte.min.js"></script>
+<!-- AdminLTE for demo purposes -->
+<script src="/static/dist/js/demo.js"></script>
+
+<!-- <style type="text/css">
+  .row {
+  display: flex;
+  flex-wrap: wrap;
+  padding: 0 4px;
+}
+
+/* Create four equal columns that sits next to each other */
+.column {
+  flex: 16%;
+  max-width: 16%;
+  padding: 0 4px;
+}
+
+.column img {
+  margin-top: 8px;
+  vertical-align: middle;
+}
+
+/* Responsive layout - makes a two column-layout instead of four columns */
+@media screen and (max-width: 800px) {
+  .column {
+    flex: 50%;
+    max-width: 50%;
+  }
+}
+
+/* Responsive layout - makes the two columns stack on top of each other instead of next to each other */
+@media screen and (max-width: 600px) {
+  .column {
+    flex: 100%;
+    max-width: 100%;
+  }
+}
+</style> -->
+<style type="text/css">
+  #images {
+  /* Prevent vertical gaps */
+  line-height: 10;
+   
+  -webkit-column-count: 4;
+  -webkit-column-gap:   0px;
+  -moz-column-count:    4;
+  -moz-column-gap:      0px;
+  column-count:         4;
+  column-gap:           0px;  
+}
+
+#images img {
+  /* Just in case there are inline attributes */
+  width: 100% !important;
+  height: auto !important;
+}
+
+</style>
+<script type="text/javascript">
+  function get_images(){
+    var images = document.getElementById("images");
+    $.ajax({
+      type: 'POST',
+      url: '',
+      async: true,
+      data: {"optype":"get_images", 'csrfmiddlewaretoken': '{{ csrf_token }}'},
+      success: function(data){
+        if(data.response!="success"){
+          if(data.response=="error"){
+            alert(data.msg);
+          }else{
+            alert(data.response);
+            console.log(data);
+          }
+        }else{
+            images.innerHTML = "";
+            // console.log(data);
+            for(var image_index in data.images){
+              var image = data.images[image_index];
+              // console.log(image);
+              var img = document.createElement('img'); 
+              img.setAttribute("class", "img-responsive");
+              img.setAttribute("src", image.url);
+              img.setAttribute("alt", image.category);
+              img.setAttribute("title", image.category);
+              var a = document.createElement('a'); 
+              a.setAttribute("href", image.url);
+              a.setAttribute("target", "_blank");
+              a.appendChild(img);
+              images.appendChild(a);
+            }
+
+        }
+      },
+    });
+  }
+</script>
+
+
+
+{% endblock %}

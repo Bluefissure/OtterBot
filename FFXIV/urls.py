@@ -27,6 +27,7 @@ urlpatterns = [
     path('quest/tooltip/', quest_tooltip),
     path('api/', api),
     path('http/', qqpost),
+    path('image/', image),
 ]
 if settings.DEBUG == True:
     urlpatterns += staticfiles_urlpatterns()

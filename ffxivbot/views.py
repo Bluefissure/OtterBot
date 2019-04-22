@@ -41,7 +41,6 @@ from websocket import create_connection
 import re
 import pika
 import os
-from PIL import Image
 
 
 def ren2res(template, req, render_dict={}, post_token=True):
@@ -294,6 +293,20 @@ def quest(req):
         return JsonResponse(res_dict)
     return ren2res("quest.html", req, {})
 
+
+def image(req):
+    if req.is_ajax() and req.method == "POST":
+        res_dict = {"response": "No response."}
+        optype = req.POST.get("optype")
+        if optype == "get_images":
+            images = list(map(lambda x:{"url":"https://i.loli.net"+x.path,"category":x.key}, list(Image.objects.order_by('?')[:30])))
+            res_dict = {"images":images,"response":"success"}
+        else:
+            res_dict = {"msg":"not support","response":"error"}
+        return JsonResponse(res_dict)
+
+    return ren2res("image.html", req, {})
+
 def quest_tooltip(req):
     quest_id = req.GET.get("id", 0)
     nocache = req.GET.get("nocache", "False") == "True"
@@ -330,27 +343,6 @@ def quest_tooltip(req):
                     return ren2res("quest_tooltip.html", req, {"parsed_html":html})
                 elif res_type=="img" or res_type=="image":
                     return HttpResponse("TODO", status=500)
-                    from selenium import webdriver
-                    options = webdriver.ChromeOptions()
-                    options.add_argument('--kiosk')
-                    options.add_argument('--headless') 
-                    options.add_argument('--no-sandbox') 
-                    options.add_argument('--disable-gpu')
-                    driver = webdriver.Chrome(chrome_options=options)
-                    driver.get("https://xn--v9x.net/quest/tooltip/?id={}".format(quest_id))
-                    tooltip = driver.find_element_by_id("tooltip")
-                    valid_image = "tooltip.png"
-                    if tooltip.screenshot(valid_image):
-                        try:
-                            with open(valid_image, "rb") as f:
-                                return HttpResponse(f.read(), content_type="image/png")
-                        except IOError:
-                            red = Image.new('RGBA', (1, 1), (255,0,0,0))
-                            response = HttpResponse(content_type="image/png")
-                            red.save(response, "PNG")
-                            return response
-                    else:
-                        return HttpResponse("Image save failed", status=500)
     except KeyError:
         return HttpResponse("KeyError", status=500)
     return HttpResponse(status=500)
@@ -524,7 +516,7 @@ def api(req):
                             # print("nm_name:{} nm_id:{}".format(nm_name,nm_id))
                             # ws = create_connection("wss://ffxiv-eureka.com/socket/websocket?vsn=2.0.0")
                             ws = create_connection(
-                                "wss://eureka.bluefissure.com/socket/websocket?vsn=2.0.0"
+                                "wss://ffxiv-eureka.com/socket/websocket?vsn=2.0.0"
                             )
                             msg = '["1","1","instance:{}","phx_join",{{"password":"{}"}}]'.format(
                                 instance, password
@@ -549,7 +541,7 @@ def api(req):
                         nm_level_type = get_nm_id("ffxivsc", nm_name)
                         if int(nm_level_type["type"]) > 0:
                             url = (
-                                "https://api.ffxivsc.cn/EurekaService/lobby/addKillTime"
+                                "https://nps.ffxivsc.cn/lobby/addKillTime"
                             )
                             post_data = {
                                 "killTime": strftime(
