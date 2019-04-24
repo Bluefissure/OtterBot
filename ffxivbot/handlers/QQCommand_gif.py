@@ -25,7 +25,7 @@ def QQCommand_gif(*args, **kwargs):
         if receive_msg == "list":
             msg = ""
             for (k, v) in sorry_dict.items():
-                msg = msg + "%s : %s\n" % (k, sorry_name[k])
+                msg = msg + "%s: %s\n" % (k, sorry_name[k])
         else:
             now_template = ""
             for (k, v) in sorry_dict.items():

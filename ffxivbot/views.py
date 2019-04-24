@@ -299,7 +299,11 @@ def image(req):
         res_dict = {"response": "No response."}
         optype = req.POST.get("optype")
         if optype == "get_images":
-            images = list(map(lambda x:{"url":"https://i.loli.net"+x.path,"category":x.key}, list(Image.objects.order_by('?')[:30])))
+            image_filter = Image.objects.order_by('?')
+            cat = req.POST.get("category", "")
+            if cat:
+                image_filter = image_filter.filter(key__contains=cat)
+            images = list(map(lambda x:{"url":"https://i.loli.net"+x.path,"category":x.key}, list(image_filter[:30])))
             res_dict = {"images":images,"response":"success"}
         else:
             res_dict = {"msg":"not support","response":"error"}

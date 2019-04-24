@@ -26,15 +26,23 @@
             </div>
           </div>
           <div class="box-body">
+
             <div class="row">
-              <div id="images" class="col-xs-12 text-center">
+              <div class="col-xs-2"></div>
+              <div class="col-xs-8 text-center">
+                <div class="input-group input-group-sm">
+                  <input type="text" class="form-control" id="inputCategory" onkeypress="get_images()">
+                      <span class="input-group-btn">
+                        <button type="button" class="btn btn-default btn-lrg ajax" title="Ajax Request" onclick="get_images()">
+                          <i class="fa fa-spin fa-refresh"></i>&nbsp; 刷新
+                        </button>
+                      </span>
+                </div>
               </div>
+              <div class="col-xs-2"></div>
             </div>
             <div class="row">
-              <div class="col-xs-12 text-center">
-                <button type="button" class="btn btn-default btn-lrg ajax" title="Ajax Request" onclick="get_images()">
-                  <i class="fa fa-spin fa-refresh"></i>&nbsp; 刷新
-                </button>
+              <div id="images" class="col-xs-12 text-center">
               </div>
             </div>
           </div>
@@ -139,11 +147,12 @@
 <script type="text/javascript">
   function get_images(){
     var images = document.getElementById("images");
+    var cat = document.getElementById("inputCategory").value;
     $.ajax({
       type: 'POST',
       url: '',
       async: true,
-      data: {"optype":"get_images", 'csrfmiddlewaretoken': '{{ csrf_token }}'},
+      data: {"optype":"get_images", "category":cat, 'csrfmiddlewaretoken': '{{ csrf_token }}'},
       success: function(data){
         if(data.response!="success"){
           if(data.response=="error"){
