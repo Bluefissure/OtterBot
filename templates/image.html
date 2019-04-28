@@ -31,7 +31,7 @@
               <div class="col-xs-2"></div>
               <div class="col-xs-8 text-center">
                 <div class="input-group input-group-sm">
-                  <input type="text" class="form-control" id="inputCategory" onkeypress="get_images()">
+                  <input type="text" class="form-control" id="inputCategory" >
                       <span class="input-group-btn">
                         <button type="button" class="btn btn-default btn-lrg ajax" title="Ajax Request" onclick="get_images()">
                           <i class="fa fa-spin fa-refresh"></i>&nbsp; 刷新
@@ -171,7 +171,7 @@
               img.setAttribute("class", "img-responsive");
               img.setAttribute("src", image.url);
               img.setAttribute("alt", image.category);
-              img.setAttribute("title", image.category);
+              img.setAttribute("title", image.info);
               var a = document.createElement('a'); 
               a.setAttribute("href", image.url);
               a.setAttribute("target", "_blank");

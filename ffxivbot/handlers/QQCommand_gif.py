@@ -18,14 +18,16 @@ def QQCommand_gif(*args, **kwargs):
         sorrygifs = SorryGIF.objects.all()
         sorry_dict = {}
         sorry_name = {}
+        sorry_length = {}
         for sorry in sorrygifs:
             sorry_dict[sorry.api_name] = sorry.example
             sorry_name[sorry.api_name] = sorry.name
+            sorry_length[sorry.api_name] = len(sorry.example.split("|"))
         receive_msg = receive["message"].replace("/gif", "", 1).strip()
         if receive_msg == "list":
             msg = ""
             for (k, v) in sorry_dict.items():
-                msg = msg + "%s: %s\n" % (k, sorry_name[k])
+                msg = msg + "{}: {}({})\n".format(k, sorry_name[k], sorry_length[k])
         else:
             now_template = ""
             for (k, v) in sorry_dict.items():

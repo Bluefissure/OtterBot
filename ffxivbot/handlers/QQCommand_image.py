@@ -42,7 +42,7 @@ def QQCommand_image(*args, **kwargs):
         msg_list = receive_msg.split(" ")
         second_command = msg_list[0]
         if second_command == "" or second_command == "help":
-            msg = " 禁止上传R18/NSFW图片：\n/image upload $category $image : 给类别$category上传图片\n/image $category : 随机返回一张$category的图片\n/image del $name : 删除名为$name的图片\nPowered by https://sm.ms"
+            msg = " 禁止上传R18/NSFW图片：\n/image upload $category $image : 给类别$category上传图片\n/image $category : 随机返回一张$category的图片\n/image del $name : 删除名为$name的图片\n查看图库：https://xn--v9x.net/image/\nPowered by https://sm.ms"
         elif second_command == "upload":
             if len(msg_list) < 3:
                 msg = "您输入的参数个数不足：\n/image upload $category $image : 给类别$category上传图片"

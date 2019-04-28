@@ -104,7 +104,7 @@ def tata(req):
                 bot.api_post_url = api_post_url
                 bot.auto_accept_friend = autoFriend and "true" in autoFriend
                 bot.auto_accept_invite = autoInvite and "true" in autoInvite
-                if len(QQBot.objects.all()) >= 100 and bot_created:
+                if len(QQBot.objects.all()) >= 150 and bot_created:
                     res_dict = {"response": "error", "msg": "机器人总数过多，请稍后再试"}
                     return JsonResponse(res_dict)
                 bot.save()
@@ -302,8 +302,17 @@ def image(req):
             image_filter = Image.objects.order_by('?')
             cat = req.POST.get("category", "")
             if cat:
-                image_filter = image_filter.filter(key__contains=cat)
-            images = list(map(lambda x:{"url":"https://i.loli.net"+x.path,"category":x.key}, list(image_filter[:30])))
+                image_filter = image_filter.filter(Q(key__contains=cat) | Q(add_by__user_id__contains=cat))
+            images = list(
+                map(        
+                    lambda x: {
+                        "url": "https://i.loli.net" + x.path,
+                        "category": x.key,
+                        "info": "Name:{}\nCategory:{}\nUploader:{}".format(x.name, x.key, x.add_by)
+                    },
+                    list(image_filter[:30]),
+                )
+            )
             res_dict = {"images":images,"response":"success"}
         else:
             res_dict = {"msg":"not support","response":"error"}

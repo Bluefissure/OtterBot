@@ -5,7 +5,6 @@ import logging
 import json
 import random
 import requests
-import requests_cache
 
 
 def QQCommand_nuannuan(*args, **kwargs):
@@ -14,11 +13,10 @@ def QQCommand_nuannuan(*args, **kwargs):
         action_list = []
         receive = kwargs["receive"]
         try:
-            with requests_cache.disabled():
-                r = requests.get(url="http://yotsuyu.yorushika.tk:5000/")
+            r = requests.get(url="http://nuannuan.yorushika.co:5000/", timeout=5)
             res = json.loads(r.text)
             if res["success"]:
-                msg = res["content"]
+                msg = res.get("content", "default content")
                 msg += "\nPowered by 露儿[Yorushika]"
             else:
                 msg = "Error"

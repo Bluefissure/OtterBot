@@ -39,15 +39,16 @@ def crawl_wb(weibouser, push=False):
     jdata = json.loads(s.text)
     if(jdata["ok"] == 1):
         for tile in jdata["data"]["cards"]:
-            if(len(WeiboTile.objects.filter(itemid=tile["itemid"])) > 0):
+            if(len(WeiboTile.objects.filter(itemid=tile.get("itemid", ""))) > 0):
                 # print("crawled {} of {} before, pass".format(tile["itemid"], tile["itemid"]))
                 continue
-            t = WeiboTile(itemid=tile["itemid"])
+            t = WeiboTile(itemid=tile.get("itemid", ""))
             t.owner = weibouser
             t.content = json.dumps(tile)
             t.crawled_time = int(time.time())
-            if(tile["itemid"] == ""):
-                logging.info("pass {} of {} cuz empty itemid".format(t.itemid, t.owner))
+            if(tile.get("itemid", "") == ""):
+                logging.info("pass a tile of {} cuz empty itemid".format(t.owner))
+                logging.info(json.dumps(tile))
                 continue
             channel_layer = get_channel_layer()
 
@@ -102,6 +103,7 @@ def crawl():
 
 
 if __name__ == "__main__":
+    print("Crawling Weibo Service Start, check log file log/crawl_wb.log")
     while True:
         try:
             crawl()

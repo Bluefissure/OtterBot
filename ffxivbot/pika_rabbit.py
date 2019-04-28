@@ -492,7 +492,11 @@ class PikaConsumer(object):
                             else "本群成员信息获取失败，请尝试重启酷Q并使用/update_group刷新群成员信息\n"
                         )
                         for (k, v) in handlers.group_commands.items():
-                            msg += "{} : {}\n".format(k, v)
+                            command_enable = True
+                            if group and group_commands:
+                                command_enable = group_commands.get(k, "enable") == "enable"
+                            if command_enable:
+                                msg += "{}: {}\n".format(k, v)
                         msg = msg.strip()
                         send_message(
                             bot, receive["message_type"], group_id or user_id, msg
@@ -589,7 +593,11 @@ class PikaConsumer(object):
                 if receive["message"].find("/help") == 0:
                     msg = ""
                     for (k, v) in handlers.commands.items():
-                        msg += "{} : {}\n".format(k, v)
+                        command_enable = True
+                        if group and group_commands:
+                            command_enable = group_commands.get(k, "enable") == "enable"
+                        if command_enable:
+                            msg += "{}: {}\n".format(k, v)
                     msg += "具体介绍详见Wiki使用手册: {}\n".format(
                         "https://github.com/Bluefissure/FFXIVBOT/wiki/"
                     )
