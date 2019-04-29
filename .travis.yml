@@ -22,7 +22,7 @@ before_script:
   - python manage.py migrate
 # command to run tests
 script:
-  - python manage.py check
+  - python manage.py test
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)
