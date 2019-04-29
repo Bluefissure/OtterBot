@@ -15,7 +15,7 @@ install: "pip install -r requirements.txt"
 before_script:
   - mysql -e 'CREATE DATABASE FFXIV_DEV;'
   - mysql -u root -e "CREATE USER 'FFXIV_DEV'@'localhost' IDENTIFIED BY 'PASSWORD';"
-  - mysql -u root -e "GRANT ALL ON FFXIV_DEV.* TO 'FFXIV_DEV'@'localhost';"
+  - mysql -u root -e "GRANT ALL ON *.* TO 'FFXIV_DEV'@'localhost';"
   - mv FFXIV/settings_example.py FFXIV/settings.py
   - python manage.py makemigrations ffxivbot
   - python manage.py makemigrations
