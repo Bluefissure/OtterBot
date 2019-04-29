@@ -8,9 +8,9 @@ import requests
 
 
 def QQCommand_nuannuan(*args, **kwargs):
+    action_list = []
     try:
         QQ_BASE_URL = kwargs["global_config"]["QQ_BASE_URL"]
-        action_list = []
         receive = kwargs["receive"]
         try:
             r = requests.get(url="http://nuannuan.yorushika.co:5000/", timeout=5)
@@ -21,11 +21,11 @@ def QQCommand_nuannuan(*args, **kwargs):
             else:
                 msg = "Error"
         except Exception as e:
-            msg = "Error: {}".format(e)
+            msg = "Error: {}".format(type(e))
         reply_action = reply_message_action(receive, msg)
         action_list.append(reply_action)
-        return action_list
     except Exception as e:
         msg = "Error: {}".format(type(e))
         action_list.append(reply_message_action(receive, msg))
         logging.error(e)
+    return action_list
