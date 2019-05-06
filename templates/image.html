@@ -145,43 +145,66 @@
 
 </style>
 <script type="text/javascript">
-  function get_images(){
+  var able_to_reload_images = false;
+  var cached_images = [];
+  function get_images(clear_cache=1){
     var images = document.getElementById("images");
     var cat = document.getElementById("inputCategory").value;
+    if(clear_cache){
+      cached_images = [];
+    }
+    // console.log(cached_images);
     $.ajax({
       type: 'POST',
       url: '',
       async: true,
-      data: {"optype":"get_images", "category":cat, 'csrfmiddlewaretoken': '{{ csrf_token }}'},
+      contentType: 'application/json',
+      headers: { "X-CSRFToken": '{{csrf_token}}' },
+      data: JSON.stringify({"optype":"get_images", "category":cat, "cached_images":cached_images}),
+      dataType: 'json',
       success: function(data){
         if(data.response!="success"){
           if(data.response=="error"){
             alert(data.msg);
           }else{
             alert(data.response);
-            console.log(data);
+            // console.log(data);
           }
         }else{
+          if(clear_cache){
             images.innerHTML = "";
-            // console.log(data);
-            for(var image_index in data.images){
-              var image = data.images[image_index];
-              // console.log(image);
-              var img = document.createElement('img'); 
-              img.setAttribute("class", "img-responsive");
-              img.setAttribute("src", image.url);
-              img.setAttribute("alt", image.category);
-              img.setAttribute("title", image.info);
-              var a = document.createElement('a'); 
-              a.setAttribute("href", image.url);
-              a.setAttribute("target", "_blank");
-              a.appendChild(img);
-              images.appendChild(a);
-            }
+          }
+          // console.log(data);
+          for(var image_index in data.images){
+            var image = data.images[image_index];
+            // console.log(image);
+            var img = document.createElement('img'); 
+            img.setAttribute("class", "img-responsive");
+            img.setAttribute("src", image.url);
+            img.setAttribute("alt", image.category);
+            img.setAttribute("title", image.info);
+            var a = document.createElement('a'); 
+            a.setAttribute("href", image.url);
+            a.setAttribute("target", "_blank");
+            a.appendChild(img);
+            images.appendChild(a);
+            cached_images.push(image.name);
+          }
+          able_to_reload_images = true;
 
         }
       },
     });
+  }
+  window.onmousewheel = function(){
+     var scrollT = document.body.scrollTop || document.documentElement.scrollTop;
+     currtTop = document.documentElement.clientHeight + scrollT;
+     if(currtTop >= document.body.scrollHeight*0.9){
+      if(able_to_reload_images){
+        able_to_reload_images = false;
+        get_images(clear_cache=0);
+      }
+     }
   }
 </script>
 

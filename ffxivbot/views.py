@@ -191,7 +191,7 @@ def tata(req):
         bb["autoinvite"] = bot.auto_accept_invite
         bb["autofriend"] = bot.auto_accept_friend
         bot_list.append(bb)
-    return ren2res("pages/tables/data.html", req, {"bots": bot_list})
+    return ren2res("tata.html", req, {"bots": bot_list})
 
 
 def quest(req):
@@ -297,15 +297,18 @@ def quest(req):
 def image(req):
     if req.is_ajax() and req.method == "POST":
         res_dict = {"response": "No response."}
-        optype = req.POST.get("optype")
+        json_req = json.loads(req.body)
+        optype = json_req.get("optype")
         if optype == "get_images":
-            image_filter = Image.objects.order_by('?')
-            cat = req.POST.get("category", "")
+            cat = json_req.get("category", "")
+            cached_images = json_req.get("cached_images", [])
+            image_filter = Image.objects.order_by('?').exclude(name__in=cached_images)
             if cat:
                 image_filter = image_filter.filter(Q(key__contains=cat) | Q(add_by__user_id__contains=cat))
             images = list(
                 map(        
                     lambda x: {
+                        "name": x.name,
                         "url": "https://i.loli.net" + x.path,
                         "category": x.key,
                         "info": "Name:{}\nCategory:{}\nUploader:{}".format(x.name, x.key, x.add_by)
