@@ -12,6 +12,11 @@ import logging
 import time
 import traceback
 
+def revproxy(url):
+    original_domain = "i.pximg.net"
+    revproxy_domain = "pixiv.bluefissure.com"
+    rev_url = url.replace(original_domain, revproxy_domain)
+    return rev_url.replace("_webp", "")
 
 def is_nsfw(illust):
     if int(illust["x_restrict"]) != 0:
@@ -54,7 +59,7 @@ def search_rank(mode, nsfw=False):
     the_day_before_yesterday_time = time.time() - 3600 * 24 * 2
     date = time.strftime("%Y-%m-%d", time.localtime(the_day_before_yesterday_time))
     url = "https://api.imjad.cn/pixiv/v2/?type=rank&mode={}&date={}".format(mode, date)
-    print("url:{}====================".format(url))
+    # print("url:{}====================".format(url))
     r = requests.get(url=url, timeout=(5, 30))
     jres = json.loads(r.text)
     illusts = jres["illusts"]
@@ -68,8 +73,8 @@ def search_rank(mode, nsfw=False):
         tot_num = len(illusts)
         illust = illusts[random.randint(0, tot_num - 1)]
         img_url = illust["image_urls"]["large"]
-        rev_img_url = img_url.replace("pximg.net", "pixiv.cat")
-        msg = "[CQ:image,file={}]".format(rev_img_url)
+        msg = "[CQ:image,file={}]".format(revproxy(img_url))
+        print(revproxy(img_url))
     else:
         msg = '未能找到排行榜"{}"'.format(mode)
     return msg
@@ -91,8 +96,7 @@ def search_word(word, nsfw=False):
         tot_num = len(illusts)
         illust = illusts[random.randint(0, tot_num - 1)]
         img_url = illust["image_urls"]["large"]
-        rev_img_url = img_url.replace("pximg.net", "pixiv.cat")
-        msg = "[CQ:image,file={}]".format(rev_img_url)
+        msg = "[CQ:image,file={}]".format(revproxy(img_url))
         # print("msg:{}====================".format(msg))
     else:
         msg = '未能找到搜索关键词"{}"'.format(word)
@@ -108,8 +112,7 @@ def search_ID(ID):
     else:
         illust = jres["illust"]
         img_url = illust["image_urls"]["large"]
-        rev_img_url = img_url.replace("pximg.net", "pixiv.cat")
-        msg = "[CQ:image,file={},cache=0]".format(rev_img_url)
+        msg = "[CQ:image,file={},cache=0]".format(revproxy(img_url))
     return msg
 
 
