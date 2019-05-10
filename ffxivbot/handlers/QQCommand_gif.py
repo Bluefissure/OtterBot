@@ -34,8 +34,10 @@ def QQCommand_gif(*args, **kwargs):
                 if receive_msg.find(k) == 0:
                     now_template = k
                     break
-            if len(receive_msg) == 0 or receive_msg == "help":
+            if (not receive_msg) or receive_msg == "help":
                 msg = " /gif list : 目前可用模板\n/gif $template example : 查看模板$template的样例\n/gif $template $msg0|$msg1|... : 按照$msg0,$msg1...生成沙雕GIF\nPowered by sorry.xuty.tk"
+            elif not now_template.strip():
+                msg = "未能找到对应模板，请确认后输入。"
             else:
                 receive_msg = receive_msg.replace(now_template, "", 1).strip()
                 if receive_msg == "example":

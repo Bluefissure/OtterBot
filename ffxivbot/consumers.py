@@ -209,13 +209,13 @@ class WSConsumer(AsyncWebsocketConsumer):
                             (group, group_created) = QQGroup.objects.get_or_create(
                                 group_id=group_id
                             )
-                            # push_to_mq = "[CQ:at,qq={}]".format(self_id) in receive[
-                            #     "message"
-                            # ] or (
-                            #     (group.repeat_ban > 0)
-                            #     or (group.repeat_length > 1 and group.repeat_prob > 0)
-                            # )
-                            push_to_mq = "[CQ:at,qq={}]".format(self_id) in receive["message"]
+                            push_to_mq = "[CQ:at,qq={}]".format(self_id) in receive[
+                                "message"
+                            ] or (
+                                (group.repeat_ban > 0)
+                                or (group.repeat_length > 1 and group.repeat_prob > 0)
+                            )
+                            # push_to_mq = "[CQ:at,qq={}]".format(self_id) in receive["message"]
                         if push_to_mq:
                             receive["consumer_time"] = time.time()
                             text_data = json.dumps(receive)
@@ -288,8 +288,6 @@ class WSConsumer(AsyncWebsocketConsumer):
                 self.channel_name, json.dumps(event)
             )
         )
-
-        # print("sending event:{}\n============================".format(json.dumps(event)))
         await self.send(event["text"])
 
     async def call_api(self, action, params, echo=None):

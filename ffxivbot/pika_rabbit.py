@@ -77,7 +77,6 @@ def handle_message(bot, message):
                 )
             else:
                 new_message.append(msg)
-
     return new_message
 
 
@@ -85,8 +84,8 @@ def call_api(bot, action, params, echo=None, **kwargs):
     # print("calling api:{} {}\n============================".format(json.dumps(action),json.dumps(params)))
     if "async" not in action and not echo:
         action = action + "_async"
-    if "send_" in action and "_msg" in action:
-        params["message"] = handle_message(bot, params["message"])
+    # if "send_" in action and "_msg" in action:
+    #     params["message"] = handle_message(bot, params["message"])
     jdata = {"action": action, "params": params}
     if echo:
         jdata["echo"] = echo
@@ -97,12 +96,11 @@ def call_api(bot, action, params, echo=None, **kwargs):
         )
     elif post_type=="http":
         url = os.path.join(bot.api_post_url, "{}?access_token={}".format(action, bot.access_token))
-        print("calling http api:{} {}\n============================".format(url, json.dumps(params)))
+        # print("calling http api:{} {}\n============================".format(url, json.dumps(params)))
         headers = {'Content-Type': 'application/json'} 
         r = requests.post(url=url, headers=headers, data=json.dumps(params))
         if r.status_code!=200:
             print(r.text)
-        #TODO
 
 
 def send_message(bot, private_group, uid, message, **kwargs):
@@ -672,16 +670,17 @@ class PikaConsumer(object):
                             commands=handlers.commands,
                             alter_commands=handlers.alter_commands,
                         )
-                        if USE_GRAFANA:
-                            command_log = CommandLog(
-                                time = int(time.time()),
-                                bot_id = str(self_id),
-                                user_id = str(user_id),
-                                group_id = "private" if receive["message_type"] != "group" else str(group_id),
-                                command = "/chat",
-                                message = receive["message"]
-                            )
-                            command_log.save()
+                        # need fix: disable chat logging for a while
+                        # if USE_GRAFANA:
+                        #     command_log = CommandLog(
+                        #         time = int(time.time()),
+                        #         bot_id = str(self_id),
+                        #         user_id = str(user_id),
+                        #         group_id = "private" if receive["message_type"] != "group" else str(group_id),
+                        #         command = "/chat",
+                        #         message = receive["message"]
+                        #     )
+                        #     command_log.save()
                         for action in action_list:
                             call_api(
                                 bot,
