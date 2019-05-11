@@ -75,7 +75,7 @@ def crawl_live(liveuser, push=False):
     liveuser.last_update_time = int(time.time())
     if live_status!="live":
         for group in liveuser.subscribed_by.all():
-            group.pushed_live.clear()
+            group.pushed_live.remove(liveuser)
     pushed_group = set()
     if push and str(liveuser.status).lower()!="live" and live_status=="live":
         for bot in QQBot.objects.all():
