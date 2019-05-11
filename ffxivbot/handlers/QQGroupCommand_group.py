@@ -36,6 +36,14 @@ def QQGroupCommand_group(*args, **kwargs):
                     group.subscription_trigger_time = 300
                 group.save(update_fields=["subscription_trigger_time"])
                 msg = "微博订阅时间被设定为{}s".format(group.subscription_trigger_time)
+            elif(second_command=="live"):
+                interval = second_command_msg.replace(second_command,"",1)
+                try:
+                    group.live_subscription_trigger_time = int(interval)
+                except:
+                    group.live_subscription_trigger_time = 300
+                group.save(update_fields=["live_subscription_trigger_time"])
+                msg = "直播订阅时间被设定为{}s".format(group.live_subscription_trigger_time)
             elif(second_command=="api"):
                 enable = second_command_msg.replace(second_command,"",1)
                 if "enable" in enable:

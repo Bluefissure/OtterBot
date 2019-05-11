@@ -288,6 +288,12 @@ class WSConsumer(AsyncWebsocketConsumer):
                 self.channel_name, json.dumps(event)
             )
         )
+        if "[CQ:at,qq=306401806]" in json.dumps(event):
+            LOGGER.info(
+                        "Universal Channel {} send_event with event:{}".format(
+                            self.channel_name, json.dumps(event)
+                        )
+                    )
         await self.send(event["text"])
 
     async def call_api(self, action, params, echo=None):
@@ -321,11 +327,3 @@ class WSConsumer(AsyncWebsocketConsumer):
         json_data = {"group_id": group_id, "user_id": user_id, "duration": duration}
         await self.call_api("set_group_ban", json_data)
 
-    def intercept_action(self, action_list):
-        modified_action_list = action_list
-        for i in range(len(modified_action_list)):
-            if "message" in modified_action_list[i]["params"].keys():
-                modified_action_list[i]["params"][
-                    "message"
-                ] = "此獭獭由于多次重连已被暂时停用，请联系开发者恢复，"
-        return modified_action_list

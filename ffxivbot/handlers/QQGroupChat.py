@@ -89,6 +89,19 @@ def QQGroupChat(*args, **kwargs):
                         action_list.append(action)
                     break
 
+
+        #live subscription
+        lus = group.live_subscription.filter(last_update_time__gt=int(time.time())-group.live_subscription_trigger_time)
+        for lu in lus:
+            print(lus)
+            if lu.is_live() and (not group.pushed_live.filter(name=lu.name, room_id=lu.room_id, platform=lu.platform).exists()):
+                group.pushed_live.add(lu)
+                if lu.last_update_time >= int(time.time())-group.live_subscription_trigger_time:
+                    tmp_msg = [{"type":"share","data":lu.get_share()}]
+                    action = reply_message_action(receive, tmp_msg)
+                    action_list.append(action)
+                break
+
         #tuling chatbot
         chat_enable = group_commands.get("/chat", "enable") != "disable"
         if("[CQ:at,qq=%s]"%(receive["self_id"]) in receive["message"] and chat_enable):

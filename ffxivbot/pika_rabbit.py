@@ -84,19 +84,20 @@ def call_api(bot, action, params, echo=None, **kwargs):
     # print("calling api:{} {}\n============================".format(json.dumps(action),json.dumps(params)))
     if "async" not in action and not echo:
         action = action + "_async"
-    # if "send_" in action and "_msg" in action:
-    #     params["message"] = handle_message(bot, params["message"])
+    if "send_" in action and "_msg" in action:
+        params["message"] = handle_message(bot, params["message"])
     jdata = {"action": action, "params": params}
     if echo:
         jdata["echo"] = echo
     post_type = kwargs.get("post_type", "websocket")
     if post_type=="websocket":
+        if int(bot.user_id) == 1361060106:
+            print(json.dumps(jdata))
         async_to_sync(channel_layer.send)(
             bot.api_channel_name, {"type": "send.event", "text": json.dumps(jdata)}
         )
     elif post_type=="http":
         url = os.path.join(bot.api_post_url, "{}?access_token={}".format(action, bot.access_token))
-        # print("calling http api:{} {}\n============================".format(url, json.dumps(params)))
         headers = {'Content-Type': 'application/json'} 
         r = requests.post(url=url, headers=headers, data=json.dumps(params))
         if r.status_code!=200:

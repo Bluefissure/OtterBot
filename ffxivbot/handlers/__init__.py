@@ -42,6 +42,7 @@ group_commands = {
   "/revenge":"复仇",
   "/vote":"投票系统",
   "/weibo":"微博订阅系统",
+  "/live":"直播订阅系统",
   "/command":"群功能停用/启用",
   "/lottery":"抽奖"
 }
@@ -105,6 +106,7 @@ from .QQGroupCommand_ban import QQGroupCommand_ban
 from .QQGroupCommand_revenge import QQGroupCommand_revenge
 from .QQGroupCommand_vote import QQGroupCommand_vote
 from .QQGroupCommand_weibo import QQGroupCommand_weibo
+from .QQGroupCommand_live import QQGroupCommand_live
 from .QQGroupCommand_lottery import QQGroupCommand_lottery
 from .QQGroupCommand_command import QQGroupCommand_command
 

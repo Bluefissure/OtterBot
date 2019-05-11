@@ -15,6 +15,61 @@ class WeiboUser(models.Model):
         return self.name
 
 
+
+
+class LiveUser(models.Model):
+    room_id = models.CharField(max_length=16, default="", blank=True)
+    name = models.CharField(max_length=64)
+    platform = models.CharField(max_length=16, default="bilibili")
+    info = models.TextField(default="{}")
+    status = models.CharField(max_length=32, default="default")
+    last_update_time = models.BigIntegerField(default=0)
+
+    def __str__(self):
+        return "{}#{}:{}".format(self.platform, self.room_id, self.name)
+
+    def get_share(self, mode="json"):
+        jinfo = json.loads(self.info)
+        if self.platform == "bilibili":
+            res_data = {
+                "url":"https://live.bilibili.com/{}".format(self.room_id),
+                "title":jinfo.get("title", "{}的直播".format(self.name)),
+                "content":"{}开始在{}直播啦~".format(self.name, self.platform),
+                "image":jinfo.get("image", ""),
+            }
+        if self.platform == "douyu":
+            content = "{}开始在{}直播啦~".format(self.name, self.platform)
+            if self.room_id == 6655:
+                content += "（爽粉们米缸开啦！）"
+            elif self.room_id == 3484:
+                content += "（孙一峰永远是我大哥！）"
+            res_data = {
+                "url":"https://www.douyu.com/{}".format(self.room_id),
+                "title":jinfo.get("title", "{}的直播".format(self.name)),
+                "content":content,
+                "image":jinfo.get("image", ""),
+            }
+        else:
+            res_data = {
+                "url":"https://jq.qq.com/?_wv=1027&k=5L3hY4w",
+                "title":"Not Implemented Platform",
+                "content":"欢迎加群660557003反映问题",
+                "image":"https://xn--v9x.net/static/dist/img/tata.jpg",
+            }
+        if mode=="text":
+            res_data = "[[CQ:share,url={},title={},content={},image={}]]".format(
+                res_data["url"],
+                res_data["title"],
+                res_data["content"],
+                res_data["image"])
+        return res_data
+
+    def is_live(self):
+        jinfo = json.loads(self.info)
+        return jinfo.get("status", "offline").lower() == "live"
+
+
+
 class QQGroup(models.Model):
     group_id = models.CharField(primary_key=True, max_length=16, unique=True)
     welcome_msg = models.TextField(default="", blank=True)
@@ -31,7 +86,12 @@ class QQGroup(models.Model):
     subscription = models.ManyToManyField(
         WeiboUser, related_name="subscribed_by", blank=True
     )
+    live_subscription = models.ManyToManyField(
+        LiveUser, related_name="subscribed_by", blank=True
+    )
+    pushed_live = models.ManyToManyField(LiveUser, related_name="pushed_group", blank=True)
     subscription_trigger_time = models.IntegerField(default="300")
+    live_subscription_trigger_time = models.IntegerField(default="300")
     commands = models.TextField(default="{}")
     api = models.BooleanField(default=False)
 
