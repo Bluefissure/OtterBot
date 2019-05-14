@@ -27,7 +27,7 @@ commands = {
   "/quest":"任务查询(/quest 狂乱前奏)",
   "/nuannuan":"本周金蝶暖暖作业",
   "/bot":"机器人推送功能（\"/bot token 123\"）",
-  "/akhr":"akhr testing",
+  "/akhr":"罗德岛公开招募",
   "/hso":"好色哦"
 }
   # "/joke":"讽刺笑话（\"/joke 996|强东|建设一流公司|程序员|公司\"）",
