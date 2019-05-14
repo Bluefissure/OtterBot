@@ -10,6 +10,8 @@
   "SORRY_BASE_URL": "https://sorry.xuty.cc",
   "TULING_API_URL": "http://openapi.tuling123.com/openapi/api/v2",
   "TULING_API_KEY": "",
+  "TENCENT_OCR_SECRETID":"",
+  "TENCENT_OCR_SECRETKEY":"",
   "CONFIG_GROUP_ID": "",
   "ADMIN_ID": "",
   "ADMIN_BOT": "",
