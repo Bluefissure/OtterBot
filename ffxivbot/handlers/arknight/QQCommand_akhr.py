@@ -102,14 +102,14 @@ def get_comb(akhr, tag_list):
     return sorted(hr, key=lambda x: -(list(x.values())[0][-1]["level"]))
 
 
-def get_comb_text(hr):
+def get_comb_text(hr, all_comb=False):
     msg = ""
     max_comb = 5
     iter_comb = 0
     for comb in hr:
         iter_comb += 1
-        # if iter_comb > max_comb:    # limit response text length?
-        #     break
+        if iter_comb > max_comb and not all_comb:    # limit response text length?
+            break
         comb_name = list(comb.keys())[0]
         comb_agents = list(comb.values())[0]
         msg += "========\n" if iter_comb>1 else "" 
@@ -126,14 +126,13 @@ def QQCommand_akhr(*args, **kwargs):
     try:
         global_config = kwargs["global_config"]
         QQ_BASE_URL = global_config["QQ_BASE_URL"]
-        SORRY_BASE_URL = global_config["SORRY_BASE_URL"]
         action_list = []
         receive = kwargs["receive"]
-        sorrygifs = SorryGIF.objects.all()
         akhr_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "akhr.json")
         akhr = json.load(codecs.open(akhr_file,"r","utf8"))
         msg = "akhr testing"
-        para_segs = receive["message"].replace("/akhr","",1).split(" ")
+        all_comb = "all" in receive["message"]
+        para_segs = receive["message"].replace("/akhr","",1).replace("all","",1).split(" ")
         while "" in para_segs:
             para_segs.remove("")
         if len(para_segs) == 0 or para_segs[0] == "help":
@@ -158,7 +157,7 @@ def QQCommand_akhr(*args, **kwargs):
                 hr = get_comb(akhr, tags_list)
             else:
                 hr = get_comb(akhr, para_segs)
-            msg += get_comb_text(hr)
+            msg += get_comb_text(hr, all_comb)
             if not msg:
                 msg += "找不到符合的结果，请检查输入参数"
             else:
