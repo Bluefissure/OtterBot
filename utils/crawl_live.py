@@ -68,8 +68,9 @@ def crawl_json(liveuser):
 
 
 def crawl_live(liveuser, push=False):
+    if not liveuser.subscribed_by.exists():
+        logging.info("Skipping {} cuz no subscription".format(liveuser))
     jinfo = crawl_json(liveuser)
-    print(jinfo)
     live_status = jinfo.get("status")
     liveuser.info = json.dumps(jinfo)
     liveuser.last_update_time = int(time.time())
@@ -80,7 +81,7 @@ def crawl_live(liveuser, push=False):
     if push and str(liveuser.status).lower()!="live" and live_status=="live":
         for bot in QQBot.objects.all():
             group_id_list = [int(item["group_id"]) for item in json.loads(bot.group_list)]
-            for group in liveuser.subscribed_by.filter(live_subscription_trigger_time=-1):
+            for group in liveuser.subscribed_by.all():
                 if int(group.group_id) not in group_id_list:
                     continue
                 if (group.pushed_live.filter(name=liveuser.name, room_id=liveuser.room_id, platform=liveuser.platform).exists()):

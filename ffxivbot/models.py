@@ -90,8 +90,6 @@ class QQGroup(models.Model):
         LiveUser, related_name="subscribed_by", blank=True
     )
     pushed_live = models.ManyToManyField(LiveUser, related_name="pushed_group", blank=True)
-    subscription_trigger_time = models.IntegerField(default="300")
-    live_subscription_trigger_time = models.IntegerField(default="300")
     commands = models.TextField(default="{}")
     api = models.BooleanField(default=False)
 

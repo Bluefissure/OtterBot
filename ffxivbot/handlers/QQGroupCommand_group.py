@@ -28,22 +28,6 @@ def QQGroupCommand_group(*args, **kwargs):
                 msg = "群{}注册成功".format(group_id)
             elif(second_command=="info"):
                 msg = "TODO"
-            elif(second_command=="weibo"):
-                interval = second_command_msg.replace(second_command,"",1)
-                try:
-                    group.subscription_trigger_time = int(interval)
-                except:
-                    group.subscription_trigger_time = 300
-                group.save(update_fields=["subscription_trigger_time"])
-                msg = "微博订阅时间被设定为{}s".format(group.subscription_trigger_time)
-            elif(second_command=="live"):
-                interval = second_command_msg.replace(second_command,"",1)
-                try:
-                    group.live_subscription_trigger_time = int(interval)
-                except:
-                    group.live_subscription_trigger_time = 300
-                group.save(update_fields=["live_subscription_trigger_time"])
-                msg = "直播订阅时间被设定为{}s".format(group.live_subscription_trigger_time)
             elif(second_command=="api"):
                 enable = second_command_msg.replace(second_command,"",1)
                 if "enable" in enable:
@@ -53,7 +37,7 @@ def QQGroupCommand_group(*args, **kwargs):
                 group.save(update_fields=["api"])
                 msg = "群内已{}獭のAPI功能".format("开启" if group.api else "禁止")
             else:
-                msg = "错误的命令，二级命令有:\"register\", \"info\", \"weibo\", \"api\""
+                msg = "错误的命令，二级命令有:\"register\", \"info\", \"api\""
         reply_action = reply_message_action(receive, msg)
         action_list.append(reply_action)
         return action_list

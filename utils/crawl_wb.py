@@ -48,11 +48,11 @@ def crawl_wb(weibouser, push=False):
             t.crawled_time = int(time.time())
             if(tile.get("itemid", "") == ""):
                 logging.info("pass a tile of {} cuz empty itemid".format(t.owner))
-                logging.info(json.dumps(tile))
+                # logging.info(json.dumps(tile))
                 continue
             channel_layer = get_channel_layer()
 
-            groups = weibouser.subscribed_by.filter(subscription_trigger_time=-1)
+            groups = weibouser.subscribed_by.all()
             # print("ready to push groups:{}".format(groups))
             bots = QQBot.objects.all()
             t.save()
