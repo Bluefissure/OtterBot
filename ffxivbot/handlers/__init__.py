@@ -27,6 +27,7 @@ commands = {
   "/quest":"任务查询(/quest 狂乱前奏)",
   "/nuannuan":"本周金蝶暖暖作业",
   "/bot":"机器人推送功能（\"/bot token 123\"）",
+  "/akhr":"akhr testing",
   "/hso":"好色哦"
 }
   # "/joke":"讽刺笑话（\"/joke 996|强东|建设一流公司|程序员|公司\"）",
@@ -94,6 +95,8 @@ from .QQCommand_tex import QQCommand_tex
 from .QQCommand_waifu import QQCommand_waifu
 from .QQCommand_quest import QQCommand_quest
 # from .QQCommand_joke import QQCommand_joke
+
+from .arknight.QQCommand_akhr import QQCommand_akhr
 
 
 from .QQGroupCommand_group import QQGroupCommand_group
