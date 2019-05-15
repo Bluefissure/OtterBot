@@ -91,8 +91,6 @@ def call_api(bot, action, params, echo=None, **kwargs):
         jdata["echo"] = echo
     post_type = kwargs.get("post_type", "websocket")
     if post_type=="websocket":
-        if int(bot.user_id) == 1361060106:
-            print(json.dumps(jdata))
         async_to_sync(channel_layer.send)(
             bot.api_channel_name, {"type": "send.event", "text": json.dumps(jdata)}
         )
