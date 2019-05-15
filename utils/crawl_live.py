@@ -94,6 +94,14 @@ def crawl_live(liveuser, push=False):
                 #     continue
                 # print(group)
                 msg = liveuser.get_share(mode="text")
+                if bot.share_banned:
+                    jmsg = liveuser.get_share()
+                    msg = "[CQ:image,file={}]\n{}\n{}\n{}".format(
+                            jmsg.get("image"),
+                            jmsg.get("title"),
+                            jmsg.get("content"),
+                            jmsg.get("url")
+                        )
                 jdata = {
                     "action": "send_group_msg",
                     "params": {"group_id": int(group.group_id), "message": msg},

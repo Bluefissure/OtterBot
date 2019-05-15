@@ -64,6 +64,14 @@ def crawl_wb(weibouser, push=False):
                     for group in groups:
                         if int(group.group_id) in group_id_list:
                             msg = get_weibotile_share(t, mode="text")
+                            if bot.share_banned:
+                                jmsg = get_weibotile_share(t)
+                                msg = "[CQ:image,file={}]\n{}\n{}\n{}".format(
+                                        jmsg.get("image"),
+                                        jmsg.get("title"),
+                                        jmsg.get("content"),
+                                        jmsg.get("url")
+                                    )
                             logging.info("Pushing {} to group: {}".format(t, group))
                             # print("msg: {}".format(msg))
                             if push:
