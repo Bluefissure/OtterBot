@@ -99,6 +99,7 @@ def call_api(bot, action, params, echo=None, **kwargs):
         headers = {'Content-Type': 'application/json'} 
         r = requests.post(url=url, headers=headers, data=json.dumps(params))
         if r.status_code!=200:
+            print("HTTP Callback failed:")
             print(r.text)
 
 

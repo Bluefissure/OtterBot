@@ -71,8 +71,8 @@ def crawl_wb(weibouser, push=False):
                                 mblog = content_json["mblog"]
                                 bs = BeautifulSoup(mblog["text"],"html.parser")
                                 msg = "{}\n{}\n{}".format(
-                                        "{}\'s Weibo:".format(t.owner),
-                                        bs.get_text().replace("\u200b",""),
+                                        "{}\'s Weibo:\n========\n".format(t.owner),
+                                        bs.get_text().replace("\u200b","").strip(),
                                         content_json["scheme"]
                                     )
                             logging.info("Pushing {} to group: {}".format(t, group))

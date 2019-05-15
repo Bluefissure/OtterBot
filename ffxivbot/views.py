@@ -521,15 +521,14 @@ def api(req):
             if "ffxiv-eureka" in trackers:
                 instance = req.GET.get("instance")
                 password = req.GET.get("password")
-                # print("ffxiv-eureka {}:{}".format(instance,password))
+                print("ffxiv-eureka {}:{}".format(instance,password))
                 if instance and password:
                     nm_name = req.POST.get("text")
-
                     if nm_name:
                         nm_id = get_nm_id("ffxiv-eureka", nm_name)
-                        # print("nm_name:{} id:{}".format(nm_name,nm_id))
+                        print("nm_name:{} id:{}".format(nm_name,nm_id))
                         if nm_id > 0:
-                            # print("nm_name:{} nm_id:{}".format(nm_name,nm_id))
+                            print("nm_name:{} nm_id:{}".format(nm_name,nm_id))
                             # ws = create_connection("wss://ffxiv-eureka.com/socket/websocket?vsn=2.0.0")
                             ws = create_connection(
                                 "wss://ffxiv-eureka.com/socket/websocket?vsn=2.0.0"
@@ -696,20 +695,26 @@ CONFIG_PATH = os.environ.get(
 pub = PikaPublisher()
 logging.basicConfig(format="%(levelname)s:%(message)s", level=logging.DEBUG)
 LOGGER = logging.getLogger(__name__)
+
 @csrf_exempt
 def qqpost(req):
     try:
+        # print("first request headers:")
+        # print(req.META)
         receive = json.loads(req.body.decode())
         receive["reply_api_type"] = "http"
         text_data = json.dumps(receive)
         self_id = received_sig = req.META.get("HTTP_X_SELF_ID","NULL")
+        error_msg = "Request not handled"
         try:
             bot = QQBot.objects.get(user_id=self_id)
             assert bot.api_post_url
         except QQBot.DoesNotExist:
-            print("bot {} does not exist".format(self_id))
+            # print("bot {} does not exist".format(self_id))
+            error_msg = "Bot {} does not exist".format(self_id)
         except AssertionError:
-            print("bot {} does not provide api url".format(self_id))
+            # print("bot {} does not provide api url".format(self_id))
+            error_msg = "Bot {} does not provide api url".format(self_id)
         else:
             sig = hmac.new(str(bot.access_token).encode(), req.body, 'sha1').hexdigest()
             received_sig = req.META.get("HTTP_X_SIGNATURE","NULL")[len('sha1='):]
@@ -735,6 +740,7 @@ def qqpost(req):
                                 receive["consumer_time"] = time.time()
                                 text_data = json.dumps(receive)
                                 pub.send(text_data, priority)
+                                return HttpResponse("Request sent to MQ", status=200)
                             else:
                                 push_to_mq = False
                                 if "group_id" in receive:
@@ -753,11 +759,14 @@ def qqpost(req):
                                     receive["consumer_time"] = time.time()
                                     text_data = json.dumps(receive)
                                     pub.send(text_data, priority)
-                            return HttpResponse(status=200)
+                                    return HttpResponse("Request sent to MQ", status=200)
+                            return HttpResponse("Request message omitted", status=200)
 
                         if receive["post_type"] == "request" or receive["post_type"] == "event":
                             priority = 3
+                            text_data = json.dumps(receive)
                             pub.send(text_data, priority)
+                            return HttpResponse("Request sent to MQ", status=200)
 
                     except Exception as e:
                         traceback.print_exc()
@@ -812,10 +821,11 @@ def qqpost(req):
                                     )
                                 )
                     # bot.save()
-
             else:
-                return HttpResponse("Error access_token", status=500)
-        return HttpResponse("Not implemented", status=500)
+                return HttpResponse("Wrong HTTP_X_SIGNATURE", status=500)
+        return HttpResponse(error_msg, status=500)
     except Exception as e:
         traceback.print_exc()
-        return HttpResponse(status=500)
+        # print("request body:")
+        # print(req.body.decode())
+        return HttpResponse("Server error:{}".format(type(e)),status=500)
