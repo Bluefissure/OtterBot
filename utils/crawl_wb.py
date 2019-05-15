@@ -19,6 +19,8 @@ import codecs
 import urllib
 import base64
 import logging
+import traceback
+from bs4 import BeautifulSoup
 from channels.layers import get_channel_layer
 from django.db import connection, connections
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', filename="log/crawl_wb.log")
@@ -65,12 +67,13 @@ def crawl_wb(weibouser, push=False):
                         if int(group.group_id) in group_id_list:
                             msg = get_weibotile_share(t, mode="text")
                             if bot.share_banned:
-                                jmsg = get_weibotile_share(t)
-                                msg = "[CQ:image,file={}]\n{}\n{}\n{}".format(
-                                        jmsg.get("image"),
-                                        jmsg.get("title"),
-                                        jmsg.get("content"),
-                                        jmsg.get("url")
+                                content_json = json.loads(t.content)
+                                mblog = content_json["mblog"]
+                                bs = BeautifulSoup(mblog["text"],"html.parser")
+                                msg = "{}\n{}\n{}".format(
+                                        "{}\'s Weibo:".format(t.owner),
+                                        bs.get_text().replace("\u200b",""),
+                                        content_json["scheme"]
                                     )
                             logging.info("Pushing {} to group: {}".format(t, group))
                             # print("msg: {}".format(msg))

@@ -96,8 +96,7 @@ def crawl_live(liveuser, push=False):
                 msg = liveuser.get_share(mode="text")
                 if bot.share_banned:
                     jmsg = liveuser.get_share()
-                    msg = "[CQ:image,file={}]\n{}\n{}\n{}".format(
-                            jmsg.get("image"),
+                    msg = "{}\n{}\n{}".format(
                             jmsg.get("title"),
                             jmsg.get("content"),
                             jmsg.get("url")
