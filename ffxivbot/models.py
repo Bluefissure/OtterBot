@@ -37,12 +37,12 @@ class LiveUser(models.Model):
                 "content":"{}开始在{}直播啦~".format(self.name, self.platform),
                 "image":jinfo.get("image", ""),
             }
-        if self.platform == "douyu":
+        elif self.platform == "douyu":
             content = "{}开始在{}直播啦~".format(self.name, self.platform)
-            if self.room_id == 6655:
-                content += "（爽粉们米缸开啦！）"
-            elif self.room_id == 3484:
-                content += "（孙一峰永远是我大哥！）"
+            # if self.room_id == 6655:
+            #     content += "（爽粉们米缸开啦！）"
+            # elif self.room_id == 3484:
+            #     content += "（孙一峰永远是我大哥！）"
             res_data = {
                 "url":"https://www.douyu.com/{}".format(self.room_id),
                 "title":jinfo.get("title", "{}的直播".format(self.name)),
@@ -52,7 +52,7 @@ class LiveUser(models.Model):
         else:
             res_data = {
                 "url":"https://jq.qq.com/?_wv=1027&k=5L3hY4w",
-                "title":"Not Implemented Platform",
+                "title":"NotImplementedPlatform",
                 "content":"欢迎加群660557003反映问题",
                 "image":"https://xn--v9x.net/static/dist/img/tata.jpg",
             }

@@ -19,17 +19,13 @@ import codecs
 import urllib
 import base64
 import logging
+import traceback
 from channels.layers import get_channel_layer
 from django.db import connection, connections
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', filename="log/crawl_live.log")
 
 
 def crawl_json(liveuser):
-    jinfo = {
-        "title": "Platform not support",
-        "image": "https://xn--v9x.net/static/dist/img/tata.jpg",
-        "status": "offline"
-    }
     platform = liveuser.platform
     if platform=="bilibili":
         try:
@@ -41,7 +37,8 @@ def crawl_json(liveuser):
                 jinfo = {
                     "title": jdata.get("title"),
                     "image": jdata.get("face"),
-                    "status": jdata.get("status","offline").lower()
+                    "status": jdata.get("status","offline").lower(),
+                    "name": jdata.get("uname")
                 }
                 return jinfo
         except:
@@ -58,27 +55,34 @@ def crawl_json(liveuser):
                 jinfo = {
                     "title": jdata.get("room_name"),
                     "image": jdata.get("avatar"),
-                    "status": "live" if room_status == "1" else room_status
+                    "status": "live" if room_status == "1" else room_status,
+                    "name": jdata.get("owner_name")
                 }
                 return jinfo
         except:
             logging.error("Error at parsing douyu API")
             print("Error at parsing douyu API")
-    return jinfo
+    return None
 
 
 def crawl_live(liveuser, push=False):
     if not liveuser.subscribed_by.exists():
+        for group in liveuser.subscribed_by.all():
+            group.pushed_live.remove(liveuser)
         logging.info("Skipping {} cuz no subscription".format(liveuser))
     jinfo = crawl_json(liveuser)
+    if not jinfo:
+        logging.error("Crawling {} failed, please debug the response.".format(liveuser))
+        return
     live_status = jinfo.get("status")
+    liveuser.name = jinfo.get("name")
     liveuser.info = json.dumps(jinfo)
     liveuser.last_update_time = int(time.time())
     if live_status!="live":
         for group in liveuser.subscribed_by.all():
             group.pushed_live.remove(liveuser)
     pushed_group = set()
-    if push and str(liveuser.status).lower()!="live" and live_status=="live":
+    if push and live_status=="live":
         for bot in QQBot.objects.all():
             group_id_list = [int(item["group_id"]) for item in json.loads(bot.group_list)]
             for group in liveuser.subscribed_by.all():
@@ -96,7 +100,7 @@ def crawl_live(liveuser, push=False):
                     "echo": "",
                 }
                 if not bot.api_post_url:
-                    # print("pushing")
+                    print("pushing {} to {}".format(liveuser, group.group_id))
                     channel_layer = get_channel_layer()
                     async_to_sync(channel_layer.send)(bot.api_channel_name, {"type": "send.event", "text": json.dumps(jdata),})
                 else:
