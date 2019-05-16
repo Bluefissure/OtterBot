@@ -96,7 +96,7 @@ from .QQCommand_waifu import QQCommand_waifu
 from .QQCommand_quest import QQCommand_quest
 # from .QQCommand_joke import QQCommand_joke
 
-from .arknight.QQCommand_akhr import QQCommand_akhr
+from .arknights.QQCommand_akhr import QQCommand_akhr
 
 
 from .QQGroupCommand_group import QQGroupCommand_group
