@@ -731,6 +731,18 @@ def qqpost(req):
                         self_id = receive["self_id"]
                         if "message" in receive.keys():
                             priority = 1
+                            if isinstance(receive["message"], list):
+                                tmp_msg = ""
+                                for msg_seg in receive["message"]:
+                                    if msg_seg["type"] == "text":
+                                        tmp_msg += msg_seg["data"]["text"]
+                                    elif msg_seg["type"] == "image":
+                                        tmp_msg += "[CQ:image,file={}]".format(msg_seg["data"]["url"])
+                                    elif "face" in msg_seg["type"]:
+                                        tmp_msg += "[CQ:{},id={}]".format(msg_seg["type"], msg_seg["data"]["id"])
+                                    elif msg_seg["type"] == "at":
+                                        tmp_msg += "[CQ:at,qq={}]".format(msg_seg["data"]["qq"])
+                                receive["message"] = tmp_msg
                             if receive["message"].startswith("/") or receive[
                                 "message"
                             ].startswith("\\"):

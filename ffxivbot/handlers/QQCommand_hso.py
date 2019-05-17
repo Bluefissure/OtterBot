@@ -57,9 +57,6 @@ def QQCommand_hso(*args, **kwargs):
                         params = "tags={}".format(second_command_msg)
                     api_url = "https://konachan.com/post.json?{}".format(params)
                     # print(api_url+"===============================================")
-                    requests_cache.install_cache(
-                        "hso_cache", backend="redis", expire_after=3600
-                    )
                     r = requests.get(api_url, timeout=(5, 60))
                     img_json = json.loads(r.text)
 
