@@ -8,7 +8,6 @@ import dice
 import feedparser
 import traceback
 import requests
-import requests_cache
 import time
 from bs4 import BeautifulSoup
 

@@ -7,7 +7,6 @@ import logging
 import json
 import random
 import requests
-import requests_cache
 import math
 import re
 import traceback
@@ -227,19 +226,18 @@ def QQGroupCommand_lottery(*args, **kwargs):
                                 },
                                 "id": lott.id
                             }
-                            with requests_cache.disabled(): #disable cache
-                                r = requests.post(url="https://api.random.org/json-rpc/2/invoke", json=req_json)
-                                if r.status_code==200:
-                                    res_json = r.json()
-                                    if "error" in res_json.keys():
-                                        msg = "API Error: {}\n{}".format(res_json["error"]["code"], res_json["error"]["message"])
-                                    else:
-                                        lott.random_res = json.dumps(res_json)
-                                        lott.end_time = int(time.time())
-                                        lott.save(update_fields=["random_res","end_time"])
-                                        msg = "抽奖结果如下：\n{}".format(lott.winner_info())
+                            r = requests.post(url="https://api.random.org/json-rpc/2/invoke", json=req_json)
+                            if r.status_code==200:
+                                res_json = r.json()
+                                if "error" in res_json.keys():
+                                    msg = "API Error: {}\n{}".format(res_json["error"]["code"], res_json["error"]["message"])
                                 else:
-                                    msg = "HTTP Eror: {}\n{}".format(r.status_code, r.text)
+                                    lott.random_res = json.dumps(res_json)
+                                    lott.end_time = int(time.time())
+                                    lott.save(update_fields=["random_res","end_time"])
+                                    msg = "抽奖结果如下：\n{}".format(lott.winner_info())
+                            else:
+                                msg = "HTTP Eror: {}\n{}".format(r.status_code, r.text)
                     elif sec_command=="verify":
                         if time.time() > lott.end_time:
                             msg = "请发送以下内容至 https://api.random.org/json-rpc/2/invoke 来确认结果由random.org返回\n"

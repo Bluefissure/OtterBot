@@ -5,7 +5,6 @@ import logging
 import json
 import random
 import requests
-import requests_cache
 from bs4 import BeautifulSoup
 import urllib
 import logging

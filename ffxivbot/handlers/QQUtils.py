@@ -4,7 +4,6 @@ import json
 import time
 import random
 import requests
-import requests_cache
 import math
 import re
 import urllib
@@ -183,7 +182,6 @@ def crawl_dps(boss, job, day=0, CN_source=False):
     #     expire_after=3600 * 12,
     # )
     r = requests.get(url=fflogs_url, timeout=5)
-    # print("from cache:{}".format(r.from_cache))
     tot_days = 0
     percentage_list = [10, 25, 50, 75, 95, 99, 100]
     atk_res = {}

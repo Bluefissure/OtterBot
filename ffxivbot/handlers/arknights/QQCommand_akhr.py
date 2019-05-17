@@ -200,7 +200,7 @@ def QQCommand_akhr(*args, **kwargs):
                 msg += "\nPowered by: https://bbs.nga.cn/read.php?tid=16971344"
                 if img_url:
                     msg += " and https://cloud.tencent.com/product/ocr" if ocr_type=="tencent" else " and https://cloud.baidu.com/product/ocr.html"
-        print("ruturning message:{}".format(msg))
+        # print("ruturning message:{}".format(msg))
         msg = msg.strip()
         reply_action = reply_message_action(receive, msg)
         action_list.append(reply_action)
