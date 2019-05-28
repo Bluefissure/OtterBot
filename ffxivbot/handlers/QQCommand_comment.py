@@ -28,13 +28,13 @@ def QQCommand_comment(*args, **kwargs):
             while "" in msg_segs:
                 msg_segs.remove("")
             comment_id = msg_segs[0]
-            reply_content = msg_segs[1]
+            reply_content = " ".join(msg_segs[1:])
             comm = Comment.objects.get(id=comment_id)
             reply_bot = QQBot.objects.get(user_id=comm.bot_id)
+            message = '留言#{}"{}"的回复如下：\n======\n{}\n======\n[CQ:at,qq={}]'.format(
+                        comm.id, comm.content, reply_content, comm.left_by
+                    )
             if comm.left_group:
-                message = '留言#{}"{}"的回复如下：\n======\n{}\n======\n[CQ:at,qq={}]'.format(
-                    comm.id, comm.content, reply_content, comm.left_by
-                )
                 jdata = {
                     "action": "send_group_msg",
                     "params": {"group_id": comm.left_group, "message": message},
@@ -62,8 +62,8 @@ def QQCommand_comment(*args, **kwargs):
             comment.save()
             msg = '留言#{}:"{}"添加成功'.format(comment.id, comment.content)
             if ADMIN_ID:
-                message = "Comment#{} from {} {}:\n{}".format(
-                    comment.id, user_id, group_id, comment.content
+                message = "Comment#{} from user:{} bot:{} group:{}:\n{}".format(
+                    comment.id, user_id, self_id, group_id, comment.content
                 )
                 admin_bot = QQBot.objects.get(user_id=ADMIN_BOT)
                 jdata = {

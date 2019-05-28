@@ -8,7 +8,6 @@ import dice
 import feedparser
 import traceback
 import requests
-import requests_cache
 import time
 from bs4 import BeautifulSoup
 
@@ -58,10 +57,7 @@ def QQCommand_hso(*args, **kwargs):
                         params = "tags={}".format(second_command_msg)
                     api_url = "https://konachan.com/post.json?{}".format(params)
                     # print(api_url+"===============================================")
-                    requests_cache.install_cache(
-                        "hso_cache", backend="redis", expire_after=3600
-                    )
-                    r = requests.get(api_url)
+                    r = requests.get(api_url, timeout=(5, 60))
                     img_json = json.loads(r.text)
 
                     if receive["message_type"] == "group":
@@ -76,7 +72,7 @@ def QQCommand_hso(*args, **kwargs):
                     else:
                         idx = random.randint(0, len(img_json) - 1)
                         img = img_json[idx]
-                        msg = "[CQ:image,file={}]".format(img["sample_url"])
+                        msg = "[CQ:image,file={},destruct=0]".format(img["sample_url"])
 
         reply_action = reply_message_action(receive, msg)
         action_list.append(reply_action)

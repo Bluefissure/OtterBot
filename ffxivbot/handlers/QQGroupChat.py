@@ -44,12 +44,13 @@ def QQGroupChat(*args, **kwargs):
         #repeat_ban & repeat
         message = receive["message"].strip()
         message_hash = hashlib.md5(message.encode()).hexdigest()
-        chats = ChatMessage.objects.filter(group=group, message_hash=message_hash, timestamp__gt=int(time.time())-60)
+        chats = ChatMessage.objects.filter(group=group, message_hash=message_hash).filter(timestamp__gt=int(time.time())-60)
         if(chats.exists()):
             chat = chats[0]
+            chat.message = message
             chat.timestamp = int(time.time())
             chat.times = chat.times + 1
-            chat.save(update_fields=["timestamp", "times"])
+            chat.save(update_fields=["timestamp", "times", "message"])
             if(group.repeat_ban>0 and chat.times>=group.repeat_ban):
                 msg = "抓到你了，复读姬！╭(╯^╰)╮口球一分钟！"
                 if(user_info["role"]=="owner"):
@@ -60,39 +61,24 @@ def QQGroupChat(*args, **kwargs):
                 action_list.append(delete_message_action(receive["message_id"]))
                 action_list.append(group_ban_action(group_id, user_id, 60))
                 action_list.append(reply_message_action(receive, msg))
-            if((not str.startswith(message, "/")) and group.repeat_length>=1 and group.repeat_prob>0 and chat.times>=group.repeat_length and (not chat.repeated)):
+            if((not message.startswith("/")) and group.repeat_length>=1 and group.repeat_prob>0 and chat.times>=group.repeat_length and (not chat.repeated)):
                 if(random.randint(1, 100) <= group.repeat_prob):
-                    action = reply_message_action(receive, chat.message)
-                    action_list.append(action)
+                    # logging.error("repeat reply with bot:{} message:{}".format(bot.user_id, chat.message))
+                    action_list.append(reply_message_action(receive, chat.message))
                     chat.repeated = True
                     chat.save(update_fields=["repeated"])
         else:
             if(group.repeat_ban>0 or (group.repeat_length>=1 and group.repeat_prob>0) ):
                 if(receive["self_id"]!=receive["user_id"]):
                     # print("creating new chat message:{}".format(message))
-                    chat = ChatMessage(group=group,message=message,timestamp=time.time(),message_hash=message_hash)
+                    chat = ChatMessage(group=group,timestamp=time.time(),message_hash=message_hash)
                     chat.save()
-
-        #weibo subscription
-        wbus = group.subscription.all()
-        for wbu in wbus:
-            wbts = wbu.tile.all()
-            for wbt in wbts:
-                if not wbt.pushed_group.filter(group_id=group.group_id).exists():
-                    wbt.pushed_group.add(group)
-                    wbt.save()
-                    if(wbt.crawled_time>=int(time.time())-group.subscription_trigger_time):
-                        res_data = get_weibotile_share(wbt)
-                        tmp_msg = [{"type":"share","data":res_data}]
-                        action = reply_message_action(receive, tmp_msg)
-                        action_list.append(action)
-                    break
 
         #tuling chatbot
         chat_enable = group_commands.get("/chat", "enable") != "disable"
         if("[CQ:at,qq=%s]"%(receive["self_id"]) in receive["message"] and chat_enable):
             # logging.debug("Tuling reply")
-            receive_msg = receive["message"]
+            receive_msg = message
             receive_msg = receive_msg.replace("[CQ:at,qq=%s]"%(receive["self_id"]),"")
             tuling_data = {}
             tuling_data["reqType"] = 0 

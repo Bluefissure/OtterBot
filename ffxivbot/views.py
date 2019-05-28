@@ -41,7 +41,6 @@ from websocket import create_connection
 import re
 import pika
 import os
-from PIL import Image
 
 
 def ren2res(template, req, render_dict={}, post_token=True):
@@ -105,7 +104,7 @@ def tata(req):
                 bot.api_post_url = api_post_url
                 bot.auto_accept_friend = autoFriend and "true" in autoFriend
                 bot.auto_accept_invite = autoInvite and "true" in autoInvite
-                if len(QQBot.objects.all()) >= 120 and bot_created:
+                if len(QQBot.objects.all()) >= 150 and bot_created:
                     res_dict = {"response": "error", "msg": "机器人总数过多，请稍后再试"}
                     return JsonResponse(res_dict)
                 bot.save()
@@ -192,7 +191,7 @@ def tata(req):
         bb["autoinvite"] = bot.auto_accept_invite
         bb["autofriend"] = bot.auto_accept_friend
         bot_list.append(bb)
-    return ren2res("pages/tables/data.html", req, {"bots": bot_list})
+    return ren2res("tata.html", req, {"bots": bot_list})
 
 
 def quest(req):
@@ -294,6 +293,36 @@ def quest(req):
         return JsonResponse(res_dict)
     return ren2res("quest.html", req, {})
 
+
+def image(req):
+    if req.is_ajax() and req.method == "POST":
+        res_dict = {"response": "No response."}
+        json_req = json.loads(req.body)
+        optype = json_req.get("optype")
+        if optype == "get_images":
+            cat = json_req.get("category", "")
+            cached_images = json_req.get("cached_images", [])
+            image_filter = Image.objects.order_by('?').exclude(name__in=cached_images)
+            if cat:
+                image_filter = image_filter.filter(Q(key__contains=cat) | Q(add_by__user_id__contains=cat))
+            images = list(
+                map(        
+                    lambda x: {
+                        "name": x.name,
+                        "url": "https://i.loli.net" + x.path,
+                        "category": x.key,
+                        "info": "Name:{}\nCategory:{}\nUploader:{}".format(x.name, x.key, x.add_by)
+                    },
+                    list(image_filter[:30]),
+                )
+            )
+            res_dict = {"images":images,"response":"success"}
+        else:
+            res_dict = {"msg":"not support","response":"error"}
+        return JsonResponse(res_dict)
+
+    return ren2res("image.html", req, {})
+
 def quest_tooltip(req):
     quest_id = req.GET.get("id", 0)
     nocache = req.GET.get("nocache", "False") == "True"
@@ -330,27 +359,6 @@ def quest_tooltip(req):
                     return ren2res("quest_tooltip.html", req, {"parsed_html":html})
                 elif res_type=="img" or res_type=="image":
                     return HttpResponse("TODO", status=500)
-                    from selenium import webdriver
-                    options = webdriver.ChromeOptions()
-                    options.add_argument('--kiosk')
-                    options.add_argument('--headless') 
-                    options.add_argument('--no-sandbox') 
-                    options.add_argument('--disable-gpu')
-                    driver = webdriver.Chrome(chrome_options=options)
-                    driver.get("https://xn--v9x.net/quest/tooltip/?id={}".format(quest_id))
-                    tooltip = driver.find_element_by_id("tooltip")
-                    valid_image = "tooltip.png"
-                    if tooltip.screenshot(valid_image):
-                        try:
-                            with open(valid_image, "rb") as f:
-                                return HttpResponse(f.read(), content_type="image/png")
-                        except IOError:
-                            red = Image.new('RGBA', (1, 1), (255,0,0,0))
-                            response = HttpResponse(content_type="image/png")
-                            red.save(response, "PNG")
-                            return response
-                    else:
-                        return HttpResponse("Image save failed", status=500)
     except KeyError:
         return HttpResponse("KeyError", status=500)
     return HttpResponse(status=500)
@@ -395,6 +403,23 @@ def get_nm_id(tracker, nm_name):
             "总领安哥拉": 35,
             "复制魔花凯西": 36,
             "娄希": 37,
+            "琉科西亚": 38,
+            "佛劳洛斯": 39,
+            "诡辩者": 40,
+            "格拉菲亚卡内": 41,
+            "阿斯卡拉福斯": 42,
+            "巴钦大公爵": 43,
+            "埃托洛斯": 44,
+            "来萨特": 45,
+            "火巨人": 46,
+            "伊丽丝": 47,
+            "佣兵雷姆普里克斯": 48,
+            "闪电督军": 49,
+            "樵夫杰科": 50,
+            "明眸": 51,
+            "阴·阳": 52,
+            "斯库尔": 53,
+            "彭忒西勒亚": 54
         }
         for (k, v) in name_id.items():
             if k in nm_name:
@@ -438,6 +463,23 @@ def get_nm_id(tracker, nm_name):
             "总领安哥拉": {"level": 34, "type": 2},
             "复制魔花凯西": {"level": 35, "type": 2},
             "娄希": {"level": 36, "type": 2},
+            "琉科西亚": {"level": 35, "type": 3},
+            "佛劳洛斯": {"level": 36, "type": 3},
+            "诡辩者": {"level": 37, "type": 3},
+            "格拉菲亚卡内": {"level": 38, "type": 3},
+            "阿斯卡拉福斯": {"level": 39, "type": 3},
+            "巴钦大公爵": {"level": 40, "type": 3},
+            "埃托洛斯": {"level": 41, "type": 3},
+            "来萨特": {"level": 42, "type": 3},
+            "火巨人": {"level": 43, "type": 3},
+            "伊丽丝": {"level": 44, "type": 3},
+            "佣兵雷姆普里克斯": {"level": 45, "type": 3},
+            "闪电督军": {"level": 46, "type": 3},
+            "樵夫杰科": {"level": 47, "type": 3},
+            "明眸": {"level": 48, "type": 3},
+            "阴·阳": {"level": 49, "type": 3},
+            "斯库尔": {"level": 50, "type": 3},
+            "彭忒西勒亚": {"level": 51, "type": 3},
         }
         for (k, v) in name_id.items():
             if k in nm_name:
@@ -479,18 +521,17 @@ def api(req):
             if "ffxiv-eureka" in trackers:
                 instance = req.GET.get("instance")
                 password = req.GET.get("password")
-                # print("ffxiv-eureka {}:{}".format(instance,password))
+                print("ffxiv-eureka {}:{}".format(instance,password))
                 if instance and password:
                     nm_name = req.POST.get("text")
-
                     if nm_name:
                         nm_id = get_nm_id("ffxiv-eureka", nm_name)
-                        # print("nm_name:{} id:{}".format(nm_name,nm_id))
+                        print("nm_name:{} id:{}".format(nm_name,nm_id))
                         if nm_id > 0:
-                            # print("nm_name:{} nm_id:{}".format(nm_name,nm_id))
+                            print("nm_name:{} nm_id:{}".format(nm_name,nm_id))
                             # ws = create_connection("wss://ffxiv-eureka.com/socket/websocket?vsn=2.0.0")
                             ws = create_connection(
-                                "wss://eureka.bluefissure.com/socket/websocket?vsn=2.0.0"
+                                "wss://ffxiv-eureka.com/socket/websocket?vsn=2.0.0"
                             )
                             msg = '["1","1","instance:{}","phx_join",{{"password":"{}"}}]'.format(
                                 instance, password
@@ -515,7 +556,7 @@ def api(req):
                         nm_level_type = get_nm_id("ffxivsc", nm_name)
                         if int(nm_level_type["type"]) > 0:
                             url = (
-                                "https://api.ffxivsc.cn/EurekaService/lobby/addKillTime"
+                                "https://nps.ffxivsc.cn/lobby/addKillTime"
                             )
                             post_data = {
                                 "killTime": strftime(
@@ -654,20 +695,26 @@ CONFIG_PATH = os.environ.get(
 pub = PikaPublisher()
 logging.basicConfig(format="%(levelname)s:%(message)s", level=logging.DEBUG)
 LOGGER = logging.getLogger(__name__)
+
 @csrf_exempt
 def qqpost(req):
     try:
+        # print("first request headers:")
+        # print(req.META)
         receive = json.loads(req.body.decode())
         receive["reply_api_type"] = "http"
         text_data = json.dumps(receive)
         self_id = received_sig = req.META.get("HTTP_X_SELF_ID","NULL")
+        error_msg = "Request not handled"
         try:
             bot = QQBot.objects.get(user_id=self_id)
             assert bot.api_post_url
         except QQBot.DoesNotExist:
-            print("bot {} does not exist".format(self_id))
+            # print("bot {} does not exist".format(self_id))
+            error_msg = "Bot {} does not exist".format(self_id)
         except AssertionError:
-            print("bot {} does not provide api url".format(self_id))
+            # print("bot {} does not provide api url".format(self_id))
+            error_msg = "Bot {} does not provide api url".format(self_id)
         else:
             sig = hmac.new(str(bot.access_token).encode(), req.body, 'sha1').hexdigest()
             received_sig = req.META.get("HTTP_X_SIGNATURE","NULL")[len('sha1='):]
@@ -684,6 +731,18 @@ def qqpost(req):
                         self_id = receive["self_id"]
                         if "message" in receive.keys():
                             priority = 1
+                            if isinstance(receive["message"], list):
+                                tmp_msg = ""
+                                for msg_seg in receive["message"]:
+                                    if msg_seg["type"] == "text":
+                                        tmp_msg += msg_seg["data"]["text"]
+                                    elif msg_seg["type"] == "image":
+                                        tmp_msg += "[CQ:image,file={}]".format(msg_seg["data"]["url"])
+                                    elif "face" in msg_seg["type"]:
+                                        tmp_msg += "[CQ:{},id={}]".format(msg_seg["type"], msg_seg["data"]["id"])
+                                    elif msg_seg["type"] == "at":
+                                        tmp_msg += "[CQ:at,qq={}]".format(msg_seg["data"]["qq"])
+                                receive["message"] = tmp_msg
                             if receive["message"].startswith("/") or receive[
                                 "message"
                             ].startswith("\\"):
@@ -693,6 +752,7 @@ def qqpost(req):
                                 receive["consumer_time"] = time.time()
                                 text_data = json.dumps(receive)
                                 pub.send(text_data, priority)
+                                return HttpResponse("Request sent to MQ", status=200)
                             else:
                                 push_to_mq = False
                                 if "group_id" in receive:
@@ -711,11 +771,14 @@ def qqpost(req):
                                     receive["consumer_time"] = time.time()
                                     text_data = json.dumps(receive)
                                     pub.send(text_data, priority)
-                            return HttpResponse(status=200)
+                                    return HttpResponse("Request sent to MQ", status=200)
+                            return HttpResponse("Request message omitted", status=200)
 
                         if receive["post_type"] == "request" or receive["post_type"] == "event":
                             priority = 3
+                            text_data = json.dumps(receive)
                             pub.send(text_data, priority)
+                            return HttpResponse("Request sent to MQ", status=200)
 
                     except Exception as e:
                         traceback.print_exc()
@@ -770,10 +833,11 @@ def qqpost(req):
                                     )
                                 )
                     # bot.save()
-
             else:
-                return HttpResponse("Error access_token", status=500)
-        return HttpResponse("Not implemented", status=500)
+                return HttpResponse("Wrong HTTP_X_SIGNATURE", status=500)
+        return HttpResponse(error_msg, status=500)
     except Exception as e:
         traceback.print_exc()
-        return HttpResponse(status=500)
+        # print("request body:")
+        # print(req.body.decode())
+        return HttpResponse("Server error:{}".format(type(e)),status=500)

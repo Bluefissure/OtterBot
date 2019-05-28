@@ -4,7 +4,6 @@ import json
 import time
 import random
 import requests
-import requests_cache
 import math
 import re
 import urllib
@@ -182,8 +181,7 @@ def crawl_dps(boss, job, day=0, CN_source=False):
     #     backend="redis",
     #     expire_after=3600 * 12,
     # )
-    r = requests.get(url=fflogs_url)
-    # print("from cache:{}".format(r.from_cache))
+    r = requests.get(url=fflogs_url, timeout=5)
     tot_days = 0
     percentage_list = [10, 25, 50, 75, 95, 99, 100]
     atk_res = {}
@@ -266,7 +264,7 @@ def get_item_info(url):
 def search_item(name, FF14WIKI_BASE_URL, FF14WIKI_API_URL, url_quote=True):
     search_url = FF14WIKI_API_URL+"?format=json&action=parse&title=ItemSearch&text={{ItemSearch|name=%s}}"%(name)
     try:
-        r = requests.get(search_url, timeout=3)
+        r = requests.get(search_url, timeout=5)
         # print(r.text)
         res_data = json.loads(r.text)
         bs = BeautifulSoup(res_data["parse"]["text"]["*"],"html.parser")
@@ -301,29 +299,32 @@ def search_item(name, FF14WIKI_BASE_URL, FF14WIKI_API_URL, url_quote=True):
 
 def check_raid(api_url, raid_data, raid_name, wol_name, server_name):
     data = raid_data
-    r = requests.post(url=api_url,data=data)
-    res = json.loads(r.text)
-    msg = ""
-    if(int(res["Code"])!=0):
-        msg += res["Message"]
-    else:
-        ok = False
-        raid_info = ""
-        for i in range(4):
-            l = i+1
-            level = "Level{}".format(l)
-            if res["Attach"][level]:
-                ok = True
-                if len(res["Attach"][level].strip())==8:
-                    date = res["Attach"][level]
-                    fdate = "{}-{}-{}".format(date[:4],date[4:6],date[6:8])
-                    raid_info += "{}{}: {}\n".format(raid_name, l, fdate)
-                else:
-                    raid_info += "{}{}: 数据缺失\n".format(raid_name, l)
-            else:
-                raid_info += "{}{} : 仍未攻破\n".format(raid_name, l)
-        if not ok:
-            msg += "{}--{} 还没有突破过任何零式{}，请继续努力哦~\n".format(server_name, wol_name, raid_name)
+    try:
+        r = requests.post(url=api_url, data=data, timeout=5)
+        res = json.loads(r.text)
+        msg = ""
+        if(int(res["Code"])!=0):
+            msg += res["Message"]
         else:
-            msg = "{}--{} 的 {} 挑战情况如下：\n".format(server_name, wol_name, raid_name) + raid_info
+            ok = False
+            raid_info = ""
+            for i in range(4):
+                l = i+1
+                level = "Level{}".format(l)
+                if res["Attach"][level]:
+                    ok = True
+                    if len(res["Attach"][level].strip())==8:
+                        date = res["Attach"][level]
+                        fdate = "{}-{}-{}".format(date[:4],date[4:6],date[6:8])
+                        raid_info += "{}{}: {}\n".format(raid_name, l, fdate)
+                    else:
+                        raid_info += "{}{}: 数据缺失\n".format(raid_name, l)
+                else:
+                    raid_info += "{}{} : 仍未攻破\n".format(raid_name, l)
+            if not ok:
+                msg += "{}--{} 还没有突破过任何零式{}，请继续努力哦~\n".format(server_name, wol_name, raid_name)
+            else:
+                msg = "{}--{} 的 {} 挑战情况如下：\n".format(server_name, wol_name, raid_name) + raid_info
+    except requests.exceptions.ReadTimeout:
+        msg = "raid请求超时，请检查后台日志"
     return msg

@@ -47,7 +47,7 @@ class PikaPublisher:
         self.credentials = pika.PlainCredentials(username, password)
         self.queue = queue
         self.parameters = pika.ConnectionParameters(
-            "127.0.0.1", 5672, "/", self.credentials, heartbeat=300
+            "127.0.0.1", 5672, "/", self.credentials, heartbeat=0
         )
         self.connection = pika.BlockingConnection(self.parameters)
         self.channel = self.connection.channel()
@@ -74,6 +74,10 @@ class PikaPublisher:
         if self.connection.is_open:
             self.connection.close()
 
+    def ping(self):
+        self.connection.process_data_events()
+
+# PUB = PikaPublisher()
 
 class WSConsumer(AsyncWebsocketConsumer):
     async def connect(self):
@@ -173,6 +177,7 @@ class WSConsumer(AsyncWebsocketConsumer):
                             self.bot.user_id, int(time.time())
                         )
                     )
+                    self.pub.ping()
                     # await self.call_api("get_status",{},"get_status:{}".format(self.bot_user_id))
                 self_id = receive["self_id"]
                 if "message" in receive.keys():
@@ -197,6 +202,7 @@ class WSConsumer(AsyncWebsocketConsumer):
                         text_data = json.dumps(receive)
                         self.pub.send(text_data, priority)
                     else:
+                        # pass
                         push_to_mq = False
                         if "group_id" in receive:
                             group_id = receive["group_id"]
@@ -282,8 +288,12 @@ class WSConsumer(AsyncWebsocketConsumer):
                 self.channel_name, json.dumps(event)
             )
         )
-
-        # print("sending event:{}\n============================".format(json.dumps(event)))
+        if "[CQ:at,qq=306401806]" in json.dumps(event):
+            LOGGER.info(
+                        "Universal Channel {} send_event with event:{}".format(
+                            self.channel_name, json.dumps(event)
+                        )
+                    )
         await self.send(event["text"])
 
     async def call_api(self, action, params, echo=None):
@@ -317,11 +327,3 @@ class WSConsumer(AsyncWebsocketConsumer):
         json_data = {"group_id": group_id, "user_id": user_id, "duration": duration}
         await self.call_api("set_group_ban", json_data)
 
-    def intercept_action(self, action_list):
-        modified_action_list = action_list
-        for i in range(len(modified_action_list)):
-            if "message" in modified_action_list[i]["params"].keys():
-                modified_action_list[i]["params"][
-                    "message"
-                ] = "此獭獭由于多次重连已被暂时停用，请联系开发者恢复，"
-        return modified_action_list

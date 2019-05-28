@@ -76,14 +76,14 @@ def QQCommand_dps(*args, **kwargs):
                         )
                     if "国际服" in receive_msg:
                         receive_msg = receive_msg.replace("国际服", "day#-1")
+                    if boss.frozen:
+                        day = -1
                     if "day#" in receive_msg:
                         tmp_day = int(receive_msg.split(" ")[0].replace("day#", ""))
                         day = tmp_day
                         receive_msg = receive_msg.replace(
                             "day#{}".format(tmp_day), "", 1
                         )
-                    if boss.frozen:
-                        day = -1
                     atk_res = crawl_dps(
                         boss=boss_obj, job=job_obj, day=day, CN_source=CN_source
                     )

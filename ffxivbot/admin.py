@@ -122,9 +122,10 @@ class LotteryAdmin(admin.ModelAdmin):
     list_display = ["id", "name", "group"]
     search_fields = ['name', 'group']
 
-# class CommandCacheAdmin(admin.ModelAdmin):
-#     list_display = ["command","expiration","last_update_time"]
-#     search_fields = ['command']
+class LiveUserAdmin(admin.ModelAdmin):
+    list_display = ["name", "platform", "room_id"]
+    search_fields = ["name", "platform", "room_id"]
+
 
 
 admin.site.register(QQGroup, QQGroupAdmin)
@@ -151,3 +152,4 @@ admin.site.register(WeatherRate, WeatherRateAdmin)
 admin.site.register(Territory, TerritoryAdmin)
 admin.site.register(Image, ImageAdmin)
 admin.site.register(Lottery, LotteryAdmin)
+admin.site.register(LiveUser, LiveUserAdmin)

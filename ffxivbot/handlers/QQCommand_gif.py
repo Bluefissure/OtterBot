@@ -18,22 +18,26 @@ def QQCommand_gif(*args, **kwargs):
         sorrygifs = SorryGIF.objects.all()
         sorry_dict = {}
         sorry_name = {}
+        sorry_length = {}
         for sorry in sorrygifs:
             sorry_dict[sorry.api_name] = sorry.example
             sorry_name[sorry.api_name] = sorry.name
+            sorry_length[sorry.api_name] = len(sorry.example.split("|"))
         receive_msg = receive["message"].replace("/gif", "", 1).strip()
         if receive_msg == "list":
             msg = ""
             for (k, v) in sorry_dict.items():
-                msg = msg + "%s : %s\n" % (k, sorry_name[k])
+                msg = msg + "{}: {}({})\n".format(k, sorry_name[k], sorry_length[k])
         else:
             now_template = ""
             for (k, v) in sorry_dict.items():
                 if receive_msg.find(k) == 0:
                     now_template = k
                     break
-            if len(receive_msg) == 0 or receive_msg == "help":
+            if (not receive_msg) or receive_msg == "help":
                 msg = " /gif list : 目前可用模板\n/gif $template example : 查看模板$template的样例\n/gif $template $msg0|$msg1|... : 按照$msg0,$msg1...生成沙雕GIF\nPowered by sorry.xuty.tk"
+            elif not now_template.strip():
+                msg = "未能找到对应模板，请确认后输入。"
             else:
                 receive_msg = receive_msg.replace(now_template, "", 1).strip()
                 if receive_msg == "example":

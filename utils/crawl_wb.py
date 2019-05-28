@@ -19,6 +19,8 @@ import codecs
 import urllib
 import base64
 import logging
+import traceback
+from bs4 import BeautifulSoup
 from channels.layers import get_channel_layer
 from django.db import connection, connections
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', filename="log/crawl_wb.log")
@@ -39,29 +41,40 @@ def crawl_wb(weibouser, push=False):
     jdata = json.loads(s.text)
     if(jdata["ok"] == 1):
         for tile in jdata["data"]["cards"]:
-            if(len(WeiboTile.objects.filter(itemid=tile["itemid"])) > 0):
+            if(len(WeiboTile.objects.filter(itemid=tile.get("itemid", ""))) > 0):
                 # print("crawled {} of {} before, pass".format(tile["itemid"], tile["itemid"]))
                 continue
-            t = WeiboTile(itemid=tile["itemid"])
+            t = WeiboTile(itemid=tile.get("itemid", ""))
             t.owner = weibouser
             t.content = json.dumps(tile)
             t.crawled_time = int(time.time())
-            if(tile["itemid"] == ""):
-                logging.info("pass {} of {} cuz empty itemid".format(t.itemid, t.owner))
+            if(tile.get("itemid", "") == ""):
+                logging.info("pass a tile of {} cuz empty itemid".format(t.owner))
+                # logging.info(json.dumps(tile))
                 continue
             channel_layer = get_channel_layer()
 
-            groups = weibouser.subscribed_by.filter(subscription_trigger_time=-1)
+            groups = weibouser.subscribed_by.all()
             # print("ready to push groups:{}".format(groups))
             bots = QQBot.objects.all()
             t.save()
-            try:
-                for bot in bots:
+            
+            for bot in bots:
+                try:
                     group_id_list = [item["group_id"] for item in json.loads(bot.group_list)]
                     # print("group_id_list:{}".format(group_id_list))
                     for group in groups:
                         if int(group.group_id) in group_id_list:
                             msg = get_weibotile_share(t, mode="text")
+                            if bot.share_banned:
+                                content_json = json.loads(t.content)
+                                mblog = content_json["mblog"]
+                                bs = BeautifulSoup(mblog["text"],"html.parser")
+                                msg = "{}\n{}\n{}".format(
+                                        "{}\'s Weibo:\n========\n".format(t.owner),
+                                        bs.get_text().replace("\u200b","").strip(),
+                                        content_json["scheme"]
+                                    )
                             logging.info("Pushing {} to group: {}".format(t, group))
                             # print("msg: {}".format(msg))
                             if push:
@@ -79,14 +92,12 @@ def crawl_wb(weibouser, push=False):
                                     r = requests.post(url=url, headers=headers, data=json.dumps(jdata["params"]))
                                     if r.status_code!=200:
                                         logging.error(r.text)
-                t.save()
-            except Exception as e:
-                logging.error("Error at pushing crawled weibo: {}".format(e))
+                except Exception as e:
+                    logging.error("Error at pushing crawled weibo: {}".format(e))
 
             logging.info("crawled {} of {}".format(t.itemid, t.owner))
     else:
-        logging.error("Error at crawling weibo:{}".format(jdata["ok"]))
-        pass
+        logging.error("Error at crawling weibo:{}".format(jdata.get("ok", "NULL")))
     return
 
 
@@ -103,6 +114,7 @@ def crawl():
 
 
 if __name__ == "__main__":
+    print("Crawling Weibo Service Start, check log file log/crawl_wb.log")
     while True:
         try:
             crawl()

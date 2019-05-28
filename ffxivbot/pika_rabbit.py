@@ -38,6 +38,10 @@ from asgiref.sync import async_to_sync
 import ffxivbot.handlers as handlers
 from ffxivbot.models import *
 
+
+USE_GRAFANA = getattr(settings, "USE_GRAFANA", False)
+
+
 CONFIG_PATH = os.environ.get(
     "FFXIVBOT_CONFIG", os.path.join(FFXIVBOT_ROOT, "ffxivbot/config.json")
 )
@@ -73,7 +77,6 @@ def handle_message(bot, message):
                 )
             else:
                 new_message.append(msg)
-
     return new_message
 
 
@@ -93,12 +96,11 @@ def call_api(bot, action, params, echo=None, **kwargs):
         )
     elif post_type=="http":
         url = os.path.join(bot.api_post_url, "{}?access_token={}".format(action, bot.access_token))
-        print("calling http api:{} {}\n============================".format(url, json.dumps(params)))
         headers = {'Content-Type': 'application/json'} 
         r = requests.post(url=url, headers=headers, data=json.dumps(params))
         if r.status_code!=200:
+            print("HTTP Callback failed:")
             print(r.text)
-        #TODO
 
 
 def send_message(bot, private_group, uid, message, **kwargs):
@@ -488,14 +490,18 @@ class PikaConsumer(object):
                             else "本群成员信息获取失败，请尝试重启酷Q并使用/update_group刷新群成员信息\n"
                         )
                         for (k, v) in handlers.group_commands.items():
-                            msg += "{} : {}\n".format(k, v)
+                            command_enable = True
+                            if group and group_commands:
+                                command_enable = group_commands.get(k, "enable") == "enable"
+                            if command_enable:
+                                msg += "{}: {}\n".format(k, v)
                         msg = msg.strip()
                         send_message(
                             bot, receive["message_type"], group_id or user_id, msg
                         )
                     else:
                         if receive["message"].find("/update_group") == 0:
-                            pass
+                            update_group_member_list(bot, group_id, post_type=receive.get("reply_api_type", "websocket") )
                         # get sender's user_info
                         user_info = (
                             receive["sender"] if "sender" in receive.keys() else None
@@ -558,6 +564,16 @@ class PikaConsumer(object):
                                         group_commands=handlers.group_commands,
                                         alter_commands=handlers.alter_commands,
                                     )
+                                    if USE_GRAFANA:
+                                        command_log = CommandLog(
+                                                time = int(time.time()),
+                                                bot_id = str(self_id),
+                                                user_id = str(user_id),
+                                                group_id = str(group_id),
+                                                command = str(command_key),
+                                                message = receive["message"]
+                                            )
+                                        command_log.save()
                                     for action in action_list:
                                         call_api(
                                             bot,
@@ -570,30 +586,16 @@ class PikaConsumer(object):
                                     if already_reply:
                                         break
 
-                    if not already_reply:
-                        action_list = handlers.QQGroupChat(
-                            receive=receive,
-                            global_config=config,
-                            bot=bot,
-                            user_info=user_info,
-                            member_list=member_list,
-                            group=group,
-                            commands=handlers.commands,
-                            alter_commands=handlers.alter_commands,
-                        )
-                        for action in action_list:
-                            call_api(
-                                bot,
-                                action["action"],
-                                action["params"],
-                                echo=action["echo"],
-                                post_type=receive.get("reply_api_type", "websocket")
-                            )
+                    
 
                 if receive["message"].find("/help") == 0:
                     msg = ""
                     for (k, v) in handlers.commands.items():
-                        msg += "{} : {}\n".format(k, v)
+                        command_enable = True
+                        if group and group_commands:
+                            command_enable = group_commands.get(k, "enable") == "enable"
+                        if command_enable:
+                            msg += "{}: {}\n".format(k, v)
                     msg += "具体介绍详见Wiki使用手册: {}\n".format(
                         "https://github.com/Bluefissure/FFXIVBOT/wiki/"
                     )
@@ -627,9 +629,6 @@ class PikaConsumer(object):
                                 and group_commands[command_key] == "disable"
                             ):
                                 continue
-                        LOGGER.debug(
-                            "{} calling command: {}".format(user_id, command_key)
-                        )
                         handle_method = getattr(
                             handlers,
                             "QQCommand_{}".format(command_key.replace("/", "", 1)),
@@ -637,8 +636,16 @@ class PikaConsumer(object):
                         action_list = handle_method(
                             receive=receive, global_config=config, bot=bot
                         )
-                        # if(len(json.loads(bot.disconnections))>100):
-                        #     action_list = self.intercept_action(action_list)
+                        if USE_GRAFANA:
+                            command_log = CommandLog(
+                                    time = int(time.time()),
+                                    bot_id = str(self_id),
+                                    user_id = str(user_id),
+                                    group_id = "private" if receive["message_type"] != "group" else str(group_id),
+                                    command = str(command_key),
+                                    message = receive["message"]
+                                )
+                            command_log.save()
                         for action in action_list:
                             call_api(
                                 bot,
@@ -649,6 +656,39 @@ class PikaConsumer(object):
                             )
                             already_reply = True
                         break
+
+                # handling chat
+                if receive["message_type"] == "group":
+                    if not already_reply:
+                        action_list = handlers.QQGroupChat(
+                            receive=receive,
+                            global_config=config,
+                            bot=bot,
+                            user_info=user_info,
+                            member_list=member_list,
+                            group=group,
+                            commands=handlers.commands,
+                            alter_commands=handlers.alter_commands,
+                        )
+                        # need fix: disable chat logging for a while
+                        # if USE_GRAFANA:
+                        #     command_log = CommandLog(
+                        #         time = int(time.time()),
+                        #         bot_id = str(self_id),
+                        #         user_id = str(user_id),
+                        #         group_id = "private" if receive["message_type"] != "group" else str(group_id),
+                        #         command = "/chat",
+                        #         message = receive["message"]
+                        #     )
+                        #     command_log.save()
+                        for action in action_list:
+                            call_api(
+                                bot,
+                                action["action"],
+                                action["params"],
+                                echo=action["echo"],
+                                post_type=receive.get("reply_api_type", "websocket")
+                            )
 
             CONFIG_GROUP_ID = config["CONFIG_GROUP_ID"]
             if receive["post_type"] == "request":

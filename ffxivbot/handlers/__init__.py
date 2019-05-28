@@ -13,22 +13,24 @@ commands = {
   "/donate":"援助作者",
   "/random":"掷骰子",
   "/anime":"以图搜番（\"/anime 图片\"）",
-  "/gate":"挖宝选门（\"/gate 3\"）",
-  "/search":"在最终幻想XIV中查询物品(\"/search 神龙\")",
-  "/weather":"天气信息（快捷命令\"/fog\",\"/heat_wave\",\"/thunder\",\"/blizzard\"）",
-  "/dps":"查询国际服同期DPS排名（\"/dps 8s 骑士\"）",
-  "/raid":"查询零式英雄榜（\"/raid 蓝色裂痕 萌芽池\"）",
-  "/nuannuan":"查看本周金蝶暖暖作业",
-  "/quest":"任务查询(/quest 狂乱前奏)",
   "/gif":"生成沙雕图（\"/gif help\"）",
   "/dice":"DnD掷骰子（\"/dice 3d12\"）",
-  "/bot":"机器人推送功能（\"/bot token 123\"）",
   "/pixiv":"Pixiv相关功能（\"/pixiv help\"）",
   "/music":"网易云音乐搜索（\"/music 届不到的恋\"）",
   "/duilian":"对联（\"/duilian 稻花香里说丰年\"）",
   "/tex":"生成tex图片（\"/tex e^{\\pi i}+1=0\"）",
+  "/gate":"挖宝选门（\"/gate 3\"）",
+  "/search":"查询物品(\"/search 神龙\")",
+  "/weather":"天气信息（快捷命令\"/fog\",\"/heat_wave\",\"/thunder\",\"/kx\"）",
+  "/dps":"DPS排名（\"/dps 8s 骑士\"）",
+  "/raid":"零式英雄榜（\"/raid 蓝色裂痕 萌芽池\"）",
+  "/quest":"任务查询(/quest 狂乱前奏)",
+  "/nuannuan":"本周金蝶暖暖作业",
+  "/bot":"机器人推送功能（\"/bot token 123\"）",
+  "/akhr":"罗德岛公开招募",
   "/hso":"好色哦"
 }
+  # "/joke":"讽刺笑话（\"/joke 996|强东|建设一流公司|程序员|公司\"）",
 
 group_commands = {
   "/group":"群相关功能控制",
@@ -41,6 +43,7 @@ group_commands = {
   "/revenge":"复仇",
   "/vote":"投票系统",
   "/weibo":"微博订阅系统",
+  "/live":"直播订阅系统",
   "/command":"群功能停用/启用",
   "/lottery":"抽奖"
 }
@@ -91,6 +94,9 @@ from .QQCommand_nuannuan import QQCommand_nuannuan
 from .QQCommand_tex import QQCommand_tex
 from .QQCommand_waifu import QQCommand_waifu
 from .QQCommand_quest import QQCommand_quest
+# from .QQCommand_joke import QQCommand_joke
+
+from .arknights.QQCommand_akhr import QQCommand_akhr
 
 
 from .QQGroupCommand_group import QQGroupCommand_group
@@ -103,6 +109,7 @@ from .QQGroupCommand_ban import QQGroupCommand_ban
 from .QQGroupCommand_revenge import QQGroupCommand_revenge
 from .QQGroupCommand_vote import QQGroupCommand_vote
 from .QQGroupCommand_weibo import QQGroupCommand_weibo
+from .QQGroupCommand_live import QQGroupCommand_live
 from .QQGroupCommand_lottery import QQGroupCommand_lottery
 from .QQGroupCommand_command import QQGroupCommand_command
 
