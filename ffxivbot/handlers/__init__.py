@@ -45,7 +45,8 @@ group_commands = {
   "/weibo":"微博订阅系统",
   "/live":"直播订阅系统",
   "/command":"群功能停用/启用",
-  "/lottery":"抽奖"
+  "/lottery":"抽奖",
+  "/nn":"/nuannuan"
 }
 
 alter_commands = {
