@@ -160,7 +160,7 @@ def QQCommand_pixiv(*args, **kwargs):
                 mode = message_content.replace("rank", "", 1).strip()
                 if mode == "":
                     mode = "week"
-                msg = search_rank(mode, receive["message_type"] == "private")
+                msg = search_rank(mode, receive["message_type"] != "group")
             elif message_content.find("gif") == 0:
                 ID = message_content.replace("gif", "", 1).strip()
                 msg = search_gif_ID(ID)
@@ -177,7 +177,7 @@ def QQCommand_pixiv(*args, **kwargs):
 
             else:
                 word = message_content
-                msg = search_word(word, receive["message_type"] == "private")
+                msg = search_word(word, receive["message_type"] != "group")
 
         if isinstance(msg, str):
             msg = msg.strip()
