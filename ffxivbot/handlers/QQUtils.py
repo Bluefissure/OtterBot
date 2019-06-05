@@ -21,6 +21,13 @@ def reply_message_action(receive, msg):
             "action":"send_group_msg",
             "params":{"group_id":receive["group_id"],"message":msg}
         })
+    elif receive["message_type"] == "discuss":
+        action.update(
+            {
+                "action": "send_discuss_msg",
+                "params": {"discuss_id": receive["discuss_id"], "message": msg},
+            }
+        )
     else:
         action.update({
             "action":"send_private_msg",
