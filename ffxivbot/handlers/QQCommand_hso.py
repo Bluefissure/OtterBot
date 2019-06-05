@@ -43,7 +43,7 @@ def QQCommand_hso(*args, **kwargs):
                 else:
                     msg = '请输入"/hso add $name1 $name2"将$name1替换成$name2'
             else:
-                if random.randint(0, 4) == 0:
+                if random.randint(0, 10) == 0:
                     msg = "好色哦"
                 else:
                     page = random.randint(1, 50)

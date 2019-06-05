@@ -164,6 +164,7 @@ class Boss(models.Model):
     cn_add_time = models.BigIntegerField(default=0)
     parsed_days = models.IntegerField(default=0)
     frozen = models.BooleanField(default=False)
+    patch = models.IntegerField(default=0)
 
     def __str__(self):
         return str(self.name)

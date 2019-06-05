@@ -25,25 +25,16 @@ def search_word(word):
         url = "https://api.imjad.cn/cloudmusic/?type=song&id={}".format(song_id)
         r = requests.get(url=url)
         song_res = json.loads(r.text)
-        # msg = "[CQ:music,type=163,id={}]".format(song_id)
         song_data = song_res["data"][0]
-        # msg = "[CQ:music,type=custom,url={},audio={},title={},content={},image={}]".format(song_data["url"])
         msg = [
             {
                 "type": "music",
                 "data": {
                     "type": "163",
                     "id": "{}".format(song_id)
-                    # "type": "custom",
-                    # "url":"https://music.163.com/#/song?id={}".format(song_id),
-                    # "audio":song_data["url"],
-                    # "title":song["name"],
-                    # "content":song["alia"][0] if len(song["alia"])>0 else "",
-                    # "image":song["al"]["picUrl"]
                 },
             }
         ]
-        # print("+++++++++++++++++++++++++++++++++++++++++{}".format(msg))
     else:
         msg = '未能找到"{}"对应歌曲'.format(word)
     return msg

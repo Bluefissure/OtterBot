@@ -170,10 +170,11 @@ def getSpecificWeatherTimes(territory, weathers, cnt=5, TIMEFORMAT_MDHMS="%m-%d 
 
 def crawl_dps(boss, job, day=0, CN_source=False):
     print("boss:{} job:{} day:{}".format(boss, job, day))
-    fflogs_url = "https://www.fflogs.com/zone/statistics/table/{}/dps/{}/100/8/{}/100/1000/7/0/Global/{}/All/0/normalized/single/0/-1/".format(
+    fflogs_url = "https://www.fflogs.com/zone/statistics/table/{}/dps/{}/100/8/{}/100/1000/7/{}/Global/{}/All/0/normalized/single/0/-1/".format(
         boss.quest.quest_id,
         boss.boss_id,
         "3" if CN_source else "1",
+        boss.patch,
         job.name,
     )
     # requests_cache.install_cache(
@@ -181,6 +182,7 @@ def crawl_dps(boss, job, day=0, CN_source=False):
     #     backend="redis",
     #     expire_after=3600 * 12,
     # )
+    print("fflogs url:{}".format(fflogs_url))
     r = requests.get(url=fflogs_url, timeout=5)
     tot_days = 0
     percentage_list = [10, 25, 50, 75, 95, 99, 100]

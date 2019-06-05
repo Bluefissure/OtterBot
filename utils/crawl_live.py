@@ -108,6 +108,7 @@ def crawl_live(liveuser, push=False):
                 }
                 if not bot.api_post_url:
                     print("pushing {} to {}".format(liveuser, group.group_id))
+                    logging.info("pushing {} to {}".format(liveuser, group.group_id))
                     channel_layer = get_channel_layer()
                     async_to_sync(channel_layer.send)(bot.api_channel_name, {"type": "send.event", "text": json.dumps(jdata),})
                 else:
