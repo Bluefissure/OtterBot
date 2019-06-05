@@ -106,6 +106,8 @@ def call_api(bot, action, params, echo=None, **kwargs):
 def send_message(bot, private_group, uid, message, **kwargs):
     if private_group == "group":
         call_api(bot, "send_group_msg", {"group_id": uid, "message": message}, **kwargs)
+    if private_group == "discuss":
+        call_api(bot, "send_discuss_msg", {"discuss_id": uid, "message": message}, **kwargs)
     if private_group == "private":
         call_api(bot, "send_private_msg", {"user_id": uid, "message": message}, **kwargs)
 
@@ -458,9 +460,12 @@ class PikaConsumer(object):
                 group_id = None
                 group = None
                 group_created = False
+                discuss_id = None
                 # Group Control Func
                 if receive["message"].find("\\") == 0:
                     receive["message"] = receive["message"].replace("\\", "/", 1)
+                if receive["message_type"] == "discuss":
+                    discuss_id = receive["discuss_id"]
                 if receive["message_type"] == "group":
                     group_id = receive["group_id"]
                     (group, group_created) = QQGroup.objects.get_or_create(
@@ -497,7 +502,7 @@ class PikaConsumer(object):
                                 msg += "{}: {}\n".format(k, v)
                         msg = msg.strip()
                         send_message(
-                            bot, receive["message_type"], group_id or user_id, msg
+                            bot, receive["message_type"], discuss_id or group_id or user_id, msg
                         )
                     else:
                         if receive["message"].find("/update_group") == 0:
@@ -618,7 +623,7 @@ class PikaConsumer(object):
                     msg = msg.strip()
                     LOGGER.debug("{} calling command: {}".format(user_id, "/ping"))
                     print(("{} calling command: {}".format(user_id, "/ping")))
-                    send_message(bot, receive["message_type"], group_id or user_id, msg, post_type=receive.get("reply_api_type", "websocket"))
+                    send_message(bot, receive["message_type"], discuss_id or group_id or user_id, msg, post_type=receive.get("reply_api_type", "websocket"))
 
                 command_keys = sorted(handlers.commands.keys(), key=lambda x: -len(x))
                 for command_key in command_keys:
