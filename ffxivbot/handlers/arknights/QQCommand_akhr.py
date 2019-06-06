@@ -154,6 +154,7 @@ def QQCommand_akhr(*args, **kwargs):
         para_segs = receive["message"].replace("/akhr","",1).replace("all","",1).split(" ")
         while "" in para_segs:
             para_segs.remove("")
+        para_segs = list(map(lambda x:x.strip(), para_segs))
         if len(para_segs) == 0 or para_segs[0] == "help":
             msg = "/akhr $tag：按照$tag查询罗德岛公开招募（多tag空格分割）"
         else:

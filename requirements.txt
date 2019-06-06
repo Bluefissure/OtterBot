@@ -15,3 +15,4 @@ pika==0.13.1
 requests-cache==0.4.13
 Pillow==5.4.1
 tqdm==4.31.1
+cryptography==2.7

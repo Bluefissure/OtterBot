@@ -594,7 +594,6 @@ def api(req):
                         qquser.save(update_fields=["last_api_time"])
                     except QQUser.DoesNotExist:
                         print("qquser {}:{} auth fail".format(qq, token))
-                        qquser = None
                     if bot and qquser and api_rate_limit:
                         channel_layer = get_channel_layer()
                         msg = req.POST.get("text")
@@ -603,61 +602,65 @@ def api(req):
                             if reqbody:
                                 reqbody = reqbody.decode()
                                 reqbody = json.loads(reqbody)
-                                msg = msg or reqbody["content"]
+                                msg = msg or reqbody.get("content")
                                 msg = re.compile(
                                     "[\\x00-\\x08\\x0b-\\x0c\\x0e-\\x1f]"
                                 ).sub(" ", msg)
                         except BaseException:
                             pass
-                        print("body:{}".format(req.body.decode()))
-                        if group_id:
-                            try:
-                                group = QQGroup.objects.get(group_id=group_id)
-                                group_push_list = [
-                                    user["user_id"]
-                                    for user in json.loads(group.member_list)
-                                    if (
-                                        user["role"] == "owner"
-                                        or user["role"] == "admin"
-                                    )
-                                ]
-                                print("group push list:{}".format(group_push_list))
-                            except QQGroup.DoesNotExist:
-                                print("group:{} does not exist".format(group_id))
-                        msg = handle_hunt_msg(msg)
-                        if (
-                            group
-                            and group.api
-                            and int(qquser.user_id) in group_push_list
-                        ):
-                            jdata = {
-                                "action": "send_group_msg",
-                                "params": {
-                                    "group_id": group.group_id,
-                                    "message": "Message from [CQ:at,qq={}]:\n{}".format(
-                                        qquser.user_id, msg
-                                    ),
-                                },
-                                "echo": "",
-                            }
+                        if not msg:
+                            print("Can't get msg from request:{}:{}".format(req, reqbody))
+                            httpresponse = HttpResponse("Can't get message", status=500)
                         else:
-                            jdata = {
-                                "action": "send_private_msg",
-                                "params": {"user_id": qquser.user_id, "message": msg},
-                                "echo": "",
-                            }
-                        if not bot.api_post_url:
-                            async_to_sync(channel_layer.send)(
-                                bot.api_channel_name,
-                                {"type": "send.event", "text": json.dumps(jdata)},
-                            )
-                        else:
-                            url = os.path.join(bot.api_post_url, "{}?access_token={}".format(jdata["action"], bot.access_token))
-                            headers = {'Content-Type': 'application/json'} 
-                            r = requests.post(url=url, headers=headers, data=json.dumps(jdata["params"]))
-                            if r.status_code!=200:
-                                logging.error(r.text)
-                        httpresponse = HttpResponse("OK", status=200)
+                            print("body:{}".format(req.body.decode()))
+                            if group_id:
+                                try:
+                                    group = QQGroup.objects.get(group_id=group_id)
+                                    group_push_list = [
+                                        user["user_id"]
+                                        for user in json.loads(group.member_list)
+                                        if (
+                                            user["role"] == "owner"
+                                            or user["role"] == "admin"
+                                        )
+                                    ]
+                                    print("group push list:{}".format(group_push_list))
+                                except QQGroup.DoesNotExist:
+                                    print("group:{} does not exist".format(group_id))
+                            msg = handle_hunt_msg(msg)
+                            if (
+                                group
+                                and group.api
+                                and int(qquser.user_id) in group_push_list
+                            ):
+                                jdata = {
+                                    "action": "send_group_msg",
+                                    "params": {
+                                        "group_id": group.group_id,
+                                        "message": "Message from [CQ:at,qq={}]:\n{}".format(
+                                            qquser.user_id, msg
+                                        ),
+                                    },
+                                    "echo": "",
+                                }
+                            else:
+                                jdata = {
+                                    "action": "send_private_msg",
+                                    "params": {"user_id": qquser.user_id, "message": msg},
+                                    "echo": "",
+                                }
+                            if not bot.api_post_url:
+                                async_to_sync(channel_layer.send)(
+                                    bot.api_channel_name,
+                                    {"type": "send.event", "text": json.dumps(jdata)},
+                                )
+                            else:
+                                url = os.path.join(bot.api_post_url, "{}?access_token={}".format(jdata["action"], bot.access_token))
+                                headers = {'Content-Type': 'application/json'} 
+                                r = requests.post(url=url, headers=headers, data=json.dumps(jdata["params"]))
+                                if r.status_code!=200:
+                                    logging.error(r.text)
+                            httpresponse = HttpResponse("OK", status=200)
             if "webapi" in trackers:
                 qq = req.GET.get("qq")
                 token = req.GET.get("token")
@@ -683,7 +686,7 @@ def api(req):
                         "rcode": "100",
                     }
                     return JsonResponse(res_dict)
-                return HttpResponse(status=500)
+                return HttpResponse("Default API Error, contact dev please",status=500)
     return httpresponse if httpresponse else HttpResponse(status=404)
 
 
