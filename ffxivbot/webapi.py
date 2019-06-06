@@ -268,7 +268,7 @@ def github_webhook(req):
         msg += "Ref:{}\n".format(req_json.get("ref"))
         msg += "Commits:\n"
         for commit in req_json.get("commits"):
-            msg += "  {}:{}\n".format(commit["sha"][:7], commit["message"])
+            msg += "  {}:{}\n".format(commit["id"][:7], commit["message"])
         msg = msg.strip()
     elif event_type == "pull_request":
         action = req_json.get("action")
