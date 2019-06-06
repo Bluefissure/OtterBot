@@ -249,3 +249,75 @@ def webapi(req):
             "rcode": "-1",
         }
     return res_dict
+
+
+def github_webhook(req):
+    req_json = json.loads(req.body)
+    event_type = req.META.get("HTTP_X_GITHUB_EVENT")
+    msg = None
+    if not event_type:
+        pass
+        # return HttpResponse("Can't get github event type.", status=500)
+    elif event_type == "ping":
+        msg = req_json.get("zen", "Hello from github")
+    elif event_type == "push":
+        pusher = req_json.get("pusher").get("name")
+        repo = req_json.get("repository")
+        msg = "New push to {}:\n".format(repo.get("full_name"))
+        msg += "Pusher:{}\n".format(pusher)
+        msg += "Ref:{}\n".format(req_json.get("ref"))
+        msg += "Commits:\n"
+        for commit in repo.get("commits"):
+            msg += "  {}:{}\n".format(commit["sha"][:7], commit["message"])
+        msg = msg.strip()
+    elif event_type == "pull_request":
+        action = req_json.get("action")
+        number = req_json.get("number")
+        pr = req_json.get("pull_request")
+        repo = req_json.get("repository")
+        pusher = pr.get("user").get("login")
+        if action == "opened":
+            msg = "{} opened a new pull request to {}:\n".format(pusher, repo.get("full_name"))
+            msg += "#{}:{}\n".format(number, pr.get("title"))
+            msg += "Check at {}\n".format(pr.get("url"))
+        else:
+            msg += "{} {} PR#{}:{}, state changed to {}.\n".format(pusher, action, number, pr.get("title"), pr.get("state"))
+            msg += "Check at {}\n".format(pr.get("url"))
+    elif event_type == "star":
+        action = req_json.get("action")
+        sender = req_json.get("sender")
+        repo = req_json.get("repository")
+        if action == "created":
+            msg = "{} stared {}".format(sender.get("login"), repo.get("full_name"))
+        elif action == "deleted":
+            msg = "{} canceled star of {}".format(sender.get("login"), repo.get("full_name"))
+    elif event_type == "issues":
+        action = req_json.get("action")
+        issue = req_json.get("issue")
+        number = issue.get("number")
+        repo = req_json.get("repository")
+        pusher = issue.get("user").get("login")
+        if action == "opened":
+            msg = "{} opened a new issue to {}:\n".format(pusher, repo.get("full_name"))
+            msg += "#{}:{}\n".format(number, issue.get("title"))
+            msg += "Check at {}\n".format(issue.get("url"))
+        else:
+            msg += "{} {} issue#{}:{}, state changed to {}.\n".format(pusher, action, number, issue.get("title"), issue.get("state"))
+            msg += "Check at {}\n".format(issue.get("url"))
+    elif event_type == "fork":
+        forkee = req_json.get("forkee")
+        repo = req_json.get("repository")
+        msg = "{} forked {} to {}".format(forkee.get("owner").get("login"), repo.get("full_name"), forkee.get("full_name"))
+    elif event_type == "gollum":
+        pages = req_json.get("pages")
+        sender = req_json.get("sender")
+        repo = req_json.get("repository")
+        msg = "{} updated wiki pages of {}:\n".format(sender.get("login"), repo.get("full_name"))
+        for page in pages:
+            msg += "{}:{}\n".format(page.get("page_name"), page.get("html_url"))
+        msg = msg.strip()
+    else:
+        msg = "Github event \"{}\" is not implemented.".format(event_type)
+
+
+    return msg

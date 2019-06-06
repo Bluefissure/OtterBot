@@ -20,7 +20,7 @@ import time
 from time import strftime, localtime
 from FFXIV import settings
 from ffxivbot.models import *
-from ffxivbot.webapi import webapi
+from ffxivbot.webapi import webapi, github_webhook
 from ffxivbot.consumers import PikaPublisher
 import ffxivbot.handlers as handlers
 from channels.layers import get_channel_layer
@@ -608,6 +608,8 @@ def api(req):
                                 ).sub(" ", msg)
                         except BaseException:
                             pass
+                        if not msg:
+                            msg = github_webhook(req)
                         if not msg:
                             print("Can't get msg from request:{}:{}".format(req, reqbody))
                             httpresponse = HttpResponse("Can't get message", status=500)
