@@ -207,6 +207,8 @@ def crawl_dps(boss, job, day=0, CN_source=False):
             )
         ptn = re.compile(re_str)
         find_res = ptn.findall(r.text)
+        if CN_source:
+            find_res = find_res[boss.cn_offset:]
         try:
             if day == -1:
                 day = len(find_res) - 1

@@ -53,7 +53,7 @@ def tencent_ocr(img_url, SecretId, SecretKey):
 
 def baidu_ocr(img_url, access_token):
     url = "https://aip.baidubce.com/rest/2.0/ocr/v1/general_basic?access_token={}".format(access_token)
-    img = requests.get(img_url)
+    img = requests.get(img_url, timeout=10)
     img_b64 = base64.b64encode(img.content)
     data = {
         "image":img_b64.decode()

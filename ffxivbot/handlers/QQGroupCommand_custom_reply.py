@@ -32,7 +32,6 @@ def QQGroupCommand_custom_reply(*args, **kwargs):
                     msg = "自定义命令以'/'开头"
                 else:
                     custom_value = html.unescape(" ".join(segs[2:]))
-                    print("==================================\ncustom_value:{}".format(custom_value))
                     custom = CustomReply(group=group,key=custom_key,value=custom_value)
                     custom.save()
                     msg = "自定义回复已添加成功，使用\"{}\"查看".format(custom_key)

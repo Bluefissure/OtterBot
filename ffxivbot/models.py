@@ -162,6 +162,7 @@ class Boss(models.Model):
     nickname = models.TextField(default="{}")
     add_time = models.BigIntegerField(default=0)
     cn_add_time = models.BigIntegerField(default=0)
+    cn_offset = models.IntegerField(default=0)
     parsed_days = models.IntegerField(default=0)
     frozen = models.BooleanField(default=False)
     patch = models.IntegerField(default=0)
