@@ -37,7 +37,7 @@ def crawl_wb(weibouser, push=False):
     uid = weibouser.uid
     containerid = weibouser.containerid
     url = r'https://m.weibo.cn/api/container/getIndex?type=uid&value={}&containerid={}'.format(uid, containerid)
-    s = requests.post(url=url)
+    s = requests.post(url=url, timeout = 15)
     jdata = json.loads(s.text)
     if(jdata["ok"] == 1):
         for tile in jdata["data"]["cards"]:
@@ -55,45 +55,48 @@ def crawl_wb(weibouser, push=False):
             channel_layer = get_channel_layer()
 
             groups = weibouser.subscribed_by.all()
-            # print("ready to push groups:{}".format(groups))
+            # print("ready to push groups:{}".format(list(groups)))
             bots = QQBot.objects.all()
             t.save()
-            
-            for bot in bots:
-                try:
+            for group in groups:
+                for bot in bots:
                     group_id_list = [item["group_id"] for item in json.loads(bot.group_list)]
-                    # print("group_id_list:{}".format(group_id_list))
-                    for group in groups:
-                        if int(group.group_id) in group_id_list:
-                            msg = get_weibotile_share(t, mode="text")
-                            if bot.share_banned:
-                                content_json = json.loads(t.content)
-                                mblog = content_json["mblog"]
-                                bs = BeautifulSoup(mblog["text"],"html.parser")
-                                msg = "{}\n{}\n{}".format(
-                                        "{}\'s Weibo:\n========".format(t.owner),
-                                        bs.get_text().replace("\u200b","").strip(),
-                                        content_json["scheme"]
-                                    )
-                            logging.info("Pushing {} to group: {}".format(t, group))
-                            # print("msg: {}".format(msg))
-                            if push:
-                                t.pushed_group.add(group)
-                                jdata = {
-                                    "action": "send_group_msg",
-                                    "params": {"group_id": int(group.group_id), "message": msg},
-                                    "echo": "",
-                                }
-                                if not bot.api_post_url:
-                                    async_to_sync(channel_layer.send)(bot.api_channel_name, {"type": "send.event", "text": json.dumps(jdata), })
-                                else:
-                                    url = os.path.join(bot.api_post_url, "{}?access_token={}".format(jdata["action"], bot.access_token))
-                                    headers = {'Content-Type': 'application/json'} 
-                                    r = requests.post(url=url, headers=headers, data=json.dumps(jdata["params"]))
-                                    if r.status_code!=200:
-                                        logging.error(r.text)
-                except Exception as e:
-                    logging.error("Error at pushing crawled weibo: {}".format(e))
+                    if int(group.group_id) not in group_id_list: continue
+                    try:
+                        msg = get_weibotile_share(t, mode="text")
+                        if bot.share_banned:
+                            content_json = json.loads(t.content)
+                            mblog = content_json["mblog"]
+                            bs = BeautifulSoup(mblog["text"],"html.parser")
+                            msg = "{}\n{}\n{}".format(
+                                    "{}\'s Weibo:\n========".format(t.owner),
+                                    bs.get_text().replace("\u200b","").strip(),
+                                    content_json["scheme"]
+                                )
+                        logging.info("Pushing {} to group: {}".format(t, group))
+                        # print("msg: {}".format(msg))
+                        if push:
+                            t.pushed_group.add(group)
+                            jdata = {
+                                "action": "send_group_msg",
+                                "params": {"group_id": int(group.group_id), "message": msg},
+                                "echo": "",
+                            }
+                            if not bot.api_post_url:
+                                async_to_sync(channel_layer.send)(bot.api_channel_name, {"type": "send.event", "text": json.dumps(jdata), })
+                            else:
+                                url = os.path.join(bot.api_post_url, "{}?access_token={}".format(jdata["action"], bot.access_token))
+                                headers = {'Content-Type': 'application/json'} 
+                                r = requests.post(url=url, headers=headers, data=json.dumps(jdata["params"]), timeout=5)
+                                if r.status_code!=200:
+                                    logging.error(r.text)
+                    except requests.ConnectionError as e:
+                        logging.error("Pushing {} to group: {} ConnectionError".format(t, group))
+                    except requests.ReadTimeout as e:
+                        logging.error("Pushing {} to group: {} timeout".format(t, group))
+                    except Exception as e:
+                        traceback.print_exc()
+                        logging.error("Error at pushing crawled weibo to {}: {}".format(group, e))
 
             logging.info("crawled {} of {}".format(t.itemid, t.owner))
     else:
@@ -107,7 +110,10 @@ def crawl():
         logging.info("Begin crawling {}".format(wbu.name))
         try:
             crawl_wb(wbu, True)
+        except requests.ReadTimeout as e:
+            logging.error("crawling {} timeout".format(wbu.name))
         except Exception as e:
+            traceback.print_exc()
             logging.error(e)
         time.sleep(1)
         logging.info("Crawl {} finish".format(wbu.name))

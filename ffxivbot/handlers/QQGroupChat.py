@@ -43,7 +43,7 @@ def QQGroupChat(*args, **kwargs):
         
         #repeat_ban & repeat
         message = receive["message"].strip()
-        message_hash = hashlib.md5(message.encode()).hexdigest()
+        message_hash = hashlib.md5((message+"|{}".format(bot.user_id)).encode()).hexdigest()
         chats = ChatMessage.objects.filter(group=group, message_hash=message_hash).filter(timestamp__gt=int(time.time())-60)
         if(chats.exists()):
             chat = chats[0]

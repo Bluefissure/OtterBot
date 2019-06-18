@@ -15,6 +15,7 @@ def QQCommand_bot(*args, **kwargs):
         action_list = []
         receive = kwargs["receive"]
         bot = kwargs["bot"]
+        user_id = receive["user_id"]
 
         msg = ""
         receive_msg = receive["message"].replace("/bot", "", 1).strip()
@@ -31,8 +32,20 @@ def QQCommand_bot(*args, **kwargs):
                 qquser.save()
                 qquser.refresh_from_db()
                 msg = "用户 {} 的token已被设定为：{}".format(qquser, qquser.bot_token)
+        elif(second_command=="info"):
+            if int(user_id) != int(bot.owner_id):
+                msg = "仅机器人领养者能查询机器人状态"
+            else:
+                friend_list = json.loads(bot.friend_list)
+                msg = "姓名：{}\n".format(bot.name)+\
+                        "账号：{}\n".format(bot.user_id)+\
+                        "领养者：[CQ:at,qq={}]\n".format(bot.owner_id)+\
+                        "群数量：{}\n".format(len(json.loads(bot.group_list)))+\
+                        "好友数量：{}\n".format(len(friend_list.get("friends", [])))+\
+                        "文本兼容：{}\n".format(bot.share_banned)+\
+                        "HSO: {}\n".format(bot.r18)
+            msg = msg.strip()
         elif receive_msg == "update":
-            user_id = receive["user_id"]
             if int(user_id) != int(bot.owner_id):
                 msg = "仅机器人领养者能刷新机器人状态"
             else:
@@ -57,8 +70,11 @@ def QQCommand_bot(*args, **kwargs):
 
         elif receive_msg == "":
             msg = (
-                "/bot token $token: 申请接收ACT插件消息时认证的token\n" + "/bot update: 更新机器人统计信息\n"
+                "/bot info: 查看机器人信息\n"+\
+                "/bot update: 更新机器人统计信息\n"+\
+                "/bot token $token: 申请接收ACT插件消息时认证的token\n"
             )
+            msg = msg.strip()
         else:
             msg = '无效的二级命令，二级命令有:"token","update"'
 

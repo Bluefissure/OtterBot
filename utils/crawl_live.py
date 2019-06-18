@@ -86,39 +86,42 @@ def crawl_live(liveuser, push=False):
         for bot in QQBot.objects.all():
             group_id_list = [int(item["group_id"]) for item in json.loads(bot.group_list)]
             for group in liveuser.subscribed_by.all():
-                if int(group.group_id) not in group_id_list:
-                    continue
-                if (group.pushed_live.filter(name=liveuser.name, room_id=liveuser.room_id, platform=liveuser.platform).exists()):
-                    continue
-                # if (group.group_id) in pushed_group:
-                #     continue
-                # print(group)
-                msg = liveuser.get_share(mode="text")
-                if bot.share_banned:
-                    jmsg = liveuser.get_share()
-                    msg = "{}\n{}\n{}".format(
-                            jmsg.get("title"),
-                            jmsg.get("content"),
-                            jmsg.get("url")
-                        )
-                jdata = {
-                    "action": "send_group_msg",
-                    "params": {"group_id": int(group.group_id), "message": msg},
-                    "echo": "",
-                }
-                if not bot.api_post_url:
-                    print("pushing {} to {}".format(liveuser, group.group_id))
-                    logging.info("pushing {} to {}".format(liveuser, group.group_id))
-                    channel_layer = get_channel_layer()
-                    async_to_sync(channel_layer.send)(bot.api_channel_name, {"type": "send.event", "text": json.dumps(jdata),})
-                else:
-                    url = os.path.join(bot.api_post_url, "{}?access_token={}".format(jdata["action"], bot.access_token))
-                    headers = {'Content-Type': 'application/json'} 
-                    r = requests.post(url=url, headers=headers, data=json.dumps(jdata["params"]))
-                    if r.status_code!=200:
-                        logging.error(r.text)
-                group.pushed_live.add(liveuser)
-                pushed_group.add(group.group_id)
+                try:
+                    if int(group.group_id) not in group_id_list:
+                        continue
+                    if (group.pushed_live.filter(name=liveuser.name, room_id=liveuser.room_id, platform=liveuser.platform).exists()):
+                        continue
+                    # if (group.group_id) in pushed_group:
+                    #     continue
+                    # print(group)
+                    msg = liveuser.get_share(mode="text")
+                    if bot.share_banned:
+                        jmsg = liveuser.get_share()
+                        msg = "{}\n{}\n{}".format(
+                                jmsg.get("title"),
+                                jmsg.get("content"),
+                                jmsg.get("url")
+                            )
+                    jdata = {
+                        "action": "send_group_msg",
+                        "params": {"group_id": int(group.group_id), "message": msg},
+                        "echo": "",
+                    }
+                    if not bot.api_post_url:
+                        print("pushing {} to {}".format(liveuser, group.group_id))
+                        logging.info("pushing {} to {}".format(liveuser, group.group_id))
+                        channel_layer = get_channel_layer()
+                        async_to_sync(channel_layer.send)(bot.api_channel_name, {"type": "send.event", "text": json.dumps(jdata),})
+                    else:
+                        url = os.path.join(bot.api_post_url, "{}?access_token={}".format(jdata["action"], bot.access_token))
+                        headers = {'Content-Type': 'application/json'} 
+                        r = requests.post(url=url, headers=headers, data=json.dumps(jdata["params"]))
+                        if r.status_code!=200:
+                            logging.error(r.text)
+                    group.pushed_live.add(liveuser)
+                    pushed_group.add(group.group_id)
+                except Exception as e:
+                    logging.error("Error at pushing crawled live to {}: {}".format(group, e))
     liveuser.status = live_status
     liveuser.save()
     logging.info("crawled {}".format(liveuser))
