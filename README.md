@@ -3,6 +3,7 @@
 [![Build Status](https://travis-ci.org/Bluefissure/FFXIVBOT.svg?branch=master)](https://travis-ci.org/Bluefissure/FFXIVBOT)
 [![CodeFactor](https://www.codefactor.io/repository/github/bluefissure/ffxivbot/badge/master)](https://www.codefactor.io/repository/github/bluefissure/ffxivbot/overview/master)
 [![license](https://img.shields.io/badge/license-GPL-blue.svg)](https://github.com/Bluefissure/FFXIVBOT/blob/master/LICENSE)
+[![HitCount](http://hits.dwyl.io/Bluefissure/FFXIVBOT.svg)](http://hits.dwyl.io/Bluefissure/FFXIVBOT)
 
 A QQ bot of Final Fantasy XIV
 

@@ -32,6 +32,20 @@ def QQCommand_bot(*args, **kwargs):
                 qquser.save()
                 qquser.refresh_from_db()
                 msg = "用户 {} 的token已被设定为：{}".format(qquser, qquser.bot_token)
+        elif second_command == "text":
+            if int(user_id) != int(bot.owner_id):
+                msg = "仅机器人领养者能修改机器人状态"
+            else:
+                bot.share_banned = not bot.share_banned
+                bot.save(update_fields=["share_banned"])
+                msg = "文本兼容已{}".format("启用" if bot.share_banned else "禁用")
+        elif second_command == "hso":
+            if int(user_id) != int(bot.owner_id):
+                msg = "仅机器人领养者能修改机器人状态"
+            else:
+                bot.r18 = not bot.r18
+                bot.save(update_fields=["r18"])
+                msg = "HSO已{}".format("启用" if bot.r18 else "禁用")
         elif(second_command=="info"):
             if int(user_id) != int(bot.owner_id):
                 msg = "仅机器人领养者能查询机器人状态"
