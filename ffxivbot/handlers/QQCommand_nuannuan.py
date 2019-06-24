@@ -13,7 +13,10 @@ def QQCommand_nuannuan(*args, **kwargs):
         QQ_BASE_URL = kwargs["global_config"]["QQ_BASE_URL"]
         receive = kwargs["receive"]
         try:
-            r = requests.get(url="http://nuannuan.yorushika.co:5000/", timeout=5)
+            url = "http://nuannuan.yorushika.co:5000/"
+            if "text" in receive["message"]:
+                url += "text/"
+            r = requests.get(url=url, timeout=5)
             res = json.loads(r.text)
             if res["success"]:
                 msg = res.get("content", "default content")

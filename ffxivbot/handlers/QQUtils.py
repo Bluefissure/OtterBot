@@ -184,11 +184,6 @@ def crawl_dps(boss, job, day=0, CN_source=False):
         boss.patch,
         job.name,
     )
-    # requests_cache.install_cache(
-    #     "dps_cache",
-    #     backend="redis",
-    #     expire_after=3600 * 12,
-    # )
     print("fflogs url:{}".format(fflogs_url))
     r = requests.get(url=fflogs_url, timeout=5)
     tot_days = 0
@@ -207,8 +202,9 @@ def crawl_dps(boss, job, day=0, CN_source=False):
             )
         ptn = re.compile(re_str)
         find_res = ptn.findall(r.text)
-        if CN_source:
+        if CN_source and boss.cn_offset:
             find_res = find_res[boss.cn_offset:]
+        # print("found {} atk_res".format(len(find_res)))
         try:
             if day == -1:
                 day = len(find_res) - 1
