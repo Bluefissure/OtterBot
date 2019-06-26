@@ -13,9 +13,12 @@ def bfs_quest(quest):
     now_main_scenario = "解放战争战后主线任务(4.X)"
     # back search
     back_cnt = 0
+    visited = set()
     while(not Q.empty() and back_cnt<10000):
         q = Q.get(False)
+        if q.id in visited: continue
         back_cnt += 1
+        visited.add(q.id)
         if q.endpoint:
             break
         for pre_q in q.pre_quests.all():
@@ -23,10 +26,14 @@ def bfs_quest(quest):
                 Q.put(pre_q)
     # forward search
     forward_cnt = 0
+    visited.clear()
     Q.put(quest)
     while(not Q.empty() and forward_cnt<10000):
         q = Q.get(False)
+        if q.id in visited: continue
+        # print("forward {} quest:{}{}".format(forward_cnt, q,"========endpoint" if q.endpoint else ""))
         forward_cnt += 1
+        visited.add(q.id)
         if q.endpoint:
             now_main_scenario = q.endpoint_desc
             break

@@ -75,8 +75,9 @@ class WeiboTileAdmin(admin.ModelAdmin):
 
 
 class PlotQuestAdmin(admin.ModelAdmin):
-    list_display = ['id', 'name']
+    list_display = ['id', 'name', 'quest_type', 'endpoint', 'endpoint_desc']
     search_fields = ['id', 'name']
+    list_filter = ['quest_type']
 
 
 class CommentAdmin(admin.ModelAdmin):

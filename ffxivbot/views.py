@@ -419,7 +419,18 @@ def get_nm_id(tracker, nm_name):
             "明眸": 51,
             "阴·阳": 52,
             "斯库尔": 53,
-            "彭忒西勒亚": 54
+            "彭忒西勒亚": 54,
+            "卡拉墨鱼": 55,
+            "剑齿象": 56,
+            "摩洛": 57,
+            "皮艾萨邪鸟": 58,
+            "霜鬃猎魔": 59,
+            "达佛涅": 60,
+            "戈尔德马尔王": 61,
+            "琉刻": 62,
+            "巴龙": 63,
+            "刻托": 64,
+            "起源守望者": 65,
         }
         for (k, v) in name_id.items():
             if k in nm_name:
@@ -480,6 +491,17 @@ def get_nm_id(tracker, nm_name):
             "阴·阳": {"level": 49, "type": 3},
             "斯库尔": {"level": 50, "type": 3},
             "彭忒西勒亚": {"level": 51, "type": 3},
+            "卡拉墨鱼": {"level": 50, "type": 4},
+            "剑齿象": {"level": 51, "type": 4},
+            "摩洛": {"level": 52, "type": 4},
+            "皮艾萨邪鸟": {"level": 53, "type": 4},
+            "霜鬃猎魔": {"level": 54, "type": 4},
+            "达佛涅": {"level": 55, "type": 4},
+            "戈尔德马尔王": {"level": 56, "type": 4},
+            "琉刻": {"level": 57, "type": 4},
+            "巴龙": {"level": 58, "type": 4},
+            "刻托": {"level": 59, "type": 4},
+            "起源守望者": {"level": 60, "type": 4},
         }
         for (k, v) in name_id.items():
             if k in nm_name:
