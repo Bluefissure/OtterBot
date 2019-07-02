@@ -226,12 +226,13 @@ class QQBot(models.Model):
 
 
 class PlotQuest(models.Model):
-    name = models.CharField(max_length=32)
+    name = models.CharField(max_length=128)
     tooltip_url = models.TextField(default="", blank=True)
     tooltip_html = models.TextField(default="", blank=True)
     pre_quests = models.ManyToManyField(
         "self", blank=True, symmetrical=False, related_name="suf_quests"
     )
+    language_names = models.TextField(default="{}", blank=True)
     endpoint = models.BooleanField(default=False)
     endpoint_desc = models.CharField(max_length=16, default="", blank=True)
     quest_type = models.IntegerField(default=0) # 0:nothing 3:main-scenario 8:special 1,10:other
@@ -284,6 +285,8 @@ class QQUser(models.Model):
     last_api_time = models.BigIntegerField(default=0)
     api_interval = models.IntegerField(default=5)
     ban_till = models.BigIntegerField(default=0)
+    ban_share_till = models.BigIntegerField(default=0)
+    sent_weibo = models.TextField(default="[]")
 
     def __str__(self):
         return str(self.user_id)

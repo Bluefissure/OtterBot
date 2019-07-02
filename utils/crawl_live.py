@@ -30,8 +30,10 @@ def crawl_json(liveuser):
     if platform=="bilibili":
         try:
             url = r'http://api.live.bilibili.com/AppRoom/index?platform=android&room_id={}'.format(liveuser.room_id)
-            s = requests.get(url=url)
-            jres = json.loads(s.text)
+            s = requests.get(url=url, timeout=5)
+            jres = s.json()
+            if not isinstance(jres, dict):
+                print("jres:{}".format(jres))
             if(jres.get("code") == 0):
                 jdata = jres.get("data", None)
                 jinfo = {
@@ -43,12 +45,15 @@ def crawl_json(liveuser):
                 return jinfo
         except:
             logging.error("Error at parsing bilibili API")
-            print("Error at parsing bilibili API")
+            print("Error at parsing bilibili API:{}".format(type(e)))
+            traceback.print_exc()
     elif platform=="douyu":
         try:
             url = r'http://open.douyucdn.cn/api/RoomApi/room/{}'.format(liveuser.room_id)
-            s = requests.get(url=url)
-            jres = json.loads(s.text)
+            s = requests.get(url=url, timeout=5)
+            jres = s.json()
+            if not isinstance(jres, dict):
+                print("jres:{}".format(jres))
             if(jres.get("error") == 0):
                 jdata = jres.get("data", None)
                 room_status = jdata.get("room_status", 2)
@@ -59,9 +64,10 @@ def crawl_json(liveuser):
                     "name": jdata.get("owner_name")
                 }
                 return jinfo
-        except:
+        except Exception as e:
             logging.error("Error at parsing douyu API")
-            print("Error at parsing douyu API")
+            print("Error at parsing douyu API:{}".format(type(e)))
+            traceback.print_exc()
     return None
 
 
@@ -70,9 +76,11 @@ def crawl_live(liveuser, push=False):
         for group in liveuser.subscribed_by.all():
             group.pushed_live.remove(liveuser)
         logging.info("Skipping {} cuz no subscription".format(liveuser))
+        return
     jinfo = crawl_json(liveuser)
     if not jinfo:
         logging.error("Crawling {} failed, please debug the response.".format(liveuser))
+        logging.error("jinfo:{}".format(jinfo))
         return
     live_status = jinfo.get("status")
     liveuser.name = jinfo.get("name")

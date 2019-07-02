@@ -10,7 +10,7 @@ def bfs_quest(quest):
     from queue import Queue
     Q = Queue()
     Q.put(quest)
-    now_main_scenario = "解放战争战后主线任务(4.X)"
+    now_main_scenario = "ShadowBringers(5.0)"
     # back search
     back_cnt = 0
     visited = set()
@@ -52,6 +52,8 @@ def QQCommand_quest(*args, **kwargs):
         quest_name = receive_message.replace("/quest","").strip()
         quests = PlotQuest.objects.filter(name__contains=quest_name)
         if not quests.exists():
+            quests = PlotQuest.objects.filter(language_names__contains=quest_name)
+        if not quests.exists():
             msg = "找不到任务\"{}\"，请检查后查询".format(quest_name)
         else:
             quest = quests[0]
@@ -66,14 +68,16 @@ def QQCommand_quest(*args, **kwargs):
             else:
                 quest_img_url = "https://huiji-public.huijistatic.com/ff14/uploads/6/61/061431.png"
                 content = "支线任务"
+            url = "https://xn--v9x.net/quest/tooltip/?id={}".format(quest.id) if quest.id<=61412 else \
+                "https://ffxiv.gamerescape.com/wiki/{}".format(quest.name.replace(" ", "_"))
             msg = [
                 {
                     "type": "share",
                     "data": {
-                            "url":"https://xn--v9x.net/quest/tooltip/?id={}".format(quest.id),
-                            "title":"{}".format(quest.name),
-                            "content":content,
-                            "image":quest_img_url,
+                            "url": url,
+                            "title": "{}".format(quest.name),
+                            "content": content,
+                            "image": quest_img_url,
                         },
                 }
             ]
