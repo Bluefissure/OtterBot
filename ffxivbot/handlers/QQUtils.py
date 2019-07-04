@@ -16,8 +16,6 @@ def reply_message_action(receive, msg):
             "params":{},
             "echo":""
         }
-    if isinstance(msg, str) and random.randint(1, 10)<=1:
-        msg += "\n獭の微博：http://t.cn/AipsOBep"
     if(receive["message_type"]=="group"):
         action.update({
             "action":"send_group_msg",

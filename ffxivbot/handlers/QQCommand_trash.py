@@ -28,8 +28,8 @@ def search_trash(name):
                 msg = msg.replace("\n\n", "\n")
             msg = msg.replace("主要包括", "主要包括：")
             msg = msg.replace("投放要求", "投放要求：")
-        except IndexError:
-            print("IndexError: {}".format(r.text))
+        except IndexError as e:
+            print("IndexError: {}".format(type(e)))
     return msg.strip()
 
 

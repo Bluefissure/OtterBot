@@ -212,6 +212,7 @@ def quest(req):
             end_quest = end_quest[0] if end_quest else None
             max_iter = req.POST.get("max_iter")
             print("main_quest:{}".format(main_quest))
+            print("sub_quest:{}".format(sub_quest))
             print("start_quest:{}".format(start_quest))
             quest_dict = {}
             tmp_edge_list = []
@@ -257,21 +258,25 @@ def quest(req):
                         if not now_quest.endpoint:
                             if direction == 1:
                                 for quest in now_quest.suf_quests.all():
-                                    if quest.name not in quest_dict.keys():
-                                        search_list.append((quest, 1, search_iter + 1))
-                                    edge = {"from": now_quest.name, "to": quest.name}
-                                    if edge not in edge_list:
-                                        tmp_edge_list.append(edge)
+                                    if (quest.is_main_scenario() and main_quest) or \
+                                        ( not quest.is_main_scenario() and sub_quest):
+                                        if quest.name not in quest_dict.keys():
+                                            search_list.append((quest, 1, search_iter + 1))
+                                        edge = {"from": now_quest.name, "to": quest.name}
+                                        if edge not in edge_list:
+                                            tmp_edge_list.append(edge)
                         if not now_quest.endpoint or (
                             now_quest.endpoint and now_quest.name == single_quest.name
                         ):
                             if direction == 2:
                                 for quest in now_quest.pre_quests.all():
-                                    if quest.name not in quest_dict.keys():
-                                        search_list.append((quest, 2, search_iter + 1))
-                                    edge = {"from": quest.name, "to": now_quest.name}
-                                    if edge not in edge_list:
-                                        tmp_edge_list.append(edge)
+                                    if (quest.is_main_scenario() and main_quest) or \
+                                        ( not quest.is_main_scenario() and sub_quest):
+                                        if quest.name not in quest_dict.keys():
+                                            search_list.append((quest, 2, search_iter + 1))
+                                        edge = {"from": quest.name, "to": now_quest.name}
+                                        if edge not in edge_list:
+                                            tmp_edge_list.append(edge)
                     except Exception as e:
                         print(e)
                 for edge in tmp_edge_list:

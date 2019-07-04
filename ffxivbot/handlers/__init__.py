@@ -30,10 +30,10 @@ commands = {
   "/akhr":"罗德岛公开招募",
   "/hso":"好色哦",
   "/share":"微博分享",
-  "/trash":"你是什么垃圾？"
+  "/trash":"你是什么垃圾？",
+  "/shorten":"微博短链"
 }
   # "/joke":"讽刺笑话（\"/joke 996|强东|建设一流公司|程序员|公司\"）",
-  # "/shorten":"微博短链"
 
 group_commands = {
   "/group":"群相关功能控制",
@@ -100,7 +100,7 @@ from .QQCommand_waifu import QQCommand_waifu
 from .QQCommand_quest import QQCommand_quest
 from .QQCommand_share import QQCommand_share
 from .QQCommand_trash import QQCommand_trash
-# from .QQCommand_shorten import QQCommand_shorten
+from .QQCommand_shorten import QQCommand_shorten
 # from .QQCommand_joke import QQCommand_joke
 
 from .arknights.QQCommand_akhr import QQCommand_akhr

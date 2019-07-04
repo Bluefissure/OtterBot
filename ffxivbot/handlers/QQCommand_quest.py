@@ -50,9 +50,9 @@ def QQCommand_quest(*args, **kwargs):
         receive = kwargs["receive"]
         receive_message = receive["message"]
         quest_name = receive_message.replace("/quest","").strip()
-        quests = PlotQuest.objects.filter(name__contains=quest_name)
+        quests = PlotQuest.objects.filter(name__icontains=quest_name)
         if not quests.exists():
-            quests = PlotQuest.objects.filter(language_names__contains=quest_name)
+            quests = PlotQuest.objects.filter(language_names__icontains=quest_name)
         if not quests.exists():
             msg = "找不到任务\"{}\"，请检查后查询".format(quest_name)
         else:
@@ -68,7 +68,7 @@ def QQCommand_quest(*args, **kwargs):
             else:
                 quest_img_url = "https://huiji-public.huijistatic.com/ff14/uploads/6/61/061431.png"
                 content = "支线任务"
-            url = "https://xn--v9x.net/quest/tooltip/?id={}".format(quest.id) if quest.id<=61412 else \
+            url = "https://xn--v9x.net/quest/tooltip/?id={}".format(quest.id) if int(quest.id)<=68719 else \
                 "https://ffxiv.gamerescape.com/wiki/{}".format(quest.name.replace(" ", "_"))
             msg = [
                 {
