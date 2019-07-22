@@ -48,7 +48,8 @@ group_commands = {
   "/weibo":"微博订阅系统",
   "/live":"直播订阅系统",
   "/command":"群功能停用/启用",
-  "/lottery":"抽奖"
+  "/lottery":"抽奖",
+  "/hunt":"狩猎"
 }
 
 alter_commands = {
@@ -119,6 +120,7 @@ from .QQGroupCommand_weibo import QQGroupCommand_weibo
 from .QQGroupCommand_live import QQGroupCommand_live
 from .QQGroupCommand_lottery import QQGroupCommand_lottery
 from .QQGroupCommand_command import QQGroupCommand_command
+from .QQGroupCommand_hunt import QQGroupCommand_hunt
 
 
 from .QQGroupChat import QQGroupChat
