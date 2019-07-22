@@ -32,7 +32,7 @@ def QQGroupCommand_hunt(*args, **kwargs):
                 optype = "help"
 
             if (optype == "help"):
-                msg = "獭獭の狩猎时钟\n/hunt help：帮助\n/hunt check：查询相关\n/hunt kill：设置击杀时间相关\n/hunt edit：手动修改相关\n/hunt list：列出相关\n/hunt maintained：设置为维护后状态（建议维护结束后立即使用）"
+                msg = "獭獭の狩猎时钟 alpha.1\n/hunt help：帮助\n/hunt check：查询相关\n/hunt kill：设置击杀时间相关\n/hunt edit：手动修改相关\n/hunt list：列出相关\n/hunt maintained：设置为维护后状态（建议维护结束后立即使用）"
             elif (optype == "check"):
                 try:
                     monster = param_segs[1].strip()
@@ -116,17 +116,49 @@ def QQGroupCommand_hunt(*args, **kwargs):
                                         next_complete_time = (getEorzeaYear(
                                             next_complete_time) * 12 * 32 * 24 * 175) + ((getEorzeaMonth(
                                             next_complete_time) + 1) * 32 * 24 * 175) + (16 * 24 * 175) + (12 * 175)
-                                elif monster == "雷德罗巨蛇":
-                                    getnstwl = getFollowingWeathers(territory=monster_info.region, cnt=50, TIMEFORMAT=TIMEFORMAT_YMDHMS, unixSeconds=next_start_time)
-                                    getnctwl = getFollowingWeathers(territory=monster_info.region, cnt=50, TIMEFORMAT=TIMEFORMAT_YMDHMS, unixSeconds=next_complete_time)
-                                    for item in getnstwl:
-                                        if item["pre_name"] == item["name"]:
-                                            next_start_time = int(time.mktime(time.strptime(item["LT"], TIMEFORMAT_YMDHMS)))
-                                            break
-                                    for item in getnctwl:
-                                        if item["pre_name"] == item["name"]:
-                                            next_complete_time = int(time.mktime(time.strptime(item["LT"], TIMEFORMAT_YMDHMS)))
-                                            break
+                                # 这里全写错了
+                                #elif monster == "雷德罗巨蛇":
+                                #    try:
+                                #        region_to_territory = Territory.objects.get(name=monster_info.region)
+                                #        getnstwl = getFollowingWeathers(territory=region_to_territory, cnt=50,
+                                #                                        TIMEFORMAT=TIMEFORMAT_YMDHMS,
+                                #                                        unixSeconds=next_start_time)
+                                #        getnctwl = getFollowingWeathers(territory=region_to_territory, cnt=50,
+                                #                                        TIMEFORMAT=TIMEFORMAT_YMDHMS,
+                                #                                        unixSeconds=next_complete_time)
+                                #        for item in getnstwl:
+                                #            if item["pre_name"] == item["name"] and item["name"] == :
+                                #                next_start_time = int(time.mktime(time.strptime(item["LT"], TIMEFORMAT_YMDHMS)))
+                                #                break
+                                #        for item in getnctwl:
+                                #            if item["pre_name"] == item["name"]:
+                                #                next_complete_time = int(time.mktime(time.strptime(item["LT"], TIMEFORMAT_YMDHMS)))
+                                #                break
+                                #    except Territory.DoesNotExist:
+                                #        msg = "error"
+                                #elif monster == "伽洛克":
+                                #    try:
+                                #        region_to_territory = Territory.objects.get(name=monster_info.region)
+                                #        getnstwl = getFollowingWeathers(territory=region_to_territory, cnt=50,
+                                #                                        TIMEFORMAT=TIMEFORMAT_YMDHMS,
+                                #                                        unixSeconds=next_start_time)
+                                #        getnctwl = getFollowingWeathers(territory=region_to_territory, cnt=50,
+                                #                                        TIMEFORMAT=TIMEFORMAT_YMDHMS,
+                                #                                        unixSeconds=next_complete_time)
+                                #        a = 0
+                                #        for item in getnstwl:
+                                #            if item["pre_name"] == item["name"]:
+                                #                a += 1
+                                #            if a == 7:
+                                #                next_start_time = int(time.mktime(time.strptime(item["LT"], TIMEFORMAT_YMDHMS)))
+                                #                break
+                                #        for item in getnctwl:
+                                #            if item["pre_name"] == item["name"]:
+                                #                a += 1
+                                #            if a == 1:
+                                #                nctag =
+                                #            if a == 7:
+                                #                next_complete_time = int(time.mktime(time.strptime(item["LT"], TIMEFORMAT_YMDHMS)))
 
                             elif group_info.servermark == "syzd":
                                 killtime = ktinfo.syzd
@@ -408,6 +440,7 @@ def QQGroupCommand_hunt(*args, **kwargs):
                         msg = "目前只支持S级狩猎怪"
                 except IndexError:
                     msg = "狩猎时钟edit命令示例：\n/hunt edit [怪物名称] [时间]\n时间格式例：\n2019-07-22 02:44:45"
+
         except HunterGroupID.DoesNotExist:
             msg = "该群并非狩猎组群组"
         reply_action = reply_message_action(receive, msg)
