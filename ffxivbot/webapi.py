@@ -89,7 +89,7 @@ def webapi(req):
                             "rcode": "1002",
                         }
                 else:
-                    times = getFollowingWeathers(territory, length, TIMEFORMAT_MDHMS)
+                    times = getFollowingWeathers(territory, length, TIMEFORMAT_MDHMS, unixSeconds = time.time())
                     res_dict = {
                         "response": "success",
                         "msg": "",
