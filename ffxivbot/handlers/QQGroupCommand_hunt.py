@@ -79,7 +79,7 @@ def QQGroupCommand_hunt(*args, **kwargs):
         TIMEFORMAT_MDHMS = "%m-%d %H:%M:%S"
         TIMEFORMAT_YMDHMS = "%Y-%m-%d %H:%M:%S"
         hunt_group = group.hunt_group.all()
-        if hunt_group:
+        if hunt_group.exists():
             # 检测是否狩猎组群组，并且获取群组信息
             hunt_group = hunt_group[0]
             while "" in param_segs:
@@ -95,17 +95,25 @@ def QQGroupCommand_hunt(*args, **kwargs):
 /hunt kill：设置击杀时间相关\n\
 /hunt edit：手动修改相关\n\
 /hunt list：列出相关\n\
-/hunt maintained：设置为维护后状态（建议维护结束后立即使用）"
+/hunt maintain：设置当前服务器为维护后状态\n\
+/hunt maintain_global：设置全体服务器为维护后状态"
             elif (optype == "check"):
                 try:
                     monster_name = param_segs[1].strip()
                     monster = Monster.objects.filter(Q(name=monster_name) | Q(cn_name=monster_name))
-                    if monster:
+                    if monster.exists():
+                        monster = monster[0]
                         # 获取怪物在各个服务器的击杀时间
-                        latest_kill_log = hunt_group.hunt_log.filter(log_type="kill").latest('time')
-                        last_kill_time = latest_kill_log.time
-                        global_maintain_log = HuntLog.objects.filter(server=hunt_group.server, log_type="maintain").latest('time')
-                        maintain_finish_time = global_maintain_log.time
+                        try:
+                            latest_kill_log = hunt_group.hunt_log.filter(monster=monster, log_type="kill").latest('time')
+                            last_kill_time = latest_kill_log.time
+                        except HuntLog.DoesNotExist as e:
+                            last_kill_time = 0
+                        try:
+                            global_maintain_log = HuntLog.objects.filter(server=hunt_group.server, log_type="maintain").latest('time')
+                            maintain_finish_time = global_maintain_log.time
+                        except HuntLog.DoesNotExist as e:
+                            maintain_finish_time = 0
                         maintained = (maintain_finish_time > last_kill_time)
                         kill_time = max(last_kill_time, maintain_finish_time)
                         spawn_cooldown = (monster.first_spawn_cooldown if maintained else monster.spawn_cooldown)
@@ -132,8 +140,14 @@ def QQGroupCommand_hunt(*args, **kwargs):
                 try:
                     monster_name = param_segs[1].strip()
                     monster = Monster.objects.filter(Q(name=monster_name) | Q(cn_name=monster_name))
-                    if monster:
-                        log = HuntLog(monster=monster, hunt_group=hunt_group, log_type="kill", time=time.time())
+                    if monster.exists():
+                        monster = monster[0]
+                        log = HuntLog(monster=monster, 
+                                    hunt_group=hunt_group, 
+                                    server=hunt_group.server, 
+                                    log_type="kill", 
+                                    time=time.time()
+                                )
                         log.save()
                         msg = "{}的\"{}\"击杀时间已记录".format(hunt_group.server, monster)
                     else:
@@ -151,8 +165,11 @@ def QQGroupCommand_hunt(*args, **kwargs):
                         all_monsters = Monster.objects.all()
                         for monster in all_monsters:
                             # 获取怪物在各个服务器的击杀时间
-                            latest_kill_log = hunt_group.hunt_log.filter(log_type="kill").latest('time')
-                            last_kill_time = latest_kill_log.time
+                            try:
+                                latest_kill_log = hunt_group.hunt_log.filter(monster=monster, log_type="kill").latest('time')
+                                last_kill_time = latest_kill_log.time
+                            except HuntLog.DoesNotExist as e:
+                                last_kill_time = 0
                             global_maintain_log = HuntLog.objects.filter(server=hunt_group.server, log_type="maintain").latest('time')
                             maintain_finish_time = global_maintain_log.time
                             maintained = (maintain_finish_time > last_kill_time)
@@ -182,7 +199,7 @@ def QQGroupCommand_hunt(*args, **kwargs):
                     for server in Server.objects.all():
                         log = HuntLog(hunt_group=hunt_group, server=server, log_type="maintain", time=time.time())
                         log.save()
-                        msg = "全体服务器的狩猎怪击杀时间已重置"
+                    msg = "全体服务器的狩猎怪击杀时间已重置"
                 else:
                     log = HuntLog(hunt_group=hunt_group, server=hunt_group.server, log_type="maintain", time=time.time())
                     log.save()
@@ -193,14 +210,43 @@ def QQGroupCommand_hunt(*args, **kwargs):
                     YMD = param_segs[2].strip()
                     HMS = param_segs[3].strip()
                     monster = Monster.objects.filter(Q(name=monster_name) | Q(cn_name=monster_name))
-                    if monster:
-                        latest_kill_log = hunt_group.hunt_log.filter(monster=monster, log_type="kill").latest('time')
-                        kill_time = latest_kill_log.time
+                    if monster.exists():
+                        monster = monster[0]
                         edittimestr = YMD + " " + HMS
                         edittime = int(time.mktime(time.strptime(edittimestr, TIMEFORMAT_YMDHMS)))
-                        latest_kill_log.time = edittime
-                        latest_kill_log.save(update_fields=["time"])
-                        msg = latest_kill_log.get_info() + "\n击杀时间已修改为：\n" + edittimestr
+                        try:
+                            latest_kill_log = hunt_group.hunt_log.filter(monster=monster, log_type="kill").latest('time')
+                        except HuntLog.DoesNotExist:
+                            log = HuntLog(hunt_group=hunt_group, 
+                                        server=hunt_group.server,
+                                        monster=monster, 
+                                        log_type="kill", 
+                                        time=edittime
+                                    )
+                            log.save()
+                            msg = "\"{}\"击杀时间已修改为：\n{}".format(monster, edittimestr)
+                        else:
+                            if latest_kill_log.time > edittime:
+                                latest_kill_log.time = edittime
+                            latest_kill_log.save(update_fields=["time"])
+                            msg = latest_kill_log.get_info() + "\n击杀时间已修改为：\n" + edittimestr
+                    else:
+                        msg = "找不到狩猎怪\"{}\"".format(monster_name)
+                except IndexError:
+                    msg = "狩猎时钟edit命令示例：\n/hunt edit [怪物名称] [时间]\n时间格式例：\n1970-01-01 00:00:00"
+            elif (optype == "revoke"):
+                try:
+                    monster_name = param_segs[1].strip()
+                    monster = Monster.objects.filter(Q(name=monster_name) | Q(cn_name=monster_name))
+                    if monster.exists():
+                        monster = monster[0]
+                        try:
+                            latest_kill_log = hunt_group.hunt_log.filter(monster=monster, log_type="kill").latest('time')
+                        except HuntLog.DoesNotExist:
+                            msg = "已达到了最初状态"
+                        else:
+                            msg = "已删除：\n{}".format(latest_kill_log.get_info())
+                            latest_kill_log.delete()
                     else:
                         msg = "找不到狩猎怪\"{}\"".format(monster_name)
                 except IndexError:
@@ -214,5 +260,5 @@ def QQGroupCommand_hunt(*args, **kwargs):
         msg = "Error: {}".format(type(e))
         action_list.append(reply_message_action(receive, msg))
         logging.error(e)
-        traceback.print_exc(e)
+        traceback.print_exc()
     return action_list

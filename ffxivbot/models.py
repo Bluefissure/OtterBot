@@ -427,9 +427,9 @@ class HuntGroup(models.Model):
     name = models.CharField(default="", max_length=64)
     group = models.ForeignKey(QQGroup, on_delete=models.CASCADE, related_name="hunt_group")
     server = models.ForeignKey(Server, on_delete=models.CASCADE, related_name="hunt_group")
-    moderator = models.ForeignKey(QQUser, on_delete=models.CASCADE, related_name="managed_hunt_group")
-    servermark = models.CharField(default="", max_length=16)
-    remark = models.CharField(default="", max_length=64)
+    moderator = models.ManyToManyField(QQUser, related_name="managed_hunt_group", null=True, blank=True)
+    servermark = models.CharField(default="", max_length=16, blank=True, null=True)
+    remark = models.CharField(default="", max_length=64, blank=True, null=True)
     def __str__(self):
         return self.name if self.name else "{}-{}".format(self.group, self.server)
 
@@ -457,7 +457,7 @@ class HuntLog(models.Model):
     time = models.BigIntegerField(default=0)
 
     def __str__(self):
-        return "{}-{}".format(self.id, self.server, self.monstere)
+        return "{}-{}".format(self.server, self.monster)
 
     def get_info(self):
         return "HuntLog#{}: {}-{} {}".format(self.id, self.server, self.monster, self.log_type)
