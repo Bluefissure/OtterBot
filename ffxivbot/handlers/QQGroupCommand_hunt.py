@@ -58,6 +58,33 @@ def handle_special_mob(monster, next_spawn_time, next_pop_time):
             next_pop_time = (getEorzeaYear(
                 next_pop_time) * 12 * 32 * 24 * 175) + ((getEorzeaMonth(
                 next_pop_time) + 1) * 32 * 24 * 175) + (16 * 24 * 175) + (12 * 175)
+    elif monster.cn_name.startswith("伽洛克"):
+        a = 0
+        b = "0"
+        garlok_spawn_weathers = getFollowingWeathers(territory=monster.territory, cnt=500, TIMEFORMAT="%Y-%m-%d %H:%M:%S", unixSeconds=next_spawn_time, Garlok=True)
+        for spawn_weather in garlok_spawn_weathers:
+            if spawn_weather["name"] == "碧空" or spawn_weather["name"] == "晴朗":
+                a += 1
+                if b == "0":
+                    b = spawn_weather["LT"]
+            else:
+                a = 0
+                b = "0"
+            if a == 8:
+                next_spawn_time = int(time.mktime(time.strptime(b, '%Y-%m-%d %H:%M:%S')))
+                break
+        garlok_pop_weathers = getFollowingWeathers(territory=monster.territory, cnt=500, TIMEFORMAT="%Y-%m-%d %H:%M:%S", unixSeconds=next_pop_time, Garlok=True)
+        for pop_weather in garlok_pop_weathers:
+            if pop_weather["name"] == "碧空" or pop_weather["name"] == "晴朗":
+                a += 1
+                if b == "0":
+                    b = pop_weather["LT"]
+            else:
+                a = 0
+                b = "0"
+            if a == 8:
+                next_pop_time = int(time.mktime(time.strptime(b, '%Y-%m-%d %H:%M:%S')))
+                break
     return next_spawn_time, next_pop_time
 
 
