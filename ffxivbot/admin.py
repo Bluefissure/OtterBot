@@ -127,6 +127,19 @@ class LiveUserAdmin(admin.ModelAdmin):
     list_display = ["name", "platform", "room_id"]
     search_fields = ["name", "platform", "room_id"]
 
+class HuntGroupAdmin(admin.ModelAdmin):
+    list_display = ["group", "server"]
+    search_fields = ["group ", "server"]
+
+class MonsterAdmin(admin.ModelAdmin):
+    list_display = ["name", "cn_name", "territory", "rank"]
+    search_fields = ["name ", "cn_name"]
+    list_filter = ["territory", "rank"]
+
+class HuntLog(admin.ModelAdmin):
+    list_display = ["monster", "hunt_group", "server", "log_type", "time"]
+    search_fields = ["monster ", "hunt_group", "log_type"]
+    list_filter = ["monster", "hunt_group", "server", "log_type"]
 
 
 admin.site.register(QQGroup, QQGroupAdmin)
