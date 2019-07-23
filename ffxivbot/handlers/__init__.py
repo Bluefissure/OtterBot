@@ -31,7 +31,8 @@ commands = {
   "/hso":"好色哦",
   "/share":"微博分享",
   "/trash":"你是什么垃圾？",
-  "/shorten":"微博短链"
+  "/shorten":"微博短链",
+  "/hadmin":"狩猎管理"
 }
   # "/joke":"讽刺笑话（\"/joke 996|强东|建设一流公司|程序员|公司\"）",
 
@@ -48,7 +49,8 @@ group_commands = {
   "/weibo":"微博订阅系统",
   "/live":"直播订阅系统",
   "/command":"群功能停用/启用",
-  "/lottery":"抽奖"
+  "/lottery":"抽奖",
+  "/hunt":"狩猎"
 }
 
 alter_commands = {
@@ -101,6 +103,7 @@ from .QQCommand_quest import QQCommand_quest
 from .QQCommand_share import QQCommand_share
 from .QQCommand_trash import QQCommand_trash
 from .QQCommand_shorten import QQCommand_shorten
+from .QQCommand_hadmin import QQCommand_hadmin
 # from .QQCommand_joke import QQCommand_joke
 
 from .arknights.QQCommand_akhr import QQCommand_akhr
@@ -119,6 +122,7 @@ from .QQGroupCommand_weibo import QQGroupCommand_weibo
 from .QQGroupCommand_live import QQGroupCommand_live
 from .QQGroupCommand_lottery import QQGroupCommand_lottery
 from .QQGroupCommand_command import QQGroupCommand_command
+from .QQGroupCommand_hunt import QQGroupCommand_hunt
 
 
 from .QQGroupChat import QQGroupChat
