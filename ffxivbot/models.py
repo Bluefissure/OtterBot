@@ -440,7 +440,9 @@ class Monster(models.Model):
     territory = models.ForeignKey(Territory, on_delete=models.CASCADE, related_name="hunt_monster")
     rank = models.CharField(default="A", max_length=5)  # enum: "A", "B", "S", "Fate"
     spawn_cooldown = models.IntegerField(default=0)
-    pop_colldown = models.IntegerField(default=0)
+    first_spawn_cooldown = models.IntegerField(default=0)
+    pop_cooldown = models.IntegerField(default=0)
+    first_pop_cooldown = models.IntegerField(default=0)
     info = models.CharField(default="", max_length=128)
     status = models.TextField(default="{}")
     def __str__(self):

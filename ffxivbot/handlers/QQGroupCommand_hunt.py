@@ -102,14 +102,17 @@ def QQGroupCommand_hunt(*args, **kwargs):
                     monster = Monster.objects.filter(Q(name=monster_name) | Q(cn_name=monster_name))
                     if monster:
                         # 获取怪物在各个服务器的击杀时间
-                        latest_kill_log = hunt_group.hunt_log.filter(monster=monster, log_type="kill").latest('time')
-                        kill_time = latest_kill_log.time
+                        latest_kill_log = hunt_group.hunt_log.filter(log_type="kill").latest('time')
+                        last_kill_time = latest_kill_log.time
                         global_maintain_log = HuntLog.objects.filter(server=hunt_group.server, log_type="maintain").latest('time')
                         maintain_finish_time = global_maintain_log.time
-                        kill_time = max(kill_time, maintain_finish_time)
-                        next_spawn_time = killtime + monster.spawn_cooldown
-                        next_pop_time = killtime + monster.pop_colldown
-                        schedulef = (time.time() - killtime) / monster_info.completetime
+                        maintained = (maintain_finish_time > last_kill_time)
+                        kill_time = max(last_kill_time, maintain_finish_time)
+                        spawn_cooldown = (monster.first_spawn_cooldown if maintained else monster.spawn_cooldown)
+                        pop_cooldown = (monster.first_pop_cooldown if maintained else monster.pop_cooldown)
+                        next_spawn_time = kill_time + spawn_cooldown
+                        next_pop_time = kill_time + pop_cooldown
+                        schedulef = (time.time() - kill_time) / pop_cooldown
                         schedule = "{:.2%}".format(schedulef)
                         next_spawn_time, next_pop_time = handle_special_mob(monster, next_spawn_time, next_pop_time)
                         msg = "{} {} {}\n".format(monster.territory, monster.cn_name, hunt_group.server) + \
@@ -149,13 +152,16 @@ def QQGroupCommand_hunt(*args, **kwargs):
                         for monster in all_monsters:
                             # 获取怪物在各个服务器的击杀时间
                             latest_kill_log = hunt_group.hunt_log.filter(log_type="kill").latest('time')
-                            kill_time = latest_kill_log.time
+                            last_kill_time = latest_kill_log.time
                             global_maintain_log = HuntLog.objects.filter(server=hunt_group.server, log_type="maintain").latest('time')
                             maintain_finish_time = global_maintain_log.time
-                            kill_time = max(kill_time, maintain_finish_time)
-                            next_spawn_time = killtime + monster.spawn_cooldown
-                            next_pop_time = killtime + monster.pop_colldown
-                            schedulef = (time.time() - killtime) / monster_info.completetime
+                            maintained = (maintain_finish_time > last_kill_time)
+                            kill_time = max(last_kill_time, maintain_finish_time)
+                            spawn_cooldown = (monster.first_spawn_cooldown if maintained else monster.spawn_cooldown)
+                            pop_cooldown = (monster.first_pop_cooldown if maintained else monster.pop_cooldown)
+                            next_spawn_time = kill_time + spawn_cooldown
+                            next_pop_time = kill_time + pop_cooldown
+                            schedulef = (time.time() - kill_time) / pop_cooldown
                             schedule = "{:.2%}".format(schedulef)
                             next_spawn_time, next_pop_time = handle_special_mob(monster, next_spawn_time, next_pop_time)
                             if next_spawn_time <= time.time():
