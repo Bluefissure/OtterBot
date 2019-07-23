@@ -15,8 +15,6 @@ class WeiboUser(models.Model):
         return self.name
 
 
-
-
 class LiveUser(models.Model):
     room_id = models.CharField(max_length=16, default="", blank=True)
     name = models.CharField(max_length=64)
@@ -185,13 +183,6 @@ class Vote(models.Model):
 
     def __str__(self):
         return str(self.name)
-
-
-class RandomScore(models.Model):
-    user_id = models.CharField(max_length=16)
-    group = models.ForeignKey(QQGroup, on_delete=models.CASCADE)
-    max_random = models.IntegerField(default=0)
-    min_random = models.IntegerField(default=1001)
 
 
 class QQBot(models.Model):
@@ -415,7 +406,6 @@ class Lottery(models.Model):
             msg += "\n获奖者：{}".format(self.winner_info())
         return msg
 
-
 class ContentFinderItem(models.Model):
     id = models.IntegerField(primary_key=True)
     name = models.CharField(max_length=64, default="")
@@ -432,3 +422,42 @@ class CommandLog(models.Model):
     bot_id = models.CharField(max_length=16)
     user_id = models.CharField(max_length=16)
     group_id = models.CharField(max_length=16)
+
+class HuntGroup(models.Model):
+    name = models.CharField(default="", max_length=64)
+    group = models.ForeignKey(QQGroup, on_delete=models.CASCADE, related_name="hunt_group")
+    server = models.ForeignKey(Server, on_delete=models.CASCADE, related_name="hunt_group")
+    moderator = models.ForeignKey(QQUser, on_delete=models.CASCADE, related_name="managed_hunt_group")
+    servermark = models.CharField(default="", max_length=16)
+    remark = models.CharField(default="", max_length=64)
+    def __str__(self):
+        return self.name if self.name else "{}-{}".format(self.group, self.server)
+
+
+class Monster(models.Model):
+    name = models.CharField(default="", blank=True, max_length=32, unique=True)
+    cn_name = models.CharField(default="", blank=True, max_length=32)
+    territory = models.ForeignKey(Territory, on_delete=models.CASCADE, related_name="hunt_monster")
+    rank = models.CharField(default="A", max_length=5)  # enum: "A", "B", "S", "Fate"
+    spawn_cooldown = models.IntegerField(default=0)
+    first_spawn_cooldown = models.IntegerField(default=0)
+    pop_cooldown = models.IntegerField(default=0)
+    first_pop_cooldown = models.IntegerField(default=0)
+    info = models.CharField(default="", max_length=128)
+    status = models.TextField(default="{}")
+    def __str__(self):
+        return self.cn_name if self.cn_name else self.name
+
+
+class HuntLog(models.Model):
+    monster = models.ForeignKey(Monster, on_delete=models.CASCADE, related_name="hunt_log", blank=True, null=True)
+    hunt_group = models.ForeignKey(HuntGroup, on_delete=models.CASCADE, related_name="hunt_log")
+    server = models.ForeignKey(Server, on_delete=models.CASCADE, related_name="hunt_log")
+    log_type = models.CharField(default="", max_length=16)
+    time = models.BigIntegerField(default=0)
+
+    def __str__(self):
+        return "{}-{}".format(self.id, self.server, self.monstere)
+
+    def get_info(self):
+        return "HuntLog#{}: {}-{} {}".format(self.id, self.server, self.monster, self.log_type)

@@ -621,7 +621,7 @@ class PikaConsumer(object):
                             receive["user_id"], time.time() - receive["time"]
                         )
                     msg = msg.strip()
-                    LOGGER.debug("{} calling command: {}".format(user_id, "/ping"))
+                    LOGGER.info("{} calling command: {}".format(user_id, "/ping"))
                     print(("{} calling command: {}".format(user_id, "/ping")))
                     send_message(bot, receive["message_type"], discuss_id or group_id or user_id, msg, post_type=receive.get("reply_api_type", "websocket"))
 

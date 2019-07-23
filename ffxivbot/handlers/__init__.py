@@ -16,7 +16,7 @@ commands = {
   "/gif":"生成沙雕图（\"/gif help\"）",
   "/dice":"DnD掷骰子（\"/dice 3d12\"）",
   "/pixiv":"Pixiv相关功能（\"/pixiv help\"）",
-  "/music":"网易云音乐搜索（\"/music 届不到的恋\"）",
+  # "/music":"网易云音乐搜索（\"/music 届不到的恋\"）",
   "/duilian":"对联（\"/duilian 稻花香里说丰年\"）",
   "/tex":"生成tex图片（\"/tex e^{\\pi i}+1=0\"）",
   "/gate":"挖宝选门（\"/gate 3\"）",
@@ -31,7 +31,8 @@ commands = {
   "/hso":"好色哦",
   "/share":"微博分享",
   "/trash":"你是什么垃圾？",
-  "/shorten":"微博短链"
+  "/shorten":"微博短链",
+  "/hadmin":"狩猎管理"
 }
   # "/joke":"讽刺笑话（\"/joke 996|强东|建设一流公司|程序员|公司\"）",
 
@@ -48,7 +49,8 @@ group_commands = {
   "/weibo":"微博订阅系统",
   "/live":"直播订阅系统",
   "/command":"群功能停用/启用",
-  "/lottery":"抽奖"
+  "/lottery":"抽奖",
+  "/hunt":"狩猎"
 }
 
 alter_commands = {
@@ -91,7 +93,7 @@ from .QQCommand_hso import QQCommand_hso
 from .QQCommand_raid import QQCommand_raid
 from .QQCommand_bot import QQCommand_bot
 from .QQCommand_pixiv import QQCommand_pixiv
-from .QQCommand_music import QQCommand_music
+# from .QQCommand_music import QQCommand_music
 from .QQCommand_duilian import QQCommand_duilian
 from .QQCommand_image import QQCommand_image
 from .QQCommand_nuannuan import QQCommand_nuannuan
@@ -119,6 +121,7 @@ from .QQGroupCommand_weibo import QQGroupCommand_weibo
 from .QQGroupCommand_live import QQGroupCommand_live
 from .QQGroupCommand_lottery import QQGroupCommand_lottery
 from .QQGroupCommand_command import QQGroupCommand_command
+from .QQGroupCommand_hunt import QQGroupCommand_hunt
 
 
 from .QQGroupChat import QQGroupChat
