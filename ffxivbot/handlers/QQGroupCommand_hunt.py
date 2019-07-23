@@ -4,7 +4,7 @@ from ffxivbot.handlers.QQUtils import *
 from ffxivbot.models import *
 
 def handle_special_mob(monster, next_spawn_time, next_pop_time):
-    if monster.cn_name == "咕尔呱洛斯":
+    if monster.cn_name.startswith("咕尔呱洛斯"):
         nst_eorzea_day = getEorzeaDay(next_spawn_time)
         nct_eorzea_day = getEorzeaDay(next_pop_time)
         if nst_eorzea_day < 17:
@@ -25,7 +25,7 @@ def handle_special_mob(monster, next_spawn_time, next_pop_time):
             next_pop_time = (getEorzeaYear(
                 next_pop_time) * 12 * 32 * 24 * 175) + ((getEorzeaMonth(
                 next_pop_time) + 1) * 32 * 24 * 175) + (16 * 24 * 175) + (17 * 175)
-    elif monster.cn_name == "夺心魔":
+    elif monster.cn_name.startswith("夺心魔"):
         nst_eorzea_day = getEorzeaDay(next_spawn_time)
         nct_eorzea_day = getEorzeaDay(next_pop_time)
         if nst_eorzea_day > 4:
@@ -37,7 +37,7 @@ def handle_special_mob(monster, next_spawn_time, next_pop_time):
             next_pop_time = (getEorzeaYear(
                 next_pop_time) * 12 * 32 * 24 * 175) + ((getEorzeaMonth(
                 next_pop_time) + 1) * 32 * 24 * 175)
-    elif monster.cn_name == "巨大鳐":
+    elif monster.cn_name.startswith("巨大鳐"):
         nst_eorzea_day = getEorzeaDay(next_spawn_time)
         nct_eorzea_day = getEorzeaDay(next_pop_time)
         if nst_eorzea_day < 17:
