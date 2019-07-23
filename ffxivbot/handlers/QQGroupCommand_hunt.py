@@ -85,6 +85,17 @@ def handle_special_mob(monster, next_spawn_time, next_pop_time):
             if a == 8:
                 next_pop_time = int(time.mktime(time.strptime(b, '%Y-%m-%d %H:%M:%S')))
                 break
+    elif monster.cn_name.startswith("雷德罗巨蛇"):
+        Laider_spawn_weathers = getFollowingWeathers(territory=monster.territory, cnt=100, TIMEFORMAT="%Y-%m-%d %H:%M:%S", unixSeconds=next_spawn_time)
+        Laider_pop_weathers = getFollowingWeathers(territory=monster.territory, cnt=100,TIMEFORMAT="%Y-%m-%d %H:%M:%S", unixSeconds=next_pop_time)
+        for spawn_weather in Laider_spawn_weathers:
+            if spawn_weather["name"] == "小雨" and spawn_weather["pre_name"] == "小雨":
+                next_spawn_time = int(time.mktime(time.strptime(spawn_weather["LT"], '%Y-%m-%d %H:%M:%S'))) + (2 * 175)
+                break
+        for pop_weather in Laider_pop_weathers:
+            if pop_weather["name"] == "小雨" and pop_weather["pre_name"] == "小雨":
+                next_pop_time = int(time.mktime(time.strptime(pop_weather["LT"], '%Y-%m-%d %H:%M:%S'))) + (2 * 175)
+                break
     return next_spawn_time, next_pop_time
 
 
