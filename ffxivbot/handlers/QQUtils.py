@@ -92,8 +92,24 @@ def calculateForecastTarget(unixSeconds):
     return step2 % 100
 
 def getEorzeaHour(unixSeconds):
-    bell = (unixSeconds / 175) % 24;
+    bell = (unixSeconds / 175) % 24
     return int(bell)
+
+
+def getEorzeaDay(unixSeconds):
+    Day = unixSeconds / 175 / 24 % 32
+    return int(Day)
+
+
+def getEorzeaMonth(unixSeconds):
+    Month = unixSeconds / 175 / 24 / 32 % 12
+    return int(Month)
+
+
+def getEorzeaYear(unixSeconds):
+    Year = unixSeconds / 175 / 24 / 32 / 12
+    return int(Year)
+
 
 def getWeatherTimeFloor(unixSeconds):
     # Get Eorzea hour for weather start
@@ -113,8 +129,7 @@ def getWeatherID(territory, chance):
     print("can't find {} chance:{}".format(territory,chance))
     return -1
 
-def getFollowingWeathers(territory, cnt=5, TIMEFORMAT_MDHMS="%m-%d %H:%M:%S"):
-    unixSeconds = int(time.time())
+def getFollowingWeathers(territory, cnt=5, TIMEFORMAT="%m-%d %H:%M:%S", unixSeconds = time.time()):
     weatherStartTime = getWeatherTimeFloor(unixSeconds)
     now_time = weatherStartTime
     weathers = []
@@ -138,7 +153,7 @@ def getFollowingWeathers(territory, cnt=5, TIMEFORMAT_MDHMS="%m-%d %H:%M:%S"):
             "pre_name":"{}".format(pre_weather),
             "name":"{}".format(weather),
             "ET":"{}:00".format(getEorzeaHour(now_time)),
-            "LT":"{}".format(time.strftime(TIMEFORMAT_MDHMS,time.localtime(now_time))),
+            "LT":"{}".format(time.strftime(TIMEFORMAT,time.localtime(now_time))),
             })
         now_time += 8 * 175
     return weathers

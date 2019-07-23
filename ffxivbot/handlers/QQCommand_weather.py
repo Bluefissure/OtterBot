@@ -44,7 +44,7 @@ def QQCommand_weather(*args, **kwargs):
                     if len(msg_args) == 1 or str.isdigit(msg_args[1]):
                         cnt = min(15, int(msg_args[1])) if len(msg_args) >= 2 else 5
                         weathers = getFollowingWeathers(
-                            territory, cnt, TIMEFORMAT_MDHMS
+                            territory, cnt, TIMEFORMAT_MDHMS, unixSeconds = time.time()
                         )
                         msg = "接下来{}的天气情况如下：".format(territory)
                         for item in weathers:
