@@ -1,5 +1,5 @@
 from ffxivbot.handlers.QQUtils import reply_message_action
-from ffxivbot.models import HunterGroupID
+from ffxivbot.models import HuntGroup
 
 
 def QQCommand_hadmin(*args, **kwargs):

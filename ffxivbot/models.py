@@ -5,55 +5,6 @@ import time
 # Create your models here.
 
 
-class HunterGroupID(models.Model):
-    groupid = models.CharField(default="", max_length=16, primary_key=True)
-    servermark = models.CharField(default="", max_length=16)
-    remark = models.CharField(default="", max_length=64)
-
-    def __str__(self):
-        return self.name
-
-
-class MonsterList(models.Model):
-    monsterid = models.IntegerField(primary_key=True)
-    monstername = models.CharField(default="", blank=True, max_length=32)
-    region = models.CharField(default="", max_length=32)
-    starttime = models.BigIntegerField(default=0)
-    completetime = models.BigIntegerField(default=0)
-    maintainedstarttime = models.BigIntegerField(default=0)
-    maintainedcompletetime = models.BigIntegerField(default=0)
-    triggermethod = models.CharField(default="", max_length=1024)
-
-    def __str__(self):
-        return str(self.name)
-
-
-class ServersMonsterKillTime(models.Model):
-    monsterid = models.IntegerField(primary_key=True)
-    hyh = models.BigIntegerField(default=0)
-    hyhm = models.BooleanField(default=False)
-    jyzy = models.BigIntegerField(default=0)
-    jyzym = models.BooleanField(default=False)
-    yx = models.BigIntegerField(default=0)
-    yxm = models.BooleanField(default=False)
-    myc = models.BigIntegerField(default=0)
-    mycm = models.BooleanField(default=False)
-    hyqd = models.BigIntegerField(default=0)
-    hyqdm = models.BooleanField(default=False)
-    lnxy = models.BigIntegerField(default=0)
-    lnxym = models.BooleanField(default=False)
-    syzd = models.BigIntegerField(default=0)
-    syzdm = models.BooleanField(default=False)
-    zszq = models.BigIntegerField(default=0)
-    zszqm = models.BooleanField(default=False)
-    mdn = models.BigIntegerField(default=0)
-    mdnm = models.BooleanField(default=False)
-
-
-    def __str__(self):
-        return str(self.name)
-
-
 class WeiboUser(models.Model):
     name = models.CharField(default="", blank=True, max_length=16, unique=True)
     uid = models.CharField(default="", max_length=16)
@@ -232,13 +183,6 @@ class Vote(models.Model):
 
     def __str__(self):
         return str(self.name)
-
-
-class RandomScore(models.Model):
-    user_id = models.CharField(max_length=16)
-    group = models.ForeignKey(QQGroup, on_delete=models.CASCADE)
-    max_random = models.IntegerField(default=0)
-    min_random = models.IntegerField(default=1001)
 
 
 class QQBot(models.Model):
@@ -479,3 +423,33 @@ class CommandLog(models.Model):
     bot_id = models.CharField(max_length=16)
     user_id = models.CharField(max_length=16)
     group_id = models.CharField(max_length=16)
+
+
+class HuntGroup(models.Model):
+    name = models.CharField(default="", max_length=64)
+    group = models.ForeignKey(QQGroup, on_delete=models.CASCADE, related_name="hunt_group")
+    server = models.ForeignKey(Server, on_delete=models.CASCADE, related_name="hunt_group")
+    servermark = models.CharField(default="", max_length=16)
+    remark = models.CharField(default="", max_length=64)
+
+    def __str__(self):
+        return self.name
+
+
+class Monster(models.Model):
+    name = models.CharField(default="", blank=True, max_length=32)
+    territory = models.ForeignKey(Territory, on_delete=models.CASCADE, related_name="hunt_monster")
+    info = models.CharField(default="", max_length=128)
+
+    def __str__(self):
+        return str(self.name)
+
+
+class MonsterLog(models.Model):
+    monster = models.ForeignKey(Monster, on_delete=models.CASCADE, related_name="log")
+    log_type = models.CharField(default="", max_length=16)
+    time = models.BigIntegerField(default=0)
+
+    def __str__(self):
+        return str(self.name)
+

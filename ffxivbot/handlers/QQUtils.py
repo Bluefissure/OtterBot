@@ -129,7 +129,8 @@ def getWeatherID(territory, chance):
     print("can't find {} chance:{}".format(territory,chance))
     return -1
 
-def getFollowingWeathers(territory, cnt=5, TIMEFORMAT="%m-%d %H:%M:%S", unixSeconds = time.time()):
+def getFollowingWeathers(territory, cnt=5, TIMEFORMAT="%m-%d %H:%M:%S", **kwargs):
+    unixSeconds = kwargs.get("unixSeconds", int(time.time()))
     weatherStartTime = getWeatherTimeFloor(unixSeconds)
     now_time = weatherStartTime
     weathers = []
