@@ -459,5 +459,3 @@ class HuntLog(models.Model):
 
     def get_info(self):
         return "HuntLog#{}: {}-{} {}".format(self.id, self.server, self.monster, self.log_type)
-        
-
