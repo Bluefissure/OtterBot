@@ -103,7 +103,6 @@ from .QQCommand_quest import QQCommand_quest
 from .QQCommand_share import QQCommand_share
 from .QQCommand_trash import QQCommand_trash
 from .QQCommand_shorten import QQCommand_shorten
-from .QQCommand_hadmin import QQCommand_hadmin
 # from .QQCommand_joke import QQCommand_joke
 
 from .arknights.QQCommand_akhr import QQCommand_akhr

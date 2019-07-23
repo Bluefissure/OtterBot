@@ -436,7 +436,7 @@ class HuntGroup(models.Model):
 
 class Monster(models.Model):
     name = models.CharField(default="", blank=True, max_length=32, unique=True)
-    cn_name = models.CharField(default="", blank=True, max_length=32, blank=True)
+    cn_name = models.CharField(default="", blank=True, max_length=32)
     territory = models.ForeignKey(Territory, on_delete=models.CASCADE, related_name="hunt_monster")
     rank = models.CharField(default="A", max_length=5)  # enum: "A", "B", "S", "Fate"
     spawn_cooldown = models.IntegerField(default=0)

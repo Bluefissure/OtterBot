@@ -53,12 +53,6 @@ class VoteAdmin(admin.ModelAdmin):
     search_fields = ['name']
 
 
-class RandomScoreAdmin(admin.ModelAdmin):
-    list_display = ('user_id', 'group', 'min_random', 'max_random')
-    list_filter = ['group']
-    search_fields = ['user_id']
-
-
 class QQBotAdmin(admin.ModelAdmin):
     list_display = ('name', 'user_id', 'access_token', "auto_accept_friend", "auto_accept_invite")
     search_fields = ['name', 'user_id', 'owner_id']
@@ -136,7 +130,7 @@ class MonsterAdmin(admin.ModelAdmin):
     search_fields = ["name ", "cn_name"]
     list_filter = ["territory", "rank"]
 
-class HuntLog(admin.ModelAdmin):
+class HuntLogAdmin(admin.ModelAdmin):
     list_display = ["monster", "hunt_group", "server", "log_type", "time"]
     search_fields = ["monster ", "hunt_group", "log_type"]
     list_filter = ["monster", "hunt_group", "server", "log_type"]
@@ -151,7 +145,6 @@ admin.site.register(Quest, QuestAdmin)
 admin.site.register(Boss, BossAdmin)
 admin.site.register(Job, JobAdmin)
 admin.site.register(Vote, VoteAdmin)
-admin.site.register(RandomScore, RandomScoreAdmin)
 admin.site.register(QQBot, QQBotAdmin)
 admin.site.register(WeiboUser, WeiboUserAdmin)
 admin.site.register(WeiboTile, WeiboTileAdmin)
@@ -167,3 +160,6 @@ admin.site.register(Territory, TerritoryAdmin)
 admin.site.register(Image, ImageAdmin)
 admin.site.register(Lottery, LotteryAdmin)
 admin.site.register(LiveUser, LiveUserAdmin)
+admin.site.register(HuntGroup, HuntGroupAdmin)
+admin.site.register(Monster, MonsterAdmin)
+admin.site.register(HuntLog, HuntLogAdmin)

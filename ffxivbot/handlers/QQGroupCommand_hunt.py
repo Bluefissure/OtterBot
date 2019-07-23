@@ -120,11 +120,11 @@ def QQGroupCommand_hunt(*args, **kwargs):
                             schedulef = (time.time() - killtime) / monster_info.completetime
                             schedule = "{:.2%}".format(schedulef)
                             next_spawn_time, next_pop_time = handle_special_mob(monster, next_spawn_time, next_pop_time)
-                            msg = "{} {} {}\n".format(monster.territory, monster.cn_name, hunt_group.server) + 
-                                    "进度：{}\n".format(schedule) + 
-                                    "上次击杀时间：{}\n".format(time.strftime(TIMEFORMAT_MDHMS, time.localtime(kill_time))) + 
-                                    "开始触发时间：{}\n".format(time.strftime(TIMEFORMAT_MDHMS, time.localtime(next_spawn_time))) + 
-                                    "必定触发时间：{}\n".format(time.strftime(TIMEFORMAT_MDHMS, time.localtime(next_pop_time))) +
+                            msg = "{} {} {}\n".format(monster.territory, monster.cn_name, hunt_group.server) + \
+                                    "进度：{}\n".format(schedule) + \
+                                    "上次击杀时间：{}\n".format(time.strftime(TIMEFORMAT_MDHMS, time.localtime(kill_time))) + \
+                                    "开始触发时间：{}\n".format(time.strftime(TIMEFORMAT_MDHMS, time.localtime(next_spawn_time))) + \
+                                    "必定触发时间：{}\n".format(time.strftime(TIMEFORMAT_MDHMS, time.localtime(next_pop_time))) + \
                                     "触发方法：{}".format(monster.info)
                         else:
                             msg = "找不到狩猎怪\"{}\"".format(monster_name)
@@ -183,7 +183,7 @@ def QQGroupCommand_hunt(*args, **kwargs):
                     msg = "狩猎时钟list命令示例：\n/hunt list [选项]\n选项解释：\ncd：列出可触发的s"
             elif ("maintain" in optype):
                 if "global" in optype:
-                    for server in Server.objects.all()
+                    for server in Server.objects.all():
                         log = HuntLog(hunt_group=hunt_group, server=server, log_type="maintain", time=time.time())
                         log.save()
                         msg = "全体服务器的狩猎怪击杀时间已重置"
