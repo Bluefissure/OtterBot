@@ -60,34 +60,27 @@ def handle_special_mob(monster, next_spawn_time, next_pop_time):
                 next_pop_time) + 1) * 32 * 24 * 175) + (16 * 24 * 175) + (12 * 175)
     elif monster.cn_name.startswith("伽洛克"):
         a = 0
-        b = "0"
-        garlok_spawn_weathers = getFollowingWeathers(territory=monster.territory, cnt=150, TIMEFORMAT="%Y-%m-%d %H:%M:%S", unixSeconds=next_spawn_time, Garlok=True)
+        garlok_spawn_weathers = getFollowingWeathers(territory=monster.territory, cnt=1000, TIMEFORMAT="%Y-%m-%d %H:%M:%S", unixSeconds=next_spawn_time, Garlok=True)
         for spawn_weather in garlok_spawn_weathers:
             if spawn_weather["name"] == "碧空" or spawn_weather["name"] == "晴朗" or spawn_weather["name"] == "阴云" or spawn_weather["name"] == "薄雾":
                 a += 1
-                if b == "0":
-                    b = spawn_weather["LT"]
             else:
                 a = 0
-                b = "0"
             if a == 9:
-                next_spawn_time = int(time.mktime(time.strptime(b, '%Y-%m-%d %H:%M:%S')))
+                next_spawn_time = int(time.mktime(time.strptime(spawn_weather, '%Y-%m-%d %H:%M:%S')))
                 break
-        garlok_pop_weathers = getFollowingWeathers(territory=monster.territory, cnt=150, TIMEFORMAT="%Y-%m-%d %H:%M:%S", unixSeconds=next_pop_time, Garlok=True)
+        garlok_pop_weathers = getFollowingWeathers(territory=monster.territory, cnt=1000, TIMEFORMAT="%Y-%m-%d %H:%M:%S", unixSeconds=next_pop_time, Garlok=True)
         for pop_weather in garlok_pop_weathers:
             if pop_weather["name"] == "碧空" or pop_weather["name"] == "晴朗" or pop_weather["name"] == "阴云" or pop_weather["name"] == "薄雾":
                 a += 1
-                if b == "0":
-                    b = pop_weather["LT"]
             else:
                 a = 0
-                b = "0"
             if a == 9:
-                next_pop_time = int(time.mktime(time.strptime(b, '%Y-%m-%d %H:%M:%S')))
+                next_pop_time = int(time.mktime(time.strptime(pop_weather, '%Y-%m-%d %H:%M:%S')))
                 break
     elif monster.cn_name.startswith("雷德罗巨蛇"):
-        Laider_spawn_weathers = getFollowingWeathers(territory=monster.territory, cnt=150, TIMEFORMAT="%Y-%m-%d %H:%M:%S", unixSeconds=next_spawn_time)
-        Laider_pop_weathers = getFollowingWeathers(territory=monster.territory, cnt=150,TIMEFORMAT="%Y-%m-%d %H:%M:%S", unixSeconds=next_pop_time)
+        Laider_spawn_weathers = getFollowingWeathers(territory=monster.territory, cnt=1000, TIMEFORMAT="%Y-%m-%d %H:%M:%S", unixSeconds=next_spawn_time)
+        Laider_pop_weathers = getFollowingWeathers(territory=monster.territory, cnt=1000,TIMEFORMAT="%Y-%m-%d %H:%M:%S", unixSeconds=next_pop_time)
         for spawn_weather in Laider_spawn_weathers:
             if spawn_weather["name"] == "小雨" and spawn_weather["pre_name"] == "小雨":
                 next_spawn_time = int(time.mktime(time.strptime(spawn_weather["LT"], '%Y-%m-%d %H:%M:%S'))) + (2 * 175)
