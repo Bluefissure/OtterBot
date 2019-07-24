@@ -71,7 +71,8 @@ alter_commands = {
   "/set_ban":"/ban set",
   "/revenge_confirm":"/revenge confirm",
   "/laji":"/trash",
-  "/huntc":"/hunt check"
+  "/huntc":"/hunt check",
+  "/huntl":"/hunt list cd"
 }
 
 from .QQCommand_cat import QQCommand_cat

@@ -6,6 +6,7 @@ from ffxivbot.models import *
 
 def handle_special_mob(monster, next_spawn_time):
     now_time = time.time()
+    trigger_time_info = ""
     next_trigger_time = time.time()
     ntt_eorzea_day = getEorzeaDay(now_time)
     if monster.cn_name.startswith("咕尔呱洛斯"):
@@ -20,7 +21,7 @@ def handle_special_mob(monster, next_spawn_time):
                 now_time) * 12 * 32 * 24 * 175) + ((getEorzeaMonth(
                 now_time) + 1) * 32 * 24 * 175) + (16 * 24 * 175) + (17 * 175)
         if next_trigger_time > next_spawn_time:
-            trigger_time_info = "（触发时间计算为ET当月第17天17:00）"
+            trigger_time_info = "\n（触发时间计算为ET当月第17天17:00）"
             get_trigger_time = next_trigger_time
     elif monster.cn_name.startswith("夺心魔"):
         if ntt_eorzea_day >= 1 and ntt_eorzea_day <= 4:
@@ -30,7 +31,7 @@ def handle_special_mob(monster, next_spawn_time):
                 now_time) * 12 * 32 * 24 * 175) + ((getEorzeaMonth(
                 now_time) + 1) * 32 * 24 * 175)
         if next_trigger_time > next_spawn_time:
-            trigger_time_info = "（触发时间计算为ET当月第1天00:00）"
+            trigger_time_info = "\n（触发时间计算为ET当月第1天00:00）"
             get_trigger_time = next_trigger_time
     elif monster.cn_name.startswith("巨大鳐"):
         if ntt_eorzea_day < 17:
@@ -44,7 +45,7 @@ def handle_special_mob(monster, next_spawn_time):
                 now_time) * 12 * 32 * 24 * 175) + ((getEorzeaMonth(
                 now_time) + 1) * 32 * 24 * 175) + (16 * 24 * 175) + (12 * 175)
         if next_trigger_time > next_spawn_time:
-            trigger_time_info = "（触发时间计算为ET当月第17天12:00）"
+            trigger_time_info = "\n（触发时间计算为ET当月第17天12:00）"
             get_trigger_time = next_trigger_time
     elif monster.cn_name.startswith("伽洛克"):
         # 算法有问题，待更新
@@ -61,7 +62,7 @@ def handle_special_mob(monster, next_spawn_time):
                 next_trigger_time = int(time.mktime(time.strptime(spawn_weather["LT"], '%Y-%m-%d %H:%M:%S')))
                 break
         if next_trigger_time > next_spawn_time:
-            trigger_time_info = "（触发时间计算为连续不下雨的ET 第9天的00:00）"
+            trigger_time_info = "\n（触发时间计算为连续不下雨的ET 第9天的00:00）"
             get_trigger_time = next_trigger_time
     elif monster.cn_name.startswith("雷德罗巨蛇"):
         Laider_spawn_weathers = getFollowingWeathers(territory=monster.territory, cnt=1000,
@@ -69,17 +70,17 @@ def handle_special_mob(monster, next_spawn_time):
         for spawn_weather in Laider_spawn_weathers:
             if spawn_weather["name"] == "小雨" and spawn_weather["pre_name"] == "小雨":
                 next_trigger_time = int(time.mktime(time.strptime(spawn_weather["LT"], '%Y-%m-%d %H:%M:%S'))) + (
-                            10 * 175)
+                        10 * 175)
                 break
         if next_trigger_time > next_spawn_time:
-            trigger_time_info = "（触发时间计算为两次雨天后的ET 2小时后）"
+            trigger_time_info = "\n（触发时间计算为两次雨天后的ET 2小时后）"
             get_trigger_time = next_trigger_time
-    if get_trigger_time:
-        special_msg = "\n下次触发时间：{}\n".format(
-            time.strftime('%m-%d %H:%M:%S', time.localtime(get_trigger_time))) + trigger_time_info
-    else:
+    if trigger_time_info == "":
         special_msg = ""
-    return special_msg
+    else:
+        special_msg = "\n下次触发时间：{}".format(
+            time.strftime('%m-%d %H:%M:%S', time.localtime(get_trigger_time)))
+    return special_msg, trigger_time_info
 
 
 def QQGroupCommand_hunt(*args, **kwargs):
@@ -106,7 +107,7 @@ def QQGroupCommand_hunt(*args, **kwargs):
             except IndexError:
                 optype = "help"
             if (optype == "help"):
-                msg = "獭獭の狩猎时钟 alpha.3\n\
+                msg = "獭獭の狩猎时钟 alpha.4\n\
 /hunt help：帮助\n\
 /hunt check：查询相关\n\
 /hunt kill：设置击杀时间相关\n\
@@ -142,14 +143,14 @@ def QQGroupCommand_hunt(*args, **kwargs):
                         schedulef = (time.time() - kill_time) / pop_cooldown
                         schedule = "{:.2%}".format(schedulef)
                         # next_spawn_time, next_pop_time = handle_special_mob(monster, next_spawn_time, next_pop_time)
-                        special_msg = handle_special_mob(monster, next_spawn_time)
+                        special_msg, trigger_time_info = handle_special_mob(monster, next_spawn_time)
                         msg = "{} {} {}\n".format(monster.territory, monster.cn_name, hunt_group.server) + \
                               "进度：{}\n".format(schedule) + \
                               "上次击杀时间：{}\n".format(time.strftime(TIMEFORMAT_MDHMS, time.localtime(kill_time))) + \
                               "开始触发时间：{}\n".format(time.strftime(TIMEFORMAT_MDHMS, time.localtime(next_spawn_time))) + \
-                              "必定触发时间：{}\n".format(time.strftime(TIMEFORMAT_MDHMS, time.localtime(next_pop_time))) + \
+                              "高概率触发时间：{}\n".format(time.strftime(TIMEFORMAT_MDHMS, time.localtime(next_pop_time))) + \
                               "触发方法：{}\n".format(monster.info) + \
-                              "{}".format(special_msg)
+                              "{}".format(special_msg) + "{}".format(trigger_time_info)
                     else:
                         msg = "找不到狩猎怪\"{}\"".format(monster_name)
                 except IndexError:
@@ -204,19 +205,23 @@ def QQGroupCommand_hunt(*args, **kwargs):
                             schedulef = (time.time() - kill_time) / pop_cooldown
                             schedule = "{:.2%}".format(schedulef)
                             # next_spawn_time, next_pop_time = handle_special_mob(monster, next_spawn_time, next_pop_time)
+                            special_msg, trigger_time_info = handle_special_mob(monster, next_spawn_time)
                             if next_spawn_time <= time.time():
-                                cd_msg_list.append("{} {} {}\n{}".format(monster.territory, monster.cn_name, schedule,
-                                                                         time.strftime(TIMEFORMAT_MDHMS, time.localtime(
-                                                                             next_spawn_time))))
+                                cd_msg_list.append(
+                                    "{} {} {}\n高概率触发时间：{} {}".format(monster.territory, monster.cn_name, schedule,
+                                                                     time.strftime(TIMEFORMAT_MDHMS, time.localtime(
+                                                                         next_pop_time)), special_msg))
                             elif next_spawn_time - 3600 < time.time() < next_spawn_time:
-                                qcd_msg_list.append("{} {} {}\n{}".format(monster.territory, monster.cn_name, schedule,
-                                                                          time.strftime(TIMEFORMAT_MDHMS,
-                                                                                        time.localtime(
-                                                                                            next_spawn_time))))
+                                qcd_msg_list.append(
+                                    "{} {} {}\n开始触发时间：{} {}".format(monster.territory, monster.cn_name, schedule,
+                                                                    time.strftime(TIMEFORMAT_MDHMS,
+                                                                                  time.localtime(
+                                                                                      next_spawn_time)), special_msg))
                         if cd_msg_list:
                             msg += "可以触发的S怪：\n"
                             for cd_msg in cd_msg_list:
                                 msg += "{}\n".format(cd_msg)
+                            msg += "\n"
                         if qcd_msg_list:
                             msg += "准备进入触发时间的S怪（1小时内）：\n"
                             for qcd_msg in qcd_msg_list:
