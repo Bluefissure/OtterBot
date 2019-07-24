@@ -229,15 +229,11 @@ def QQGroupCommand_hunt(*args, **kwargs):
                             msg += "可以触发的S怪：\n"
                             for cd_msg in cd_msg_list:
                                 msg += "{}\n".format(cd_msg)
-                            if qcd_msg_list:
-                                msg += "\n"
                         if qcd_msg_list:
                             msg += "准备进入触发时间的S怪（1小时内）：\n"
                             for qcd_msg in qcd_msg_list:
                                 msg += "{}\n".format(qcd_msg)
-                        if cd_msg_list and qcd_msg_list:
-                            a = 0  # 这里真不知道怎么直接判断为空，随便整个方法在这里占位，獭爹要是可以帮我康康怎么改
-                        else:
+                        if (not cd_msg_list) and (not qcd_msg_list):
                             msg = "暂时莫得可以触发的S怪qwq"
                 except IndexError:
                     msg = "狩猎时钟list命令示例：\n/hunt list [选项]\n选项解释：\ncd：列出可触发的s"
