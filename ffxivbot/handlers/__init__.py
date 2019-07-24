@@ -31,8 +31,7 @@ commands = {
   "/hso":"好色哦",
   "/share":"微博分享",
   "/trash":"你是什么垃圾？",
-  "/shorten":"微博短链",
-  "/hadmin":"狩猎管理"
+  "/shorten":"微博短链"
 }
   # "/joke":"讽刺笑话（\"/joke 996|强东|建设一流公司|程序员|公司\"）",
 
@@ -72,6 +71,7 @@ alter_commands = {
   "/set_ban":"/ban set",
   "/revenge_confirm":"/revenge confirm",
   "/laji":"/trash",
+  "/huntc":"/hunt check"
 }
 
 from .QQCommand_cat import QQCommand_cat
