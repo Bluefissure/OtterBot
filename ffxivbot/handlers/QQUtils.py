@@ -1,14 +1,14 @@
-from ffxivbot.models import *
-import logging
 import json
-import time
-import random
-import requests
-import math
+import logging
 import re
-import urllib
+import time
 import traceback
+import urllib
+
+import requests
 from bs4 import BeautifulSoup
+
+from ffxivbot.models import *
 
 
 def reply_message_action(receive, msg):
@@ -128,7 +128,7 @@ def getWeatherTimeFloor(unixSeconds):
 def getGarlokWeatherTimeFloor(unixSeconds):
     bell = (unixSeconds / 175) % 24
     startBell = bell - (bell % 8)
-    startUnixSeconds = round(unixSeconds - (175 * (bell - startBell) - (8 * 8 * 175)))
+    startUnixSeconds = round(unixSeconds - (175 * (bell - startBell)) - (9 * 8 * 175))
     return startUnixSeconds
 
 
@@ -151,9 +151,9 @@ def getFollowingWeathers(territory, cnt=5, TIMEFORMAT="%m-%d %H:%M:%S", **kwargs
         Garlok = False
     unixSeconds = kwargs.get("unixSeconds", int(time.time()))
     if Garlok:
-        weatherStartTime = getWeatherTimeFloor(unixSeconds)
-    else:
         weatherStartTime = getGarlokWeatherTimeFloor(unixSeconds)
+    else:
+        weatherStartTime = getWeatherTimeFloor(unixSeconds)
     now_time = weatherStartTime
     weathers = []
     weather_rate = json.loads(territory.weather_rate.rate)
