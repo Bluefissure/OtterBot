@@ -70,7 +70,7 @@ def handle_special_mob(monster, next_spawn_time):
         for spawn_weather in Laider_spawn_weathers:
             if spawn_weather["name"] == "小雨" and spawn_weather["pre_name"] == "小雨":
                 next_trigger_time = int(time.mktime(time.strptime(spawn_weather["LT"], '%Y-%m-%d %H:%M:%S'))) + (
-                        10 * 175)
+                        2 * 175)
                 break
         if next_trigger_time > next_spawn_time:
             trigger_time_info = "\n（触发时间计算为两次雨天后的ET 2小时后）"
@@ -161,17 +161,35 @@ def QQGroupCommand_hunt(*args, **kwargs):
             elif (optype == "kill"):
                 try:
                     monster_name = param_segs[1].strip()
+                    try:
+                        server_name = param_segs[2].strip()
+                        # 待增加nickname
+                        server_info = Server.objects.filter(name=server_name)
+                        if server_info.exists():
+                            server_info = server_info[0]
+                    except IndexError:
+                        server_name = ""
                     monster = Monster.objects.filter(Q(name=monster_name) | Q(cn_name=monster_name))
                     if monster.exists():
                         monster = monster[0]
-                        log = HuntLog(monster=monster,
-                                      hunt_group=hunt_group,
-                                      server=hunt_group.server,
-                                      log_type="kill",
-                                      time=time.time()
-                                      )
-                        log.save()
-                        msg = "{}的\"{}\"击杀时间已记录".format(hunt_group.server, monster)
+                        if server_name:
+                            log = HuntLog(monster=monster,
+                                          hunt_group=hunt_group,
+                                          server=server_info,
+                                          log_type="kill",
+                                          time=time.time()
+                                          )
+                            log.save()
+                            msg = "{}的\"{}\"击杀时间已记录".format(server_info.name, monster)
+                        else:
+                            log = HuntLog(monster=monster,
+                                          hunt_group=hunt_group,
+                                          server=hunt_group.server,
+                                          log_type="kill",
+                                          time=time.time()
+                                          )
+                            log.save()
+                            msg = "{}的\"{}\"击杀时间已记录".format(hunt_group.server, monster)
                     else:
                         msg = "找不到狩猎怪\"{}\"".format(monster_name)
                 except IndexError:
@@ -180,7 +198,6 @@ def QQGroupCommand_hunt(*args, **kwargs):
                 try:
                     setype = param_segs[1].strip()
                     if setype == "cd":
-                        a = 1
                         msg = ""
                         cd_msg_list = []
                         qcd_msg_list = []
@@ -218,16 +235,16 @@ def QQGroupCommand_hunt(*args, **kwargs):
                                                                                   time.localtime(
                                                                                       next_spawn_time)), special_msg))
                         if cd_msg_list:
-                            msg += "可以触发的S怪：\n"
+                            msg += "可以触发的s怪：\n"
                             for cd_msg in cd_msg_list:
                                 msg += "{}\n".format(cd_msg)
                             msg += "\n"
                         if qcd_msg_list:
-                            msg += "准备进入触发时间的S怪（1小时内）：\n"
+                            msg += "准备进入触发时间的s怪（1小时内）：\n"
                             for qcd_msg in qcd_msg_list:
                                 msg += "{}\n".format(qcd_msg)
                         if (not cd_msg_list) and (not qcd_msg_list):
-                            msg = "暂时莫得可以触发的S怪qwq"
+                            msg = "暂时莫得可以触发的s怪qwq"
                 except IndexError:
                     msg = "狩猎时钟list命令示例：\n/hunt list [选项]\n选项解释：\ncd：列出可触发的s"
             elif ("maintain" in optype):
@@ -241,6 +258,15 @@ def QQGroupCommand_hunt(*args, **kwargs):
                                   time=time.time())
                     log.save()
                     msg = "{} 的狩猎怪击杀时间已重置".format(hunt_group.server)
+            elif ("initialize" in optype):
+                # 暂时不写入配置文件，如有自建，需要修改此处
+                if user_id == 2875726738 or user_id == 306401806:
+                    for server in Server.objects.all():
+                        for monster in Monster.objects.all():
+                            log = HuntLog(monster=monster, hunt_group=hunt_group, server=server, log_type="kill",
+                                          time=time.time())
+                            log.save()
+                    msg = "时钟功能初始化成功"
             elif (optype == "edit"):
                 try:
                     monster_name = param_segs[1].strip()
