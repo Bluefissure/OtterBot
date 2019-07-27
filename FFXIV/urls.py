@@ -15,19 +15,26 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
+from django.conf.urls import url, include
 from django.conf.urls.static import static
 from django.conf import settings
 from ffxivbot.views import *
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', tata),
+    path('', login),
     path('tata/', tata),
     path('quest/', quest),
     path('quest/tooltip/', quest_tooltip),
     path('api/', api),
     path('http/', qqpost),
     path('image/', image),
+    url(r'^oauth/qq/login/$', qq_login, name='qq_login'),
+    url(r'^api/qqcallback', qq_check, name='qq_check'),
+    # url(r'^oauth/qq/check/$', qq_check, name='qq_check'),
+    # url(r'^oauth/bind/account/$', bind_account, name='bind_account'),
+    url(r'^login/', login),
+    url(r'^logout/', logout),
 ]
 if settings.DEBUG == True:
     urlpatterns += staticfiles_urlpatterns()

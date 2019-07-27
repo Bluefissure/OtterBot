@@ -1,47 +1,49 @@
 # -*- coding: utf-8 -*-
-from django.shortcuts import render, Http404, HttpResponseRedirect
+import base64
+import codecs
+import datetime
+import hmac
+import html
+import json
+import logging
+import math
+import os
+import random
+import re
+import sys
+import time
+import traceback
+import urllib
+from collections import OrderedDict
+from hashlib import md5
+from time import localtime, strftime
+
+import pytz
+import requests
 from django.contrib import auth
 from django.contrib.auth.decorators import login_required
+from django.core.files.base import ContentFile
+from django.db.models import Q
+from django.http import HttpResponse, JsonResponse
+from django.shortcuts import Http404, HttpResponseRedirect, render
 from django.template import Context, RequestContext, loader
 from django.template.context_processors import csrf
-from django.http import HttpResponse
-from django.http import JsonResponse
-from django.db.models import Q
-from django.core.files.base import ContentFile
 from django.utils import timezone
-from collections import OrderedDict
 from django.views.decorators.csrf import csrf_exempt
-import datetime
-import pytz
-import re
-import json
-import pymysql
-import time
-from time import strftime, localtime
-from FFXIV import settings
-from ffxivbot.models import *
-from ffxivbot.webapi import webapi, github_webhook
-from ffxivbot.consumers import PikaPublisher
-import ffxivbot.handlers as handlers
-from channels.layers import get_channel_layer
-from asgiref.sync import async_to_sync
-from hashlib import md5
-import math
-import requests
-import base64
-import random
-import sys
-import traceback
-import codecs
-import html
-import hmac
-from bs4 import BeautifulSoup
-import urllib
-from websocket import create_connection
-import re
-import pika
-import os
 
+import ffxivbot.handlers as handlers
+import pika
+import pymysql
+from asgiref.sync import async_to_sync
+from bs4 import BeautifulSoup
+from channels.layers import get_channel_layer
+from FFXIV import settings
+from ffxivbot.consumers import PikaPublisher
+from ffxivbot.models import *
+from ffxivbot.webapi import github_webhook, webapi
+from websocket import create_connection
+
+from .oauth_client import OAuthQQ
 
 def ren2res(template, req, render_dict={}, post_token=True):
     render_dict.update({"user": False})
@@ -690,6 +692,95 @@ def api(req):
                                 if r.status_code!=200:
                                     logging.error(r.text)
                             httpresponse = HttpResponse("OK", status=200)
+            if "hunt" in trackers:
+                qq = req.GET.get("qq")
+                token = req.GET.get("token")
+                group_id = req.GET.get("group")
+                bot_qq = req.GET.get("bot_qq")
+                print("qq:{} token:{}, group:{}".format(qq, token, group_id))
+                if bot_qq and qq and token:
+                    qquser = None
+                    group = None
+                    api_rate_limit = True
+                    try:
+                        bot = QQBot.objects.get(user_id=bot_qq)
+                        qquser = QQUser.objects.get(user_id=qq, bot_token=token)
+                        if time.time() < qquser.last_api_time + qquser.api_interval:
+                            api_rate_limit = False
+                            print("qquser {} api rate limit exceed".format(qq))
+                        httpresponse = HttpResponse("User API rate limit exceed", status=500)
+                    except QQUser.DoesNotExist:
+                        print("qquser {}:{} auth fail".format(qq, token))
+                    except QQBot.DoesNotExist:
+                        print("bot {} does not exist".format(bot_qq))
+                    else:
+                        channel_layer = get_channel_layer()
+                        try:
+                            reqbody = json.loads(req.body.decode())
+                        except BaseException as e:
+                            print(e)
+                        else:
+                            print("reqbody:{}".format(reqbody))
+                            try:
+                                hunt_group = HuntGroup.objects.get(group__group_id=group_id)
+                                monster_name = reqbody["monster"]
+                                zone_name = reqbody["zone"]
+                                zone_name = zone_name.replace(chr(57521), "").replace(chr(57522), "2").replace(chr(57523), "3")
+                                monster = Monster.objects.get(cn_name=monster_name)
+                                world_name = reqbody["world"]
+                                timestamp = int(reqbody["time"])
+                                server = Server.objects.get(name=world_name)
+                                # handle instances
+                                if str(monster.territory) in zone_name: # "ZoneName2", "ZoneName"
+                                    if str(monster.territory) != zone_name: # "ZoneName2"
+                                        monster_name = zone_name.replace(str(monster.territory), monster_name)  # "ZoneName2" -> "MonsterName2"
+                                        monster = Monster.objects.get(cn_name=monster_name)
+                                print("Get HuntLog info:\nmonster:{}\nserver:{}".format(monster, server))
+                                hunt_log = HuntLog(
+                                    monster = monster,
+                                    hunt_group = hunt_group,
+                                    server = server,
+                                    log_type = "kill",
+                                    time = timestamp
+                                )
+                                hunt_log.save()
+                                msg = "{}——\"{}\" 击杀时间: {}".format(hunt_log.server, monster, 
+                                        time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(timestamp))
+                                    )
+                                msg = "[CQ:at,qq={}]通过API更新了如下HuntLog:\n{}".format(
+                                            qquser.user_id, msg
+                                        )
+                                jdata = {
+                                    "action": "send_group_msg",
+                                    "params": {
+                                        "group_id": hunt_group.group.group_id,
+                                        "message": msg,
+                                    },
+                                    "echo": "",
+                                }
+                                if not bot.api_post_url:
+                                    async_to_sync(channel_layer.send)(
+                                        bot.api_channel_name,
+                                        {"type": "send.event", "text": json.dumps(jdata)},
+                                    )
+                                else:
+                                    url = os.path.join(bot.api_post_url, "{}?access_token={}".format(jdata["action"], bot.access_token))
+                                    headers = {'Content-Type': 'application/json'} 
+                                    r = requests.post(url=url, headers=headers, data=json.dumps(jdata["params"]))
+                                    if r.status_code!=200:
+                                        logging.error(r.text)
+                                httpresponse = HttpResponse(status=200)
+                            except HuntGroup.DoesNotExist:
+                                print("HuntGroup:{} does not exist".format(group_id))
+                                httpresponse = HttpResponse("HuntGroup:{} does not exist".format(group_id), status=500)
+                            except Monster.DoesNotExist:
+                                print("Monster:{} does not exist".format(monster_name))
+                                httpresponse = HttpResponse("Monster:{} does not exist".format(monster_name), status=500)
+                            except Server.DoesNotExist:
+                                print("Server:{} does not exist".format(world_name))
+                                httpresponse = HttpResponse("Server:{} does not exist".format(world_name), status=500)
+                else:
+                    httpresponse = HttpResponse("Missing URL parameters", status=500)
             if "webapi" in trackers:
                 qq = req.GET.get("qq")
                 token = req.GET.get("token")
@@ -716,10 +807,8 @@ def api(req):
                     }
                     return JsonResponse(res_dict)
                 return HttpResponse("Default API Error, contact dev please",status=500)
-    return httpresponse if httpresponse else HttpResponse(status=404)
+    return httpresponse if httpresponse else HttpResponse("Default API Error, contact dev please", status=500)
 
-
-import logging
 FFXIVBOT_ROOT = os.environ.get("FFXIVBOT_ROOT", settings.BASE_DIR)
 CONFIG_PATH = os.environ.get(
     "FFXIVBOT_CONFIG", os.path.join(FFXIVBOT_ROOT, "ffxivbot/config.json")
@@ -873,3 +962,37 @@ def qqpost(req):
         # print("request body:")
         # print(req.body.decode())
         return HttpResponse("Server error:{}".format(type(e)),status=500)
+
+
+def login(req):
+    if req.method == 'GET':
+        if req.user.is_anonymous:
+            if req.GET.get('next'):
+                req.session['next'] = req.GET.get('next')
+            return ren2res("login.html", req, {})
+        else:
+            return HttpResponseRedirect("/tata")
+    elif req.method == 'POST':
+        user = auth.authenticate(username=req.POST.get('Email'), password=req.POST.get('Password'))
+        if user:
+            auth.login(req, user)
+            next = req.session.get('next', '/tata')
+            return HttpResponseRedirect(next)
+        else:
+            return ren2res("login.html", req, {'err': "用户名或密码错误！"})
+
+def logout(req):
+    auth.logout(req)
+    return HttpResponseRedirect('/')
+
+
+
+
+def qq_login(request):
+    oauth_qq = OAuthQQ(settings.QQ_APP_ID, settings.QQ_KEY, settings.QQ_RECALL_URL)
+    url = oauth_qq.get_auth_url()
+    return HttpResponseRedirect(url)
+
+
+def qq_check(request):
+    return HttpResponseRedirect("/tata")
