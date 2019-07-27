@@ -723,6 +723,12 @@ def api(req):
                             print("reqbody:{}".format(reqbody))
                             try:
                                 hunt_group = HuntGroup.objects.get(group__group_id=group_id)
+                                group = hunt_group.group
+                                group_push_list = [
+                                            user["user_id"]
+                                            for user in json.loads(group.member_list)
+                                        ]
+                                assert int(qquser.user_id) in group_push_list, "You're not in the group member list"
                                 monster_name = reqbody["monster"]
                                 zone_name = reqbody["zone"]
                                 zone_name = zone_name.replace(chr(57521), "").replace(chr(57522), "2").replace(chr(57523), "3")
@@ -779,6 +785,9 @@ def api(req):
                             except Server.DoesNotExist:
                                 print("Server:{} does not exist".format(world_name))
                                 httpresponse = HttpResponse("Server:{} does not exist".format(world_name), status=500)
+                            except AssertionError as e:
+                                print(str(e))
+                                httpresponse = HttpResponse(str(e), status=500)
                 else:
                     httpresponse = HttpResponse("Missing URL parameters", status=500)
             if "webapi" in trackers:
