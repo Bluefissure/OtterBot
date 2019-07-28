@@ -153,7 +153,7 @@ def QQGroupCommand_hunt(*args, **kwargs):
             except IndexError:
                 optype = "help"
             if (optype == "help"):
-                msg = "獭獭の狩猎时钟 alpha.4\n\
+                msg = "獭獭の狩猎时钟 alpha.5\n\
 /hunt help：帮助\n\
 /hunt check：查询相关\n\
 /hunt kill：设置击杀时间相关\n\
