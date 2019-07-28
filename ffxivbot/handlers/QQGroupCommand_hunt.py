@@ -222,7 +222,7 @@ def QQGroupCommand_hunt(*args, **kwargs):
                             msg = "找不到狩猎怪\"{}\"".format(monster_name)
                 except IndexError:
                     msg = "狩猎时钟check命令示例：\n\
-/hunt check [怪物名称]\n\
+/hunt check [怪物名称] <服务器>\n\
 查询怪物的击杀时间、触发时间、触发说明等信息\n\
 注：触发时间已经计算好触发条件的日期和天气等条件"
             elif (optype == "kill"):
@@ -245,7 +245,7 @@ def QQGroupCommand_hunt(*args, **kwargs):
                         except HuntGroup.DoesNotExist:
                             msg = monster_kill(monster_name, hunt_group, server_info)
                 except IndexError:
-                    msg = "狩猎时钟list命令示例：\n/hunt kill [怪物名称]\n设置怪物的击杀时间为现在"
+                    msg = "狩猎时钟list命令示例：\n/hunt kill [怪物名称] <服务器>\n设置怪物的击杀时间为现在\n仅可以修改本群组对应的服务器和没有管理群组的服务器"
             elif (optype == "list"):
                 try:
                     setype = param_segs[1].strip()
@@ -308,7 +308,7 @@ def QQGroupCommand_hunt(*args, **kwargs):
                             if (not cd_msg_list) and (not qcd_msg_list):
                                 msg = "暂时莫得可以触发的s怪qwq"
                 except IndexError:
-                    msg = "狩猎时钟list命令示例：\n/hunt list [选项]\n选项解释：\ncd：列出可触发的s"
+                    msg = "狩猎时钟list命令示例：\n/hunt list [选项] <服务器>\n选项解释：\ncd：列出可触发的s"
             elif ("maintain" in optype):
                 if "global" in optype:
                     for server in Server.objects.all():
@@ -351,7 +351,7 @@ def QQGroupCommand_hunt(*args, **kwargs):
                         except HuntGroup.DoesNotExist:
                             msg = monster_edit(monster_name, hunt_group, server_info, YMD, HMS)
                 except IndexError:
-                    msg = "狩猎时钟edit命令示例：\n/hunt edit [怪物名称] [时间]\n时间格式例：\n1970-01-01 00:00:00"
+                    msg = "狩猎时钟edit命令示例：\n/hunt edit [怪物名称] [时间] <服务器>\n时间格式例：\n1970-01-01 00:00:00\n仅可以修改本群组对应的服务器和没有管理群组的服务器"
             elif (optype == "revoke"):
                 try:
                     monster_name = param_segs[1].strip()
