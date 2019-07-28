@@ -1,6 +1,8 @@
 branches:
   only:
   - master
+  - dev
+dist: trusty
 language: python
 python:
   - "3.5"

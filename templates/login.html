@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block body %}
+<body class="hold-transition login-page">
+{% block main %}
+<div class="login-box">
+  <div class="login-logo">
+    <a href="/"><b>FFXIV</b> Toolkit CN</a>
+  </div>
+   {% if err %}
+  <div class="alert alert-warning alert-dismissible">
+    <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+    <h4><i class="icon fa fa-warning"></i> 登陆失败!</h4>
+    {{ err }}
+  </div>
+  {% endif %} 
+  <!-- /.login-logo -->
+  <div class="login-box-body">
+    <p class="login-box-msg">For Final Fantasy XIV</p>
+ 
+    <form action="/login/" method="post">
+      {% csrf_token %}
+      <div class="form-group has-feedback">
+        <input type="email" class="form-control" placeholder="Email" name="Email">
+        <span class="glyphicon glyphicon-envelope form-control-feedback"></span>
+      </div>
+      <div class="form-group has-feedback">
+        <input type="password" class="form-control" placeholder="密码" name="Password">
+        <span class="glyphicon glyphicon-lock form-control-feedback"></span>
+      </div>
+      <div class="row">
+          <div class="col-xs-4">
+                  <a class="btn btn-primary btn-block btn-flat" href="{% url 'qq_login' %}">QQ登录</a>
+          </div>
+          <div class="col-xs-4"></div>
+          <div class="col-xs-4">
+              <button type="submit" class="btn btn-primary btn-block btn-flat">登录</button>
+          </div>
+          <!-- /.col -->
+        </div>
+    </form>
+    <div class="row">
+      <div class="col-xs-4">
+        <a href="/register/" class="text-center">注册账号</a>
+      </div>
+      <div class="col-xs-4"></div>
+      <div class="col-xs-4">
+        <a href="/tata/" class="text-center">游客登录</a>
+      </div>
+      <!-- /.col -->
+    </div>
+  </div>
+  <!-- /.login-box-body -->
+</div>
+<!-- /.login-box -->
+{% endblock %}
+{% block script %}
+<!-- jQuery 2.2.3 -->
+<script src="{% static "plugins/jQuery/jquery-2.2.3.min.js"%}"></script>
+<!-- Bootstrap 3.3.6 -->
+<script src="{% static "bootstrap/js/bootstrap.min.js"%}"></script>
+<!-- iCheck -->
+<script src="{% static "plugins/iCheck/icheck.min.js"%}"></script>
+<script>
+  $(function () {
+    $('input').iCheck({
+      checkboxClass: 'icheckbox_square-blue',
+      radioClass: 'iradio_square-blue',
+      increaseArea: '20%' // optional
+    });
+  });
+</script>
+{% endblock %}
+</body>
+{% endblock %}
