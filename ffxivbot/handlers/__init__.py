@@ -27,6 +27,7 @@ commands = {
   "/quest":"任务查询(/quest 狂乱前奏)",
   "/nuannuan":"本周金蝶暖暖作业",
   "/bot":"机器人推送功能（\"/bot token 123\"）",
+  "/ifttt":"IFTTT推送系统",
   "/akhr":"罗德岛公开招募",
   "/hso":"好色哦",
   "/share":"微博分享",
@@ -104,6 +105,7 @@ from .QQCommand_quest import QQCommand_quest
 from .QQCommand_share import QQCommand_share
 from .QQCommand_trash import QQCommand_trash
 from .QQCommand_shorten import QQCommand_shorten
+from .QQCommand_ifttt import QQCommand_ifttt
 # from .QQCommand_joke import QQCommand_joke
 
 from .arknights.QQCommand_akhr import QQCommand_akhr

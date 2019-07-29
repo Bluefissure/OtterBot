@@ -135,6 +135,10 @@ class HuntLogAdmin(admin.ModelAdmin):
     search_fields = ["monster ", "hunt_group", "log_type"]
     list_filter = ["monster", "hunt_group", "server", "log_type"]
 
+class IFTTTChannelAdmin(admin.ModelAdmin):
+    list_display = ["name", "group"]
+    search_fields = ["name ", "group"]
+
 
 admin.site.register(QQGroup, QQGroupAdmin)
 admin.site.register(CustomReply, CustomReplyAdmin)
@@ -163,3 +167,4 @@ admin.site.register(LiveUser, LiveUserAdmin)
 admin.site.register(HuntGroup, HuntGroupAdmin)
 admin.site.register(Monster, MonsterAdmin)
 admin.site.register(HuntLog, HuntLogAdmin)
+admin.site.register(IFTTTChannel, IFTTTChannelAdmin)
