@@ -51,8 +51,8 @@ def ren2res(template, req, dict={}, json_res=False):
         qquser = req.user.qquser
         p = re.compile('^[0-9a-zA-Z_]+$')
         dict.update({'user': {
-            "nickname": f"{qquser.nickname}",
-            "avatar": f"{qquser.avatar_url}"
+            "nickname": qquser.nickname,
+            "avatar": qquser.avatar_url
             }})
     else:
         dict.update({'user': False})
