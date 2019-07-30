@@ -1,5 +1,6 @@
 import json
 import urllib.parse
+import requests
 
 class OAuthQQ:
     def __init__(self, client_id, client_key, redirect_uri):
@@ -23,13 +24,11 @@ class OAuthQQ:
                   'client_id': self.client_id,
                   'client_secret': self.client_key,
                   'code': code,
-                  'redirect_uri': self.redirect_uri}    # 回调地址
-        url = 'https://graph.qq.com/oauth2.0/token?%s' % urllib.urlencode(params)
+                  'redirect_uri': self.redirect_uri}
+        url = 'https://graph.qq.com/oauth2.0/token?%s' % urllib.parse.urlencode(params)
 
-        # 访问该网址，获取access_token
-        response = urllib2.urlopen(url).read()
-        result = urlparse.parse_qs(response, True)
-
+        response = requests.post(url, data=params)
+        result = urllib.parse.parse_qs(response.text)
         access_token = str(result['access_token'][0])
         self.access_token = access_token
         return access_token
@@ -37,12 +36,11 @@ class OAuthQQ:
     def get_open_id(self):
         """获取QQ的OpenID"""
         params = {'access_token': self.access_token}
-        url = 'https://graph.qq.com/oauth2.0/me?%s' % urllib.urlencode(params)
+        url = 'https://graph.qq.com/oauth2.0/me?%s' % urllib.parse.urlencode(params)
 
-        response = urllib2.urlopen(url).read()
-        v_str = str(response)[9:-3]  # 去掉callback的字符
+        response = requests.post(url, data=params)
+        v_str = str(response.text)[9:-3]
         v_json = json.loads(v_str)
-
         openid = v_json['openid']
         self.openid = openid
         return openid
@@ -52,7 +50,7 @@ class OAuthQQ:
         params = {'access_token': self.access_token,
                   'oauth_consumer_key': self.client_id,
                   'openid': self.openid}
-        url = 'https://graph.qq.com/user/get_user_info?%s' % urllib.urlencode(params)
+        url = 'https://graph.qq.com/user/get_user_info?%s' % urllib.parse.urlencode(params)
 
-        response = urllib2.urlopen(url).read()
-        return json.loads(response)
+        response = requests.post(url, data=params)
+        return json.loads(response.text)

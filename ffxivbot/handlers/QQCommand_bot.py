@@ -6,12 +6,14 @@ import json
 import random
 import requests
 import math
+import string
+import os
 
 
 def QQCommand_bot(*args, **kwargs):
     try:
         global_config = kwargs["global_config"]
-        QQ_BASE_URL = global_config["QQ_BASE_URL"]
+        WEB_BASE_URL = global_config["WEB_BASE_URL"]
         action_list = []
         receive = kwargs["receive"]
         bot = kwargs["bot"]
@@ -32,6 +34,20 @@ def QQCommand_bot(*args, **kwargs):
                 qquser.save()
                 qquser.refresh_from_db()
                 msg = "用户 {} 的token已被设定为：{}".format(qquser, qquser.bot_token)
+        elif second_command == "register":
+            if receive["message_type"] == "group":
+                msg = "[CQ:at,qq={}] 你确定要在群里面申请注册认证码从而公之于众？".format(receive["user_id"])
+            else:
+                vcode = ''.join(random.choices(string.ascii_uppercase + string.digits, k=16))
+                (qquser, created) = QQUser.objects.get_or_create(
+                    user_id=receive["user_id"]
+                )
+                qquser.vcode = vcode
+                qquser.vcode_time = time.time()
+                qquser.save()
+                msg = "用户 {} 的注册认证码为：{}".format(qquser, qquser.vcode)
+                msg += "\n请在五分钟内访问以下地址进行注册认证："
+                msg += "{}register/?vcode={}&email={}@qq.com".format(WEB_BASE_URL, vcode, qquser)
         elif second_command == "text":
             if int(user_id) != int(bot.owner_id):
                 msg = "仅机器人领养者能修改机器人状态"
@@ -46,7 +62,7 @@ def QQCommand_bot(*args, **kwargs):
                 bot.r18 = not bot.r18
                 bot.save(update_fields=["r18"])
                 msg = "HSO已{}".format("启用" if bot.r18 else "禁用")
-        elif(second_command=="info"):
+        elif(second_command == "info"):
             if int(user_id) != int(bot.owner_id):
                 msg = "仅机器人领养者能查询机器人状态"
             else:
@@ -81,16 +97,18 @@ def QQCommand_bot(*args, **kwargs):
                     }
                 )
                 msg = "机器人状态统计请求已发送"
-
         elif receive_msg == "":
             msg = (
-                "/bot info: 查看机器人信息\n"+\
+                "/bot token $token: 申请接收ACT插件消息时认证的token\n"+\
                 "/bot update: 更新机器人统计信息\n"+\
-                "/bot token $token: 申请接收ACT插件消息时认证的token\n"
+                "/bot info: 查看机器人信息\n"+\
+                "/bot register: 申请网站注册认证码\n"+\
+                "/bot text: 更改连接分享模式\n"+\
+                "/bot hso: HSO开关\n"
             )
             msg = msg.strip()
         else:
-            msg = '无效的二级命令，二级命令有:"token","update"'
+            msg = '无效的二级命令，二级命令有:"token","update","info","register","text","hso"'
 
         msg = msg.strip()
         if msg:

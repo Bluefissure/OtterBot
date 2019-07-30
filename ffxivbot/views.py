@@ -45,11 +45,23 @@ from websocket import create_connection
 
 from .oauth_client import OAuthQQ
 
-def ren2res(template, req, render_dict={}, post_token=True):
-    render_dict.update({"user": False})
-    render_dict.update(csrf(req))
-    response = render(req, template, render_dict)
-    return response
+
+def ren2res(template, req, dict={}, json_res=False):
+    if req.user.is_authenticated:
+        qquser = req.user.qquser
+        p = re.compile('^[0-9a-zA-Z_]+$')
+        dict.update({'user': {
+            "nickname": f"{qquser.nickname}",
+            "avatar": f"{qquser.avatar_url}"
+            }})
+    else:
+        dict.update({'user': False})
+    if req:
+        if json_res and req.is_ajax() and req.method=='GET':
+            return JsonResponse(dict)
+        return render(req, template, dict)
+    else:
+        return render(req, template, dict)
 
 
 # Create your views here.
@@ -68,17 +80,6 @@ def tata(req):
             api_post_url = req.POST.get("api_post_url","").strip()
             autoFriend = req.POST.get("autoFriend")
             autoInvite = req.POST.get("autoInvite")
-            print(
-                "{},{},{},{},{},{},{}".format(
-                    botName,
-                    botID,
-                    ownerID,
-                    accessToken,
-                    tulingToken,
-                    autoFriend,
-                    autoInvite,
-                )
-            )
             if len(botName) < 2:
                 res_dict = {"response": "error", "msg": "机器人昵称太短"}
                 return JsonResponse(res_dict)
@@ -110,18 +111,11 @@ def tata(req):
                     res_dict = {"response": "error", "msg": "机器人总数过多，请稍后再试"}
                     return JsonResponse(res_dict)
                 bot.save()
-                if bot_created:
-                    res_dict = {
-                        "response": "success",
-                        "msg": "{}({})添加成功，Token为:".format(bot.name, bot.user_id),
-                        "token": bot.access_token,
-                    }
-                else:
-                    res_dict = {
-                        "response": "success",
-                        "msg": "{}({})更新成功，Token为:".format(bot.name, bot.user_id),
-                        "token": bot.access_token,
-                    }
+                res_dict = {
+                    "response": "success",
+                    "msg": "{}({})".format(bot.name, bot.user_id) + ("添加" if bot_created else "更新") + "成功，Token为:",
+                    "token": bot.access_token,
+                }
             return JsonResponse(res_dict)
         else:
             bot_id = req.POST.get("id")
@@ -152,8 +146,6 @@ def tata(req):
                 bot_conf["secret"] = bot.access_token
                 response.write(json.dumps(bot_conf, indent=4))
                 return response
-            print(optype)
-            print(req.POST)
         return JsonResponse(res_dict)
 
     bots = QQBot.objects.all()
@@ -742,20 +734,29 @@ def api(req):
                                         monster_name = zone_name.replace(str(monster.territory), monster_name)  # "ZoneName2" -> "MonsterName2"
                                         monster = Monster.objects.get(cn_name=monster_name)
                                 print("Get HuntLog info:\nmonster:{}\nserver:{}".format(monster, server))
-                                hunt_log = HuntLog(
+                                if HuntLog.objects.filter(
                                     monster = monster,
-                                    hunt_group = hunt_group,
                                     server = server,
+                                    hunt_group = hunt_group,
                                     log_type = "kill",
-                                    time = timestamp
-                                )
-                                hunt_log.save()
-                                msg = "{}——\"{}\" 击杀时间: {}".format(hunt_log.server, monster, 
+                                    time__gt = timestamp-60).exists():
+                                    msg = "{}——\"{}\" 已在一分钟内记录上报，此次API调用被忽略".format(hunt_log.server, monster, 
                                         time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(timestamp))
                                     )
-                                msg = "[CQ:at,qq={}]通过API更新了如下HuntLog:\n{}".format(
-                                            qquser.user_id, msg
+                                else:
+                                    hunt_log = HuntLog(
+                                        monster = monster,
+                                        hunt_group = hunt_group,
+                                        server = server,
+                                        log_type = "kill",
+                                        time = timestamp
+                                    )
+                                    hunt_log.save()
+                                    msg = "{}——\"{}\" 击杀时间: {}".format(hunt_log.server, monster, 
+                                            time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(timestamp))
                                         )
+                                    at_msg = "[CQ:at,qq={}]".format(qquser.user_id) if req.GET.get("at", "true")=="false" else str(qquser.user_id)
+                                    msg = at_msg + "通过API更新了如下HuntLog:\n{}".format(msg)
                                 jdata = {
                                     "action": "send_group_msg",
                                     "params": {
@@ -994,14 +995,95 @@ def logout(req):
     auth.logout(req)
     return HttpResponseRedirect('/')
 
-
-
-
-def qq_login(request):
+def qq_login(req):
     oauth_qq = OAuthQQ(settings.QQ_APP_ID, settings.QQ_KEY, settings.QQ_RECALL_URL)
     url = oauth_qq.get_auth_url()
     return HttpResponseRedirect(url)
 
-
-def qq_check(request):
+def qq_check(req):
+    code = req.GET.get('code', None)
+    authqq = OAuthQQ(settings.QQ_APP_ID, settings.QQ_KEY, settings.QQ_RECALL_URL)
+    access_token = authqq.get_access_token(code) 
+    time.sleep(0.05)
+    qq_openid = authqq.get_open_id()
+    try:
+        qquser = QQUser.objects.get(open_id=qq_openid)
+        user = qquser.dbuser
+        auth.login(req, user)
+        next = req.session.get('next', '/tata')
+        return HttpResponseRedirect(next)
+    except QQUser.DoesNotExist:
+        if req.user.is_anonymous:
+            return HttpResponseRedirect("/register/?err=%E8%AF%B7%E9%A6%96%E5%85%88%E6%B3%A8%E5%86%8C%E8%B4%A6%E6%88%B7%E5%B9%B6%E7%BB%91%E5%AE%9AQQ")
+        else:
+            user = req.user
+            qquser = user.qquser
+            qqinfo = authqq.get_qq_info()
+            qquser.open_id = qq_openid
+            if qqinfo.get("ret", -1) == 0:
+                qquser.nickname = qqinfo.get("nickname")
+                qquser.avatar_url = qqinfo.get("figureurl_qq")
+            qquser.save()
+            next = req.session.get('next', '/tata')
+            return HttpResponseRedirect(next)
     return HttpResponseRedirect("/tata")
+        
+
+def register(req):
+    if req.method == 'GET':
+        req_dict = {}
+        if req.GET.get('err'):
+            req_dict.update({'err':req.GET.get('err')})
+        if req.user.is_anonymous:
+            if req.GET.get('next'):
+                req.session['next'] = req.GET.get('next')
+            return ren2res('register.html', req, req_dict)
+        else:
+            return HttpResponseRedirect('/')
+    elif req.method == 'POST':
+        email = req.POST.get('Email')
+        vcode = req.POST.get('Verification Code')
+        emailresult = User.objects.filter(username=email)
+        p = re.compile('^\d+@qq\.com$')
+        if not email:
+            return ren2res('register.html', req, {'err': "Email格式错误"})
+        elif p.match(email) == None:
+            return ren2res('register.html', req, {'err': "目前仅支持QQ邮箱注册"})
+        elif emailresult.exists():
+            return ren2res('register.html', req, {'err': "此邮箱已被注册"})
+        elif not req.POST.get('TOS'):
+            return ren2res('register.html', req, {'err': "请阅读并同意用户协议"})
+        else:
+            pw1 = req.POST.get('Password')
+            if not pw1:
+                return ren2res('register.html', req, {'err': "密码不能为空"})
+            pw2 = req.POST.get('Retype password')
+            if pw1 != pw2:
+                return ren2res('register.html', req, {'err': "密码不匹配"})
+            else:
+                newuser = User()
+                newuser.username = email
+                qq = email.replace("@qq.com", "")
+                (newinfo, created) = QQUser.objects.get_or_create(user_id=qq)
+                if newinfo.vcode != vcode:
+                    return ren2res('register.html', req, {'err': "獭獭认证码不匹配"})
+                if newinfo.vcode_time + 300 < time.time():
+                    return ren2res('register.html', req, {'err': "獭獭认证码已过期"})
+                newuser.set_password(pw1)
+                newuser.save()
+                newinfo.dbuser = newuser
+                newinfo.vcode_time = 0
+                newinfo.vcode = ""
+                newinfo.save()
+                newuser = auth.authenticate(username=email, password=pw1)
+                auth.login(req, user=newuser)
+                next = req.session.get('next')
+                if next:
+                    return HttpResponseRedirect(next)
+                else:
+                    return ren2res('register.html', req, {'success': "注册成功"})
+
+
+@login_required(login_url='/login/')
+def hunt(req):
+    return ren2res('hunt.html', req, {})

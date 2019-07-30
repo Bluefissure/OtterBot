@@ -29,11 +29,13 @@ urlpatterns = [
     path('api/', api),
     path('http/', qqpost),
     path('image/', image),
+    path('hunt/', hunt),
     url(r'^oauth/qq/login/$', qq_login, name='qq_login'),
     url(r'^api/qqcallback', qq_check, name='qq_check'),
     # url(r'^oauth/qq/check/$', qq_check, name='qq_check'),
     # url(r'^oauth/bind/account/$', bind_account, name='bind_account'),
     url(r'^login/', login),
+    url(r'^register/', register),
     url(r'^logout/', logout),
 ]
 if settings.DEBUG == True:

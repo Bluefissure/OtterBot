@@ -123,7 +123,8 @@ class LiveUserAdmin(admin.ModelAdmin):
 
 class HuntGroupAdmin(admin.ModelAdmin):
     list_display = ["group", "server"]
-    search_fields = ["group ", "server"]
+    search_fields = ["group", "server"]
+    raw_id_fields  = ["group", "moderator"]
 
 class MonsterAdmin(admin.ModelAdmin):
     list_display = ["name", "cn_name", "territory", "rank"]
@@ -134,10 +135,12 @@ class HuntLogAdmin(admin.ModelAdmin):
     list_display = ["monster", "hunt_group", "server", "log_type", "time"]
     search_fields = ["monster ", "hunt_group", "log_type"]
     list_filter = ["monster", "hunt_group", "server", "log_type"]
+    raw_id_fields  = ["hunt_group"]
 
 class IFTTTChannelAdmin(admin.ModelAdmin):
     list_display = ["name", "group"]
     search_fields = ["name ", "group"]
+    raw_id_fields  = ["members"]
 
 
 admin.site.register(QQGroup, QQGroupAdmin)
