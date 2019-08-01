@@ -24,7 +24,18 @@ def QQCommand_dps(*args, **kwargs):
         msg = ""
         CN_source = False
         if receive_msg.find("help") == 0 or receive_msg == "":
-            msg = "1.  查询总排名\n/dps [Boss] [职业] \n/dps [Boss] [职业] 国服\n2.  查询指定天数总排名\n/dps [Boss] [职业] day#[天数] \n/dps [Boss] [职业] day#[天数] 国服\n3.  查询dps排名\n/dps [Boss] [职业] [数值]\n/dps [Boss] [职业] 国服 [数值]\n4.  查询指定天数dps排名\n/dps [Boss] [职业] day#[天数] 数值\n/dps [Boss] [职业] day#[天数] 国服 [数值]"
+            msg = "1.  查询总排名\n\
+/dps [Boss] [职业] \n\
+2.  查询指定天数总排名\n\
+/dps [Boss] [职业] day#[天数] \n\
+3.  查询dps排名\n\
+/dps [Boss] [职业] [数值]\n\
+4.  查询指定天数dps排名\n\
+/dps [Boss] [职业] day#[天数] [数值]\n\
+5.  查询指定天数dps排名\n\
+/dps ... 国服\n\
+6.  查询rdps\n\
+/dps ... rdps"
         else:
             for boss in boss_list:
                 try:
