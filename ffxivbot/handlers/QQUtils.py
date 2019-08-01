@@ -145,10 +145,7 @@ def getWeatherID(territory, chance):
 
 
 def getFollowingWeathers(territory, cnt=5, TIMEFORMAT="%m-%d %H:%M:%S", **kwargs):
-    try:
-        Garlok = kwargs["Garlok"]
-    except:
-        Garlok = False
+    Garlok = kwargs.get("Garlok", None)
     unixSeconds = kwargs.get("unixSeconds", int(time.time()))
     if Garlok:
         weatherStartTime = getGarlokWeatherTimeFloor(unixSeconds)
