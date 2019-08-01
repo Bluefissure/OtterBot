@@ -74,6 +74,10 @@ def QQCommand_dps(*args, **kwargs):
                         receive_msg = receive_msg.replace("CN", "", 1).replace(
                             "国服", "", 1
                         )
+                    dps_type = "pdps"
+                    if "rdps" in receive_msg:
+                        dps_type = "rdps"
+                        receive_msg = receive_msg.replace("rdps", "", 1)
                     if "国际服" in receive_msg:
                         receive_msg = receive_msg.replace("国际服", "day#-1")
                     if boss.frozen:
@@ -85,11 +89,17 @@ def QQCommand_dps(*args, **kwargs):
                             "day#{}".format(tmp_day), "", 1
                         )
                     atk_res = crawl_dps(
-                        boss=boss_obj, job=job_obj, day=day, CN_source=CN_source
+                        boss=boss_obj, 
+                        job=job_obj, 
+                        day=day, 
+                        CN_source=CN_source,
+                        dps_type=dps_type
                     )
+                    info_msg = "国服" if CN_source else "国际服"
+                    info_msg += "({})".format(dps_type)
                     if isinstance(atk_res, str):
                         msg = "\nBoss:{}职业:{}第{}日的{}数据未抓取，请联系管理员排查\n".format(
-                            boss, job, day, "国服" if CN_source else "国际服"
+                            boss, job, day, info_msg
                         )
                         msg += atk_res
                     else:
@@ -101,7 +111,7 @@ def QQCommand_dps(*args, **kwargs):
                             msg = "{} {} {}day#{}:\n".format(
                                 boss.cn_name,
                                 job.cn_name,
-                                "国服 " if CN_source else "国际服 ",
+                                info_msg,
                                 day,
                             )
                             for perc in percentage_list:
@@ -151,7 +161,7 @@ def QQCommand_dps(*args, **kwargs):
                                             calc_perc,
                                         )
                                 msg += "\n计算基于{}day#{}数据".format(
-                                    "国服" if CN_source else "国际服", day
+                                    info_msg, day
                                 )
         if isinstance(msg, str):
             msg = msg.strip()
