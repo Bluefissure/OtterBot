@@ -13,3 +13,4 @@ FFXIV/settings.py
 ffxivbot/config.json
 tooltip.png
 utils/nohup.out
+.idea

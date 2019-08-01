@@ -145,10 +145,7 @@ def getWeatherID(territory, chance):
 
 
 def getFollowingWeathers(territory, cnt=5, TIMEFORMAT="%m-%d %H:%M:%S", **kwargs):
-    try:
-        Garlok = kwargs["Garlok"]
-    except:
-        Garlok = False
+    Garlok = kwargs.get("Garlok", None)
     unixSeconds = kwargs.get("unixSeconds", int(time.time()))
     if Garlok:
         weatherStartTime = getGarlokWeatherTimeFloor(unixSeconds)
@@ -215,14 +212,16 @@ def getSpecificWeatherTimes(territory, weathers, cnt=5, TIMEFORMAT_MDHMS="%m-%d 
     return times
 
 
-def crawl_dps(boss, job, day=0, CN_source=False):
+def crawl_dps(boss, job, day=0, CN_source=False, dps_type="pdps"):
     print("boss:{} job:{} day:{}".format(boss, job, day))
-    fflogs_url = "https://www.fflogs.com/zone/statistics/table/{}/dps/{}/100/8/{}/100/1000/7/{}/Global/{}/All/0/normalized/single/0/-1/".format(
+    fflogs_url = "https://www.fflogs.com/zone/statistics/table/{}/dps/{}/{}/8/{}/100/1000/7/{}/Global/{}/All/0/normalized/single/0/-1/?keystone=15&dpstype={}".format(
         boss.quest.quest_id,
         boss.boss_id,
-        "3" if CN_source else "1",
+        boss.savage,
+        boss.cn_server if CN_source else boss.global_server,
         boss.patch,
         job.name,
+        dps_type
     )
     print("fflogs url:{}".format(fflogs_url))
     r = requests.get(url=fflogs_url, timeout=5)

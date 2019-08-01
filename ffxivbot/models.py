@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.models import User
 import json
 import time
 
@@ -160,6 +161,9 @@ class Boss(models.Model):
     parsed_days = models.IntegerField(default=0)
     frozen = models.BooleanField(default=False)
     patch = models.IntegerField(default=0)
+    savage = models.IntegerField(default=100)   # 100 for normal; 101 for savage
+    global_server = models.IntegerField(default=3) # 3 for boss after 5.0, 1 for boss before 5.0 
+    cn_server = models.IntegerField(default=5) # 5 for boss after 5.0, 3 for boss before 5.0
 
     def __str__(self):
         return str(self.name)
@@ -270,6 +274,7 @@ class SorryGIF(models.Model):
 
 
 class QQUser(models.Model):
+    dbuser = models.OneToOneField(User, on_delete=models.DO_NOTHING, blank=True, null=True, related_name="qquser")
     user_id = models.CharField(max_length=16, unique=True)
     bot_token = models.CharField(max_length=16, blank=True)
     able_to_upload_image = models.BooleanField(default=True)
@@ -278,6 +283,12 @@ class QQUser(models.Model):
     ban_till = models.BigIntegerField(default=0)
     ban_share_till = models.BigIntegerField(default=0)
     sent_weibo = models.TextField(default="[]")
+    ifttt_token = models.CharField(default="", max_length=128, blank=True)
+    nickname = models.CharField(default="", max_length=64, blank=True)
+    avatar_url = models.CharField(default="", max_length=256, blank=True)
+    open_id = models.CharField(default="", max_length=128, blank=True)
+    vcode = models.CharField(default="", max_length=16)
+    vcode_time = models.BigIntegerField(default=0)
 
     def __str__(self):
         return str(self.user_id)
@@ -427,7 +438,7 @@ class HuntGroup(models.Model):
     name = models.CharField(default="", max_length=64)
     group = models.ForeignKey(QQGroup, on_delete=models.CASCADE, related_name="hunt_group")
     server = models.ForeignKey(Server, on_delete=models.CASCADE, related_name="hunt_group")
-    moderator = models.ManyToManyField(QQUser, related_name="managed_hunt_group", null=True, blank=True)
+    moderator = models.ManyToManyField(QQUser, related_name="managed_hunt_group", blank=True)
     servermark = models.CharField(default="", max_length=16, blank=True, null=True)
     remark = models.CharField(default="", max_length=64, blank=True, null=True)
     def __str__(self):
@@ -461,3 +472,13 @@ class HuntLog(models.Model):
 
     def get_info(self):
         return "HuntLog#{}: {}-{} {}".format(self.id, self.server, self.monster, self.log_type)
+
+class IFTTTChannel(models.Model):
+    name = models.CharField(default="", max_length=32)
+    group = models.ForeignKey(QQGroup, null=True, blank=True, related_name="ifttt_channel", on_delete=models.CASCADE)
+    members = models.ManyToManyField(QQUser, blank=True)
+    last_push_time = models.BigIntegerField(default=0)
+    callback_link = models.CharField(default="", max_length=256)
+
+    def __str__(self):
+        return self.name

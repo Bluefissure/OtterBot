@@ -1,0 +1,119 @@
+{% extends 'index.html' %}
+{% load static %}
+
+
+{% block content %}
+
+    <!-- Content Header (Page header) -->
+    {% if err %}
+    <div class="alert alert-danger alert-dismissible">
+      <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+      <h4><i class="icon fa fa-ban"></i> {{ err.title }}</h4>
+      {{ err.message }}
+    </div>
+    {% endif %}
+    {% if success %}
+    <div class="alert alert-success alert-dismissible">
+      <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+      <h4><i class="icon fa fa-ban"></i> {{ success.title }}</h4>
+      {{ success.message }}
+    </div>
+    {% endif %}
+    <section class="content-header">
+      <h1>
+        狩猎时钟
+      </h1>
+    </section>
+
+    <!-- Main content -->
+    <section class="content">
+      <div class="row">
+        <div class="col-xs-12">
+
+          <div class="box">
+            <div class="box-header">
+              <h3 class="box-title">现有狩猎怪</h3>
+            </div>
+            <!-- /.box-header -->
+            <div class="box-body">
+              <table id="example1" class="table table-bordered table-striped table-hover"  style="width:100%">
+                <thead>
+                <tr>
+                  <th><center>名称</center></th>
+                  <th><center>服务器</center></th>
+                  <th><center>上次击杀</center></th>
+                  <th><center>触发开始</center></th>
+                  <th><center>必定触发</center></th>
+                  <th><center>进度</center></th>
+                  <!-- <th><center>配置</center></th> -->
+                </tr>
+                </thead>
+                <tbody>
+                  {% for monster in monsters %}
+                    <tr>
+                      <td><center></center></td>
+                      <td><center></center></td>
+                      <td><center></center></td>
+                      <td><center></center></td>
+                      <td><center></center></td>
+                      <td><center></center></td>
+                    </tr>
+                  {% endfor%}
+                </tfoot>
+              </table>
+            </div>
+            <!-- /.box-body -->
+          </div>
+          <!-- /.box -->
+        </div>
+
+        <!-- /.col -->
+      </div>
+      <!-- /.row -->
+    </section>
+
+
+{% endblock %}
+
+
+{% block script %}
+<!-- jQuery 3 -->
+<script src="{% static "bower_components/jquery/dist/jquery.min.js" %}"></script>
+<!-- Bootstrap 3.3.7 -->
+<script src="{% static "bower_components/bootstrap/dist/js/bootstrap.min.js" %}"></script>
+<!-- DataTables -->
+<script src="{% static "bower_components/datatables.net/js/jquery.dataTables.min.js" %}"></script>
+<script src="{% static "bower_components/datatables.net-bs/js/dataTables.bootstrap.min.js" %}"></script>
+<!-- SlimScroll -->
+<script src="{% static "bower_components/jquery-slimscroll/jquery.slimscroll.min.js" %}"></script>
+<!-- FastClick -->
+<script src="{% static "bower_components/fastclick/lib/fastclick.js" %}"></script>
+<!-- AdminLTE App -->
+<script src="{% static "dist/js/adminlte.min.js" %}"></script>
+<!-- AdminLTE for demo purposes -->
+<script src="{% static "dist/js/demo.js" %}"></script>
+<!-- page script -->
+<script>
+  $(function () {
+    $('#example1').DataTable( {
+        "scrollX": true,
+        "autoWidth": true
+    })
+    $('#example2').DataTable({
+      'paging'      : true,
+      'lengthChange': false,
+      'searching'   : false,
+      'ordering'    : true,
+      'info'        : true,
+      'autoWidth'   : false
+    })
+  })
+</script>
+<script type="text/javascript">
+  var tata = document.getElementById("hunt");
+  tata.setAttribute("class","active");
+</script>
+{% endblock %}
+
+</body>
+</html>
