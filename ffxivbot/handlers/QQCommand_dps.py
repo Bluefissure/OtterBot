@@ -126,7 +126,7 @@ def QQCommand_dps(*args, **kwargs):
                                 day,
                             )
                             for perc in percentage_list:
-                                msg += "%s%% : %.2f\n" % (perc, atk_dict[str(perc)])
+                                msg += "%s%%: %.2f\n" % (perc, atk_dict[str(perc)])
                             msg = msg.strip()
                         else:
                             try:
@@ -171,7 +171,7 @@ def QQCommand_dps(*args, **kwargs):
                                             atk,
                                             calc_perc,
                                         )
-                                msg += "\n计算基于{}day#{}数据".format(
+                                msg += "\n计算基于{} day#{}数据".format(
                                     info_msg, day
                                 )
         if isinstance(msg, str):
