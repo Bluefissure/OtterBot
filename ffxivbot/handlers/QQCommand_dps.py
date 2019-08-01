@@ -32,7 +32,7 @@ def QQCommand_dps(*args, **kwargs):
 /dps [Boss] [职业] [数值]\n\
 4.  查询指定天数dps排名\n\
 /dps [Boss] [职业] day#[天数] [数值]\n\
-5.  查询指定天数dps排名\n\
+5.  查询国服dps排名\n\
 /dps ... 国服\n\
 6.  查询rdps\n\
 /dps ... rdps"
