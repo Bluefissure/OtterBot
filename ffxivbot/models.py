@@ -470,6 +470,7 @@ class HuntLog(models.Model):
     def get_info(self):
         return "HuntLog#{}: {}-{} {}".format(self.id, self.server, self.monster, self.log_type)
 
+
 class IFTTTChannel(models.Model):
     name = models.CharField(default="", max_length=32)
     group = models.ForeignKey(QQGroup, null=True, blank=True, related_name="ifttt_channel", on_delete=models.CASCADE)
