@@ -762,13 +762,10 @@ def api(req):
                                         time=timestamp
                                     )
                                     hunt_log.save()
-                                    msg = "{}——\"{}\" 击杀时间: {}".format(hunt_log.server, monster,
-                                                                       time.strftime("%Y-%m-%d %H:%M:%S",
-                                                                                     time.localtime(timestamp))
-                                                                       )
-                                    at_msg = "[CQ:at,qq={}]".format(qquser.user_id) if req.GET.get("at",
-                                                                                                   "true") == "false" else str(
-                                        qquser.user_id)
+                                    msg = "{}——\"{}\" 击杀时间: {}".format(hunt_log.server, monster, 
+                                            time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(timestamp))
+                                        )
+                                    at_msg = "[CQ:at,qq={}]".format(qquser.user_id) if req.GET.get("at", "true")=="true" else str(qquser.user_id)
                                     msg = at_msg + "通过API更新了如下HuntLog:\n{}".format(msg)
                                 jdata = {
                                     "action": "send_group_msg",

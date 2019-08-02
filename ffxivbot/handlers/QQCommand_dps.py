@@ -24,7 +24,18 @@ def QQCommand_dps(*args, **kwargs):
         msg = ""
         CN_source = False
         if receive_msg.find("help") == 0 or receive_msg == "":
-            msg = "1.  查询总排名\n/dps [Boss] [职业] \n/dps [Boss] [职业] 国服\n2.  查询指定天数总排名\n/dps [Boss] [职业] day#[天数] \n/dps [Boss] [职业] day#[天数] 国服\n3.  查询dps排名\n/dps [Boss] [职业] [数值]\n/dps [Boss] [职业] 国服 [数值]\n4.  查询指定天数dps排名\n/dps [Boss] [职业] day#[天数] 数值\n/dps [Boss] [职业] day#[天数] 国服 [数值]"
+            msg = "1.  查询总排名\n\
+/dps [Boss] [职业] \n\
+2.  查询指定天数总排名\n\
+/dps [Boss] [职业] day#[天数] \n\
+3.  查询dps排名\n\
+/dps [Boss] [职业] [数值]\n\
+4.  查询指定天数dps排名\n\
+/dps [Boss] [职业] day#[天数] [数值]\n\
+5.  查询国服dps排名\n\
+/dps ... 国服\n\
+6.  查询rdps\n\
+/dps ... rdps"
         else:
             for boss in boss_list:
                 try:
@@ -74,6 +85,10 @@ def QQCommand_dps(*args, **kwargs):
                         receive_msg = receive_msg.replace("CN", "", 1).replace(
                             "国服", "", 1
                         )
+                    dps_type = "pdps"
+                    if "rdps" in receive_msg:
+                        dps_type = "rdps"
+                        receive_msg = receive_msg.replace("rdps", "", 1)
                     if "国际服" in receive_msg:
                         receive_msg = receive_msg.replace("国际服", "day#-1")
                     if boss.frozen:
@@ -85,11 +100,17 @@ def QQCommand_dps(*args, **kwargs):
                             "day#{}".format(tmp_day), "", 1
                         )
                     atk_res = crawl_dps(
-                        boss=boss_obj, job=job_obj, day=day, CN_source=CN_source
+                        boss=boss_obj, 
+                        job=job_obj, 
+                        day=day, 
+                        CN_source=CN_source,
+                        dps_type=dps_type
                     )
+                    info_msg = "国服" if CN_source else "国际服"
+                    info_msg += "({})".format(dps_type)
                     if isinstance(atk_res, str):
                         msg = "\nBoss:{}职业:{}第{}日的{}数据未抓取，请联系管理员排查\n".format(
-                            boss, job, day, "国服" if CN_source else "国际服"
+                            boss, job, day, info_msg
                         )
                         msg += atk_res
                     else:
@@ -101,11 +122,11 @@ def QQCommand_dps(*args, **kwargs):
                             msg = "{} {} {}day#{}:\n".format(
                                 boss.cn_name,
                                 job.cn_name,
-                                "国服 " if CN_source else "国际服 ",
+                                info_msg,
                                 day,
                             )
                             for perc in percentage_list:
-                                msg += "%s%% : %.2f\n" % (perc, atk_dict[str(perc)])
+                                msg += "%s%%: %.2f\n" % (perc, atk_dict[str(perc)])
                             msg = msg.strip()
                         else:
                             try:
@@ -150,8 +171,8 @@ def QQCommand_dps(*args, **kwargs):
                                             atk,
                                             calc_perc,
                                         )
-                                msg += "\n计算基于{}day#{}数据".format(
-                                    "国服" if CN_source else "国际服", day
+                                msg += "\n计算基于{} day#{}数据".format(
+                                    info_msg, day
                                 )
         if isinstance(msg, str):
             msg = msg.strip()
