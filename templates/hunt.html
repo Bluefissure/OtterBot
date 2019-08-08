@@ -41,6 +41,7 @@
                             <button type="button" class="btn btn-primary" id="arr">2.0</button>
                             <button type="button" class="btn btn-primary" id="hw">3.0</button>
                             <button type="button" class="btn btn-primary" id="sb">4.0</button>
+                            <button type="button" class="btn btn-primary" id="cd"><i class="fa fa-clock-o"></i></button>
                         </div>
                         <p style="margin-bottom: 0px; margin-left: 10px;">陆行鸟区：</p>
                         <div class="btn-group" role="group" style="margin-left: 10px" data-toggle="buttons">
@@ -61,7 +62,7 @@
                             <button type="button" class="btn btn-primary" id="byx">白银乡</button>
                             <button type="button" class="btn btn-primary" id="bjhx">白金幻象</button>
                         </div>
-                        <table class="table table-hover">
+                        <table id="example1" class="table table-hover dataTable">
                             <thead>
                             <tr>
                                 <th style="text-align: center; vertical-align: center;">名称</th>
@@ -78,11 +79,11 @@
                             <tbody>
                             {% for monster_info in hunt_list %}
                                 {% if monster_info.monster_type == "50S" %}
-                                    <tr class="{{ monster_info.server_tag }} arr">
+                                    <tr class="{{ monster_info.server_tag }} arr {{ monster_info.in_cd }}">
                                         {% elif monster_info.monster_type == "60S" %}
-                                    <tr class="{{ monster_info.server_tag }} hw">
+                                    <tr class="{{ monster_info.server_tag }} hw {{ monster_info.in_cd }}">
                                         {% elif monster_info.monster_type == "70S" %}
-                                    <tr class="{{ monster_info.server_tag }} sb">
+                                    <tr class="{{ monster_info.server_tag }} sb {{ monster_info.in_cd }}">
                                 {% endif %}
                             <td style="text-align: center; vertical-align: center;">{{ monster_info.monster }}</td>
                             <td style="text-align: center; vertical-align: center;">{{ monster_info.territory }}</td>
@@ -112,12 +113,15 @@
                                     </div>
                                 </td>
                             {% endif %}
-                            {% if monster_info.schedulef < 1 %}
-                                <td style="text-align: center; vertical-align: center; width: 5%;"><span
-                                        class="badge bg-green">{{ monster_info.schedule }}</span></td>
-                            {% else %}
+                            {% if monster_info.schedulef > 1 %}
                                 <td style="text-align: center; vertical-align: center; width: 5%;"><span
                                         class="badge bg-red">{{ monster_info.schedule }}</span></td>
+                            {% elif monster_info.schedulef < monster_info.cd_schedulef %}
+                                <td style="text-align: center; vertical-align: center; width: 5%;"><span
+                                        class="badge bg-gray">{{ monster_info.schedule }}</span></td>
+                            {% else %}
+                                <td style="text-align: center; vertical-align: center; width: 5%;"><span
+                                        class="badge bg-green">{{ monster_info.schedule }}</span></td>
                             {% endif %}
                             <td style="text-align: center; vertical-align: center;">{{ monster_info.kill_time }}</td>
                             <td style="text-align: center; vertical-align: center;">{{ monster_info.next_spawn_time }}</td>
@@ -163,17 +167,13 @@
     <script>
         $(function () {
             $('#example1').DataTable({
-                "scrollX": true,
-                "autoWidth": true
-            })
-            $('#example2').DataTable({
-                'paging': true,
+                'paging': false,
                 'lengthChange': false,
                 'searching': false,
                 'ordering': true,
-                'info': true,
+                'info': false,
                 'autoWidth': false
-            })
+            });
         })
     </script>
     <script type="text/javascript">

@@ -2,6 +2,7 @@ var server = "lnxy";
 var arr = true;
 var hw = true;
 var sb = true;
+var cd = false;
 var allServersButton = ["#lnxy", "#zszq", "#hyqd", "#mdn", "#syzd", "#jyzy", "#myc", "#yx", "#hyh", "#cft", "#sqh", "#byx", "#bjhx"]
 var allServersHiddenTag = [".lnxy", ".zszq", ".hyqd", ".mdn", ".syzd", ".jyzy", ".myc", ".yx", ".hyh", ".cft", ".sqh", ".byx", ".bjhx"]
 
@@ -19,13 +20,17 @@ $(document).ready(function () {
         if (localStorage.getItem("sb") === null) {
             localStorage.setItem("sb", sb);
         }
+        if (localStorage.getItem("cd") === null) {
+            localStorage.setItem("cd", cd);
+        }
         server = localStorage.getItem("server");
         arr = localStorage.getItem("arr") === "true";
         hw = localStorage.getItem("hw") === "true";
         sb = localStorage.getItem("sb") === "true";
+        cd = localStorage.getItem("cd") === "true";
     }
-    updateHidden()
-    setInterval('autoRefresh()',300000);
+    updateHidden();
+    setInterval('autoRefresh()', 300000);
 });
 $(document).ready(function () {
     $("#arr").on("click", function () {
@@ -53,6 +58,15 @@ $(document).ready(function () {
             sb = true;
         }
         localStorage.setItem("sb", sb);
+        updateHidden()
+    });
+    $("#cd").on("click", function () {
+        if (cd) {
+            cd = false;
+        } else if (!cd) {
+            cd = true;
+        }
+        localStorage.setItem("cd", cd);
         updateHidden()
     });
     $("#lnxy").on("click", function () {
@@ -147,6 +161,14 @@ function updateHidden() {
         $(".sb").addClass("hide");
         $("#sb").addClass("btn-secondary");
     }
+    if (cd){
+        $(".notcd").addClass("hide-cd");
+        $("#cd").removeClass("btn-secondary");
+    }
+    if (!cd){
+        $(".notcd").removeClass("hide-cd");
+        $("#cd").addClass("btn-secondary");
+    }
     if (server === "lnxy") {
         // 将列表放进临时列表内
         let tempButtonList = allServersButton.concat();
@@ -157,11 +179,11 @@ function updateHidden() {
         // 轮询并添加除拉诺西亚的各服狩猎怪表格的Class
         for (let i = 0; i < tempButtonList.length; i++) {
             $(tempButtonList[i]).addClass("btn-secondary");
-            $(tempHiddenTag[i]).addClass("hidden");
+            $(tempHiddenTag[i]).addClass("hide-server");
         }
         // 移除拉诺西亚的按钮和表格的Class
         $("#lnxy").removeClass("btn-secondary");
-        $(".lnxy").removeClass("hidden");
+        $(".lnxy").removeClass("hide-server");
     }
     if (server === "zszq") {
         let tempButtonList = allServersButton.concat();
@@ -172,10 +194,10 @@ function updateHidden() {
 
         for (let i = 0; i < tempButtonList.length; i++) {
             $(tempButtonList[i]).addClass("btn-secondary");
-            $(tempHiddenTag[i]).addClass("hidden");
+            $(tempHiddenTag[i]).addClass("hide-server");
         }
         $("#zszq").removeClass("btn-secondary");
-        $(".zszq").removeClass("hidden");
+        $(".zszq").removeClass("hide-server");
     }
     if (server === "hyqd") {
         let tempButtonList = allServersButton.concat();
@@ -186,10 +208,10 @@ function updateHidden() {
 
         for (let i = 0; i < tempButtonList.length; i++) {
             $(tempButtonList[i]).addClass("btn-secondary");
-            $(tempHiddenTag[i]).addClass("hidden");
+            $(tempHiddenTag[i]).addClass("hide-server");
         }
         $("#hyqd").removeClass("btn-secondary");
-        $(".hyqd").removeClass("hidden");
+        $(".hyqd").removeClass("hide-server");
     }
     if (server === "mdn") {
         let tempButtonList = allServersButton.concat();
@@ -200,10 +222,10 @@ function updateHidden() {
 
         for (let i = 0; i < tempButtonList.length; i++) {
             $(tempButtonList[i]).addClass("btn-secondary");
-            $(tempHiddenTag[i]).addClass("hidden");
+            $(tempHiddenTag[i]).addClass("hide-server");
         }
         $("#mdn").removeClass("btn-secondary");
-        $(".mdn").removeClass("hidden");
+        $(".mdn").removeClass("hide-server");
     }
     if (server === "syzd") {
         let tempButtonList = allServersButton.concat();
@@ -214,10 +236,10 @@ function updateHidden() {
 
         for (let i = 0; i < tempButtonList.length; i++) {
             $(tempButtonList[i]).addClass("btn-secondary");
-            $(tempHiddenTag[i]).addClass("hidden");
+            $(tempHiddenTag[i]).addClass("hide-server");
         }
         $("#syzd").removeClass("btn-secondary");
-        $(".syzd").removeClass("hidden");
+        $(".syzd").removeClass("hide-server");
     }
     if (server === "jyzy") {
         let tempButtonList = allServersButton.concat();
@@ -228,10 +250,10 @@ function updateHidden() {
 
         for (let i = 0; i < tempButtonList.length; i++) {
             $(tempButtonList[i]).addClass("btn-secondary");
-            $(tempHiddenTag[i]).addClass("hidden");
+            $(tempHiddenTag[i]).addClass("hide-server");
         }
         $("#jyzy").removeClass("btn-secondary");
-        $(".jyzy").removeClass("hidden");
+        $(".jyzy").removeClass("hide-server");
     }
     if (server === "myc") {
         let tempButtonList = allServersButton.concat();
@@ -242,10 +264,10 @@ function updateHidden() {
 
         for (let i = 0; i < tempButtonList.length; i++) {
             $(tempButtonList[i]).addClass("btn-secondary");
-            $(tempHiddenTag[i]).addClass("hidden");
+            $(tempHiddenTag[i]).addClass("hide-server");
         }
         $("#myc").removeClass("btn-secondary");
-        $(".myc").removeClass("hidden");
+        $(".myc").removeClass("hide-server");
     }
     if (server === "yx") {
         let tempButtonList = allServersButton.concat();
@@ -256,10 +278,10 @@ function updateHidden() {
 
         for (let i = 0; i < tempButtonList.length; i++) {
             $(tempButtonList[i]).addClass("btn-secondary");
-            $(tempHiddenTag[i]).addClass("hidden");
+            $(tempHiddenTag[i]).addClass("hide-server");
         }
         $("#yx").removeClass("btn-secondary");
-        $(".yx").removeClass("hidden");
+        $(".yx").removeClass("hide-server");
     }
     if (server === "hyh") {
         let tempButtonList = allServersButton.concat();
@@ -270,10 +292,10 @@ function updateHidden() {
 
         for (let i = 0; i < tempButtonList.length; i++) {
             $(tempButtonList[i]).addClass("btn-secondary");
-            $(tempHiddenTag[i]).addClass("hidden");
+            $(tempHiddenTag[i]).addClass("hide-server");
         }
         $("#hyh").removeClass("btn-secondary");
-        $(".hyh").removeClass("hidden");
+        $(".hyh").removeClass("hide-server");
     }
     if (server === "cft") {
         let tempButtonList = allServersButton.concat();
@@ -284,10 +306,10 @@ function updateHidden() {
 
         for (let i = 0; i < tempButtonList.length; i++) {
             $(tempButtonList[i]).addClass("btn-secondary");
-            $(tempHiddenTag[i]).addClass("hidden");
+            $(tempHiddenTag[i]).addClass("hide-server");
         }
         $("#cft").removeClass("btn-secondary");
-        $(".cft").removeClass("hidden");
+        $(".cft").removeClass("hide-server");
     }
     if (server === "sqh") {
         let tempButtonList = allServersButton.concat();
@@ -298,10 +320,10 @@ function updateHidden() {
 
         for (let i = 0; i < tempButtonList.length; i++) {
             $(tempButtonList[i]).addClass("btn-secondary");
-            $(tempHiddenTag[i]).addClass("hidden");
+            $(tempHiddenTag[i]).addClass("hide-server");
         }
         $("#sqh").removeClass("btn-secondary");
-        $(".sqh").removeClass("hidden");
+        $(".sqh").removeClass("hide-server");
     }
     if (server === "byx") {
         let tempButtonList = allServersButton.concat();
@@ -312,10 +334,10 @@ function updateHidden() {
 
         for (let i = 0; i < tempButtonList.length; i++) {
             $(tempButtonList[i]).addClass("btn-secondary");
-            $(tempHiddenTag[i]).addClass("hidden");
+            $(tempHiddenTag[i]).addClass("hide-server");
         }
         $("#byx").removeClass("btn-secondary");
-        $(".byx").removeClass("hidden");
+        $(".byx").removeClass("hide-server");
     }
     if (server === "bjhx") {
         let tempButtonList = allServersButton.concat();
@@ -326,13 +348,13 @@ function updateHidden() {
 
         for (let i = 0; i < tempButtonList.length; i++) {
             $(tempButtonList[i]).addClass("btn-secondary");
-            $(tempHiddenTag[i]).addClass("hidden");
+            $(tempHiddenTag[i]).addClass("hide-server");
         }
         $("#bjhx").removeClass("btn-secondary");
-        $(".bjhx").removeClass("hidden");
+        $(".bjhx").removeClass("hide-server");
     }
 }
-function autoRefresh()
-{
-       window.location.reload();
+
+function autoRefresh() {
+    window.location.reload();
 }
