@@ -14,6 +14,7 @@ import sys
 import time
 import traceback
 import urllib
+import copy
 from collections import OrderedDict
 from hashlib import md5
 from time import localtime, strftime
@@ -53,11 +54,11 @@ def ren2res(template, req, dict={}, json_res=False):
         dict.update({'user': {
             "nickname": qquser.nickname,
             "avatar": qquser.avatar_url
-            }})
+        }})
     else:
         dict.update({'user': False})
     if req:
-        if json_res and req.is_ajax() and req.method=='GET':
+        if json_res and req.is_ajax() and req.method == 'GET':
             return JsonResponse(dict)
         return render(req, template, dict)
     else:
@@ -77,7 +78,7 @@ def tata(req):
             ownerID = req.POST.get("ownerID")
             accessToken = req.POST.get("accessToken")
             tulingToken = req.POST.get("tulingToken")
-            api_post_url = req.POST.get("api_post_url","").strip()
+            api_post_url = req.POST.get("api_post_url", "").strip()
             autoFriend = req.POST.get("autoFriend")
             autoInvite = req.POST.get("autoInvite")
             if len(botName) < 2:
@@ -173,7 +174,7 @@ def tata(req):
             bb["user_id"] = bot.user_id
         else:
             mid = len(bot.user_id) // 2
-            user_id = bot.user_id[: mid - 2] + "*" * 4 + bot.user_id[mid + 2 :]
+            user_id = bot.user_id[: mid - 2] + "*" * 4 + bot.user_id[mid + 2:]
             bb["user_id"] = user_id
         bb["group_num"] = group_num
         bb["friend_num"] = friend_num
@@ -222,7 +223,7 @@ def quest(req):
                 search_list.append((single_quest, 1, 1))
                 search_list.append((single_quest, 2, 1))
                 if (single_quest.is_main_scenario() and not main_quest) or (
-                    not single_quest.is_main_scenario() and not sub_quest
+                        not single_quest.is_main_scenario() and not sub_quest
                 ):
                     res_dict["response"] = "查询任务类别与所选类别不符，清选择正确的类别。"
                     return JsonResponse(res_dict)
@@ -253,19 +254,19 @@ def quest(req):
                             if direction == 1:
                                 for quest in now_quest.suf_quests.all():
                                     if (quest.is_main_scenario() and main_quest) or \
-                                        ( not quest.is_main_scenario() and sub_quest):
+                                            (not quest.is_main_scenario() and sub_quest):
                                         if quest.name not in quest_dict.keys():
                                             search_list.append((quest, 1, search_iter + 1))
                                         edge = {"from": now_quest.name, "to": quest.name}
                                         if edge not in edge_list:
                                             tmp_edge_list.append(edge)
                         if not now_quest.endpoint or (
-                            now_quest.endpoint and now_quest.name == single_quest.name
+                                now_quest.endpoint and now_quest.name == single_quest.name
                         ):
                             if direction == 2:
                                 for quest in now_quest.pre_quests.all():
                                     if (quest.is_main_scenario() and main_quest) or \
-                                        ( not quest.is_main_scenario() and sub_quest):
+                                            (not quest.is_main_scenario() and sub_quest):
                                         if quest.name not in quest_dict.keys():
                                             search_list.append((quest, 2, search_iter + 1))
                                         edge = {"from": quest.name, "to": now_quest.name}
@@ -275,8 +276,8 @@ def quest(req):
                         print(e)
                 for edge in tmp_edge_list:
                     if (
-                        edge["from"] in quest_dict.keys()
-                        and edge["to"] in quest_dict.keys()
+                            edge["from"] in quest_dict.keys()
+                            and edge["to"] in quest_dict.keys()
                     ):
                         edge_list.append(edge)
                 quest_dict[single_quest.name]["style"] = "fill: #7f7"
@@ -305,7 +306,7 @@ def image(req):
             if cat:
                 image_filter = image_filter.filter(Q(key__contains=cat) | Q(add_by__user_id__contains=cat))
             images = list(
-                map(        
+                map(
                     lambda x: {
                         "name": x.name,
                         "url": "https://i.loli.net" + x.path,
@@ -315,12 +316,13 @@ def image(req):
                     list(image_filter[:30]),
                 )
             )
-            res_dict = {"images":images,"response":"success"}
+            res_dict = {"images": images, "response": "success"}
         else:
-            res_dict = {"msg":"not support","response":"error"}
+            res_dict = {"msg": "not support", "response": "error"}
         return JsonResponse(res_dict)
 
     return ren2res("image.html", req, {})
+
 
 def quest_tooltip(req):
     quest_id = req.GET.get("id", 0)
@@ -334,19 +336,21 @@ def quest_tooltip(req):
             except PlotQuest.DoesNotExist:
                 return HttpResponse("No such quest", status=500)
             else:
-                if res_type=="web":
-                    if quest.tooltip_html=="" or nocache:
-                        r = requests.get("https://ff14.huijiwiki.com/ff14/api.php?format=json&action=parse&disablelimitreport=true&prop=text&title=%E9%A6%96%E9%A1%B5&smaxage=86400&maxage=86400&text=%7B%7B%E4%BB%BB%E5%8A%A1%2F%E6%B5%AE%E5%8A%A8%E6%91%98%E8%A6%81%7C{}%7D%7D".format(
-                            quest_id
+                if res_type == "web":
+                    if quest.tooltip_html == "" or nocache:
+                        r = requests.get(
+                            "https://ff14.huijiwiki.com/ff14/api.php?format=json&action=parse&disablelimitreport=true&prop=text&title=%E9%A6%96%E9%A1%B5&smaxage=86400&maxage=86400&text=%7B%7B%E4%BB%BB%E5%8A%A1%2F%E6%B5%AE%E5%8A%A8%E6%91%98%E8%A6%81%7C{}%7D%7D".format(
+                                quest_id
                             ))
                         r_json = r.json()
                         # print(r_json)
                         html = r_json["parse"]["text"]["*"]
                         html = html.replace("class=\"tooltip-item\"", "class=\"tooltip-item\" id=\"tooltip\"", 1)
-                        html = html.replace("href=\"/","href=\"https://ff14.huijiwiki.com/")
-                        soup = BeautifulSoup(html,'html.parser')
+                        html = html.replace("href=\"/", "href=\"https://ff14.huijiwiki.com/")
+                        soup = BeautifulSoup(html, 'html.parser')
                         quest_name = soup.p.span.string
-                        a = soup.new_tag('a', href='https://ff14.huijiwiki.com/wiki/%E4%BB%BB%E5%8A%A1:{}'.format( urllib.parse.quote(quest_name)))
+                        a = soup.new_tag('a', href='https://ff14.huijiwiki.com/wiki/%E4%BB%BB%E5%8A%A1:{}'.format(
+                            urllib.parse.quote(quest_name)))
                         a.string = quest_name
                         soup.p.span.string = ""
                         soup.p.span.append(a)
@@ -355,12 +359,13 @@ def quest_tooltip(req):
                         quest.save(update_fields=["tooltip_html"])
                     else:
                         html = quest.tooltip_html
-                    return ren2res("quest_tooltip.html", req, {"parsed_html":html})
-                elif res_type=="img" or res_type=="image":
+                    return ren2res("quest_tooltip.html", req, {"parsed_html": html})
+                elif res_type == "img" or res_type == "image":
                     return HttpResponse("TODO", status=500)
     except KeyError:
         return HttpResponse("KeyError", status=500)
     return HttpResponse(status=500)
+
 
 def get_nm_id(tracker, nm_name):
     if tracker == "ffxiv-eureka":
@@ -542,14 +547,14 @@ def api(req):
             if "ffxiv-eureka" in trackers:
                 instance = req.GET.get("instance")
                 password = req.GET.get("password")
-                print("ffxiv-eureka {}:{}".format(instance,password))
+                print("ffxiv-eureka {}:{}".format(instance, password))
                 if instance and password:
                     nm_name = req.POST.get("text")
                     if nm_name:
                         nm_id = get_nm_id("ffxiv-eureka", nm_name)
-                        print("nm_name:{} id:{}".format(nm_name,nm_id))
+                        print("nm_name:{} id:{}".format(nm_name, nm_id))
                         if nm_id > 0:
-                            print("nm_name:{} nm_id:{}".format(nm_name,nm_id))
+                            print("nm_name:{} nm_id:{}".format(nm_name, nm_id))
                             # ws = create_connection("wss://ffxiv-eureka.com/socket/websocket?vsn=2.0.0")
                             ws = create_connection(
                                 "wss://ffxiv-eureka.com/socket/websocket?vsn=2.0.0"
@@ -643,8 +648,8 @@ def api(req):
                                         user["user_id"]
                                         for user in json.loads(group.member_list)
                                         if (
-                                            user["role"] == "owner"
-                                            or user["role"] == "admin"
+                                                user["role"] == "owner"
+                                                or user["role"] == "admin"
                                         )
                                     ]
                                     print("group push list:{}".format(group_push_list))
@@ -652,9 +657,9 @@ def api(req):
                                     print("group:{} does not exist".format(group_id))
                             msg = handle_hunt_msg(msg)
                             if (
-                                group
-                                and group.api
-                                and int(qquser.user_id) in group_push_list
+                                    group
+                                    and group.api
+                                    and int(qquser.user_id) in group_push_list
                             ):
                                 jdata = {
                                     "action": "send_group_msg",
@@ -678,10 +683,11 @@ def api(req):
                                     {"type": "send.event", "text": json.dumps(jdata)},
                                 )
                             else:
-                                url = os.path.join(bot.api_post_url, "{}?access_token={}".format(jdata["action"], bot.access_token))
-                                headers = {'Content-Type': 'application/json'} 
+                                url = os.path.join(bot.api_post_url,
+                                                   "{}?access_token={}".format(jdata["action"], bot.access_token))
+                                headers = {'Content-Type': 'application/json'}
                                 r = requests.post(url=url, headers=headers, data=json.dumps(jdata["params"]))
-                                if r.status_code!=200:
+                                if r.status_code != 200:
                                     logging.error(r.text)
                             httpresponse = HttpResponse("OK", status=200)
             if "hunt" in trackers:
@@ -717,39 +723,43 @@ def api(req):
                                 hunt_group = HuntGroup.objects.get(group__group_id=group_id)
                                 group = hunt_group.group
                                 group_push_list = [
-                                            user["user_id"]
-                                            for user in json.loads(group.member_list)
-                                        ]
+                                    user["user_id"]
+                                    for user in json.loads(group.member_list)
+                                ]
                                 assert int(qquser.user_id) in group_push_list, "You're not in the group member list"
                                 monster_name = reqbody["monster"]
                                 zone_name = reqbody["zone"]
-                                zone_name = zone_name.replace(chr(57521), "").replace(chr(57522), "2").replace(chr(57523), "3")
+                                zone_name = zone_name.replace(chr(57521), "").replace(chr(57522), "2").replace(
+                                    chr(57523), "3")
                                 monster = Monster.objects.get(cn_name=monster_name)
                                 world_name = reqbody["world"]
                                 timestamp = int(reqbody["time"])
                                 server = Server.objects.get(name=world_name)
                                 # handle instances
-                                if str(monster.territory) in zone_name: # "ZoneName2", "ZoneName"
-                                    if str(monster.territory) != zone_name: # "ZoneName2"
-                                        monster_name = zone_name.replace(str(monster.territory), monster_name)  # "ZoneName2" -> "MonsterName2"
+                                if str(monster.territory) in zone_name:  # "ZoneName2", "ZoneName"
+                                    if str(monster.territory) != zone_name:  # "ZoneName2"
+                                        monster_name = zone_name.replace(str(monster.territory),
+                                                                         monster_name)  # "ZoneName2" -> "MonsterName2"
                                         monster = Monster.objects.get(cn_name=monster_name)
                                 print("Get HuntLog info:\nmonster:{}\nserver:{}".format(monster, server))
                                 if HuntLog.objects.filter(
-                                    monster = monster,
-                                    server = server,
-                                    hunt_group = hunt_group,
-                                    log_type = "kill",
-                                    time__gt = timestamp-60).exists():
-                                    msg = "{}——\"{}\" 已在一分钟内记录上报，此次API调用被忽略".format(hunt_log.server, monster, 
-                                        time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(timestamp))
-                                    )
+                                        monster=monster,
+                                        server=server,
+                                        hunt_group=hunt_group,
+                                        log_type="kill",
+                                        time__gt=timestamp - 60).exists():
+                                    msg = "{}——\"{}\" 已在一分钟内记录上报，此次API调用被忽略".format(hunt_log.server, monster,
+                                                                                    time.strftime("%Y-%m-%d %H:%M:%S",
+                                                                                                  time.localtime(
+                                                                                                      timestamp))
+                                                                                    )
                                 else:
                                     hunt_log = HuntLog(
-                                        monster = monster,
-                                        hunt_group = hunt_group,
-                                        server = server,
-                                        log_type = "kill",
-                                        time = timestamp
+                                        monster=monster,
+                                        hunt_group=hunt_group,
+                                        server=server,
+                                        log_type="kill",
+                                        time=timestamp
                                     )
                                     hunt_log.save()
                                     msg = "{}——\"{}\" 击杀时间: {}".format(hunt_log.server, monster, 
@@ -771,10 +781,11 @@ def api(req):
                                         {"type": "send.event", "text": json.dumps(jdata)},
                                     )
                                 else:
-                                    url = os.path.join(bot.api_post_url, "{}?access_token={}".format(jdata["action"], bot.access_token))
-                                    headers = {'Content-Type': 'application/json'} 
+                                    url = os.path.join(bot.api_post_url,
+                                                       "{}?access_token={}".format(jdata["action"], bot.access_token))
+                                    headers = {'Content-Type': 'application/json'}
                                     r = requests.post(url=url, headers=headers, data=json.dumps(jdata["params"]))
-                                    if r.status_code!=200:
+                                    if r.status_code != 200:
                                         logging.error(r.text)
                                 httpresponse = HttpResponse(status=200)
                             except HuntGroup.DoesNotExist:
@@ -782,7 +793,8 @@ def api(req):
                                 httpresponse = HttpResponse("HuntGroup:{} does not exist".format(group_id), status=500)
                             except Monster.DoesNotExist:
                                 print("Monster:{} does not exist".format(monster_name))
-                                httpresponse = HttpResponse("Monster:{} does not exist".format(monster_name), status=500)
+                                httpresponse = HttpResponse("Monster:{} does not exist".format(monster_name),
+                                                            status=500)
                             except Server.DoesNotExist:
                                 print("Server:{} does not exist".format(world_name))
                                 httpresponse = HttpResponse("Server:{} does not exist".format(world_name), status=500)
@@ -816,8 +828,9 @@ def api(req):
                         "rcode": "100",
                     }
                     return JsonResponse(res_dict)
-                return HttpResponse("Default API Error, contact dev please",status=500)
+                return HttpResponse("Default API Error, contact dev please", status=500)
     return httpresponse if httpresponse else HttpResponse("Default API Error, contact dev please", status=500)
+
 
 FFXIVBOT_ROOT = os.environ.get("FFXIVBOT_ROOT", settings.BASE_DIR)
 CONFIG_PATH = os.environ.get(
@@ -827,6 +840,7 @@ pub = PikaPublisher()
 logging.basicConfig(format="%(levelname)s:%(message)s", level=logging.DEBUG)
 LOGGER = logging.getLogger(__name__)
 
+
 @csrf_exempt
 def qqpost(req):
     try:
@@ -835,7 +849,7 @@ def qqpost(req):
         receive = json.loads(req.body.decode())
         receive["reply_api_type"] = "http"
         text_data = json.dumps(receive)
-        self_id = received_sig = req.META.get("HTTP_X_SELF_ID","NULL")
+        self_id = received_sig = req.META.get("HTTP_X_SELF_ID", "NULL")
         error_msg = "Request not handled"
         try:
             bot = QQBot.objects.get(user_id=self_id)
@@ -848,10 +862,10 @@ def qqpost(req):
             error_msg = "Bot {} does not provide api url".format(self_id)
         else:
             sig = hmac.new(str(bot.access_token).encode(), req.body, 'sha1').hexdigest()
-            received_sig = req.META.get("HTTP_X_SIGNATURE","NULL")[len('sha1='):]
+            received_sig = req.META.get("HTTP_X_SIGNATURE", "NULL")[len('sha1='):]
             # print(req.META)
             # print("sig:{}\nreceived_sig:{}".format(sig, received_sig))
-            if(sig == received_sig):
+            if (sig == received_sig):
                 # print("QQBot {}:{} authencation success".format(bot, self_id))
                 if "post_type" in receive.keys():
                     bot.event_time = int(time.time())
@@ -894,9 +908,9 @@ def qqpost(req):
                                     push_to_mq = "[CQ:at,qq={}]".format(self_id) in receive[
                                         "message"
                                     ] or (
-                                        (group.repeat_ban > 0)
-                                        or (group.repeat_length > 1 and group.repeat_prob > 0)
-                                    )
+                                                         (group.repeat_ban > 0)
+                                                         or (group.repeat_length > 1 and group.repeat_prob > 0)
+                                                 )
                                     # push_to_mq = "[CQ:at,qq={}]".format(self_id) in receive["message"]
                                 if push_to_mq:
                                     receive["consumer_time"] = time.time()
@@ -971,7 +985,7 @@ def qqpost(req):
         traceback.print_exc()
         # print("request body:")
         # print(req.body.decode())
-        return HttpResponse("Server error:{}".format(type(e)),status=500)
+        return HttpResponse("Server error:{}".format(type(e)), status=500)
 
 
 def login(req):
@@ -991,19 +1005,22 @@ def login(req):
         else:
             return ren2res("login.html", req, {'err': "用户名或密码错误！"})
 
+
 def logout(req):
     auth.logout(req)
     return HttpResponseRedirect('/')
+
 
 def qq_login(req):
     oauth_qq = OAuthQQ(settings.QQ_APP_ID, settings.QQ_KEY, settings.QQ_RECALL_URL)
     url = oauth_qq.get_auth_url()
     return HttpResponseRedirect(url)
 
+
 def qq_check(req):
     code = req.GET.get('code', None)
     authqq = OAuthQQ(settings.QQ_APP_ID, settings.QQ_KEY, settings.QQ_RECALL_URL)
-    access_token = authqq.get_access_token(code) 
+    access_token = authqq.get_access_token(code)
     time.sleep(0.05)
     qq_openid = authqq.get_open_id()
     try:
@@ -1014,7 +1031,8 @@ def qq_check(req):
         return HttpResponseRedirect(next)
     except QQUser.DoesNotExist:
         if req.user.is_anonymous:
-            return HttpResponseRedirect("/register/?err=%E8%AF%B7%E9%A6%96%E5%85%88%E6%B3%A8%E5%86%8C%E8%B4%A6%E6%88%B7%E5%B9%B6%E7%BB%91%E5%AE%9AQQ")
+            return HttpResponseRedirect(
+                "/register/?err=%E8%AF%B7%E9%A6%96%E5%85%88%E6%B3%A8%E5%86%8C%E8%B4%A6%E6%88%B7%E5%B9%B6%E7%BB%91%E5%AE%9AQQ")
         else:
             user = req.user
             qquser = user.qquser
@@ -1027,13 +1045,13 @@ def qq_check(req):
             next = req.session.get('next', '/tata')
             return HttpResponseRedirect(next)
     return HttpResponseRedirect("/tata")
-        
+
 
 def register(req):
     if req.method == 'GET':
         req_dict = {}
         if req.GET.get('err'):
-            req_dict.update({'err':req.GET.get('err')})
+            req_dict.update({'err': req.GET.get('err')})
         if req.user.is_anonymous:
             if req.GET.get('next'):
                 req.session['next'] = req.GET.get('next')
@@ -1086,4 +1104,78 @@ def register(req):
 
 @login_required(login_url='/login/')
 def hunt(req):
-    return ren2res('hunt.html', req, {})
+    all_monsters = Monster.objects.all()
+    all_servers = Server.objects.all()
+    monster_info = {}
+    hunt_list = []
+    TIMEFORMAT_MDHMS = "%m-%d %H:%M:%S"
+    for server in all_servers:
+        for monster in all_monsters:
+            latest_kill_log = HuntLog.objects.filter(monster=monster, server=server, log_type="kill").latest("time")
+            last_kill_time = latest_kill_log.time
+            global_maintain_log = HuntLog.objects.filter(server=server, log_type="maintain").latest("time")
+            maintain_finish_time = global_maintain_log.time
+            maintained = (maintain_finish_time > last_kill_time)
+            kill_time = max(last_kill_time, maintain_finish_time)
+            spawn_cooldown = (monster.first_spawn_cooldown if maintained else monster.spawn_cooldown)
+            pop_cooldown = (monster.first_pop_cooldown if maintained else monster.pop_cooldown)
+            next_spawn_time = kill_time + spawn_cooldown
+            next_pop_time = kill_time + pop_cooldown
+            cd_schedulef = spawn_cooldown / pop_cooldown
+            schedulef = (time.time() - kill_time) / pop_cooldown
+            cd_schedule = "{:.2%}".format(cd_schedulef)
+            schedule = "{:.2%}".format(schedulef)
+            if schedulef >= cd_schedulef:
+                schedule_diff = schedulef - cd_schedulef
+                schedule_diff = "{:.2%}".format(schedule_diff)
+            else:
+                schedule_diff = ""
+            server_tag = server2tag(server.name)
+
+            monster_info["territory"] = monster.territory
+            monster_info["monster"] = monster.cn_name
+            monster_info["server"] = server
+            monster_info["server_tag"] = server_tag
+            monster_info["monster_type"] = monster.rank
+            monster_info["schedule_diff"] = schedule_diff
+            monster_info["cd_schedulef"] = cd_schedulef
+            monster_info["cd_schedule"] = cd_schedule
+            monster_info["schedulef"] = schedulef
+            monster_info["schedule"] = schedule
+            monster_info["kill_time"] = time.strftime(TIMEFORMAT_MDHMS, time.localtime(kill_time))
+            monster_info["next_spawn_time"] = time.strftime(TIMEFORMAT_MDHMS, time.localtime(next_spawn_time))
+            monster_info["next_pop_time"] = time.strftime(TIMEFORMAT_MDHMS, time.localtime(next_pop_time))
+            monster_info["info"] = monster.info
+            hunt_list.append(copy.deepcopy(monster_info))
+    return ren2res('hunt.html', req, {"hunt_list": hunt_list})
+
+
+def server2tag(server_name):
+    server_tag = ""
+    if server_name == "拉诺西亚":
+        server_tag = "lnxy"
+    elif server_name == "紫水栈桥":
+        server_tag = "zszq"
+    elif server_name == "幻影群岛":
+        server_tag = "hyqd"
+    elif server_name == "摩杜纳":
+        server_tag = "mdn"
+    elif server_name == "神意之地":
+        server_tag = "syzd"
+    elif server_name == "静语庄园":
+        server_tag = "jyzy"
+    elif server_name == "萌芽池":
+        server_tag = "myc"
+    elif server_name == "延夏":
+        server_tag = "yx"
+    elif server_name == "红玉海":
+        server_tag = "hyh"
+    elif server_name == "潮风亭":
+        server_tag = "cft"
+    elif server_name == "神拳痕":
+        server_tag = "sqh"
+    elif server_name == "白银乡":
+        server_tag = "byx"
+    elif server_name == "白金幻象":
+        server_tag = "bjhx"
+    return server_tag
