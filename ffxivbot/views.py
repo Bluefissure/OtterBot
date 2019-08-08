@@ -1139,6 +1139,10 @@ def hunt(req):
             else:
                 schedule_diff = ""
             server_tag = server2tag(server.name)
+            if next_spawn_time >= time.time():
+                in_cd = "notcd"
+            else:
+                in_cd = ""
 
             monster_info["territory"] = monster.territory
             monster_info["monster"] = monster.cn_name
@@ -1150,6 +1154,7 @@ def hunt(req):
             monster_info["cd_schedule"] = cd_schedule
             monster_info["schedulef"] = schedulef
             monster_info["schedule"] = schedule
+            monster_info["in_cd"] = in_cd
             monster_info["kill_time"] = time.strftime(TIMEFORMAT_MDHMS, time.localtime(kill_time))
             monster_info["next_spawn_time"] = time.strftime(TIMEFORMAT_MDHMS, time.localtime(next_spawn_time))
             monster_info["next_pop_time"] = time.strftime(TIMEFORMAT_MDHMS, time.localtime(next_pop_time))
