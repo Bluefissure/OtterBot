@@ -1108,10 +1108,18 @@ def hunt(req):
     all_servers = Server.objects.all()
     monster_info = {}
     hunt_list = []
+    user = req.user.qquser
     TIMEFORMAT_MDHMS = "%m-%d %H:%M:%S"
     for server in all_servers:
         for monster in all_monsters:
-            latest_kill_log = HuntLog.objects.filter(monster=monster, server=server, log_type="kill").latest("time")
+            kill_logs = HuntLog.objects.filter(
+                            hunt_group__group__member_list__contains=user.user_id,
+                            monster=monster, 
+                            server=server, 
+                            log_type="kill")
+            if not kill_logs:
+                continue
+            latest_kill_log = kill_logs.latest("time")
             last_kill_time = latest_kill_log.time
             global_maintain_log = HuntLog.objects.filter(server=server, log_type="maintain").latest("time")
             maintain_finish_time = global_maintain_log.time
