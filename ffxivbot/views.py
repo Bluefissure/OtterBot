@@ -1119,7 +1119,7 @@ def hunt(req):
                             log_type="kill")
             if not kill_logs:
                 continue
-            latest_kill_log = kill_logs.latest("time")
+            latest_kill_log = kill_logs.latest("id")
             last_kill_time = latest_kill_log.time
             global_maintain_log = HuntLog.objects.filter(server=server, log_type="maintain").latest("time")
             maintain_finish_time = global_maintain_log.time
