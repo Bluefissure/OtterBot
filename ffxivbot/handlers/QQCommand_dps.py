@@ -119,7 +119,7 @@ def QQCommand_dps(*args, **kwargs):
                             atk_dict = atk_res
                             print(json.dumps(atk_dict))
                             percentage_list = [10, 25, 50, 75, 95, 99, 100]
-                            msg = "{} {} {}day#{}:\n".format(
+                            msg = "{} {} {} day#{}:\n".format(
                                 boss.cn_name,
                                 job.cn_name,
                                 info_msg,

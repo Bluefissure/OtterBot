@@ -20,6 +20,7 @@ commands = {
   "/duilian":"对联（\"/duilian 稻花香里说丰年\"）",
   "/tex":"生成tex图片（\"/tex e^{\\pi i}+1=0\"）",
   "/gate":"挖宝选门（\"/gate 3\"）",
+  "/chp":"彩虹屁",
   "/search":"查询物品(\"/search 神龙\")",
   "/weather":"天气信息（快捷命令\"/fog\",\"/heat_wave\",\"/thunder\",\"/kx\"）",
   "/dps":"DPS排名（\"/dps 8s 骑士\"）",
@@ -86,6 +87,7 @@ from .QQCommand_about import QQCommand_about
 from .QQCommand_donate import QQCommand_donate
 from .QQCommand_anime import QQCommand_anime
 from .QQCommand_gate import QQCommand_gate
+from .QQCommand_chp import QQCommand_chp
 from .QQCommand_random import QQCommand_random
 from .QQCommand_weather import QQCommand_weather
 from .QQCommand_gif import QQCommand_gif
