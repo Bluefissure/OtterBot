@@ -4,7 +4,10 @@ from ffxivbot.handlers.QQUtils import *
 from ffxivbot.models import *
 
 
-def monster_kill(monster_name, hunt_group, server_info):
+
+def monster_kill(monster_name, hunt_group, server_info, edittime):
+    TIMEFORMAT_YMDHMS = "%Y-%m-%d %H:%M:%S"
+    time_str = time.strftime(TIMEFORMAT_YMDHMS, time.localtime(edittime))
     monster = Monster.objects.filter(Q(name=monster_name) | Q(cn_name=monster_name))
     if monster.exists():
         monster = monster[0]
@@ -12,42 +15,67 @@ def monster_kill(monster_name, hunt_group, server_info):
                       hunt_group=hunt_group,
                       server=server_info,
                       log_type="kill",
-                      time=time.time()
+                      time=edittime
                       )
         log.save()
-        msg = "{}的\"{}\"击杀时间已记录".format(server_info.name, monster)
+        msg = "{}的\"{}\"击杀时间已记录\n记录时间：{}".format(server_info.name, monster, time_str)
     else:
         msg = "找不到狩猎怪\"{}\"".format(monster_name)
     return msg
 
-
-def monster_edit(monster_name, hunt_group, server_info, YMD, HMS):
-    TIMEFORMAT_YMDHMS = "%Y-%m-%d %H:%M:%S"
+def log_revoke(monster_name, hunt_group, server_info):
     monster = Monster.objects.filter(Q(name=monster_name) | Q(cn_name=monster_name))
     if monster.exists():
         monster = monster[0]
-        edittimestr = YMD + " " + HMS
-        edittime = int(time.mktime(time.strptime(edittimestr, TIMEFORMAT_YMDHMS)))
         try:
-            latest_kill_log = HuntLog.objects.filter(monster=monster, server=server_info, log_type="kill").latest(
-                'time')
+            latest_kill_log = HuntLog.objects.filter(monster=monster, server=server_info, log_type="kill").latest("id")
         except HuntLog.DoesNotExist:
-            log = HuntLog(hunt_group=hunt_group,
+            msg = "已达到了最初状态"
+        else:
+            msg = "已删除：\n{}".format(latest_kill_log.get_info())
+            latest_kill_log.delete()
+            log = HuntLog(monster=monster,
+                          hunt_group=hunt_group,
                           server=server_info,
-                          monster=monster,
-                          log_type="kill",
-                          time=edittime
+                          log_type="revoke",
+                          time=time.time()
                           )
             log.save()
-            msg = "\"{}\"击杀时间已修改为：\n{}".format(monster, edittimestr)
-        else:
-            if latest_kill_log.time > edittime:
-                latest_kill_log.time = edittime
-            latest_kill_log.save(update_fields=["time"])
-            msg = latest_kill_log.get_info() + "\n击杀时间已修改为：\n" + edittimestr
+
     else:
         msg = "找不到狩猎怪\"{}\"".format(monster_name)
     return msg
+
+
+
+# def monster_edit_bak(monster_name, hunt_group, server_info, YMD, HMS):
+#     TIMEFORMAT_YMDHMS = "%Y-%m-%d %H:%M:%S"
+#     monster = Monster.objects.filter(Q(name=monster_name) | Q(cn_name=monster_name))
+#     if monster.exists():
+#         monster = monster[0]
+#         edittimestr = YMD + " " + HMS
+#         edittime = int(time.mktime(time.strptime(edittimestr, TIMEFORMAT_YMDHMS)))
+#         try:
+#             latest_kill_log = HuntLog.objects.filter(monster=monster, server=server_info, log_type="kill").latest(
+#                 'time')
+#         except HuntLog.DoesNotExist:
+#             log = HuntLog(hunt_group=hunt_group,
+#                           server=server_info,
+#                           monster=monster,
+#                           log_type="kill",
+#                           time=edittime
+#                           )
+#             log.save()
+#             msg = "\"{}\"击杀时间已修改为：\n{}".format(monster, edittimestr)
+#         else:
+#             if latest_kill_log.time > edittime:
+#                 latest_kill_log.time = edittime
+#             latest_kill_log.save(update_fields=["time"])
+#             msg = latest_kill_log.get_info() + "\n击杀时间已修改为：\n" + edittimestr
+#     else:
+#         msg = "找不到狩猎怪\"{}\"".format(monster_name)
+#     return msg
+
 
 
 def handle_special_mob(monster, next_spawn_time):
@@ -142,6 +170,8 @@ def QQGroupCommand_hunt(*args, **kwargs):
         receive_msg = receive["message"].replace("/hunt", "", 1).strip()
         param_segs = receive_msg.split(" ")
         TIMEFORMAT_MDHMS = "%m-%d %H:%M:%S"
+        TIMEFORMAT_YMDHMS = "%Y-%m-%d %H:%M:%S"
+        TIMEFORMAT_YMDHMS0 = "%Y/%m/%d %H:%M:%S"
         hunt_group = group.hunt_group.all()
         if hunt_group.exists():
             # 检测是否狩猎组群组，并且获取群组信息
@@ -153,7 +183,7 @@ def QQGroupCommand_hunt(*args, **kwargs):
             except IndexError:
                 optype = "help"
             if (optype == "help"):
-                msg = "獭獭の狩猎时钟 alpha.5\n\
+                msg = "獭獭の狩猎时钟 alpha.7\n\
 /hunt help：帮助\n\
 /hunt check：查询相关\n\
 /hunt kill：设置击杀时间相关\n\
@@ -176,15 +206,15 @@ def QQGroupCommand_hunt(*args, **kwargs):
                         if monster.exists():
                             monster = monster[0]
                             try:
-                                # latest_kill_log = hunt_group.hunt_log.filter(monster=monster, log_type="kill").latest('time')
+                                # latest_kill_log = hunt_group.hunt_log.filter(monster=monster, log_type="kill").latest("id")
                                 latest_kill_log = HuntLog.objects.filter(monster=monster, server=server_info,
-                                                                         log_type="kill").latest('time')
+                                                                         log_type="kill").latest("id")
                                 last_kill_time = latest_kill_log.time
                             except HuntLog.DoesNotExist as e:
                                 last_kill_time = 0
                             try:
                                 global_maintain_log = HuntLog.objects.filter(server=server_info,
-                                                                             log_type="maintain").latest('time')
+                                                                             log_type="maintain").latest("id")
                                 maintain_finish_time = global_maintain_log.time
                             except HuntLog.DoesNotExist as e:
                                 maintain_finish_time = 0
@@ -233,17 +263,18 @@ def QQGroupCommand_hunt(*args, **kwargs):
                         server_name = param_segs[2].strip()
                     except IndexError:
                         server_name = hunt_group.server
+                    edittime = time.time()
                     server_info = Server.objects.filter(name=server_name)
                     if server_info.exists():
                         server_info = server_info[0]
                         try:
                             test_get_server_group = HuntGroup.objects.get(server=server_info.id)
                             if server_name == hunt_group.server:
-                                msg = monster_kill(monster_name, hunt_group, server_info)
+                                msg = monster_kill(monster_name, hunt_group, server_info, edittime)
                             else:
-                                msg = "该群组已经有管理群组，故无法编辑"
+                                msg = "该群组已经有管理群组，无法编辑"
                         except HuntGroup.DoesNotExist:
-                            msg = monster_kill(monster_name, hunt_group, server_info)
+                            msg = monster_kill(monster_name, hunt_group, server_info, edittime)
                 except IndexError:
                     msg = "狩猎时钟list命令示例：\n/hunt kill [怪物名称] <服务器>\n设置怪物的击杀时间为现在\n仅可以修改本群组对应的服务器和没有管理群组的服务器"
             elif (optype == "list"):
@@ -265,13 +296,12 @@ def QQGroupCommand_hunt(*args, **kwargs):
                                 # 获取怪物在各个服务器的击杀时间
                                 try:
                                     latest_kill_log = HuntLog.objects.filter(monster=monster, server=server_info,
-                                                                             log_type="kill").latest(
-                                        'time')
+                                                                             log_type="kill").latest("id")
                                     last_kill_time = latest_kill_log.time
                                 except HuntLog.DoesNotExist as e:
                                     last_kill_time = 0
                                 global_maintain_log = HuntLog.objects.filter(server=server_info,
-                                                                             log_type="maintain").latest('time')
+                                                                             log_type="maintain").latest("id")
                                 maintain_finish_time = global_maintain_log.time
                                 maintained = (maintain_finish_time > last_kill_time)
                                 kill_time = max(last_kill_time, maintain_finish_time)
@@ -321,6 +351,7 @@ def QQGroupCommand_hunt(*args, **kwargs):
                     log.save()
                     msg = "{} 的狩猎怪击杀时间已重置".format(hunt_group.server)
             elif ("initialize" in optype):
+                # 其实可以不使用
                 # 暂时不写入配置文件，如有自建，需要修改此处
                 if user_id == 2875726738 or user_id == 306401806:
                     for server in Server.objects.all():
@@ -334,6 +365,8 @@ def QQGroupCommand_hunt(*args, **kwargs):
                     monster_name = param_segs[1].strip()
                     YMD = param_segs[2].strip()
                     HMS = param_segs[3].strip()
+                    edittimestr = YMD + " " + HMS
+                    edittime = int(time.mktime(time.strptime(edittimestr, TIMEFORMAT_YMDHMS)))
                     try:
                         # 待增加nickname
                         server_name = param_segs[4].strip()
@@ -345,29 +378,31 @@ def QQGroupCommand_hunt(*args, **kwargs):
                         try:
                             test_get_server_group = HuntGroup.objects.get(server=server_info.id)
                             if server_name == hunt_group.server:
-                                msg = monster_edit(monster_name, hunt_group, server_info, YMD, HMS)
+                                msg = monster_kill(monster_name, hunt_group, server_info, edittime)
                             else:
-                                msg = "该群组已经有管理群组，故无法编辑"
+                                msg = "该群组已经有管理群组，无法编辑"
                         except HuntGroup.DoesNotExist:
-                            msg = monster_edit(monster_name, hunt_group, server_info, YMD, HMS)
+                            msg = monster_kill(monster_name, hunt_group, server_info, edittime)
                 except IndexError:
                     msg = "狩猎时钟edit命令示例：\n/hunt edit [怪物名称] [时间] <服务器>\n时间格式例：\n1970-01-01 00:00:00\n仅可以修改本群组对应的服务器和没有管理群组的服务器"
             elif (optype == "revoke"):
                 try:
                     monster_name = param_segs[1].strip()
-                    monster = Monster.objects.filter(Q(name=monster_name) | Q(cn_name=monster_name))
-                    if monster.exists():
-                        monster = monster[0]
+                    try:
+                        server_name = param_segs[2].strip()
+                    except IndexError:
+                        server_name = hunt_group.server
+                    server_info = Server.objects.filter(name=server_name)
+                    if server_info.exists():
+                        server_info = server_info[0]
                         try:
-                            latest_kill_log = hunt_group.hunt_log.filter(monster=monster, log_type="kill").latest(
-                                'time')
-                        except HuntLog.DoesNotExist:
-                            msg = "已达到了最初状态"
-                        else:
-                            msg = "已删除：\n{}".format(latest_kill_log.get_info())
-                            latest_kill_log.delete()
-                    else:
-                        msg = "找不到狩猎怪\"{}\"".format(monster_name)
+                            test_get_server_group = HuntGroup.objects.get(server=server_info.id)
+                            if server_name == hunt_group.server:
+                                msg = log_revoke(monster_name, server_info)
+                            else:
+                                msg = "该群组已经有管理群组，无法编辑"
+                        except:
+                            msg = log_revoke(monster_name, hunt_group, server_info)
                 except IndexError:
                     msg = "*"
         else:

@@ -62,7 +62,7 @@ def QQCommand_share(*args, **kwargs):
                 content = re.sub(cqimg_pattern, "", content)
                 data = {
                     "access_token": WEIBO_TOKEN,
-                    "status": "{}\n{}".format(content, WEIBO_SAFEURL),
+                    "status": "{}\nPowered by {}".format(content, WEIBO_SAFEURL),
                 }
                 r = requests.get(img_url, timeout=5)
                 files = {'pic': r.content}
@@ -70,7 +70,7 @@ def QQCommand_share(*args, **kwargs):
             else:
                 data = {
                     "access_token": WEIBO_TOKEN,
-                    "status": "{}\n{}".format(content, WEIBO_SAFEURL),
+                    "status": "{}\nPowered by {}".format(content, WEIBO_SAFEURL),
                 }
                 r = requests.post(url=url, data=data, timeout=5)
             r_json = r.json()

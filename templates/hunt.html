@@ -6,70 +6,140 @@
 
     <!-- Content Header (Page header) -->
     {% if err %}
-    <div class="alert alert-danger alert-dismissible">
-      <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
-      <h4><i class="icon fa fa-ban"></i> {{ err.title }}</h4>
-      {{ err.message }}
-    </div>
+        <div class="alert alert-danger alert-dismissible">
+            <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+            <h4><i class="icon fa fa-ban"></i> {{ err.title }}</h4>
+            {{ err.message }}
+        </div>
     {% endif %}
     {% if success %}
-    <div class="alert alert-success alert-dismissible">
-      <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
-      <h4><i class="icon fa fa-ban"></i> {{ success.title }}</h4>
-      {{ success.message }}
-    </div>
+        <div class="alert alert-success alert-dismissible">
+            <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+            <h4><i class="icon fa fa-ban"></i> {{ success.title }}</h4>
+            {{ success.message }}
+        </div>
     {% endif %}
     <section class="content-header">
-      <h1>
-        狩猎时钟
-      </h1>
+        <h1>
+            狩猎时钟
+        </h1>
     </section>
 
     <!-- Main content -->
     <section class="content">
-      <div class="row">
-        <div class="col-xs-12">
+        <div class="row">
+            <div class="col-xs-12">
 
-          <div class="box">
-            <div class="box-header">
-              <h3 class="box-title">现有狩猎怪</h3>
+                <div class="box">
+                    <div class="box-header">
+                        <h3 class="box-title">这是一个表格</h3>
+                    </div>
+                    <!-- /.box-header -->
+                    <div class="box-body table-responsive no-padding">
+                        <p style="margin-bottom: 0px; margin-left: 10px;">狩猎怪筛选：</p>
+                        <div class="btn-group" role="group" style="margin-left: 10px">
+                            <button type="button" class="btn btn-primary" id="arr">2.0</button>
+                            <button type="button" class="btn btn-primary" id="hw">3.0</button>
+                            <button type="button" class="btn btn-primary" id="sb">4.0</button>
+                            <button type="button" class="btn btn-primary" id="cd"><i class="fa fa-clock-o"></i></button>
+                        </div>
+                        <p style="margin-bottom: 0px; margin-left: 10px;">陆行鸟区：</p>
+                        <div class="btn-group" role="group" style="margin-left: 10px" data-toggle="buttons">
+                            <button type="button" class="btn btn-primary" id="lnxy">拉诺西亚</button>
+                            <button type="button" class="btn btn-primary" id="zszq">紫水栈桥</button>
+                            <button type="button" class="btn btn-primary" id="hyqd">幻影群岛</button>
+                            <button type="button" class="btn btn-primary" id="mdn">摩杜纳</button>
+                            <button type="button" class="btn btn-primary" id="syzd">神意之地</button>
+                            <button type="button" class="btn btn-primary" id="jyzy">静语庄园</button>
+                            <button type="button" class="btn btn-primary" id="myc">萌芽池</button>
+                            <button type="button" class="btn btn-primary" id="yx">延夏</button>
+                            <button type="button" class="btn btn-primary" id="hyh">红玉海</button>
+                        </div>
+                        <p style="margin-bottom: 0px; margin-left: 10px;">莫古力区：</p>
+                        <div class="btn-group" role="group" style="margin-left: 10px" data-toggle="buttons">
+                            <button type="button" class="btn btn-primary" id="cft">潮风亭</button>
+                            <button type="button" class="btn btn-primary" id="sqh">神拳痕</button>
+                            <button type="button" class="btn btn-primary" id="byx">白银乡</button>
+                            <button type="button" class="btn btn-primary" id="bjhx">白金幻象</button>
+                        </div>
+                        <table id="example1" class="table table-hover dataTable">
+                            <thead>
+                            <tr>
+                                <th style="text-align: center; vertical-align: center;">名称</th>
+                                <th style="text-align: center; vertical-align: center;">地区</th>
+                                <th style="text-align: center; vertical-align: center;">进度</th>
+                                <th style="text-align: center; vertical-align: center;"></th>
+                                <th style="text-align: center; vertical-align: center;">上次击杀</th>
+                                <th style="text-align: center; vertical-align: center;">触发开始</th>
+                                <th style="text-align: center; vertical-align: center;">必定触发</th>
+                                <th style="text-align: center; vertical-align: center;">触发条件</th>
+                                <!-- <th><center>配置</center></th> -->
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for monster_info in hunt_list %}
+                                {% if monster_info.monster_type == "50S" %}
+                                    <tr class="{{ monster_info.server_tag }} arr {{ monster_info.in_cd }}">
+                                        {% elif monster_info.monster_type == "60S" %}
+                                    <tr class="{{ monster_info.server_tag }} hw {{ monster_info.in_cd }}">
+                                        {% elif monster_info.monster_type == "70S" %}
+                                    <tr class="{{ monster_info.server_tag }} sb {{ monster_info.in_cd }}">
+                                {% endif %}
+                            <td style="text-align: center; vertical-align: center;">{{ monster_info.monster }}</td>
+                            <td style="text-align: center; vertical-align: center;">{{ monster_info.territory }}</td>
+                            {% if monster_info.schedulef < 1 %}
+                                <td style="text-align: center; vertical-align: center; width: 10%;">
+                                    <div class="progress progress-sm progress-striped active" style="width: auto">
+                                        {% if monster_info.schedulef >= monster_info.cd_schedulef %}
+                                            <div class="progress-bar progress-bar-info" role="progressbar"
+                                                 aria-valuenow="60" aria-valuemin="0" aria-valuemax="100"
+                                                 style="width: {{ monster_info.cd_schedule }};"></div>
+                                            <div class="progress-bar progress-bar-success" role="progressbar"
+                                                 aria-valuenow="60" aria-valuemin="0" aria-valuemax="100"
+                                                 style="width: {{ monster_info.schedule_diff }};"></div>
+                                        {% else %}
+                                            <div class="progress-bar progress-bar-info" role="progressbar"
+                                                 aria-valuenow="60" aria-valuemin="0" aria-valuemax="100"
+                                                 style="width: {{ monster_info.schedule }};"></div>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            {% else %}
+                                <td style="text-align: center; vertical-align: center; width: 10%;">
+                                    <div class="progress progress-sm progress-striped active" style="width: auto">
+                                        <div class="progress-bar progress-bar-danger" role="progressbar"
+                                             aria-valuenow="60" aria-valuemin="0" aria-valuemax="100"
+                                             style="width: 100%;"></div>
+                                    </div>
+                                </td>
+                            {% endif %}
+                            {% if monster_info.schedulef > 1 %}
+                                <td style="text-align: center; vertical-align: center; width: 5%;"><span
+                                        class="badge bg-red">{{ monster_info.schedule }}</span></td>
+                            {% elif monster_info.schedulef < monster_info.cd_schedulef %}
+                                <td style="text-align: center; vertical-align: center; width: 5%;"><span
+                                        class="badge bg-gray">{{ monster_info.schedule }}</span></td>
+                            {% else %}
+                                <td style="text-align: center; vertical-align: center; width: 5%;"><span
+                                        class="badge bg-green">{{ monster_info.schedule }}</span></td>
+                            {% endif %}
+                            <td style="text-align: center; vertical-align: center;">{{ monster_info.kill_time }}</td>
+                            <td style="text-align: center; vertical-align: center;">{{ monster_info.next_spawn_time }}</td>
+                            <td style="text-align: center; vertical-align: center;">{{ monster_info.next_pop_time }}</td>
+                            <td style="text-align: left; vertical-align: center; width: 25%;">{{ monster_info.info }}</td>
+                            </tr>
+                            {% endfor %}
+                            </tfoot>
+                        </table>
+                    </div>
+                    <!-- /.box-body -->
+                </div>
+                <!-- /.box -->
             </div>
-            <!-- /.box-header -->
-            <div class="box-body">
-              <table id="example1" class="table table-bordered table-striped table-hover"  style="width:100%">
-                <thead>
-                <tr>
-                  <th><center>名称</center></th>
-                  <th><center>服务器</center></th>
-                  <th><center>上次击杀</center></th>
-                  <th><center>触发开始</center></th>
-                  <th><center>必定触发</center></th>
-                  <th><center>进度</center></th>
-                  <!-- <th><center>配置</center></th> -->
-                </tr>
-                </thead>
-                <tbody>
-                  {% for monster in monsters %}
-                    <tr>
-                      <td><center></center></td>
-                      <td><center></center></td>
-                      <td><center></center></td>
-                      <td><center></center></td>
-                      <td><center></center></td>
-                      <td><center></center></td>
-                    </tr>
-                  {% endfor%}
-                </tfoot>
-              </table>
-            </div>
-            <!-- /.box-body -->
-          </div>
-          <!-- /.box -->
+
+            <!-- /.col -->
         </div>
-
-        <!-- /.col -->
-      </div>
-      <!-- /.row -->
+        <!-- /.row -->
     </section>
 
 
@@ -77,42 +147,39 @@
 
 
 {% block script %}
-<!-- jQuery 3 -->
-<script src="{% static "bower_components/jquery/dist/jquery.min.js" %}"></script>
-<!-- Bootstrap 3.3.7 -->
-<script src="{% static "bower_components/bootstrap/dist/js/bootstrap.min.js" %}"></script>
-<!-- DataTables -->
-<script src="{% static "bower_components/datatables.net/js/jquery.dataTables.min.js" %}"></script>
-<script src="{% static "bower_components/datatables.net-bs/js/dataTables.bootstrap.min.js" %}"></script>
-<!-- SlimScroll -->
-<script src="{% static "bower_components/jquery-slimscroll/jquery.slimscroll.min.js" %}"></script>
-<!-- FastClick -->
-<script src="{% static "bower_components/fastclick/lib/fastclick.js" %}"></script>
-<!-- AdminLTE App -->
-<script src="{% static "dist/js/adminlte.min.js" %}"></script>
-<!-- AdminLTE for demo purposes -->
-<script src="{% static "dist/js/demo.js" %}"></script>
-<!-- page script -->
-<script>
-  $(function () {
-    $('#example1').DataTable( {
-        "scrollX": true,
-        "autoWidth": true
-    })
-    $('#example2').DataTable({
-      'paging'      : true,
-      'lengthChange': false,
-      'searching'   : false,
-      'ordering'    : true,
-      'info'        : true,
-      'autoWidth'   : false
-    })
-  })
-</script>
-<script type="text/javascript">
-  var tata = document.getElementById("hunt");
-  tata.setAttribute("class","active");
-</script>
+    <!-- jQuery 3 -->
+    <script src="{% static "bower_components/jquery/dist/jquery.min.js" %}"></script>
+    <!-- Bootstrap 3.3.7 -->
+    <script src="{% static "bower_components/bootstrap/dist/js/bootstrap.min.js" %}"></script>
+    <!-- DataTables -->
+    <script src="{% static "bower_components/datatables.net/js/jquery.dataTables.min.js" %}"></script>
+    <script src="{% static "bower_components/datatables.net-bs/js/dataTables.bootstrap.min.js" %}"></script>
+    <!-- SlimScroll -->
+    <script src="{% static "bower_components/jquery-slimscroll/jquery.slimscroll.min.js" %}"></script>
+    <!-- FastClick -->
+    <script src="{% static "bower_components/fastclick/lib/fastclick.js" %}"></script>
+    <!-- AdminLTE App -->
+    <script src="{% static "dist/js/adminlte.min.js" %}"></script>
+    <!-- AdminLTE for demo purposes -->
+    <script src="{% static "dist/js/demo.js" %}"></script>
+    <script src="{% static "dist/js/hunt.js" %}"></script>
+    <!-- page script -->
+    <script>
+        $(function () {
+            $('#example1').DataTable({
+                'paging': false,
+                'lengthChange': false,
+                'searching': false,
+                'ordering': true,
+                'info': false,
+                'autoWidth': false
+            });
+        })
+    </script>
+    <script type="text/javascript">
+        var tata = document.getElementById("hunt");
+        tata.setAttribute("class", "active");
+    </script>
 {% endblock %}
 
 </body>
