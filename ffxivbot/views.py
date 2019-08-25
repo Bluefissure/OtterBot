@@ -44,6 +44,7 @@ from ffxivbot.models import *
 from ffxivbot.webapi import github_webhook, webapi
 from websocket import create_connection
 
+
 from .oauth_client import OAuthQQ
 
 
@@ -1045,7 +1046,6 @@ def qq_check(req):
             next = req.session.get('next', '/tata')
             return HttpResponseRedirect(next)
     return HttpResponseRedirect("/tata")
-
 
 def register(req):
     if req.method == 'GET':
