@@ -31,7 +31,18 @@ def QQCommand_donate(*args, **kwargs):
         reply_action = reply_message_action(receive, msg)
         action_list.append(reply_action)
 
-        msg = [{"type": "text", "data": {"text": "感谢名单：\nPants\n初八\n布谷布谷星\n寒寒\n盖瓯露依斯\n黄金瓜"}}]
+        msg = [{"type": "text", "data": {"text": "感谢名单：\
+Pants*2\n\
+初八\n\
+布谷布谷星\n\
+寒寒\n\
+盖瓯露依斯\n\
+黄金瓜\n\
+爱发电用户_uPMm\n\
+朝山霰\n\
+奶油熊子炖菜\n\
+爱发电用户_cgM5\n\
+"}}]
         reply_action = reply_message_action(receive, msg)
         action_list.append(reply_action)
         return action_list
