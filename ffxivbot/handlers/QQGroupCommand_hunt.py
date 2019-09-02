@@ -4,6 +4,7 @@ from ffxivbot.handlers.QQUtils import *
 from ffxivbot.models import *
 
 
+
 def monster_kill(monster_name, hunt_group, server_info, edittime):
     TIMEFORMAT_YMDHMS = "%Y-%m-%d %H:%M:%S"
     time_str = time.strftime(TIMEFORMAT_YMDHMS, time.localtime(edittime))
@@ -40,9 +41,11 @@ def log_revoke(monster_name, hunt_group, server_info):
                           time=time.time()
                           )
             log.save()
+
     else:
         msg = "找不到狩猎怪\"{}\"".format(monster_name)
     return msg
+
 
 
 # def monster_edit_bak(monster_name, hunt_group, server_info, YMD, HMS):
@@ -72,6 +75,7 @@ def log_revoke(monster_name, hunt_group, server_info):
 #     else:
 #         msg = "找不到狩猎怪\"{}\"".format(monster_name)
 #     return msg
+
 
 
 def handle_special_mob(monster, next_spawn_time):
