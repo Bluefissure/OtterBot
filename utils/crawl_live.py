@@ -20,6 +20,7 @@ import urllib
 import base64
 import logging
 import traceback
+import feedparser
 from channels.layers import get_channel_layer
 from django.db import connection, connections
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', filename="log/crawl_live.log")
@@ -27,27 +28,39 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(level
 
 def crawl_json(liveuser):
     platform = liveuser.platform
-    if platform=="bilibili":
+    if platform == "bilibili":
         try:
-            url = r'http://api.live.bilibili.com/AppRoom/index?platform=android&room_id={}'.format(liveuser.room_id)
-            s = requests.get(url=url, timeout=5)
-            jres = s.json()
-            if not isinstance(jres, dict):
-                print("jres:{}".format(jres))
-            if(jres.get("code") == 0):
-                jdata = jres.get("data", None)
+            url = r'https://rsshub.app/bilibili/live/room/{}'.format(liveuser.room_id)
+            jres = feedparser.parse(url)
+            if jres.entries:
+                item = jres.entries[0]
+                info_s = requests.get("https://api.live.bilibili.com/live_user/v1/UserInfo/get_anchor_in_room?roomid={}".format(liveuser.room_id))
+                info_s = info_s.json()
+                face_url = ""
+                name = ""
+                if info_s.get("code", -1) == 0:
+                    face_url = info_s["data"]["info"]["face"]
+                    name = info_s["data"]["info"]["uname"]
                 jinfo = {
-                    "title": jdata.get("title"),
-                    "image": jdata.get("face"),
-                    "status": jdata.get("status","offline").lower(),
-                    "name": jdata.get("uname")
+                    "title": re.sub(r" \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}", "", item.get("title")),
+                    "status": "live"
                 }
-                return jinfo
-        except:
+                if face_url: jinfo.update({"image": face_url})
+                if name: jinfo.update({"name": name})
+                # print(jinfo)
+            else:
+                jinfo = {
+                    "status": "offline",
+                }
+            return jinfo
+        except json.decoder.JSONDecodeError as e:
+            logging.error("Error at parsing bilibili API to json:{}".format(s.text))
+            print("Error at parsing bilibili API to json:{}".format(s.text))
+        except Exception as e:
             logging.error("Error at parsing bilibili API")
             print("Error at parsing bilibili API:{}".format(type(e)))
             traceback.print_exc()
-    elif platform=="douyu":
+    elif platform == "douyu":
         try:
             url = r'http://open.douyucdn.cn/api/RoomApi/room/{}'.format(liveuser.room_id)
             s = requests.get(url=url, timeout=5)
@@ -78,13 +91,16 @@ def crawl_live(liveuser, push=False):
         logging.info("Skipping {} cuz no subscription".format(liveuser))
         return
     jinfo = crawl_json(liveuser)
+    print("jinfo:{}".format(json.dumps(jinfo)))
     if not jinfo:
         logging.error("Crawling {} failed, please debug the response.".format(liveuser))
         logging.error("jinfo:{}".format(jinfo))
         return
     live_status = jinfo.get("status")
-    liveuser.name = jinfo.get("name")
-    liveuser.info = json.dumps(jinfo)
+    liveuser.name = jinfo.get("name", liveuser.name)
+    liveuser_info = json.loads(liveuser.info)
+    liveuser_info.update(jinfo)
+    liveuser.info = json.dumps(liveuser_info)
     liveuser.last_update_time = int(time.time())
     if live_status!="live":
         for group in liveuser.subscribed_by.all():
@@ -143,6 +159,7 @@ def crawl():
             crawl_live(lu, True)
         except Exception as e:
             logging.error(e)
+            print("Error:{}".format(e))
         time.sleep(1)
         logging.info("Crawl {} finish".format(lu))
 

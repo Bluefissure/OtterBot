@@ -1041,6 +1041,8 @@ def qq_check(req):
             if qqinfo.get("ret", -1) == 0:
                 qquser.nickname = qqinfo.get("nickname")
                 qquser.avatar_url = qqinfo.get("figureurl_qq")
+                if qquser.avatar_url.startswith("http://"):
+                    qquser.avatar_url = qquser.avatar_url.replace("http://", "https://")
             qquser.save()
             next = req.session.get('next', '/tata')
             return HttpResponseRedirect(next)
