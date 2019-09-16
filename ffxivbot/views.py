@@ -621,6 +621,7 @@ def api(req):
                         qquser.save(update_fields=["last_api_time"])
                     except QQUser.DoesNotExist:
                         print("qquser {}:{} auth fail".format(qq, token))
+                        httpresponse = HttpResponse("QQUser {}:{} auth fail".format(qq, token), status=500)
                     if bot and qquser and api_rate_limit:
                         channel_layer = get_channel_layer()
                         msg = req.POST.get("text")
@@ -830,7 +831,7 @@ def api(req):
                     }
                     return JsonResponse(res_dict)
                 return HttpResponse("Default API Error, contact dev please", status=500)
-    return httpresponse if httpresponse else HttpResponse("Default API Error, contact dev please", status=500)
+    return httpresponse if httpresponse else HttpResponse("Default API Error, contact dev please.", status=500)
 
 
 FFXIVBOT_ROOT = os.environ.get("FFXIVBOT_ROOT", settings.BASE_DIR)
