@@ -408,6 +408,7 @@ class PikaConsumer(object):
 
         try:
             receive = json.loads(body)
+            # print("Receving \"{}\"".format(receive.get("message", "")))
             receive["pika_time"] = time.time()
             self_id = receive["self_id"]
             # print("receving message from {}".format(self_id))

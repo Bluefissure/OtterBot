@@ -42,6 +42,8 @@ Pants*2\n\
 朝山霰\n\
 奶油熊子炖菜\n\
 爱发电用户_cgM5\n\
+我需要治疗\n\
+爱发电用户_aAFp\
 "}}]
         reply_action = reply_message_action(receive, msg)
         action_list.append(reply_action)

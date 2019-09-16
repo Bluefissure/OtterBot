@@ -7,8 +7,6 @@
 
 A QQ bot of Final Fantasy XIV
 
-***This project will not be maintained after game patch 5.0***
-
 ## Install
 
 Please read [wiki](https://github.com/Bluefissure/FFXIVBOT/wiki/%E5%BC%80%E5%8F%91%E6%96%87%E6%A1%A3) for more details.
@@ -46,12 +44,3 @@ Please read [wiki](https://github.com/Bluefissure/FFXIVBOT/wiki/%E4%BD%BF%E7%94%
 - <del>This project is currently using [django-channels](https://github.com/django/channels) to support reverse websocket of http-api, if you prefer http, see [previous version](https://github.com/Bluefissure/FFXIVBOT/tree/be91c3fb3910479733db937f5f7f263dcef331a7) </del>
 - The http support is available since [this](https://github.com/Bluefissure/FFXIVBOT/commit/be453f0b2388b2d12d51de286c77b27b9d7d2dca) commit.
 
-# FFXIV Quest Visualization
-
-A Visualization of FFXIV Quest
-
-## Demo
-
-[Demo site](https://xn--v9x.net/quest)
-
-![](https://i.loli.net/2018/09/14/5b9b2dcabfc95.jpg)

@@ -229,7 +229,7 @@ class PlotQuest(models.Model):
     )
     language_names = models.TextField(default="{}", blank=True)
     endpoint = models.BooleanField(default=False)
-    endpoint_desc = models.CharField(max_length=16, default="", blank=True)
+    endpoint_desc = models.CharField(max_length=64, default="", blank=True)
     quest_type = models.IntegerField(default=0) # 0:nothing 3:main-scenario 8:special 1,10:other
 
     def __str__(self):

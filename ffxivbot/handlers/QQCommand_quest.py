@@ -10,7 +10,7 @@ def bfs_quest(quest):
     from queue import Queue
     Q = Queue()
     Q.put(quest)
-    now_main_scenario = "ShadowBringers(5.0)"
+    now_main_scenario = "ShadowBringers continued(5.X)"
     # back search
     back_cnt = 0
     visited = set()
@@ -68,7 +68,7 @@ def QQCommand_quest(*args, **kwargs):
             else:
                 quest_img_url = "https://huiji-public.huijistatic.com/ff14/uploads/6/61/061431.png"
                 content = "支线任务"
-            url = "https://xn--v9x.net/quest/tooltip/?id={}".format(quest.id) if int(quest.id)<=68719 else \
+            url = "https://xn--v9x.net/quest/tooltip/?id={}".format(quest.id) if int(quest.id)<=68745 else \
                 "https://ffxiv.gamerescape.com/wiki/{}".format(quest.name.replace(" ", "_"))
             msg = [
                 {
