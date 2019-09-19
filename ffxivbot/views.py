@@ -834,6 +834,7 @@ def api(req):
     return httpresponse if httpresponse else HttpResponse("Default API Error, contact dev please.", status=500)
 
 
+
 FFXIVBOT_ROOT = os.environ.get("FFXIVBOT_ROOT", settings.BASE_DIR)
 CONFIG_PATH = os.environ.get(
     "FFXIVBOT_CONFIG", os.path.join(FFXIVBOT_ROOT, "ffxivbot/config.json")
