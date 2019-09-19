@@ -8,6 +8,7 @@ import requests
 import hashlib
 from bs4 import BeautifulSoup
 import traceback
+import re
 
 
 def QQGroupChat(*args, **kwargs):
@@ -98,6 +99,7 @@ def QQGroupChat(*args, **kwargs):
                 msg = msg.replace("图灵工程师爸爸", BOT_FATHER)
                 msg = msg.replace("图灵工程师妈妈", BOT_MOTHER)
                 msg = msg.replace("小主人", USER_NICKNAME)
+                msg = re.sub(r"(?:http|https):\/\/((?:[\w-]+)(?:\.[\w-]+)+)(?:[\w.,@?^=%&amp;:\/~+#-]*[\w@?^=%&amp;\/~+#-])?", "http://ff.sdo.com", msg)
             msg = "[CQ:at,qq=%s] "%(receive["user_id"])+msg
             action = reply_message_action(receive, msg)
             action_list.append(action)
