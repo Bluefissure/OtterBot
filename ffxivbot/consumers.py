@@ -93,7 +93,7 @@ class WSConsumer(AsyncWebsocketConsumer):
         try:
             ws_self_id = headers["x-self-id"]
             ws_client_role = headers["x-client-role"]
-            ws_access_token = headers["authorization"].replace("Token", "").strip()
+            ws_access_token = headers.get("authorization", "empty_access_token").replace("Token", "").strip()
             client_role = headers["x-client-role"]
             user_agent = headers["user-agent"]
             if client_role != "Universal":

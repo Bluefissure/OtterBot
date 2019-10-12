@@ -5,6 +5,7 @@ import logging
 import json
 import random
 import requests
+import traceback
 from bs4 import BeautifulSoup
 
 
@@ -32,10 +33,10 @@ def delete_image(img_hash):
 
 
 def QQCommand_image(*args, **kwargs):
+    action_list = []
     try:
         global_config = kwargs["global_config"]
         QQ_BASE_URL = global_config["QQ_BASE_URL"]
-        action_list = []
         receive = kwargs["receive"]
 
         receive_msg = receive["message"].replace("/image", "", 1).strip()
@@ -60,8 +61,14 @@ def QQCommand_image(*args, **kwargs):
                         msg = "未发现图片信息"
                     else:
                         img_info = upload_image(img_url)
-                        if img_info["code"] != "success":
-                            msg = img_info["msg"]
+                        if not img_info["success"]:
+                            print("img_info:{}".format(json.dumps(img_info)))
+                            msg = img_info["message"]
+                            if "Image upload repeated limit, this image exists at: " in msg:
+                                url = msg.replace("Image upload repeated limit, this image exists at: ", "")
+                                path = url.replace("https://i.loli.net", "")
+                                img = Image.objects.get(path=path)
+                                msg = '图片"{}"已存在于类别"{}"之中，无法重复上传'.format(img.name, img.key)
                         else:
                             img_info = img_info["data"]
                             img = Image(
@@ -113,3 +120,5 @@ def QQCommand_image(*args, **kwargs):
         msg = "Error: {}".format(type(e))
         action_list.append(reply_message_action(receive, msg))
         logging.error(e)
+        traceback.print_exc()
+    return action_list

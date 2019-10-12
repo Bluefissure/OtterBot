@@ -1,6 +1,7 @@
 from .QQEventHandler import QQEventHandler
 from .QQUtils import *
 from ffxivbot.models import *
+import traceback
 import logging
 import json
 import random
@@ -11,10 +12,10 @@ import os
 
 
 def QQCommand_bot(*args, **kwargs):
+    action_list = []
     try:
         global_config = kwargs["global_config"]
         WEB_BASE_URL = global_config["WEB_BASE_URL"]
-        action_list = []
         receive = kwargs["receive"]
         bot = kwargs["bot"]
         user_id = receive["user_id"]
@@ -67,6 +68,8 @@ def QQCommand_bot(*args, **kwargs):
                 msg = "仅机器人领养者能查询机器人状态"
             else:
                 friend_list = json.loads(bot.friend_list)
+                if not friend_list:
+                    friend_list = {"friends": []}
                 msg = "姓名：{}\n".format(bot.name)+\
                         "账号：{}\n".format(bot.user_id)+\
                         "领养者：[CQ:at,qq={}]\n".format(bot.owner_id)+\
@@ -116,6 +119,8 @@ def QQCommand_bot(*args, **kwargs):
             action_list.append(reply_action)
         return action_list
     except Exception as e:
+        traceback.print_exc()
         msg = "Error: {}".format(type(e))
         action_list.append(reply_message_action(receive, msg))
         logging.error(e)
+    return action_list

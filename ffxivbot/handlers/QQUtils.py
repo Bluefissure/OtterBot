@@ -312,7 +312,9 @@ def get_item_info(url):
 def search_item(name, FF14WIKI_BASE_URL, FF14WIKI_API_URL, url_quote=True):
     search_url = FF14WIKI_API_URL + "?format=json&action=parse&title=ItemSearch&text={{ItemSearch|name=%s}}" % (name)
     try:
-        r = requests.get(search_url, timeout=5)
+        s = requests.Session()
+        headers = {'Referer':'https://ff14.huijiwiki.com/wiki/ItemSearch?name={}'.format(urllib.parse.quote(name))}
+        r = s.get(search_url, headers=headers, timeout=5)
         # print(r.text)
         res_data = json.loads(r.text)
         bs = BeautifulSoup(res_data["parse"]["text"]["*"], "html.parser")
@@ -343,6 +345,8 @@ def search_item(name, FF14WIKI_BASE_URL, FF14WIKI_API_URL, url_quote=True):
             "content": "不信你自己打开看看",
             "image": "",
         }
+    except json.decoder.JSONDecodeError:
+        print(r.text)
     return res_data
 
 

@@ -1195,4 +1195,8 @@ def server2tag(server_name):
         server_tag = "byx"
     elif server_name == "白金幻象":
         server_tag = "bjhx"
+    elif server_name == "旅人栈桥":
+        server_tag = "lrzq"
+    elif server_name == "龙巢神殿":
+        server_tag = "lcsd"
     return server_tag
