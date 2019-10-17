@@ -5,6 +5,7 @@ import logging
 import json
 import random
 import traceback
+import urllib
 
 def bfs_quest(quest):
     from queue import Queue
@@ -69,7 +70,8 @@ def QQCommand_quest(*args, **kwargs):
                 content = "支线任务"
             # url = "https://xn--v9x.net/quest/tooltip/?id={}".format(quest.id) if int(quest.id)<=68745 else \
             #     "https://ffxiv.gamerescape.com/wiki/{}".format(quest.name.replace(" ", "_"))
-            url = "https://xn--v9x.net/quest/tooltip/?id={}&nocache=true".format(quest.id)
+            # url = "https://xn--v9x.net/quest/tooltip/?id={}&nocache=true".format(quest.id)
+            url = "https://ff14.huijiwiki.com/wiki/{}".format(urllib.parse.quote("任务:"+str(quest)))
             msg = [
                 {
                     "type": "share",

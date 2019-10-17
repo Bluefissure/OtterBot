@@ -216,7 +216,7 @@ class WSConsumer(AsyncWebsocketConsumer):
                                 or (group.repeat_length > 1 and group.repeat_prob > 0)
                             )
                             # push_to_mq = "[CQ:at,qq={}]".format(self_id) in receive["message"]
-                        if push_to_mq:
+                        if push_to_mq and False:  # temp
                             receive["consumer_time"] = time.time()
                             text_data = json.dumps(receive)
                             self.pub.send(text_data, priority)

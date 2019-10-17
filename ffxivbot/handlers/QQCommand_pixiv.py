@@ -132,13 +132,13 @@ def search_gif_ID(ID):
 
 
 def QQCommand_pixiv(*args, **kwargs):
+    action_list = []
     try:
         global_config = kwargs["global_config"]
         bot = kwargs["bot"]
         QQ_BASE_URL = global_config["QQ_BASE_URL"]
         FF14WIKI_API_URL = global_config["FF14WIKI_API_URL"]
         FF14WIKI_BASE_URL = global_config["FF14WIKI_BASE_URL"]
-        action_list = []
         receive = kwargs["receive"]
 
         if time.time() < bot.api_time + bot.long_query_interval:
@@ -187,3 +187,4 @@ def QQCommand_pixiv(*args, **kwargs):
     except Exception as e:
         logging.error(e)
         traceback.print_exc()
+    return action_list
