@@ -13,7 +13,7 @@ dice==2.3.5
 feedparser==5.2.1
 pika==0.13.1
 requests-cache==0.4.13
-Pillow==5.4.1
+Pillow==6.2.0
 tqdm==4.31.1
 cryptography==2.7
 feedparser==5.2.1
