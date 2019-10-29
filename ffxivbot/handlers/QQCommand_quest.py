@@ -68,9 +68,6 @@ def QQCommand_quest(*args, **kwargs):
             else:
                 quest_img_url = "https://huiji-public.huijistatic.com/ff14/uploads/6/61/061431.png"
                 content = "支线任务"
-            # url = "https://xn--v9x.net/quest/tooltip/?id={}".format(quest.id) if int(quest.id)<=68745 else \
-            #     "https://ffxiv.gamerescape.com/wiki/{}".format(quest.name.replace(" ", "_"))
-            # url = "https://xn--v9x.net/quest/tooltip/?id={}&nocache=true".format(quest.id)
             url = "https://ff14.huijiwiki.com/wiki/{}".format(urllib.parse.quote("任务:"+str(quest)))
             msg = [
                 {
