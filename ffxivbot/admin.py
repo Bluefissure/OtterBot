@@ -104,7 +104,7 @@ class WeatherRateAdmin(admin.ModelAdmin):
 
 
 class TerritoryAdmin(admin.ModelAdmin):
-    list_display = ["name"]
+    list_display = ["id", "name"]
     search_fields = ['name']
 
 

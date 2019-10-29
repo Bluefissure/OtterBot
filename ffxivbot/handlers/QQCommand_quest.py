@@ -5,6 +5,7 @@ import logging
 import json
 import random
 import traceback
+import urllib
 
 def bfs_quest(quest):
     from queue import Queue
@@ -31,7 +32,6 @@ def bfs_quest(quest):
     while(not Q.empty() and forward_cnt<10000):
         q = Q.get(False)
         if q.id in visited: continue
-        # print("forward {} quest:{}{}".format(forward_cnt, q,"========endpoint" if q.endpoint else ""))
         forward_cnt += 1
         visited.add(q.id)
         if q.endpoint:
@@ -50,9 +50,9 @@ def QQCommand_quest(*args, **kwargs):
         receive = kwargs["receive"]
         receive_message = receive["message"]
         quest_name = receive_message.replace("/quest","").strip()
-        quests = PlotQuest.objects.filter(name__icontains=quest_name)
+        quests = PlotQuest.objects.filter(name__icontains=quest_name).order_by("-id")
         if not quests.exists():
-            quests = PlotQuest.objects.filter(language_names__icontains=quest_name)
+            quests = PlotQuest.objects.filter(language_names__icontains=quest_name).order_by("-id")
         if not quests.exists():
             msg = "找不到任务\"{}\"，请检查后查询".format(quest_name)
         else:
@@ -68,8 +68,7 @@ def QQCommand_quest(*args, **kwargs):
             else:
                 quest_img_url = "https://huiji-public.huijistatic.com/ff14/uploads/6/61/061431.png"
                 content = "支线任务"
-            url = "https://xn--v9x.net/quest/tooltip/?id={}".format(quest.id) if int(quest.id)<=68745 else \
-                "https://ffxiv.gamerescape.com/wiki/{}".format(quest.name.replace(" ", "_"))
+            url = "https://ff14.huijiwiki.com/wiki/{}".format(urllib.parse.quote("任务:"+str(quest)))
             msg = [
                 {
                     "type": "share",

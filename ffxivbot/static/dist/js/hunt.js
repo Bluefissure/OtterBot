@@ -3,8 +3,8 @@ var arr = true;
 var hw = true;
 var sb = true;
 var cd = false;
-var allServersButton = ["#lnxy", "#zszq", "#hyqd", "#mdn", "#syzd", "#jyzy", "#myc", "#yx", "#hyh", "#cft", "#sqh", "#byx", "#bjhx"]
-var allServersHiddenTag = [".lnxy", ".zszq", ".hyqd", ".mdn", ".syzd", ".jyzy", ".myc", ".yx", ".hyh", ".cft", ".sqh", ".byx", ".bjhx"]
+var allServersButton = ["#lnxy", "#zszq", "#hyqd", "#mdn", "#syzd", "#jyzy", "#myc", "#yx", "#hyh", "#cft", "#sqh", "#byx", "#bjhx", "#lrzq", "#lcsd"]
+var allServersHiddenTag = [".lnxy", ".zszq", ".hyqd", ".mdn", ".syzd", ".jyzy", ".myc", ".yx", ".hyh", ".cft", ".sqh", ".byx", ".bjhx", ".lrzq", ".lcsd"]
 
 $(document).ready(function () {
     if (typeof Storage !== "undefined") {
@@ -132,6 +132,16 @@ $(document).ready(function () {
     $("#bjhx").on("click", function () {
         server = "bjhx";
         localStorage.setItem("server", "bjhx");
+        updateHidden()
+    });
+    $("#lrzq").on("click", function () {
+        server = "lrzq";
+        localStorage.setItem("server", "lrzq");
+        updateHidden()
+    });
+    $("#lcsd").on("click", function () {
+        server = "lcsd";
+        localStorage.setItem("server", "lcsd");
         updateHidden()
     });
 });
@@ -352,6 +362,34 @@ function updateHidden() {
         }
         $("#bjhx").removeClass("btn-secondary");
         $(".bjhx").removeClass("hide-server");
+    }
+    if (server === "lrzq") {
+        let tempButtonList = allServersButton.concat();
+        let tempHiddenTag = allServersHiddenTag.concat();
+
+        tempHiddenTag.splice(12, 1);
+        tempButtonList.splice(12, 1);
+
+        for (let i = 0; i < tempButtonList.length; i++) {
+            $(tempButtonList[i]).addClass("btn-secondary");
+            $(tempHiddenTag[i]).addClass("hide-server");
+        }
+        $("#lrzq").removeClass("btn-secondary");
+        $(".lrzq").removeClass("hide-server");
+    }
+    if (server === "lcsd") {
+        let tempButtonList = allServersButton.concat();
+        let tempHiddenTag = allServersHiddenTag.concat();
+
+        tempHiddenTag.splice(12, 1);
+        tempButtonList.splice(12, 1);
+
+        for (let i = 0; i < tempButtonList.length; i++) {
+            $(tempButtonList[i]).addClass("btn-secondary");
+            $(tempHiddenTag[i]).addClass("hide-server");
+        }
+        $("#lcsd").removeClass("btn-secondary");
+        $(".lcsd").removeClass("hide-server");
     }
 }
 

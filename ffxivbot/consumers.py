@@ -93,7 +93,7 @@ class WSConsumer(AsyncWebsocketConsumer):
         try:
             ws_self_id = headers["x-self-id"]
             ws_client_role = headers["x-client-role"]
-            ws_access_token = headers["authorization"].replace("Token", "").strip()
+            ws_access_token = headers.get("authorization", "empty_access_token").replace("Token", "").strip()
             client_role = headers["x-client-role"]
             user_agent = headers["user-agent"]
             if client_role != "Universal":
@@ -216,7 +216,7 @@ class WSConsumer(AsyncWebsocketConsumer):
                                 or (group.repeat_length > 1 and group.repeat_prob > 0)
                             )
                             # push_to_mq = "[CQ:at,qq={}]".format(self_id) in receive["message"]
-                        if push_to_mq:
+                        if push_to_mq and False:  # temp
                             receive["consumer_time"] = time.time()
                             text_data = json.dumps(receive)
                             self.pub.send(text_data, priority)
