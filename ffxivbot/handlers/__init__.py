@@ -12,6 +12,7 @@ commands = {
   "/about":"关于此项目",
   "/donate":"援助作者",
   "/random":"掷骰子",
+  "/chp":"彩虹屁",
   "/anime":"以图搜番（\"/anime 图片\"）",
   "/gif":"生成沙雕图（\"/gif help\"）",
   "/dice":"DnD掷骰子（\"/dice 3d12\"）",
@@ -20,19 +21,19 @@ commands = {
   "/duilian":"对联（\"/duilian 稻花香里说丰年\"）",
   "/tex":"生成tex图片（\"/tex e^{\\pi i}+1=0\"）",
   "/gate":"挖宝选门（\"/gate 3\"）",
-  "/chp":"彩虹屁",
   "/search":"查询物品(\"/search 神龙\")",
   "/weather":"天气信息（快捷命令\"/fog\",\"/heat_wave\",\"/thunder\",\"/kx\"）",
+  "/fsx":"副属性计算（\"/fsx 直击\"）",
   "/dps":"DPS排名（\"/dps 8s 骑士\"）",
   "/raid":"零式英雄榜（\"/raid 蓝色裂痕 萌芽池\"）",
-  "/quest":"任务查询(/quest 狂乱前奏)",
+  "/quest":"任务查询(\"/quest 狂乱前奏\")",
   "/nuannuan":"本周金蝶暖暖作业",
-  "/bot":"机器人推送功能（\"/bot token 123\"）",
+  "/hso":"好色哦",
+  "/bot":"机器人相关功能",
   "/ifttt":"IFTTT推送系统",
   "/akhr":"罗德岛公开招募",
-  "/hso":"好色哦",
-  "/share":"微博分享",
-  "/trash":"你是什么垃圾？",
+  "/share":"发送微博分享",
+  # "/trash":"你是什么垃圾？",
   "/shorten":"微博短链"
 }
   # "/joke":"讽刺笑话（\"/joke 996|强东|建设一流公司|程序员|公司\"）",
@@ -108,6 +109,7 @@ from .QQCommand_share import QQCommand_share
 from .QQCommand_trash import QQCommand_trash
 from .QQCommand_shorten import QQCommand_shorten
 from .QQCommand_ifttt import QQCommand_ifttt
+from .QQCommand_fsx import QQCommand_fsx
 # from .QQCommand_joke import QQCommand_joke
 
 from .arknights.QQCommand_akhr import QQCommand_akhr

@@ -1,6 +1,8 @@
 from .QQEventHandler import QQEventHandler
 from .QQUtils import *
 from ffxivbot.models import *
+import math
+import traceback
 
 def QQCommand_fsx(*args, **kwargs):
     try:
@@ -9,7 +11,7 @@ def QQCommand_fsx(*args, **kwargs):
         user_id = receive["user_id"]
         action_list = []
         s_msg = receive["message"].replace("/fsx","",1).strip()
-        nlv=3300
+        nlv = 3300
         msg = '版本 5.0 Lv80 等级基数:3300\n'
         if '暴击' in s_msg:
             critical = int(s_msg.replace("暴击","")) - 380
@@ -33,7 +35,6 @@ def QQCommand_fsx(*args, **kwargs):
             mult = (1000 + math.floor(100 * tenacity/nlv))/1000
             mit = (1000 - math.floor(100 * tenacity/nlv))/10
             msg += '坚韧 {} 的计算结果(基数:380)：\n伤害增益：{}倍（仅防护职业）\n受击伤害：{}%'.format(tenacity+380,mult,mit)
-
         elif '速度' in s_msg:
             speed = int(s_msg.replace("速度","")) - 380
             mult = (1000 + math.floor(130 * speed/nlv))/1000  
@@ -48,6 +49,7 @@ def QQCommand_fsx(*args, **kwargs):
         reply_action = reply_message_action(receive, msg)
         action_list.append(reply_action)
     except Exception as e:
+        traceback.print_exc()
         msg = "Error: {}".format(type(e))
         action_list.append(reply_message_action(receive, msg))
     return action_list
