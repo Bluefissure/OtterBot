@@ -4,7 +4,7 @@ ENV PYTHONUNBUFFERED 1
 RUN mkdir /FFXIVBOT
 WORKDIR /FFXIVBOT
 ADD  requirements.txt /FFXIVBOT/
-RUN curl -l https://tuna.moe/oh-my-tuna/oh-my-tuna.py | python  # Remove this line if your server is located outside of mainland China
+# RUN curl -l https://tuna.moe/oh-my-tuna/oh-my-tuna.py | python  # Remove this line if your server is located outside of mainland China
 RUN pip install -r requirements.txt
 ADD . /FFXIVBOT/
 # change to docker verison
