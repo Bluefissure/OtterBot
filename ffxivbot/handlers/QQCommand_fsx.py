@@ -75,8 +75,6 @@ class QQCommand_fsx(QQEventHandler):
                 msg += '速度 {} 的计算结果(基数:380)：\nDoT收益:    {}\n复唱:    {}s\n1.5s:    {}s\n2.0s:    {}s\n2.8s:    {}s\n3.0s:    {}s\n复活(8s):    {}s\n下个临界点:\n2.5s: {}\n2.8s: {}'.format(speed+380,mult,cd_25,cd_15,cd_20,cd_28,cd_30,cd_80,speed_tmp1,speed_tmp2)
             else:
                 msg = ' 错误参数：{}'.format(s_msg)
-            if int(re.findall('\d+',s_msg)[0]) >= 4500:
-                msg = '要能到 {} 肥肥拿锅炖自己，哼。'.format(s_msg)
             reply_action = reply_message_action(receive, msg)
             action_list.append(reply_action)
         except Exception as e:
