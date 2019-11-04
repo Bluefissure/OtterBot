@@ -21,7 +21,9 @@ def QQGroupCommand_ban(*args, **kwargs):
         msg = "default msg"
         second_command_msg = receive["message"].replace("/ban","",1).strip()
         second_command = second_command_msg.split(" ")[0].strip()
-        if(second_command=="set"):
+        if(second_command=="" or second_command=="help"):
+            msg = "/ban $user $time: 给$user开启时长为$time分钟的禁言投票\n/ban $user: 给$user的禁言投票+1"
+        elif(second_command=="set"):
             if(user_info["role"]!="owner" and user_info["role"]!="admin" ):
                 msg = "仅群主与管理员有权限设置禁言投票"
             else:
@@ -79,29 +81,29 @@ def QQGroupCommand_ban(*args, **kwargs):
                                             break
                                     if not target_user_info:
                                         msg = "未找到%s成员信息"%(target_user_info)
+                                        target_user_info = {"role":"member"}
+                                    voted_msg = ""
+                                    for item in vtlist["voted_by"]:
+                                        voted_msg += "[CQ:at,qq=%s] "%(item)
+                                    msg = "[CQ:at,qq=%s] 被%s投票禁言%s分钟"%(qq, voted_msg, mem.ban_time)
+                                    msg += " 复仇请输入/revenge"
+                                    if(target_user_info["role"]=="owner"):
+                                        msg = "[CQ:at,qq=%s] 虽然你是狗群主%s无法禁言，但是也被群友投票禁言，请闭嘴%s分钟[CQ:face,id=14]"%(qq, bot.name, mem.ban_time)
+                                    if(target_user_info["role"]=="admin"):
+                                        msg = "[CQ:at,qq=%s] 虽然你是狗管理%s无法禁言，但是也被群友投票禁言，请闭嘴%s分钟[CQ:face,id=14]"%(qq, bot.name, mem.ban_time)
+                                    if(str(mem.user_id) == str(receive["self_id"])):
+                                        msg = "%s竟然禁言了可爱的%s[CQ:face,id=111][CQ:face,id=111]好吧我闭嘴%s分钟[CQ:face,id=14]"%(voted_msg, bot.name, mem.ban_time)
+                                        group.ban_till = time.time()+int(mem.ban_time)*60
+                                        group.save()
                                     else:
-                                        voted_msg = ""
-                                        for item in vtlist["voted_by"]:
-                                            voted_msg += "[CQ:at,qq=%s] "%(item)
-                                        msg = "[CQ:at,qq=%s] 被%s投票禁言%s分钟"%(qq, voted_msg, mem.ban_time)
-                                        msg += " 复仇请输入/revenge"
-                                        if(target_user_info["role"]=="owner"):
-                                            msg = "[CQ:at,qq=%s] 虽然你是狗群主%s无法禁言，但是也被群友投票禁言，请闭嘴%s分钟[CQ:face,id=14]"%(qq, bot.name, mem.ban_time)
-                                        if(target_user_info["role"]=="admin"):
-                                            msg = "[CQ:at,qq=%s] 虽然你是狗管理%s无法禁言，但是也被群友投票禁言，请闭嘴%s分钟[CQ:face,id=14]"%(qq, bot.name, mem.ban_time)
-                                        if(str(mem.user_id) == str(receive["self_id"])):
-                                            msg = "%s竟然禁言了可爱的%s[CQ:face,id=111][CQ:face,id=111]好吧我闭嘴%s分钟[CQ:face,id=14]"%(voted_msg, bot.name, mem.ban_time)
-                                            group.ban_till = time.time()+int(mem.ban_time)*60
-                                            group.save()
-                                        else:
-                                            ban_action = group_ban_action(group_id,qq,int(mem.ban_time)*60)
-                                            action_list.append(ban_action)
-                                            rev = Revenge(user_id=mem.user_id,group=group)
-                                            rev.timestamp = time.time()
-                                            rev.vote_list = mem.vote_list
-                                            rev.ban_time = mem.ban_time
-                                            rev.save()
-                                        mem.delete()
+                                        ban_action = group_ban_action(group_id,qq,int(mem.ban_time)*60)
+                                        action_list.append(ban_action)
+                                        rev = Revenge(user_id=mem.user_id,group=group)
+                                        rev.timestamp = time.time()
+                                        rev.vote_list = mem.vote_list
+                                        rev.ban_time = mem.ban_time
+                                        rev.save()
+                                    mem.delete()
                                 else:
                                     msg = "[CQ:at,qq=%s] 时长为%s分钟的禁言投票，目前进度：%s/%s"%(mem.user_id,mem.ban_time,len(vtlist["voted_by"]),group.ban_cnt)
 

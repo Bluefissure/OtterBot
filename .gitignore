@@ -4,10 +4,13 @@
 *.sqlite3
 config.json
 venv/
-static/
 __pycache__/
 ffxivbot/migrations/
+.vscode/
 
 #production files
 FFXIV/settings.py
 ffxivbot/config.json
+tooltip.png
+utils/nohup.out
+.idea

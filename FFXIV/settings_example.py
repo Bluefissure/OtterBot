@@ -26,7 +26,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = 'SECRET_KEY'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
@@ -58,15 +58,15 @@ MIDDLEWARE_CLASSES = [
 ]
 
 CHANNEL_LAYERS = {
-   "default": {
-       "BACKEND": "channels_redis.core.RedisChannelLayer",
-       "CONFIG": {
-           "hosts": [("127.0.0.1", 6379)],
-           "prefix": "ffxivbot",
-           "capacity": 200,
-           "expiry": 600,
-       },
-   },
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("127.0.0.1", 6379)],
+            "prefix": "ffxivbot",
+            "capacity": 200,
+            "expiry": 600,
+            },
+        },
 }
 # CHANNEL_LAYERS = {
 #     "default": {
@@ -154,3 +154,4 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "static"),
 ]
 
+USE_GRAFANA = False

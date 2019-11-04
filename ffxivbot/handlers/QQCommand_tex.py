@@ -8,6 +8,8 @@ import requests
 import math
 import urllib
 import base64
+
+
 def QQCommand_tex(*args, **kwargs):
     try:
         global_config = kwargs["global_config"]
@@ -17,8 +19,8 @@ def QQCommand_tex(*args, **kwargs):
         bot = kwargs["bot"]
 
         msg = ""
-        receive_msg = receive["message"].replace('/tex','',1).strip()
-        if receive_msg=="":
+        receive_msg = receive["message"].replace("/tex", "", 1).strip()
+        if receive_msg == "":
             msg = "/tex $tex：渲染公式$tex\n/tex /inlinemode $tex：行内模式"
         else:
             # print(receive_msg)
@@ -28,7 +30,7 @@ def QQCommand_tex(*args, **kwargs):
             # print(url)
             r = requests.get(url)
             b64str = base64.b64encode(r.content).decode()
-            msg = '[CQ:image,file=base64://{}]'.format(b64str)
+            msg = "[CQ:image,file=base64://{}]".format(b64str)
         if msg:
             reply_action = reply_message_action(receive, msg)
             action_list.append(reply_action)

@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load static %}
 {% block main %}
 <div class="wrapper">
 
@@ -19,8 +20,35 @@
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </a>
-
-      
+      <div class="navbar-custom-menu">
+        <ul class="nav navbar-nav">
+          <!-- User Account: style can be found in dropdown.less -->
+          <li class="dropdown user user-menu">
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+              <img src="{% if user %}{{user.avatar}}{% else %}{% static "dist/img/tata.jpg"%}{% endif %}" class="user-image" alt="User Image">
+              <span class="hidden-xs">{% if user %}{{user.nickname}}{% else %}光之呆呆{% endif %}</span>
+            </a>
+            <ul class="dropdown-menu">
+              <!-- User image -->
+              <li class="user-header">
+                <img src="{% if user %}{{user.avatar}}{% else %}{% static "dist/img/tata.jpg"%}{% endif %}" class="img-circle" alt="User Image">
+                <p>
+                  {% if user %}{{user.nickname}}{% else %}光之呆呆{% endif %}
+                </p>
+              </li>
+              <!-- Menu Footer-->
+              <li class="user-footer">
+                <div class="pull-left">
+                  <a href="/oauth/qq/login" class="btn btn-default btn-flat">QQ绑定</a>
+                </div>
+                <div class="pull-right">
+                  <a href="/logout" class="btn btn-default btn-flat">退出</a>
+                </div>
+              </li>
+            </ul>
+          </li>
+        </ul>
+      </div>
     </nav>
   </header>
   <!-- Left side column. contains the logo and sidebar -->
@@ -30,10 +58,10 @@
       <!-- Sidebar user panel -->
       <div class="user-panel">
         <div class="pull-left image">
-          <img src="/static/dist/img/tata.jpg" class="img-circle" alt="User Image">
+          <img src="{% if user %}{{user.avatar}}{% else %}{% static "dist/img/tata.jpg"%}{% endif %}" class="img-circle" alt="User Image">
         </div>
         <div class="pull-left info">
-          <p>光之呆呆</p>
+          <p>{% if user %}{{user.nickname}}{% else %}光之呆呆{% endif %}</p>
           <a href="#"><i class="fa fa-circle text-success"></i> 在线</a>
         </div>
       </div>
@@ -42,7 +70,7 @@
         <li class="header">导航</li>
         <li class="" id="tata">
           <a href="/tata">
-            <i class="fa fa-table"></i> <span>机器人列表</span>
+            <i class="fa fa-table"></i> <span>獭獭列表</span>
             <span class="pull-right-container">
                   <i class="fa fa-angle-left pull-right"></i>
                 </span>
@@ -50,11 +78,44 @@
         </li>
         <li class="" id="quest">
           <a href="/quest">
-            <i class="fa fa-table"></i> <span>任务流程图</span>
+            <i class="fa fa-tasks"></i> <span>任务流程</span>
             <span class="pull-right-container">
                   <i class="fa fa-angle-left pull-right"></i>
                 </span>
           </a>
+        </li>
+        {% if user %}
+        <li class="" id="hunt">
+          <a href="/hunt">
+            <i class="fa fa-clock-o"></i> <span>狩猎时钟</span>
+            <span class="pull-right-container">
+                  <i class="fa fa-angle-left pull-right"></i>
+                </span>
+          </a>
+        </li>
+        {% endif %}
+        <li class="" id="image">
+          <a href="/image">
+            <i class="fa fa-image"></i> <span>獭の图库</span>
+            <span class="pull-right-container">
+                  <i class="fa fa-angle-left pull-right"></i>
+                </span>
+          </a>
+        </li>
+        <li class="treeview" style="height: auto;">
+          <a href="#">
+            <i class="fa  fa-heart"></i>
+            <span>友情链接</span>
+            <span class="pull-right-container">
+              <i class="fa fa-angle-left pull-right"></i>
+            </span>
+          </a>
+          <ul class="treeview-menu" style="display: none;">
+            <li><a href="https://ff14.huijiwiki.com/wiki/%E9%A6%96%E9%A1%B5" target="_blank"><i class="fa fa-circle-o"></i> Wiki</a></li>
+            <li><a href="https://bbs.nga.cn/thread.php?fid=-362960" target="_blank"><i class="fa fa-circle-o"></i> NGA</a></li>
+            <li><a href="https://www.ffxiv.cn/" target="_blank"><i class="fa fa-circle-o"></i> 素素</a></li>
+            <li><a href="https://wakingsands.com" target="_blank"><i class="fa fa-circle-o"></i> 沙之家</a></li>
+          </ul>
         </li>
       </ul>
     </section>
@@ -72,7 +133,7 @@
     <div class="pull-right hidden-xs">
       <b>Version</b> 0.0.1
     </div>
-    <strong>Copyright &copy; 2017-2018 <a href="https://bluefissure.com">Bluefissure</a>.</strong> All rights
+    <strong>Copyright &copy; 2017-2019 <a href="https://bluefissure.com">Bluefissure</a>.</strong> All rights
     reserved.
   </footer>
 
@@ -87,20 +148,20 @@
 <!-- ./wrapper -->
 {% block script %}
 <!-- jQuery 3 -->
-<script src="/static/bower_components/jquery/dist/jquery.min.js"></script>
+<script src="{% static "bower_components/jquery/dist/jquery.min.js"%}"></script>
 <!-- Bootstrap 3.3.7 -->
-<script src="/static/bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+<script src="{% static "bower_components/bootstrap/dist/js/bootstrap.min.js"%}"></script>
 <!-- DataTables -->
-<script src="/static/bower_components/datatables.net/js/jquery.dataTables.min.js"></script>
-<script src="/static/bower_components/datatables.net-bs/js/dataTables.bootstrap.min.js"></script>
+<script src="{% static "bower_components/datatables.net/js/jquery.dataTables.min.js" %}"></script>
+<script src="{% static "bower_components/datatables.net-bs/js/dataTables.bootstrap.min.js"%}"></script>
 <!-- SlimScroll -->
-<script src="/static/bower_components/jquery-slimscroll/jquery.slimscroll.min.js"></script>
+<script src="{% static "bower_components/jquery-slimscroll/jquery.slimscroll.min.js"%}"></script>
 <!-- FastClick -->
-<script src="/static/bower_components/fastclick/lib/fastclick.js"></script>
+<script src="{% static "bower_components/fastclick/lib/fastclick.js" %}"></script>
 <!-- AdminLTE App -->
-<script src="/static/dist/js/adminlte.min.js"></script>
+<script src="{% static "dist/js/adminlte.min.js" %}"></script>
 <!-- AdminLTE for demo purposes -->
-<script src="/static/dist/js/demo.js"></script>
+<script src="{% static "dist/js/demo.js" %}"></script>
 <!-- page script -->
 {% endblock %}
 

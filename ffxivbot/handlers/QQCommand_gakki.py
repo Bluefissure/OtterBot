@@ -5,12 +5,21 @@ import logging
 import json
 import random
 
+
 def QQCommand_gakki(*args, **kwargs):
     try:
         QQ_BASE_URL = kwargs["global_config"]["QQ_BASE_URL"]
         action_list = []
         receive = kwargs["receive"]
-        msg = [{"type":"image","data":{"file":QQ_BASE_URL+"static/gakki/%s.jpg"%(random.randint(1,1270))}}]
+        msg = [
+            {
+                "type": "image",
+                "data": {
+                    "file": QQ_BASE_URL
+                    + "static/gakki/%s.jpg" % (random.randint(1, 1270))
+                },
+            }
+        ]
         reply_action = reply_message_action(receive, msg)
         action_list.append(reply_action)
         return action_list
