@@ -41,6 +41,7 @@
                             <button type="button" class="btn btn-primary" id="arr">2.0</button>
                             <button type="button" class="btn btn-primary" id="hw">3.0</button>
                             <button type="button" class="btn btn-primary" id="sb">4.0</button>
+                            <button type="button" class="btn btn-primary" id="sbs">5.0</button>
                             <button type="button" class="btn btn-primary" id="cd"><i class="fa fa-clock-o"></i></button>
                         </div>
                         <p style="margin-bottom: 0px; margin-left: 10px;">陆行鸟区：</p>
@@ -86,6 +87,8 @@
                                     <tr class="{{ monster_info.server_tag }} hw {{ monster_info.in_cd }}">
                                         {% elif monster_info.monster_type == "70S" %}
                                     <tr class="{{ monster_info.server_tag }} sb {{ monster_info.in_cd }}">
+                                        {% elif monster_info.monster_type == "80S" %}
+                                    <tr class="{{ monster_info.server_tag }} sbs {{ monster_info.in_cd }}">
                                 {% endif %}
                             <td style="text-align: center; vertical-align: center;">{{ monster_info.monster }}</td>
                             <td style="text-align: center; vertical-align: center;">{{ monster_info.territory }}</td>

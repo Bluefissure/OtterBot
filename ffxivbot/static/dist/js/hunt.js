@@ -2,9 +2,10 @@ var server = "lnxy";
 var arr = true;
 var hw = true;
 var sb = true;
+var sbs = true;
 var cd = false;
-var allServersButton = ["#lnxy", "#zszq", "#hyqd", "#mdn", "#syzd", "#jyzy", "#myc", "#yx", "#hyh", "#cft", "#sqh", "#byx", "#bjhx", "#lrzq", "#lcsd"]
-var allServersHiddenTag = [".lnxy", ".zszq", ".hyqd", ".mdn", ".syzd", ".jyzy", ".myc", ".yx", ".hyh", ".cft", ".sqh", ".byx", ".bjhx", ".lrzq", ".lcsd"]
+var allServersButton = ["#lnxy", "#zszq", "#hyqd", "#mdn", "#syzd", "#jyzy", "#myc", "#yx", "#hyh", "#cft", "#sqh", "#byx", "#bjhx", "#lrzq", "#lcsd"];
+var allServersHiddenTag = [".lnxy", ".zszq", ".hyqd", ".mdn", ".syzd", ".jyzy", ".myc", ".yx", ".hyh", ".cft", ".sqh", ".byx", ".bjhx", ".lrzq", ".lcsd"];
 
 $(document).ready(function () {
     if (typeof Storage !== "undefined") {
@@ -20,6 +21,9 @@ $(document).ready(function () {
         if (localStorage.getItem("sb") === null) {
             localStorage.setItem("sb", sb);
         }
+        if (localStorage.getItem("sbs") === null) {
+            localStorage.setItem("sbs", sbs);
+        }
         if (localStorage.getItem("cd") === null) {
             localStorage.setItem("cd", cd);
         }
@@ -27,6 +31,7 @@ $(document).ready(function () {
         arr = localStorage.getItem("arr") === "true";
         hw = localStorage.getItem("hw") === "true";
         sb = localStorage.getItem("sb") === "true";
+        sbs = localStorage.getItem("sbs") === "true";
         cd = localStorage.getItem("cd") === "true";
     }
     updateHidden();
@@ -58,6 +63,15 @@ $(document).ready(function () {
             sb = true;
         }
         localStorage.setItem("sb", sb);
+        updateHidden()
+    });
+    $("#sbs").on("click", function () {
+        if (sbs) {
+            sbs = false;
+        } else if (!sbs) {
+            sbs = true;
+        }
+        localStorage.setItem("sbs", sbs);
         updateHidden()
     });
     $("#cd").on("click", function () {
@@ -170,6 +184,14 @@ function updateHidden() {
     if (!sb) {
         $(".sb").addClass("hide");
         $("#sb").addClass("btn-secondary");
+    }
+    if (sbs) {
+        $(".sbs").removeClass("hide");
+        $("#sbs").removeClass("btn-secondary");
+    }
+    if (!sbs) {
+        $(".sbs").addClass("hide");
+        $("#sbs").addClass("btn-secondary");
     }
     if (cd){
         $(".notcd").addClass("hide-cd");
