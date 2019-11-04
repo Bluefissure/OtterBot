@@ -27,15 +27,21 @@ def QQGroupCommand_group(*args, **kwargs):
                 group.save()
                 msg = "群{}注册成功".format(group_id)
             elif(second_command=="info"):
-                msg = "TODO"
-            elif(second_command=="weibo"):
-                interval = second_command_msg.replace(second_command,"",1)
-                try:
-                    group.subscription_trigger_time = int(interval)
-                except:
-                    group.subscription_trigger_time = 300
-                group.save(update_fields=["subscription_trigger_time"])
-                msg = "微博订阅时间被设定为{}s".format(group.subscription_trigger_time)
+                msg = "群号：{}\n".format(group.group_id)+\
+                        "注册状态：{}\n".format(group.registered)+\
+                        "API开启状态：{}\n".format(group.api)+\
+                        "复读触发条件：{}/min {}%\n".format(group.repeat_length, group.repeat_prob)+\
+                        "复读禁言阈值：{}\n".format(group.repeat_ban)+\
+                        "投票禁言阈值：{}\n".format(group.ban_cnt)+\
+                        "群成员数量：{}\n".format(len(json.loads(group.member_list)))
+                msg = msg.strip()
+            elif(second_command=="update"):
+                msg = "群成员统计请求已发送"
+                action_list.append({
+                    "action": "get_group_member_list", 
+                    "params": {"group_id": group_id}, 
+                    "echo": "get_group_member_list:%s" % (group_id)
+                })
             elif(second_command=="api"):
                 enable = second_command_msg.replace(second_command,"",1)
                 if "enable" in enable:
@@ -45,7 +51,7 @@ def QQGroupCommand_group(*args, **kwargs):
                 group.save(update_fields=["api"])
                 msg = "群内已{}獭のAPI功能".format("开启" if group.api else "禁止")
             else:
-                msg = "错误的命令，二级命令有:\"register\", \"info\", \"weibo\", \"api\""
+                msg = "错误的命令，二级命令有:\"register\", \"info\", \"api\""
         reply_action = reply_message_action(receive, msg)
         action_list.append(reply_action)
         return action_list
@@ -53,3 +59,4 @@ def QQGroupCommand_group(*args, **kwargs):
         msg = "Error: {}".format(type(e))
         action_list.append(reply_message_action(receive, msg))
         logging.error(e)
+    return []

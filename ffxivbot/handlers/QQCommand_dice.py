@@ -6,13 +6,14 @@ import json
 import random
 import dice
 
+
 def QQCommand_dice(*args, **kwargs):
     action_list = []
     try:
         QQ_BASE_URL = kwargs["global_config"]["QQ_BASE_URL"]
         receive = kwargs["receive"]
 
-        dice_msg = receive["message"].replace("/dice","",1).strip()
+        dice_msg = receive["message"].replace("/dice", "", 1).strip()
         # if "d" in dice_msg:
         #     try:
         #         cnt = int(dice_msg.split("d"))[0]
