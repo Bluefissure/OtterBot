@@ -5,6 +5,7 @@ import logging
 import json
 import random
 import requests
+import os
 
 
 def QQCommand_mxh(*args, **kwargs):
@@ -27,7 +28,8 @@ def QQCommand_mxh(*args, **kwargs):
         else:
             a_name = args[0].strip()
             b_name = args[1].strip()
-            with open("../data/story.json", 'r', encoding='UTF-8') as load_f:
+            data_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "mxh_story.json")
+            with open(data_path, 'r', encoding='UTF-8') as load_f:
                 load_dict = json.load(load_f)
                 stories = []
                 for item in load_dict:
