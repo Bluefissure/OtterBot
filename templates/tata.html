@@ -4,99 +4,110 @@
 
 {% block content %}
 
-    <!-- Content Header (Page header) -->
-    {% if err %}
+  <!-- Content Header (Page header) -->
+  {% if err %}
     <div class="alert alert-danger alert-dismissible">
       <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
       <h4><i class="icon fa fa-ban"></i> {{ err.title }}</h4>
       {{ err.message }}
     </div>
-    {% endif %}
-    {% if success %}
+  {% endif %}
+  {% if success %}
     <div class="alert alert-success alert-dismissible">
       <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
       <h4><i class="icon fa fa-ban"></i> {{ success.title }}</h4>
       {{ success.message }}
     </div>
-    {% endif %}
-    <section class="content-header">
-      <h1>
-        机器人列表
-      </h1>
-    </section>
+  {% endif %}
 
-    <!-- Main content -->
-    <section class="content">
+  <div class="content-header">
+    <div class="container-fluid">
+      <h1 class="m-0 text-dark">机器人列表</h1>
+    </div>
+  </div>
+
+  <!-- Main content -->
+  <section class="content">
+    <div class="container-fluid">
       <div class="row">
-        <div class="col-xs-12">
+        <div class="col-md-12">
 
-          <div class="box">
-            <div class="box-header">
-              <h3 class="box-title">现有机器人</h3>
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">现有机器人</h3>
             </div>
-            <!-- /.box-header -->
-            <div class="box-body">
-              <table id="example1" class="table table-bordered table-striped table-hover"  style="width:100%">
+            <!-- /.card-header -->
+            <div class="card-body">
+              <table id="example1" class="table table-striped table-hover" style="width:100%">
                 <thead>
                 <tr>
-                  <th><center>昵称</center></th>
-                  <th><center>QQ账号</center></th>
-                  <th><center>群数量</center></th>
-                  <th><center>好友数量</center></th>
-                  <th><center>客户端版本</center></th>
-                  <th><center>领养人QQ</center></th>
-                  <th><center>在线情况</center></th>
-                  <th><center>公开</center></th>
-                  <th><center>删除</center></th>
+                  <th style="text-align: center;">昵称</th>
+                  <th style="text-align: center;">QQ账号</th>
+                  <th style="text-align: center;">群数量</th>
+                  <th style="text-align: center;">好友数量</th>
+                  <th style="text-align: center;">客户端版本</th>
+                  <th style="text-align: center;">领养人QQ</th>
+                  <th style="text-align: center;">在线情况</th>
+                  <th style="text-align: center;">公开</th>
+                  <th style="text-align: center;">删除</th>
                   <!-- <th><center>配置</center></th> -->
                 </tr>
                 </thead>
                 <tbody>
-                  {% for bot in bots %}
-                    <tr>
-                      {% if bot.autofriend and bot.autoinvite%}
-                      <td><center><p style="color:green">{{bot.name}}</p></center></td>
-                      {% elif bot.autoinvite%}
-                      <td><center><p style="color:#FF9900">{{bot.name}}</p></center></td>
-                      {% elif bot.autofriend%}
-                      <td><center><p style="color:#FF0099">{{bot.name}}</p></center></td>
-                      {% else %}
-                      <td><center>{{bot.name}}</center></td>
-                      {% endif %}
-                      <td><center>{{bot.user_id}}</center></td>
-                      <td><center>{{bot.group_num}}</center></td>
-                      <td><center>{{bot.friend_num}}</center></td>
-                      <td><center>{{bot.coolq_edition}}</center></td>
-                      <td><center>{{bot.owner_id}}</center></td>
-                      <td><center>{{bot.online}}</center></td>
-                      {% if bot.public %}
-                      <td><button type="button" class="btn btn-block btn-warning" onclick="switch_public({{bot.id}})">隐藏</button></td>
-                      {% else %}
-                      <td><button type="button" class="btn btn-block btn-success" onclick="switch_public({{bot.id}})">公开</button></td>
-                      {% endif %}
-                      <td><button type="button" class="btn btn-block btn-danger" onclick="del_bot({{bot.id}})">删除</button></td>
-                      <!-- <td><button type="button" class="btn btn-block btn-success" onclick="download_conf({{bot.id}})">下载</button></td> -->
-                    </tr>
-                  {% endfor%}
-                
-                
+                {% for bot in bots %}
+                  <tr>
+                    {% if bot.autofriend and bot.autoinvite %}
+                      <td style="text-align: center; vertical-align: middle; color:green">{{ bot.name }}</td>
+                    {% elif bot.autoinvite %}
+                      <td style="text-align: center; vertical-align: middle; color:#FF9900">{{ bot.name }}</td>
+                    {% elif bot.autofriend %}
+                      <td style="text-align: center; vertical-align: middle; color:#FF0099">{{ bot.name }}</td>
+                    {% else %}
+                      <td style="text-align: center; vertical-align: middle">{{ bot.name }}</td>
+                    {% endif %}
+                    <td style="text-align: center; vertical-align: middle">{{ bot.user_id }}</td>
+                    <td style="text-align: center; vertical-align: middle">{{ bot.group_num }}</td>
+                    <td style="text-align: center; vertical-align: middle">{{ bot.friend_num }}</td>
+                    <td style="text-align: center; vertical-align: middle">{{ bot.coolq_edition }}</td>
+                    <td style="text-align: center; vertical-align: middle">{{ bot.owner_id }}</td>
+                    <td style="text-align: center; vertical-align: middle">{{ bot.online }}</td>
+                    {% if bot.public %}
+                      <td>
+                        <button type="button" class="btn btn-block btn-warning" onclick="switch_public({{ bot.id }})">隐藏
+                        </button>
+                      </td>
+                    {% else %}
+                      <td>
+                        <button type="button" class="btn btn-block btn-success" onclick="switch_public({{ bot.id }})">公开
+                        </button>
+                      </td>
+                    {% endif %}
+                    <td>
+                      <button type="button" class="btn btn-block btn-danger" onclick="del_bot({{ bot.id }})">删除</button>
+                    </td>
+                    <!-- <td><button type="button" class="btn btn-block btn-success" onclick="download_conf({{bot.id}})">下载</button></td> -->
+                  </tr>
+                {% endfor %}
+
+
                 </tfoot>
               </table>
             </div>
-            <!-- /.box-body -->
+            <!-- /.card-body -->
           </div>
-          <!-- /.box -->
+          <!-- /.card -->
         </div>
-        <div class="col-xs-12">
-          <div class="col-md-6">
-          <div class="box box-primary">
-            <div class="box-header with-border">
-              <h3 class="box-title">领养/更新机器人</h3>
+      </div>
+      <div class="row">
+        <div class="col-md-6">
+          <div class="card card-primary">
+            <div class="card-header with-border">
+              <h3 class="card-title">领养/更新机器人</h3>
             </div>
-            <!-- /.box-header -->
+            <!-- /.card-header -->
             <!-- form start -->
-            <div  method="post" role="form">
-              <div class="box-body">
+            <div method="post" role="form">
+              <div class="card-body">
                 <div class="form-group">
                   <label for="botName">昵称(长度>2)</label>
                   <input type="text" class="form-control" id="botName" placeholder="">
@@ -104,7 +115,8 @@
                 <div class="form-group">
                   <label for="botID">QQ账号</label>
                   <input type="text" class="form-control" id="botID" placeholder="">
-                </div><div class="form-group">
+                </div>
+                <div class="form-group">
                   <label for="ownerID">主人QQ</label>
                   <input type="text" class="form-control" id="ownerID" placeholder="">
                 </div>
@@ -113,7 +125,8 @@
                   <input type="text" class="form-control" id="accessToken" placeholder="" maxlength="16">
                 </div>
                 <div class="form-group">
-                  <label for="tulingToken"><a href="http://www.tuling123.com/" target="_blank">Tuling</a> Token(留空使用共享图灵账号)</label>
+                  <label for="tulingToken"><a href="http://www.tuling123.com/" target="_blank">Tuling</a>
+                    Token(留空使用共享图灵账号)</label>
                   <input type="text" class="form-control" id="tulingToken" placeholder="">
                 </div>
                 <div class="form-group">
@@ -131,101 +144,94 @@
                   </label>
                 </div>
               </div>
-              <!-- /.box-body -->
+              <!-- /.card-body -->
 
-              <div class="box-footer">
+              <div class="card-footer">
                 <button class="btn btn-primary" onclick="add_or_update_bot()">申请/更新</button>
               </div>
             </div>
           </div>
         </div>
         <div class="col-md-6">
-              <!-- DIRECT CHAT -->
-              <div class="box box-warning direct-chat direct-chat-warning">
-                <div class="box-header with-border">
-                  <h3 class="box-title">想说的话</h3>
-                </div>
-                <!-- /.box-header -->
-                <div class="box-body">
-                  <!-- Conversations are loaded here -->
-                  <div class="direct-chat-messages">
-                    <!-- Message. Default to the left -->
-                    <div class="direct-chat-msg">
-                      <div class="direct-chat-info clearfix">
-                        <span class="direct-chat-name pull-left">Bluefissure</span>
-                        <span class="direct-chat-timestamp pull-right">2018-8-21 11:28:02</span>
-                      </div>
-                      <!-- /.direct-chat-info -->
-                      <img class="direct-chat-img" src="{% static "dist/img/bluefissure.jpg" %}" alt="message user image">
-                      <!-- /.direct-chat-img -->
-                      <div class="direct-chat-text">
-                        机器人数量达到上限后会停止新的机器人申请，可以参考取以下獭窝中领养獭獭（需要将链接地址进行对应替换）。
-                        不同颜色表示：自动同意<font style="color:#FF9900">加群邀请</font>，<font style="color:#FF0099">好友邀请</font>，<font style="color:green">均同意</font>
-                      </div>
-                      <!-- /.direct-chat-text -->
-                    </div>
-                    <div class="direct-chat-msg">
-                      <div class="direct-chat-info clearfix">
-                        <span class="direct-chat-name pull-left">Bluefissure</span>
-                        <span class="direct-chat-timestamp pull-right">2018-8-20 16:31:30</span>
-                      </div>
-                      <!-- /.direct-chat-info -->
-                      <img class="direct-chat-img" src="{% static "dist/img/bluefissure.jpg" %}" alt="message user image">
-                      <!-- /.direct-chat-img -->
-                      <div class="direct-chat-text">
-                        出现问题请<a href="http://wpa.qq.com/msgrd?v=3&uin=306401806&site=qq&menu=yes" target="_blank">联系獭爹</a>，或<a href="https://jq.qq.com/?_wv=1027&k=5L3hY4w" target="_blank">加入群聊</a>
-                      </div>
-                      <!-- /.direct-chat-text -->
-                    </div>
-                    <div class="direct-chat-msg">
-                      <div class="direct-chat-info clearfix">
-                        <span class="direct-chat-name pull-left">Bluefissure</span>
-                        <span class="direct-chat-timestamp pull-right">2018-8-17 23:14:30</span>
-                      </div>
-                      <!-- /.direct-chat-info -->
-                      <img class="direct-chat-img" src="{% static "dist/img/bluefissure.jpg" %}" alt="message user image">
-                      <!-- /.direct-chat-img -->
-                      <div class="direct-chat-text">
-                        领养教程<a href="http://bbs.ngacn.cc/read.php?tid=14726260" target="_blank">点击此处</a>
-                      </div>
-                      <!-- /.direct-chat-text -->
-                    </div>
-                    <div class="direct-chat-msg">
-                      <div class="direct-chat-info clearfix">
-                        <span class="direct-chat-name pull-left">Bluefissure</span>
-                        <span class="direct-chat-timestamp pull-right">2018-8-17 20:09:48</span>
-                      </div>
-                      <!-- /.direct-chat-info -->
-                      <img class="direct-chat-img" src="{% static "dist/img/bluefissure.jpg" %}" alt="message user image">
-                      <!-- /.direct-chat-img -->
-                      <div class="direct-chat-text">
-                        大家要对獭獭温柔一点哦~
-                      </div>
-                      <!-- /.direct-chat-text -->
-                    </div>
-                  <!--/.direct-chat-messages-->
-                  </div>
-                  <!-- /.box-body -->
-                </div>
-              <!--/.direct-chat -->
-              </div>
-          
-        </div>
-
-        <div class="col-md-6">
-          <div class="box box-primary">
-            <div class="box-header with-border">
-              <h3 class="box-title">其他獭窝</h3>
-
-              <div class="box-tools pull-right">
-                <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i>
-                </button>
-                <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i></button>
-              </div>
+          <!-- DIRECT CHAT -->
+          <div class="card card-warning direct-chat direct-chat-warning">
+            <div class="card-header with-border">
+              <h3 class="card-title">想说的话</h3>
             </div>
-            <!-- /.box-header -->
-            <div class="box-body">
-              <ul class="products-list product-list-in-box">
+            <!-- /.card-header -->
+            <div class="card-body">
+              <!-- Conversations are loaded here -->
+              <div class="direct-chat-messages">
+                <!-- Message. Default to the left -->
+                <div class="direct-chat-msg">
+                  <div class="direct-chat-info clearfix">
+                    <span class="direct-chat-name pull-left">Bluefissure</span>
+                    <span class="direct-chat-timestamp pull-right">2018-8-21 11:28:02</span>
+                  </div>
+                  <!-- /.direct-chat-info -->
+                  <img class="direct-chat-img" src="{% static "dist/img/bluefissure.jpg" %}" alt="message user image">
+                  <!-- /.direct-chat-img -->
+                  <div class="direct-chat-text">
+                    机器人数量达到上限后会停止新的机器人申请，可以参考取以下獭窝中领养獭獭（需要将链接地址进行对应替换）。
+                    不同颜色表示：自动同意<span style="color:#FF9900">加群邀请</span>，<span style="color:#FF0099">好友邀请</span>，<span
+                      style="color:green">均同意</span>
+                  </div>
+                  <!-- /.direct-chat-text -->
+                </div>
+                <div class="direct-chat-msg">
+                  <div class="direct-chat-info clearfix">
+                    <span class="direct-chat-name pull-left">Bluefissure</span>
+                    <span class="direct-chat-timestamp pull-right">2018-8-20 16:31:30</span>
+                  </div>
+                  <!-- /.direct-chat-info -->
+                  <img class="direct-chat-img" src="{% static "dist/img/bluefissure.jpg" %}" alt="message user image">
+                  <!-- /.direct-chat-img -->
+                  <div class="direct-chat-text">
+                    出现问题请<a href="http://wpa.qq.com/msgrd?v=3&uin=306401806&site=qq&menu=yes" target="_blank">联系獭爹</a>，或<a
+                      href="https://jq.qq.com/?_wv=1027&k=5L3hY4w" target="_blank">加入群聊</a>
+                  </div>
+                  <!-- /.direct-chat-text -->
+                </div>
+                <div class="direct-chat-msg">
+                  <div class="direct-chat-info clearfix">
+                    <span class="direct-chat-name pull-left">Bluefissure</span>
+                    <span class="direct-chat-timestamp pull-right">2018-8-17 23:14:30</span>
+                  </div>
+                  <!-- /.direct-chat-info -->
+                  <img class="direct-chat-img" src="{% static "dist/img/bluefissure.jpg" %}" alt="message user image">
+                  <!-- /.direct-chat-img -->
+                  <div class="direct-chat-text">
+                    领养教程<a href="http://bbs.ngacn.cc/read.php?tid=14726260" target="_blank">点击此处</a>
+                  </div>
+                  <!-- /.direct-chat-text -->
+                </div>
+                <div class="direct-chat-msg">
+                  <div class="direct-chat-info clearfix">
+                    <span class="direct-chat-name pull-left">Bluefissure</span>
+                    <span class="direct-chat-timestamp pull-right">2018-8-17 20:09:48</span>
+                  </div>
+                  <!-- /.direct-chat-info -->
+                  <img class="direct-chat-img" src="{% static "dist/img/bluefissure.jpg" %}" alt="message user image">
+                  <!-- /.direct-chat-img -->
+                  <div class="direct-chat-text">
+                    大家要对獭獭温柔一点哦~
+                  </div>
+                  <!-- /.direct-chat-text -->
+                </div>
+                <!--/.direct-chat-messages-->
+              </div>
+              <!-- /.card-body -->
+            </div>
+            <!--/.direct-chat -->
+          </div>
+
+          <div class="card card-primary">
+            <div class="card-header with-border">
+              <h3 class="card-title">其他獭窝</h3>
+            </div>
+            <!-- /.card-header -->
+            <div class="card-body">
+              <ul class="products-list product-list-in-card">
                 <!-- <li class="item">
                   <div class="product-img">
                     <img src="https://redoru.top/static/dist/img/rent_50.png" alt="五彩炫光鱿鱼震动棒">
@@ -253,144 +259,145 @@
                 <!-- /.item -->
               </ul>
             </div>
-            <!-- /.box-body -->
-            <!-- <div class="box-footer text-center">
+            <!-- /.card-body -->
+            <!-- <div class="card-footer text-center">
               <a href="javascript:void(0)" class="uppercase">View All Products</a>
             </div> -->
-            <!-- /.box-footer -->
+            <!-- /.card-footer -->
           </div>
-          
+
         </div>
         <!-- /.col -->
       </div>
-      <!-- /.row -->
-    </section>
+    </div>
+  </section>
 
 
 {% endblock %}
 
 
 {% block script %}
-<!-- jQuery 3 -->
-<script src="{% static "bower_components/jquery/dist/jquery.min.js" %}"></script>
-<!-- Bootstrap 3.3.7 -->
-<script src="{% static "bower_components/bootstrap/dist/js/bootstrap.min.js" %}"></script>
-<!-- DataTables -->
-<script src="{% static "bower_components/datatables.net/js/jquery.dataTables.min.js" %}"></script>
-<script src="{% static "bower_components/datatables.net-bs/js/dataTables.bootstrap.min.js" %}"></script>
-<!-- SlimScroll -->
-<script src="{% static "bower_components/jquery-slimscroll/jquery.slimscroll.min.js" %}"></script>
-<!-- FastClick -->
-<script src="{% static "bower_components/fastclick/lib/fastclick.js" %}"></script>
-<!-- AdminLTE App -->
-<script src="{% static "dist/js/adminlte.min.js" %}"></script>
-<!-- AdminLTE for demo purposes -->
-<script src="{% static "dist/js/demo.js" %}"></script>
-<!-- page script -->
-<script>
-  $(function () {
-    $('#example1').DataTable( {
-        "scrollX": true,
-        "autoWidth": true
-    })
-    $('#example2').DataTable({
-      'paging'      : true,
-      'lengthChange': false,
-      'searching'   : false,
-      'ordering'    : true,
-      'info'        : true,
-      'autoWidth'   : false
-    })
-  })
-  function switch_public(id){
-    var token = prompt("请输入Token:");
-    $.ajax({
-        type: 'POST',
-        url: '',
-        async: false,
-        data: {"optype":"switch_public","token":token,"id":id,'csrfmiddlewaretoken': '{{ csrf_token }}'},
-        success: function(data){
-          if(data.response!="success"){
-            if(data.response=="error"){
-              alert(data.msg);
-            }else{
-              alert(data.response);
-              console.log(data);
-            }
-          }else{
-              alert("操作成功！");
-              location.reload();
-          }
-        },
+  <!-- jQuery 3 -->
+  <script src="{% static "plugins/jquery/jquery.min.js" %}"></script>
+  <!-- Bootstrap 3.3.7 -->
+  <script src="{% static "plugins/bootstrap/js/bootstrap.bundle.min.js" %}"></script>
+  <!-- DataTables -->
+  <script src="{% static "plugins/datatables/jquery.dataTables.min.js" %}"></script>
+  <script src="{% static "plugins/datatables-bs4/js/dataTables.bootstrap4.min.js" %}"></script>
+  <!-- FastClick -->
+  <script src="{% static "plugins/fastclick/fastclick.js" %}"></script>
+  <!-- AdminLTE App -->
+  <script src="{% static "dist/js/adminlte.min.js" %}"></script>
+  <!-- AdminLTE for demo purposes -->
+  <script src="{% static "dist/js/demo.js" %}"></script>
+  <!-- page script -->
+  <script>
+      $(function () {
+          $('#example1').DataTable({
+              "scrollX": false,
+              "autoWidth": true
+          });
+          $('#example2').DataTable({
+              'paging': true,
+              'lengthChange': false,
+              'searching': false,
+              'ordering': true,
+              'info': true,
+              'autoWidth': false
+          })
       });
-  }
-  function del_bot(id){
-    var token = prompt("请输入Token:");
-    $.ajax({
-        type: 'POST',
-        url: '',
-        async: false,
-        data: {"optype":"del_bot","token":token,"id":id,'csrfmiddlewaretoken': '{{ csrf_token }}'},
-        success: function(data){
-          if(data.response!="success"){
-            if(data.response=="error"){
-              alert(data.msg);
-            }else{
-              alert(data.response);
-              console.log(data);
-            }
-          }else{
-              alert("操作成功！");
-              location.reload();
-          }
-        },
-      });
-  }
-  function add_or_update_bot(){
-    var botName = document.getElementById("botName").value;
-    var botID = document.getElementById("botID").value;
-    var ownerID = document.getElementById("ownerID").value;
-    var accessToken = document.getElementById("accessToken").value;
-    var tulingToken = document.getElementById("tulingToken").value;
-    var api_post_url = document.getElementById("api_post_url").value;
-    var autoFriend = document.getElementById("autoFriend").checked;
-    var autoInvite = document.getElementById("autoInvite").checked;
-    $.ajax({
-        type: 'POST',
-        url: '',
-        async: false,
-        data: {
-          "optype":"add_or_update_bot",
-          "botName":botName,
-          "botID":botID,
-          "ownerID":ownerID,
-          "accessToken":accessToken,
-          "tulingToken":tulingToken,
-          "api_post_url":api_post_url,
-          "autoFriend":autoFriend,
-          "autoInvite":autoInvite,
-          'csrfmiddlewaretoken': '{{ csrf_token }}'
-        },
-        success: function(data){
-          if(data.response!="success"){
-            if(data.response=="error"){
-              alert(data.msg);
-            }else{
-              alert(data.response);
-              console.log(data);
-            }
-          }else{
-              prompt(data.msg,data.token);
-              location.reload();
-          }
-        },
-      });
-  }
-</script>
-<script type="text/javascript">
-  var tata = document.getElementById("tata");
-  tata.setAttribute("class","active");
-</script>
+
+      function switch_public(id) {
+          var token = prompt("请输入Token:");
+          $.ajax({
+              type: 'POST',
+              url: '',
+              async: false,
+              data: {"optype": "switch_public", "token": token, "id": id, 'csrfmiddlewaretoken': '{{ csrf_token }}'},
+              success: function (data) {
+                  if (data.response != "success") {
+                      if (data.response == "error") {
+                          alert(data.msg);
+                      } else {
+                          alert(data.response);
+                          console.log(data);
+                      }
+                  } else {
+                      alert("操作成功！");
+                      location.reload();
+                  }
+              },
+          });
+      }
+
+      function del_bot(id) {
+          var token = prompt("请输入Token:");
+          $.ajax({
+              type: 'POST',
+              url: '',
+              async: false,
+              data: {"optype": "del_bot", "token": token, "id": id, 'csrfmiddlewaretoken': '{{ csrf_token }}'},
+              success: function (data) {
+                  if (data.response != "success") {
+                      if (data.response == "error") {
+                          alert(data.msg);
+                      } else {
+                          alert(data.response);
+                          console.log(data);
+                      }
+                  } else {
+                      alert("操作成功！");
+                      location.reload();
+                  }
+              },
+          });
+      }
+
+      function add_or_update_bot() {
+          var botName = document.getElementById("botName").value;
+          var botID = document.getElementById("botID").value;
+          var ownerID = document.getElementById("ownerID").value;
+          var accessToken = document.getElementById("accessToken").value;
+          var tulingToken = document.getElementById("tulingToken").value;
+          var api_post_url = document.getElementById("api_post_url").value;
+          var autoFriend = document.getElementById("autoFriend").checked;
+          var autoInvite = document.getElementById("autoInvite").checked;
+          $.ajax({
+              type: 'POST',
+              url: '',
+              async: false,
+              data: {
+                  "optype": "add_or_update_bot",
+                  "botName": botName,
+                  "botID": botID,
+                  "ownerID": ownerID,
+                  "accessToken": accessToken,
+                  "tulingToken": tulingToken,
+                  "api_post_url": api_post_url,
+                  "autoFriend": autoFriend,
+                  "autoInvite": autoInvite,
+                  'csrfmiddlewaretoken': '{{ csrf_token }}'
+              },
+              success: function (data) {
+                  if (data.response != "success") {
+                      if (data.response == "error") {
+                          alert(data.msg);
+                      } else {
+                          alert(data.response);
+                          console.log(data);
+                      }
+                  } else {
+                      prompt(data.msg, data.token);
+                      location.reload();
+                  }
+              },
+          });
+      }
+  </script>
+  <script type="text/javascript">
+      var tata = document.getElementById("tata");
+      tata.setAttribute("class", "active");
+  </script>
 {% endblock %}
 
 </body>
