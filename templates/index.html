@@ -15,19 +15,20 @@
       <!-- Right navbar links -->
       <ul class="navbar-nav ml-auto">
         <!-- User Account: style can be found in dropdown.less -->
+      {% if user %}
         <li class="nav-item dropdown user user-menu">
           <a class="nav-link" data-toggle="dropdown" href="#">
-            <img src="{% if user %}{{ user.avatar }}{% else %}{% static "dist/img/tata.jpg" %}{% endif %}"
+            <img src="{{ user.avatar }}"
                  class="user-image" alt="User Image">
-            <span class="hidden-xs">{% if user %}{{ user.nickname }}{% else %}光之呆呆{% endif %}</span>
+            <span class="hidden-xs">{{ user.nickname }}</span>
           </a>
           <ul class="dropdown-menu dropdown-menu-right">
             <!-- User image -->
-            <li class="user-header bg-gradient-cyan">
-              <img src="{% if user %}{{ user.avatar }}{% else %}{% static "dist/img/tata.jpg" %}{% endif %}"
+            <li class="user-header bg-gray">
+              <img src="{{ user.avatar }}"
                    alt="User Avatar" class="img-circle align-items-center" style="width: 128px;height: auto;">
               <p class="text-center">
-                {% if user %}{{ user.nickname }}{% else %}光之呆呆{% endif %}
+                {{ user.nickname }}
               </p>
             </li>
             <!-- Menu Footer-->
@@ -36,11 +37,39 @@
                 <a href="/oauth/qq/login" class="btn btn-default btn-flat">QQ绑定</a>
               </div>
               <div class="float-right">
-                <a href="/logout" class="btn btn-default btn-flat">退出</a>
+                <a href="/logout" class="btn btn-default btn-flat">登出</a>
               </div>
             </li>
           </ul>
         </li>
+      {% else %}
+        <li class="nav-item dropdown user user-menu">
+          <a class="nav-link" data-toggle="dropdown" href="#">
+            <img src="{% static "dist/img/tata.jpg" %}"
+                 class="user-image" alt="User Image">
+            <span class="hidden-xs">光之呆呆</span>
+          </a>
+          <ul class="dropdown-menu dropdown-menu-right">
+            <!-- User image -->
+            <li class="user-header bg-gray">
+              <img src="{% static "dist/img/tata.jpg" %}"
+                   alt="User Avatar" class="img-circle align-items-center" style="width: 128px;height: auto;">
+              <p class="text-center">
+                光之呆呆
+              </p>
+            </li>
+            <!-- Menu Footer-->
+            <li class="user-footer">
+              <div class="float-left">
+                <a href="/register" class="btn btn-default bg-blue">注册</a>
+              </div>
+              <div class="float-right">
+                <a href="/login" class="btn btn-default bg-blue">登录</a>
+              </div>
+            </li>
+          </ul>
+        </li>
+      {% endif %}
       </ul>
     </nav>
     <!-- /.navbar -->
@@ -51,7 +80,8 @@
       <a href="/tata" class="brand-link logo-switch">
         <!-- img src="dist/img/AdminLTELogo.png" alt="AdminLTE Logo" class="brand-image img-circle elevation-3"
              style="opacity: .8" -->
-        <img src="{% static "dist/img/logo-1.png" %}" class="brand-image" style="margin-right: 0; vertical-align: middle">
+        <img src="{% static "dist/img/logo-1.png" %}" class="brand-image"
+             style="margin-right: 0; vertical-align: middle">
         <span class="brand-text logo-xl" style="vertical-align: middle"><b>FFXIVの</b>Toolkit</span>
       </a>
 
@@ -92,15 +122,15 @@
               </a>
             </li>
             {% if user %}
-            <li class="nav-item">
-              <a href="/hunt" class="nav-link">
-                <i class="nav-icon fas fa-clock"></i>
-                <p>
-                  狩猎时钟
-                  <span class="right fas fa-angle-left"></span>
-                </p>
-              </a>
-            </li>
+              <li class="nav-item">
+                <a href="/hunt" class="nav-link">
+                  <i class="nav-icon fas fa-clock"></i>
+                  <p>
+                    狩猎时钟
+                    <span class="right fas fa-angle-left"></span>
+                  </p>
+                </a>
+              </li>
             {% endif %}
             <li class="nav-item">
               <a href="/image" class="nav-link">
