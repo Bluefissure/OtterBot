@@ -68,9 +68,30 @@ def crawl_wb(weibouser, push=False):
                             content_json = json.loads(t.content)
                             mblog = content_json["mblog"]
                             bs = BeautifulSoup(mblog["text"],"html.parser")
-                            msg = "{}\n{}\n{}".format(
+                            if "original_pic" in mblog.keys():
+                                text = "{}\n{}\n{}".format(
+                                                "{}\'s Weibo:\n========".format(t.owner),
+                                                bs.get_text().replace("\u200b", "").strip(),
+                                                content_json["scheme"]
+                                            )
+                                msg = [
+                                    {
+                                        "type": "text",
+                                        "data": {
+                                            "text": text
+                                        },
+                                    },
+                                    {
+                                        "type": "image",
+                                        "data": {
+                                            "file": mblog["original_pic"]
+                                        },
+                                    }
+                                ]
+                            else:
+                                msg = "{}\n{}\n{}".format(
                                     "{}\'s Weibo:\n========".format(t.owner),
-                                    bs.get_text().replace("\u200b","").strip(),
+                                    bs.get_text().replace("\u200b", "").strip(),
                                     content_json["scheme"]
                                 )
                         logging.info("Pushing {} to group: {}".format(t, group))
