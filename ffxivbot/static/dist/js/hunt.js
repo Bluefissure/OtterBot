@@ -162,35 +162,35 @@ $(document).ready(function () {
 
 function updateHidden() {
     if (arr) {
-        $(".arr").removeClass("hide");
+        $(".arr").removeClass("hide-monster");
         $("#arr").removeClass("btn-secondary");
     }
     if (!arr) {
-        $(".arr").addClass("hide");
+        $(".arr").addClass("hide-monster");
         $("#arr").addClass("btn-secondary");
     }
     if (hw) {
-        $(".hw").removeClass("hide");
+        $(".hw").removeClass("hide-monster");
         $("#hw").removeClass("btn-secondary");
     }
     if (!hw) {
-        $(".hw").addClass("hide");
+        $(".hw").addClass("hide-monster");
         $("#hw").addClass("btn-secondary");
     }
     if (sb) {
-        $(".sb").removeClass("hide");
+        $(".sb").removeClass("hide-monster");
         $("#sb").removeClass("btn-secondary");
     }
     if (!sb) {
-        $(".sb").addClass("hide");
+        $(".sb").addClass("hide-monster");
         $("#sb").addClass("btn-secondary");
     }
     if (shb) {
-        $(".shb").removeClass("hide");
+        $(".shb").removeClass("hide-monster");
         $("#shb").removeClass("btn-secondary");
     }
     if (!shb) {
-        $(".shb").addClass("hide");
+        $(".shb").addClass("hide-monster");
         $("#shb").addClass("btn-secondary");
     }
     if (cd){
