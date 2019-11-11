@@ -663,12 +663,13 @@ def api(req):
                                     and group.api
                                     and int(qquser.user_id) in group_push_list
                             ):
+                                at_msg = "[CQ:at,qq={}]".format(qquser.user_id) if req.GET.get("at", "true")=="true" else str(qquser.user_id)
                                 jdata = {
                                     "action": "send_group_msg",
                                     "params": {
                                         "group_id": group.group_id,
-                                        "message": "Message from [CQ:at,qq={}]:\n{}".format(
-                                            qquser.user_id, msg
+                                        "message": "Message from {}:\n{}".format(
+                                            at_msg, msg
                                         ),
                                     },
                                     "echo": "",
@@ -982,6 +983,7 @@ def qqpost(req):
                                 )
                     # bot.save()
             else:
+                print("QQBot {}:{} authencation failed".format(bot, self_id))
                 return HttpResponse("Wrong HTTP_X_SIGNATURE", status=500)
         return HttpResponse(error_msg, status=500)
     except Exception as e:

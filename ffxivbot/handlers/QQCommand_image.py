@@ -6,6 +6,8 @@ import json
 import random
 import requests
 import traceback
+import time
+import copy
 from bs4 import BeautifulSoup
 
 
@@ -67,8 +69,23 @@ def QQCommand_image(*args, **kwargs):
                             if "Image upload repeated limit, this image exists at: " in msg:
                                 url = msg.replace("Image upload repeated limit, this image exists at: ", "")
                                 path = url.replace("https://i.loli.net", "")
-                                img = Image.objects.get(path=path)
-                                msg = '图片"{}"已存在于类别"{}"之中，无法重复上传'.format(img.name, img.key)
+                                name = copy.deepcopy(path)
+                                while "/" in name:
+                                    name = name[name.find("/")+1:]
+                                try:
+                                    img = Image.objects.get(path=path)
+                                    msg = '图片"{}"已存在于类别"{}"之中，无法重复上传'.format(img.name, img.key)
+                                except Image.DoesNotExist:
+                                    img = Image(
+                                        key=category,
+                                        name=name,
+                                        path=path,
+                                        img_hash="null",
+                                        timestamp=int(time.time()),
+                                        add_by=qquser,
+                                    )
+                                img.save()
+                                msg = '图片"{}"上传至类别"{}"成功'.format(img.name, img.key)
                         else:
                             img_info = img_info["data"]
                             img = Image(
@@ -80,7 +97,7 @@ def QQCommand_image(*args, **kwargs):
                                 add_by=qquser,
                             )
                             img.save()
-                            msg = '图片"{}"上传成功'.format(img.name)
+                            msg = '图片"{}"上传至类别"{}"成功'.format(img.name, img.key)
         elif second_command == "del":
             if len(msg_list) < 2:
                 msg = "您输入的参数个数不足：\n/image del $name : 删除名为$name的图片"
