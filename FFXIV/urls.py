@@ -24,7 +24,7 @@ from ffxivbot.views import *
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', login),
+    path('', tata),
     path('tata/', tata),
     path('quest/', quest),
     path('quest/tooltip/', quest_tooltip),
