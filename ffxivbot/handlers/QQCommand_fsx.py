@@ -3,8 +3,9 @@ from .QQUtils import *
 from ffxivbot.models import *
 import math
 import traceback
+import re
 
-def QQCommand_fsx(*args, **kwargs):
+def QQCommand_fsx(*args,**kwargs):
     try:
         bot = kwargs["bot"]
         receive = kwargs["receive"]
@@ -76,7 +77,6 @@ def QQCommand_fsx(*args, **kwargs):
         reply_action = reply_message_action(receive, msg)
         action_list.append(reply_action)
     except Exception as e:
-        traceback.print_exc()
         msg = "Error: {}".format(type(e))
         action_list.append(reply_message_action(receive, msg))
     return action_list
