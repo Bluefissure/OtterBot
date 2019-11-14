@@ -77,7 +77,13 @@ alter_commands = {
   "/revenge_confirm":"/revenge confirm",
   "/laji":"/trash",
   "/huntc":"/hunt check",
-  "/huntl":"/hunt list cd"
+  "/huntl":"/hunt list cd",
+  "/咏速":"/fsx 速度",
+  "/技速":"/fsx 速度",
+  "/暴击":"/fsx 暴击",
+  "/信念":"/fsx 信念",
+  "/坚韧":"/fsx 坚韧",
+  "/直击":"/fsx 直击"
 }
 
 from .QQCommand_cat import QQCommand_cat
