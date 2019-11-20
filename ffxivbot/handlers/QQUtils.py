@@ -224,7 +224,9 @@ def crawl_dps(boss, job, day=0, CN_source=False, dps_type="adps"):
         dps_type
     )
     print("fflogs url:{}".format(fflogs_url))
-    r = requests.get(url=fflogs_url, timeout=5)
+    s = requests.Session()
+    s.headers.update({'referer': 'https://www.fflogs.com'})
+    r = s.get(url=fflogs_url, timeout=5)
     tot_days = 0
     percentage_list = [10, 25, 50, 75, 95, 99, 100]
     atk_res = {}
