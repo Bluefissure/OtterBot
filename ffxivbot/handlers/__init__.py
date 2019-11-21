@@ -23,7 +23,7 @@ commands = {
   "/gate":"挖宝选门（\"/gate 3\"）",
   "/search":"查询物品(\"/search 神龙\")",
   "/weather":"天气信息（快捷命令\"/fog\",\"/heat_wave\",\"/thunder\",\"/kx\"）",
-  "/fsx":"副属性计算（\"/fsx 直击\"）",
+  #"/fsx":"副属性计算（\"/fsx 直击\"）",
   "/dps":"DPS排名（\"/dps 8s 骑士\"）",
   "/raid":"零式英雄榜（\"/raid 蓝色裂痕 萌芽池\"）",
   "/quest":"任务查询(\"/quest 狂乱前奏\")",

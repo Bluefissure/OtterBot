@@ -14,10 +14,13 @@ def QQCommand_fsx(*args,**kwargs):
         s_msg = receive["message"].replace("/fsx","",1).strip()
         nlv = 3300
         msg = '版本 5.0 Lv80 等级基数:3300\n'
+        number = int(re.findall('\d',s_msg)[0])
+        number = min(number, 99999)
+        number = max(number, 0)
         if s_msg.find("help")==0 or s_msg=="":
             msg = '计算副属性,参数有暴击、直击、信念、坚韧、速度\n如：/fsx 暴击 2400'
         elif '暴击' in s_msg:
-            critical = int(re.findall('\d+',s_msg)[0]) - 380
+            critical = number - 380
             per = (math.floor(200 * critical/nlv) + 50)/10
             bonus = (1000 + math.floor(200 * critical/nlv) + 400)/10
             edmg = 1 + (per/100 * (bonus-100)/100)
@@ -28,7 +31,7 @@ def QQCommand_fsx(*args,**kwargs):
             msg += '暴击 {} 的计算结果(基数:380)：\n暴击率：   {}%\n暴击伤害：   {}%\n预期收益：   {}\n下个临界点:暴击 {}'.format(critical+380,per,bonus,edmg,cri_tmp)
           
         elif '直击' in s_msg:
-            direct = int(re.findall('\d+',s_msg)[0]) - 380
+            direct = number - 380
             per = (math.floor(550 * direct/nlv))/10
             per_tmp,dir_tmp = per,direct+380
             while per_tmp == per:
@@ -37,7 +40,7 @@ def QQCommand_fsx(*args,**kwargs):
             msg += '直击 {} 的计算结果(基数:380)：\n直击率：    {}%\n直击伤害固定为125%。\n下个临界点:直击 {}'.format(direct+380,per,dir_tmp)
          
         elif '信念' in s_msg:
-            determination = int(re.findall('\d+',s_msg)[0]) - 340
+            determination = number - 340
             mult = (1000 + math.floor(130 * determination/nlv))/1000
             mult_tmp,det_tmp = mult,determination+340
             while mult_tmp == mult:
@@ -46,7 +49,7 @@ def QQCommand_fsx(*args,**kwargs):
             msg += '信念 {} 的计算结果(基数:340)：\n伤害增益：{}倍\n下个临界点:信念 {}'.format(determination+340,mult,det_tmp)
     
         elif '坚韧' in s_msg:
-            tenacity = int(re.findall('\d+',s_msg)[0]) - 380
+            tenacity = number  - 380
             mult = (1000 + math.floor(100 * tenacity/nlv))/1000
             mit = (1000 - math.floor(100 * tenacity/nlv))/10
             mult_tmp,ten_tmp = mult,tenacity+380
@@ -56,7 +59,7 @@ def QQCommand_fsx(*args,**kwargs):
             msg += '坚韧 {} 的计算结果(基数:380)：\n伤害增益：{}倍（仅防护职业）\n受击伤害：{}%\n下个临界点:坚韧 {}'.format(tenacity+380,mult,mit,ten_tmp)
   
         elif '速' in s_msg:
-            speed = int(re.findall('\d+',s_msg)[0]) - 380
+            speed = number - 380
             mult = (1000 + math.floor(130 * speed/nlv))/1000  
             cd_15 = math.floor(math.floor(100 * 100 * (math.floor(1500 * (1000 - math.floor(130 * speed/nlv))/1000)/1000))/100)/100
             cd_20 = math.floor(math.floor(100 * 100 * (math.floor(2000 * (1000 - math.floor(130 * speed/nlv))/1000)/1000))/100)/100
