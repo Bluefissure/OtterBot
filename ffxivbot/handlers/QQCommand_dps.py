@@ -85,7 +85,7 @@ def QQCommand_dps(*args, **kwargs):
                         receive_msg = receive_msg.replace("CN", "", 1).replace(
                             "国服", "", 1
                         )
-                    dps_type = "pdps"
+                    dps_type = "adps"
                     if "rdps" in receive_msg:
                         dps_type = "rdps"
                         receive_msg = receive_msg.replace("rdps", "", 1)
