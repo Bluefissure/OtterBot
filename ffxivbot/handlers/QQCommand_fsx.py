@@ -14,13 +14,9 @@ def QQCommand_fsx(*args,**kwargs):
         s_msg = receive["message"].replace("/fsx","",1).strip()
         nlv = 3300
         msg = '版本 5.0 Lv80 等级基数:3300\n'
-<<<<<<< HEAD
         if int(re.findall('\d+',s_msg)[0]) >= 10000:
             msg = '要能到 {} {}拿锅炖自己，哼。'.format(s_msg, bot.name)
         elif s_msg.find("help")==0 or s_msg=="":
-=======
-        if s_msg.find("help")==0 or s_msg=="":
->>>>>>> 30ed6a2a268a7bfb2dfe513b40f4d78408fb231d
             msg = '计算副属性,参数有暴击、直击、信念、坚韧、速度\n如：/fsx 暴击 2400'
         elif '暴击' in s_msg:
             critical = int(re.findall('\d+',s_msg)[0]) - 380
