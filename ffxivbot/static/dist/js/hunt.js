@@ -2,7 +2,7 @@ var server = "lnxy";
 var arr = true;
 var hw = true;
 var sb = true;
-var sbs = true;
+var shb = true;
 var cd = false;
 var allServersButton = ["#lnxy", "#zszq", "#hyqd", "#mdn", "#syzd", "#jyzy", "#myc", "#yx", "#hyh", "#cft", "#sqh", "#byx", "#bjhx", "#lrzq", "#lcsd"];
 var allServersHiddenTag = [".lnxy", ".zszq", ".hyqd", ".mdn", ".syzd", ".jyzy", ".myc", ".yx", ".hyh", ".cft", ".sqh", ".byx", ".bjhx", ".lrzq", ".lcsd"];
@@ -21,8 +21,8 @@ $(document).ready(function () {
         if (localStorage.getItem("sb") === null) {
             localStorage.setItem("sb", sb);
         }
-        if (localStorage.getItem("sbs") === null) {
-            localStorage.setItem("sbs", sbs);
+        if (localStorage.getItem("shb") === null) {
+            localStorage.setItem("shb", shb);
         }
         if (localStorage.getItem("cd") === null) {
             localStorage.setItem("cd", cd);
@@ -31,7 +31,7 @@ $(document).ready(function () {
         arr = localStorage.getItem("arr") === "true";
         hw = localStorage.getItem("hw") === "true";
         sb = localStorage.getItem("sb") === "true";
-        sbs = localStorage.getItem("sbs") === "true";
+        shb = localStorage.getItem("shb") === "true";
         cd = localStorage.getItem("cd") === "true";
     }
     updateHidden();
@@ -65,13 +65,13 @@ $(document).ready(function () {
         localStorage.setItem("sb", sb);
         updateHidden()
     });
-    $("#sbs").on("click", function () {
-        if (sbs) {
-            sbs = false;
-        } else if (!sbs) {
-            sbs = true;
+    $("#shb").on("click", function () {
+        if (shb) {
+            shb = false;
+        } else if (!shb) {
+            shb = true;
         }
-        localStorage.setItem("sbs", sbs);
+        localStorage.setItem("shb", shb);
         updateHidden()
     });
     $("#cd").on("click", function () {
@@ -162,36 +162,36 @@ $(document).ready(function () {
 
 function updateHidden() {
     if (arr) {
-        $(".arr").removeClass("hide");
+        $(".arr").removeClass("hide-monster");
         $("#arr").removeClass("btn-secondary");
     }
     if (!arr) {
-        $(".arr").addClass("hide");
+        $(".arr").addClass("hide-monster");
         $("#arr").addClass("btn-secondary");
     }
     if (hw) {
-        $(".hw").removeClass("hide");
+        $(".hw").removeClass("hide-monster");
         $("#hw").removeClass("btn-secondary");
     }
     if (!hw) {
-        $(".hw").addClass("hide");
+        $(".hw").addClass("hide-monster");
         $("#hw").addClass("btn-secondary");
     }
     if (sb) {
-        $(".sb").removeClass("hide");
+        $(".sb").removeClass("hide-monster");
         $("#sb").removeClass("btn-secondary");
     }
     if (!sb) {
-        $(".sb").addClass("hide");
+        $(".sb").addClass("hide-monster");
         $("#sb").addClass("btn-secondary");
     }
-    if (sbs) {
-        $(".sbs").removeClass("hide");
-        $("#sbs").removeClass("btn-secondary");
+    if (shb) {
+        $(".shb").removeClass("hide-monster");
+        $("#shb").removeClass("btn-secondary");
     }
-    if (!sbs) {
-        $(".sbs").addClass("hide");
-        $("#sbs").addClass("btn-secondary");
+    if (!shb) {
+        $(".shb").addClass("hide-monster");
+        $("#shb").addClass("btn-secondary");
     }
     if (cd){
         $(".notcd").addClass("hide-cd");

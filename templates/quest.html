@@ -1,56 +1,58 @@
 {% extends 'index.html' %}
+{% load static %}
 
 
 {% block content %}
-    <!-- Content Header (Page header) -->
-    {% if err %}
+  <!-- Content Header (Page header) -->
+  {% if err %}
     <div class="alert alert-danger alert-dismissible">
       <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
       <h4><i class="icon fa fa-ban"></i> {{ err.title }}</h4>
       {{ err.message }}
     </div>
-    {% endif %}
-    {% if success %}
+  {% endif %}
+  {% if success %}
     <div class="alert alert-success alert-dismissible">
       <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
       <h4><i class="icon fa fa-ban"></i> {{ success.title }}</h4>
       {{ success.message }}
     </div>
-    {% endif %}
-    <section class="content-header">
-      <h1>
-        任务流程
-      </h1>
-    </section>
+  {% endif %}
+  <div class="content-header">
+    <div class="container-fluid">
+      <h1 class="m-0 text-dark">任务流程</h1>
+    </div>
+  </div>
 
-    <!-- Main content -->
-    <section class="content">
+  <!-- Main content -->
+  <section class="content">
+    <div class="container-fluid">
       <div class="row">
         <div class="col-md-6">
 
-          <div class="box">
-            <div class="box-header">
-              <h3 class="box-title">流程图</h3>
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">流程图</h3>
             </div>
-            <!-- /.box-header -->
-            <div class="box-body">
+            <!-- /.card-header -->
+            <div class="card-body">
               <!-- <canvas id="canvasId" ></canvas> -->
               <svg id="svgCanvas" height="900" width="900"></svg>
             </div>
-            <!-- /.box-body -->
+            <!-- /.card-body -->
           </div>
-          <!-- /.box -->
+          <!-- /.card -->
         </div>
-        
+
         <div class="col-md-6">
-          <div class="box box-primary">
-            <div class="box-header with-border">
-              <h3 class="box-title">筛选任务</h3>
+          <div class="card card-primary">
+            <div class="card-header with-border">
+              <h3 class="card-title">筛选任务</h3>
             </div>
-            <!-- /.box-header -->
+            <!-- /.card-header -->
             <!-- form start -->
-            <div  method="post" role="form">
-              <div class="box-body">
+            <div method="post" role="form">
+              <div class="card-body">
                 <div class="form-group">
                   <label for="questName">想秃哪个任务？</label>
                   <input type="text" class="form-control" id="questName" placeholder="">
@@ -85,149 +87,150 @@
                 </div>
                 <div class="checkbox">
                   <label>
-                    <input type="checkbox" id="subQuest" > 秃支线任务
+                    <input type="checkbox" id="subQuest"> 秃支线任务
                   </label>
                 </div>
               </div>
-              <!-- /.box-body -->
+              <!-- /.card-body -->
 
-              <div class="box-footer">
+              <div class="card-footer">
                 <!-- <button class="btn btn-primary" onclick="search_quest()">秃<i class="fa fa-fw fa-trademark"></i>的！</button> -->
                 <button class="btn btn-primary" onclick="search_quest()">开始秃！</button>
               </div>
 
               <div class="progress">
-                <div class="progress-bar progress-bar-primary progress-bar-striped" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%">
+                <div class="progress-bar progress-bar-primary progress-bar-striped" role="progressbar" aria-valuenow="0"
+                     aria-valuemin="0" aria-valuemax="100" style="width: 0%">
                   <span class="sr-only">x% Complete (success)</span>
                 </div>
               </div>
 
             </div>
           </div>
-        </div>
-        <div class="col-md-6">
-            <div class="box box-warning">
-                <div class="box-header with-border">
-                  <h3 class="box-title">碎碎念</h3>
-                </div>
-                <!-- /.box-header -->
-                <div class="box-body">
-                  <!-- Conversations are loaded here -->
-                  <div class="direct-chat-messages">
-                    <!-- Message. Default to the left -->
-                    <div class="direct-chat-msg">
-                      <div class="direct-chat-info clearfix">
-                        <span class="direct-chat-name pull-left">Bluefissure</span>
-                        <span class="direct-chat-timestamp pull-right">2018-9-12 20:17:00</span>
-                      </div>
-                      <!-- /.direct-chat-info -->
-                      <img class="direct-chat-img" src="/static/dist/img/bluefissure.jpg" alt="message user image">
-                      <!-- /.direct-chat-img -->
-                      <div class="direct-chat-text">
-                        想变强吗？
-                      </div>
-                      <!-- /.direct-chat-text -->
-                    </div>
-                    <div class="direct-chat-msg">
-                      <div class="direct-chat-info clearfix">
-                        <span class="direct-chat-name pull-left">Bluefissure</span>
-                        <span class="direct-chat-timestamp pull-right">2018-9-13 11:27:34</span>
-                      </div>
-                      <!-- /.direct-chat-info -->
-                      <img class="direct-chat-img" src="/static/dist/img/bluefissure.jpg" alt="message user image">
-                      <!-- /.direct-chat-img -->
-                      <div class="direct-chat-text">
-                        你变秃了，你也变强了！
-                      </div>
-                      <!-- /.direct-chat-text -->
-                    </div>
-                    <div class="direct-chat-msg">
-                      <div class="direct-chat-info clearfix">
-                        <span class="direct-chat-name pull-left">Bluefissure</span>
-                        <span class="direct-chat-timestamp pull-right">2018-9-13 12:30:00</span>
-                      </div>
-                      <!-- /.direct-chat-info -->
-                      <img class="direct-chat-img" src="/static/dist/img/bluefissure.jpg" alt="message user image">
-                      <!-- /.direct-chat-img -->
-                      <div class="direct-chat-text">
-                        喵~
-                      </div>
-                      <!-- /.direct-chat-text -->
-                    </div>
-                    <div class="direct-chat-msg">
-                      <div class="direct-chat-info clearfix">
-                        <span class="direct-chat-name pull-left">Bluefissure</span>
-                        <span class="direct-chat-timestamp pull-right">2018-9-13 13:34:25</span>
-                      </div>
-                      <!-- /.direct-chat-info -->
-                      <img class="direct-chat-img" src="/static/dist/img/bluefissure.jpg" alt="message user image">
-                      <!-- /.direct-chat-img -->
-                      <div class="direct-chat-text">
-                        主线列表:<a href="/static/svg/Quests_2.svg" target="_blank">2.X</a>, <a href="/static/svg/Quests_3.svg" target="_blank">3.X</a>, <a href="/static/svg/Quests_4.svg" target="_blank">4.X</a>, <a href="/static/svg/Quests_all.svg" target="_blank">ALL</a> (杀流量注意)
-                      </div>
-                      <!-- /.direct-chat-text -->
-                    </div>
-                    <div class="direct-chat-msg">
-                      <div class="direct-chat-info clearfix">
-                        <span class="direct-chat-name pull-left">Bluefissure</span>
-                        <span class="direct-chat-timestamp pull-right">2018-9-18 12:08:53</span>
-                      </div>
-                      <!-- /.direct-chat-info -->
-                      <img class="direct-chat-img" src="/static/dist/img/bluefissure.jpg" alt="message user image">
-                      <!-- /.direct-chat-img -->
-                      <div class="direct-chat-text">
-                        生成后<a onclick="download_svg()" href="#">点此下载SVG文件</a>，注意导出后为静态图片，无法交互显示任务信息
-                      </div>
-                      <!-- /.direct-chat-text -->
-                    </div>
-                  <!--/.direct-chat-messages-->
-                  </div>
-                <!-- /.box-body -->
-                </div>
+          <div class="card direct-chat card-warning">
+            <div class="card-header with-border">
+              <h3 class="card-title">碎碎念</h3>
             </div>
+            <!-- /.card-header -->
+            <div class="card-body">
+              <!-- Conversations are loaded here -->
+              <div class="direct-chat-messages">
+                <!-- Message. Default to the left -->
+                <div class="direct-chat-msg">
+                  <div class="direct-chat-info clearfix">
+                    <span class="direct-chat-name pull-left">Bluefissure</span>
+                    <span class="direct-chat-timestamp pull-right">2018-9-12 20:17:00</span>
+                  </div>
+                  <!-- /.direct-chat-info -->
+                  <img class="direct-chat-img" src="{% static "dist/img/bluefissure.jpg" %}" alt="message user image">
+                  <!-- /.direct-chat-img -->
+                  <div class="direct-chat-text">
+                    想变强吗？
+                  </div>
+                  <!-- /.direct-chat-text -->
+                </div>
+                <div class="direct-chat-msg">
+                  <div class="direct-chat-info clearfix">
+                    <span class="direct-chat-name pull-left">Bluefissure</span>
+                    <span class="direct-chat-timestamp pull-right">2018-9-13 11:27:34</span>
+                  </div>
+                  <!-- /.direct-chat-info -->
+                  <img class="direct-chat-img" src="/static/dist/img/bluefissure.jpg" alt="message user image">
+                  <!-- /.direct-chat-img -->
+                  <div class="direct-chat-text">
+                    你变秃了，你也变强了！
+                  </div>
+                  <!-- /.direct-chat-text -->
+                </div>
+                <div class="direct-chat-msg">
+                  <div class="direct-chat-info clearfix">
+                    <span class="direct-chat-name pull-left">Bluefissure</span>
+                    <span class="direct-chat-timestamp pull-right">2018-9-13 12:30:00</span>
+                  </div>
+                  <!-- /.direct-chat-info -->
+                  <img class="direct-chat-img" src="/static/dist/img/bluefissure.jpg" alt="message user image">
+                  <!-- /.direct-chat-img -->
+                  <div class="direct-chat-text">
+                    喵~
+                  </div>
+                  <!-- /.direct-chat-text -->
+                </div>
+                <div class="direct-chat-msg">
+                  <div class="direct-chat-info clearfix">
+                    <span class="direct-chat-name pull-left">Bluefissure</span>
+                    <span class="direct-chat-timestamp pull-right">2018-9-13 13:34:25</span>
+                  </div>
+                  <!-- /.direct-chat-info -->
+                  <img class="direct-chat-img" src="/static/dist/img/bluefissure.jpg" alt="message user image">
+                  <!-- /.direct-chat-img -->
+                  <div class="direct-chat-text">
+                    主线列表:<a href="/static/svg/Quests_2.svg" target="_blank">2.X</a>, <a href="/static/svg/Quests_3.svg"
+                                                                                        target="_blank">3.X</a>, <a
+                      href="/static/svg/Quests_4.svg" target="_blank">4.X</a>, <a href="/static/svg/Quests_all.svg"
+                                                                                  target="_blank">ALL</a> (杀流量注意)
+                  </div>
+                  <!-- /.direct-chat-text -->
+                </div>
+                <div class="direct-chat-msg">
+                  <div class="direct-chat-info clearfix">
+                    <span class="direct-chat-name pull-left">Bluefissure</span>
+                    <span class="direct-chat-timestamp pull-right">2018-9-18 12:08:53</span>
+                  </div>
+                  <!-- /.direct-chat-info -->
+                  <img class="direct-chat-img" src="/static/dist/img/bluefissure.jpg" alt="message user image">
+                  <!-- /.direct-chat-img -->
+                  <div class="direct-chat-text">
+                    生成后<a onclick="download_svg()" href="#">点此下载SVG文件</a>，注意导出后为静态图片，无法交互显示任务信息
+                  </div>
+                  <!-- /.direct-chat-text -->
+                </div>
+                <!--/.direct-chat-messages-->
+              </div>
+              <!-- /.card-body -->
+            </div>
+          </div>
         </div>
         <!-- /.col -->
       </div>
-      <!-- /.row -->
-    </section>
-    <!-- /.content -->
+    </div>
+    <!-- /.row -->
+  </section>
+  <!-- /.content -->
 {% endblock %}
 
 <!-- ./wrapper -->
 {% block script %}
-<script src="https://d3js.org/d3.v4.min.js" charset="utf-8"></script>
-<script src="/static/dist/js/dagre-d3.js"></script>
-<!-- jQuery 3 -->
-<script src="/static/bower_components/jquery/dist/jquery.min.js"></script>
+  <script src="https://d3js.org/d3.v4.min.js" charset="utf-8"></script>
+  <script src="{% static "dist/js/dagre-d3.js" %}"></script>
+  <!-- jQuery 3 -->
+  <script src="{% static "plugins/jquery/jquery.min.js" %}"></script>
 
-<!-- <link rel="stylesheet" href="https://dagrejs.github.io/project/dagre-d3/latest/demo/tipsy.css">
-<script src="https://code.jquery.com/jquery-1.9.1.min.js"></script>
-<script src="https://dagrejs.github.io/project/dagre-d3/latest/demo/tipsy.js"></script>
- -->
-<link rel="stylesheet" href="https://cdn.bootcss.com/tooltipster/3.3.0/css/tooltipster.min.css">
-<script type="text/javascript" src="https://cdn.bootcss.com/tooltipster/3.3.0/js/jquery.tooltipster.min.js"></script>
-<!-- <script src="https://cdn.bootcss.com/svg.js/2.6.5/svg.js"></script> -->
-<!-- <script type="text/javascript" src="/static/dist/js/svg.screenbbox.js"></script> -->
-<!-- <script type="text/javascript" src="/static/dist/js/tooltipster.bundle.min.js"></script> -->
-<!-- <script type="text/javascript" src="/static/dist/js/plugins/tooltipster/SVG/tooltipster-SVG.min.js"></script> -->
+  <!-- <link rel="stylesheet" href="https://dagrejs.github.io/project/dagre-d3/latest/demo/tipsy.css">
+  <script src="https://code.jquery.com/jquery-1.9.1.min.js"></script>
+  <script src="https://dagrejs.github.io/project/dagre-d3/latest/demo/tipsy.js"></script>
+   -->
+  <link rel="stylesheet" href="https://cdn.bootcss.com/tooltipster/3.3.0/css/tooltipster.min.css">
+  <script type="text/javascript" src="https://cdn.bootcss.com/tooltipster/3.3.0/js/jquery.tooltipster.min.js"></script>
+  <!-- <script src="https://cdn.bootcss.com/svg.js/2.6.5/svg.js"></script> -->
+  <!-- <script type="text/javascript" src="/static/dist/js/svg.screenbcard.js"></script> -->
+  <!-- <script type="text/javascript" src="/static/dist/js/tooltipster.bundle.min.js"></script> -->
+  <!-- <script type="text/javascript" src="/static/dist/js/plugins/tooltipster/SVG/tooltipster-SVG.min.js"></script> -->
 
-<!-- Bootstrap 3.3.7 -->
-<script src="/static/bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
-<!-- SlimScroll -->
-<script src="/static/bower_components/jquery-slimscroll/jquery.slimscroll.min.js"></script>
-<!-- FastClick -->
-<script src="/static/bower_components/fastclick/lib/fastclick.js"></script>
-<!-- AdminLTE App -->
-<script src="/static/dist/js/adminlte.min.js"></script>
-<!-- AdminLTE for demo purposes -->
-<script src="/static/dist/js/demo.js"></script>
+  <!-- Bootstrap 3.3.7 -->
+  <script src="{% static "plugins/bootstrap/js/bootstrap.bundle.min.js" %}"></script>
+  <!-- FastClick -->
+  <script src="{% static "plugins/fastclick/fastclick.js" %}"></script>
+  <!-- AdminLTE App -->
+  <script src="{% static "dist/js/adminlte.min.js" %}"></script>
+  <!-- AdminLTE for demo purposes -->
+  <script src="{% static "dist/js/demo.js" %}"></script>
 
 
 
 
 
 
-<style id="css">
+  <style id="css">
     text {
       font-weight: 300;
       font-family: "Helvetica Neue", Helvetica, Arial, sans-serf;
@@ -261,267 +264,277 @@
     .tipsy .description {
       font-size: 1.2em;
     }
-</style>
+  </style>
 
-<!-- page script -->
-<script>
-  // Create a new directed graph
-
-
-// var g = new dagreD3.graphlib.Graph().setGraph({});
-
-// States and transitions from RFC 793
-// var states = {
-//   CLOSED: {
-//     description: "represents no connection state at <a href=\"https://www.baidu.com\">all</a>.",
-//     style: "fill: #f77"
-//   },
-
-//   LISTEN: {
-//     description: "represents waiting for a connection request from any " +
-//                  "remote TCP and port."
-//   },
-
-//   "SYN SENT": {
-//     description: "represents waiting for a matching connection " +
-//                  "request after having sent a connection request."
-//   },
-
-//   "SYN RCVD": {
-//     description: "represents waiting for a confirming connection " +
-//                  "request acknowledgment after having both received and sent a " +
-//                  "connection request."
-//   },
+  <!-- page script -->
+  <script>
+      // Create a new directed graph
 
 
-//   ESTAB: {
-//     description: "represents an open connection, data received " +
-//                  "can be delivered to the user.  The normal state for the data " +
-//                  "transfer phase of the connection.",
-//     style: "fill: #7f7"
-//   },
+      // var g = new dagreD3.graphlib.Graph().setGraph({});
 
-//   "FINWAIT-1": {
-//     description: "represents waiting for a connection termination " +
-//                  "request from the remote TCP, or an acknowledgment of the " +
-//                  "connection termination request previously sent."
+      // States and transitions from RFC 793
+      // var states = {
+      //   CLOSED: {
+      //     description: "represents no connection state at <a href=\"https://www.baidu.com\">all</a>.",
+      //     style: "fill: #f77"
+      //   },
 
-//   },
+      //   LISTEN: {
+      //     description: "represents waiting for a connection request from any " +
+      //                  "remote TCP and port."
+      //   },
 
-//   "FINWAIT-2": {
-//     description: "represents waiting for a connection termination " +
-//                  "request from the remote TCP."
-//   },
+      //   "SYN SENT": {
+      //     description: "represents waiting for a matching connection " +
+      //                  "request after having sent a connection request."
+      //   },
 
-
-//   "CLOSE WAIT": {
-//     description: "represents waiting for a connection termination " +
-//                  "request from the local user."
-//   },
-
-//   CLOSING: {
-//     description: "represents waiting for a connection termination " +
-//                  "request acknowledgment from the remote TCP."
-//   },
-
-//   "LAST-ACK": {
-//     description: "represents waiting for an acknowledgment of the " +
-//                  "connection termination request previously sent to the remote " +
-//                  "TCP (which includes an acknowledgment of its connection " +
-//                  "termination request)."
-//   },
-
-//   "TIME WAIT": {
-//     description: "represents waiting for enough time to pass to be " +
-//                  "sure the remote TCP received the acknowledgment of its " +
-//                  "connection termination request."
-//   }
-// };
-
-// Add states to the graph, set labels, and style
-// Object.keys(states).forEach(function(state) {
-//   var value = states[state];
-//   value.label = state;
-//   value.rx = value.ry = 5;
-//   g.setNode(state, value);
-// });
-
-// Set up the edges
-// g.setEdge("CLOSED",     "LISTEN",     { label: "open" });
-// g.setEdge("LISTEN",     "SYN RCVD",   { label: "rcv SYN" });
-// g.setEdge("LISTEN",     "SYN SENT",   { label: "send" });
-// g.setEdge("LISTEN",     "CLOSED",     { label: "close" });
-// g.setEdge("SYN RCVD",   "FINWAIT-1",  { label: "close" });
-// g.setEdge("SYN RCVD",   "ESTAB",      { label: "rcv ACK of SYN" });
-// g.setEdge("SYN SENT",   "SYN RCVD",   { label: "rcv SYN" });
-// g.setEdge("SYN SENT",   "ESTAB",      { label: "rcv SYN, ACK" });
-// g.setEdge("SYN SENT",   "CLOSED",     { label: "close" });
-// g.setEdge("ESTAB",      "FINWAIT-1",  { label: "close" });
-// g.setEdge("ESTAB",      "CLOSE WAIT", { label: "rcv FIN" });
-// g.setEdge("FINWAIT-1",  "FINWAIT-2",  { label: "rcv ACK of FIN" });
-// g.setEdge("FINWAIT-1",  "CLOSING",    { label: "rcv FIN" });
-// g.setEdge("CLOSE WAIT", "LAST-ACK",   { label: "close" });
-// g.setEdge("FINWAIT-2",  "TIME WAIT",  { label: "rcv FIN" });
-// g.setEdge("CLOSING",    "TIME WAIT",  { label: "rcv ACK of FIN" });
-// g.setEdge("LAST-ACK",   "CLOSED",     { label: "rcv ACK of FIN" });
-// g.setEdge("TIME WAIT",  "CLOSED",     { label: "timeout=2MSL" });
-
-// Create the renderer
+      //   "SYN RCVD": {
+      //     description: "represents waiting for a confirming connection " +
+      //                  "request acknowledgment after having both received and sent a " +
+      //                  "connection request."
+      //   },
 
 
-var g, svg, zoom, inner, svgele;
-function setCookie(name,value)
-{
-  var Days = 30;
-  var exp = new Date();
-  exp.setTime(exp.getTime() + Days*24*60*60*1000);
-  document.cookie = name + "="+ escape (value) + ";expires=" + exp.toGMTString();
-  console.log(name);
-  console.log(value);
-}
-function getCookie(name)
-{
-  var arr,reg=new RegExp("(^| )"+name+"=([^;]*)(;|$)");
-  if(arr=document.cookie.match(reg))
-    return unescape(arr[2]);
-  else
-    return null;
-}
-function delCookie(name)
-{
-  var exp = new Date();
-  exp.setTime(exp.getTime() - 1);
-  var cval=getCookie(name);
-  if(cval!=null)
-    document.cookie= name + "="+cval+";expires="+exp.toGMTString();
-}
-function loadCookie(){
-  svg = document.getElementById("svgCanvas");
-  svgHTML = getCookie("svg");
-  console.log(svgHTML);
-  if(svgHTML!=null){
-    svg.innerHTML = svgHTML;
-  }
-}
-function search_quest(){
-  var questName = document.getElementById("questName").value;
-  questName = "任务:"+questName;
-  var maxIter = document.getElementById("maxIter").value;
-  var mainQuest = document.getElementById("mainQuest").checked;
-  var subQuest = document.getElementById("subQuest").checked;
-  $.ajax({
-      type: 'POST',
-      url: '',
-      async: true,
-      data: {"optype":"search_quest", "max_iter":maxIter, "start_quest":questName,"main_quest":mainQuest, "sub_quest":subQuest, 'csrfmiddlewaretoken': '{{ csrf_token }}'},
-      success: function(data){
-        if(data.response!="success"){
-          if(data.response=="error"){
-            alert(data.msg);
-          }else{
-            alert(data.response);
-            console.log(data);
+      //   ESTAB: {
+      //     description: "represents an open connection, data received " +
+      //                  "can be delivered to the user.  The normal state for the data " +
+      //                  "transfer phase of the connection.",
+      //     style: "fill: #7f7"
+      //   },
+
+      //   "FINWAIT-1": {
+      //     description: "represents waiting for a connection termination " +
+      //                  "request from the remote TCP, or an acknowledgment of the " +
+      //                  "connection termination request previously sent."
+
+      //   },
+
+      //   "FINWAIT-2": {
+      //     description: "represents waiting for a connection termination " +
+      //                  "request from the remote TCP."
+      //   },
+
+
+      //   "CLOSE WAIT": {
+      //     description: "represents waiting for a connection termination " +
+      //                  "request from the local user."
+      //   },
+
+      //   CLOSING: {
+      //     description: "represents waiting for a connection termination " +
+      //                  "request acknowledgment from the remote TCP."
+      //   },
+
+      //   "LAST-ACK": {
+      //     description: "represents waiting for an acknowledgment of the " +
+      //                  "connection termination request previously sent to the remote " +
+      //                  "TCP (which includes an acknowledgment of its connection " +
+      //                  "termination request)."
+      //   },
+
+      //   "TIME WAIT": {
+      //     description: "represents waiting for enough time to pass to be " +
+      //                  "sure the remote TCP received the acknowledgment of its " +
+      //                  "connection termination request."
+      //   }
+      // };
+
+      // Add states to the graph, set labels, and style
+      // Object.keys(states).forEach(function(state) {
+      //   var value = states[state];
+      //   value.label = state;
+      //   value.rx = value.ry = 5;
+      //   g.setNode(state, value);
+      // });
+
+      // Set up the edges
+      // g.setEdge("CLOSED",     "LISTEN",     { label: "open" });
+      // g.setEdge("LISTEN",     "SYN RCVD",   { label: "rcv SYN" });
+      // g.setEdge("LISTEN",     "SYN SENT",   { label: "send" });
+      // g.setEdge("LISTEN",     "CLOSED",     { label: "close" });
+      // g.setEdge("SYN RCVD",   "FINWAIT-1",  { label: "close" });
+      // g.setEdge("SYN RCVD",   "ESTAB",      { label: "rcv ACK of SYN" });
+      // g.setEdge("SYN SENT",   "SYN RCVD",   { label: "rcv SYN" });
+      // g.setEdge("SYN SENT",   "ESTAB",      { label: "rcv SYN, ACK" });
+      // g.setEdge("SYN SENT",   "CLOSED",     { label: "close" });
+      // g.setEdge("ESTAB",      "FINWAIT-1",  { label: "close" });
+      // g.setEdge("ESTAB",      "CLOSE WAIT", { label: "rcv FIN" });
+      // g.setEdge("FINWAIT-1",  "FINWAIT-2",  { label: "rcv ACK of FIN" });
+      // g.setEdge("FINWAIT-1",  "CLOSING",    { label: "rcv FIN" });
+      // g.setEdge("CLOSE WAIT", "LAST-ACK",   { label: "close" });
+      // g.setEdge("FINWAIT-2",  "TIME WAIT",  { label: "rcv FIN" });
+      // g.setEdge("CLOSING",    "TIME WAIT",  { label: "rcv ACK of FIN" });
+      // g.setEdge("LAST-ACK",   "CLOSED",     { label: "rcv ACK of FIN" });
+      // g.setEdge("TIME WAIT",  "CLOSED",     { label: "timeout=2MSL" });
+
+      // Create the renderer
+
+
+      var g, svg, zoom, inner, svgele;
+
+      function setCookie(name, value) {
+          var Days = 30;
+          var exp = new Date();
+          exp.setTime(exp.getTime() + Days * 24 * 60 * 60 * 1000);
+          document.cookie = name + "=" + escape(value) + ";expires=" + exp.toGMTString();
+          console.log(name);
+          console.log(value);
+      }
+
+      function getCookie(name) {
+          var arr, reg = new RegExp("(^| )" + name + "=([^;]*)(;|$)");
+          if (arr = document.cookie.match(reg))
+              return unescape(arr[2]);
+          else
+              return null;
+      }
+
+      function delCookie(name) {
+          var exp = new Date();
+          exp.setTime(exp.getTime() - 1);
+          var cval = getCookie(name);
+          if (cval != null)
+              document.cookie = name + "=" + cval + ";expires=" + exp.toGMTString();
+      }
+
+      function loadCookie() {
+          svg = document.getElementById("svgCanvas");
+          svgHTML = getCookie("svg");
+          console.log(svgHTML);
+          if (svgHTML != null) {
+              svg.innerHTML = svgHTML;
           }
-        }else{
-            // console.log(data);
-            var progress = document.getElementsByClassName("progress-bar progress-bar-primary progress-bar-striped")[0]
-            progress.style.width=data.percentage+"\%";
+      }
 
-            var ds = document.getElementsByClassName("col-md-6")[0];
-            svgele = document.getElementById("svgCanvas");
-            svgele.setAttribute('width', ds.children[0].offsetWidth-ds.children[0].offsetLeft);
-            svgele.innerHTML="";
+      function search_quest() {
+          var questName = document.getElementById("questName").value;
+          questName = "任务:" + questName;
+          var maxIter = document.getElementById("maxIter").value;
+          var mainQuest = document.getElementById("mainQuest").checked;
+          var subQuest = document.getElementById("subQuest").checked;
+          $.ajax({
+              type: 'POST',
+              url: '',
+              async: true,
+              data: {
+                  "optype": "search_quest",
+                  "max_iter": maxIter,
+                  "start_quest": questName,
+                  "main_quest": mainQuest,
+                  "sub_quest": subQuest,
+                  'csrfmiddlewaretoken': '{{ csrf_token }}'
+              },
+              success: function (data) {
+                  if (data.response != "success") {
+                      if (data.response == "error") {
+                          alert(data.msg);
+                      } else {
+                          alert(data.response);
+                          console.log(data);
+                      }
+                  } else {
+                      // console.log(data);
+                      var progress = document.getElementsByClassName("progress-bar progress-bar-primary progress-bar-striped")[0]
+                      progress.style.width = data.percentage + "\%";
 
-            g = new dagreD3.graphlib.Graph().setGraph({});
+                      var ds = document.getElementsByClassName("col-md-6")[0];
+                      svgele = document.getElementById("svgCanvas");
+                      svgele.setAttribute('width', ds.children[0].offsetWidth - ds.children[0].offsetLeft);
+                      svgele.innerHTML = "";
 
-            for(var quest in data.quest_dict){
-                var value = data.quest_dict[quest];
-                value.label = quest;
-                value.rx = value.ry = 5;
-                if(typeof(quest)=="undefined"){
-                  console.log("undefined..");
-                }else{
-                  g.setNode(quest, value);
-                }
-            }
+                      g = new dagreD3.graphlib.Graph().setGraph({});
 
-            for(var i=0;i<data.edge_list.length;i++){
-                var edge = data.edge_list[i];
-                g.setEdge(edge.from, edge.to, {});
-            }
-            // console.log(g);
+                      for (var quest in data.quest_dict) {
+                          var value = data.quest_dict[quest];
+                          value.label = quest;
+                          value.rx = value.ry = 5;
+                          if (typeof (quest) == "undefined") {
+                              console.log("undefined..");
+                          } else {
+                              g.setNode(quest, value);
+                          }
+                      }
 
-
-
-            render = new dagreD3.render();
-
-            // Set up an SVG group so that we can translate the final graph.
-            svg = d3.select("svg");
-            inner = svg.append("g");
-
-            // Set up zoom support
-            zoom = d3.zoom()
-                .on("zoom", function() {
-                  inner.attr("transform", d3.event.transform);
-                });
-            svg.call(zoom);
-
-            // Simple function to style the tooltip for the given node.
-            var styleTooltip = function(name, quest) {
-              return "<p class='name'><a href='https://ff14.huijiwiki.com/wiki/任务:" + encodeURI(name) + "' target='_blank'>" + name + "</a></p>"+
-                "<p class='description'>" + quest.description + "</p>"+
-                "<p class='startnpc'>起始NPC: " + quest.startnpc + "</p>"+
-                "<p class='endnpc'>结束NPC: " + quest.endnpc + "</p>";
-            };
-
-            // Run the renderer. This is what draws the final graph.
-            render(inner, g);
-
-            // inner.selectAll("g.node")
-            //   .attr("title", function(v) { return styleTooltip(v, g.node(v).description) })
-            //   .each(function(v) { $(this).tipsy({gravity: "w", opacity: 1, html: true, delayOut: 1000, }); });
-            inner.selectAll("g.node")
-              .attr("title", function(v) { return styleTooltip(v, g.node(v)) })
-              .each(function(v) { $(this).tooltipster({ 
-                interactive: true, 
-                animation:"grow", 
-                contentAsHTML: true,
-              }); 
-              // console.log(this);
-            });
-            // Center the graph
-            var initialScale = 1;
-            svg.call(zoom.transform, d3.zoomIdentity.translate((svg.attr("width") - g.graph().width * initialScale) / 2, 20).scale(initialScale));
-
-            svg.attr('height', g.graph().height * initialScale + 40);
-
-            alert("查询完毕，这可太秃啦！");
-        }
-      },
-    });
-
-    
-}
+                      for (var i = 0; i < data.edge_list.length; i++) {
+                          var edge = data.edge_list[i];
+                          g.setEdge(edge.from, edge.to, {});
+                      }
+                      // console.log(g);
 
 
+                      render = new dagreD3.render();
 
-</script>
+                      // Set up an SVG group so that we can translate the final graph.
+                      svg = d3.select("svg");
+                      inner = svg.append("g");
 
-<script type="text/javascript">
-  var quest = document.getElementById("quest");
-  quest.setAttribute("class","active");
-</script>
-<script type="text/javascript">
-  function download_svg() { 
-    var svg = d3.select("svg");
-    var initialScale = 1;
-    svg.attr('width', g._label.width);
-    svg.call(zoom.transform, d3.zoomIdentity.translate((svg.attr("width") - g.graph().width * initialScale) / 2, 20).scale(initialScale));
-    svg.attr('height', g.graph().height * initialScale + 40);
-    var e = document.createElement('script'); 
-    e.setAttribute('src', 'https://nytimes.github.io/svg-crowbar/svg-crowbar-2.js'); 
-    e.setAttribute('class', 'svg-crowbar'); 
-    document.body.appendChild(e); 
-  }
-</script>
+                      // Set up zoom support
+                      zoom = d3.zoom()
+                          .on("zoom", function () {
+                              inner.attr("transform", d3.event.transform);
+                          });
+                      svg.call(zoom);
+
+                      // Simple function to style the tooltip for the given node.
+                      var styleTooltip = function (name, quest) {
+                          return "<p class='name'><a href='https://ff14.huijiwiki.com/wiki/任务:" + encodeURI(name) + "' target='_blank'>" + name + "</a></p>" +
+                              "<p class='description'>" + quest.description + "</p>" +
+                              "<p class='startnpc'>起始NPC: " + quest.startnpc + "</p>" +
+                              "<p class='endnpc'>结束NPC: " + quest.endnpc + "</p>";
+                      };
+
+                      // Run the renderer. This is what draws the final graph.
+                      render(inner, g);
+
+                      // inner.selectAll("g.node")
+                      //   .attr("title", function(v) { return styleTooltip(v, g.node(v).description) })
+                      //   .each(function(v) { $(this).tipsy({gravity: "w", opacity: 1, html: true, delayOut: 1000, }); });
+                      inner.selectAll("g.node")
+                          .attr("title", function (v) {
+                              return styleTooltip(v, g.node(v))
+                          })
+                          .each(function (v) {
+                              $(this).tooltipster({
+                                  interactive: true,
+                                  animation: "grow",
+                                  contentAsHTML: true,
+                              });
+                              // console.log(this);
+                          });
+                      // Center the graph
+                      var initialScale = 1;
+                      svg.call(zoom.transform, d3.zoomIdentity.translate((svg.attr("width") - g.graph().width * initialScale) / 2, 20).scale(initialScale));
+
+                      svg.attr('height', g.graph().height * initialScale + 40);
+
+                      alert("查询完毕，这可太秃啦！");
+                  }
+              },
+          });
+
+
+      }
+
+
+  </script>
+
+  <script type="text/javascript">
+      var quest = document.getElementById("quest");
+      quest.setAttribute("class", "active");
+  </script>
+  <script type="text/javascript">
+      function download_svg() {
+          var svg = d3.select("svg");
+          var initialScale = 1;
+          svg.attr('width', g._label.width);
+          svg.call(zoom.transform, d3.zoomIdentity.translate((svg.attr("width") - g.graph().width * initialScale) / 2, 20).scale(initialScale));
+          svg.attr('height', g.graph().height * initialScale + 40);
+          var e = document.createElement('script');
+          e.setAttribute('src', 'https://nytimes.github.io/svg-crowbar/svg-crowbar-2.js');
+          e.setAttribute('class', 'svg-crowbar');
+          document.body.appendChild(e);
+      }
+  </script>
 {% endblock %}

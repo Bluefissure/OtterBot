@@ -212,7 +212,7 @@ def getSpecificWeatherTimes(territory, weathers, cnt=5, TIMEFORMAT_MDHMS="%m-%d 
     return times
 
 
-def crawl_dps(boss, job, day=0, CN_source=False, dps_type="pdps"):
+def crawl_dps(boss, job, day=0, CN_source=False, dps_type="adps"):
     print("boss:{} job:{} day:{}".format(boss, job, day))
     fflogs_url = "https://www.fflogs.com/zone/statistics/table/{}/dps/{}/{}/8/{}/100/1000/7/{}/Global/{}/All/0/normalized/single/0/-1/?keystone=15&dpstype={}".format(
         boss.quest.quest_id,
@@ -224,7 +224,9 @@ def crawl_dps(boss, job, day=0, CN_source=False, dps_type="pdps"):
         dps_type
     )
     print("fflogs url:{}".format(fflogs_url))
-    r = requests.get(url=fflogs_url, timeout=5)
+    s = requests.Session()
+    s.headers.update({'referer': 'https://www.fflogs.com'})
+    r = s.get(url=fflogs_url, timeout=5)
     tot_days = 0
     percentage_list = [10, 25, 50, 75, 95, 99, 100]
     atk_res = {}

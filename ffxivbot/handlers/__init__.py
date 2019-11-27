@@ -23,7 +23,7 @@ commands = {
   "/gate":"挖宝选门（\"/gate 3\"）",
   "/search":"查询物品(\"/search 神龙\")",
   "/weather":"天气信息（快捷命令\"/fog\",\"/heat_wave\",\"/thunder\",\"/kx\"）",
-  "/fsx":"副属性计算（\"/fsx 直击\"）",
+  #"/fsx":"副属性计算（\"/fsx 直击\"）",
   "/dps":"DPS排名（\"/dps 8s 骑士\"）",
   "/raid":"零式英雄榜（\"/raid 蓝色裂痕 萌芽池\"）",
   "/quest":"任务查询(\"/quest 狂乱前奏\")",
@@ -77,7 +77,13 @@ alter_commands = {
   "/revenge_confirm":"/revenge confirm",
   "/laji":"/trash",
   "/huntc":"/hunt check",
-  "/huntl":"/hunt list cd"
+  "/huntl":"/hunt list cd",
+  "/咏速":"/fsx 速度",
+  "/技速":"/fsx 速度",
+  "/暴击":"/fsx 暴击",
+  "/信念":"/fsx 信念",
+  "/坚韧":"/fsx 坚韧",
+  "/直击":"/fsx 直击"
 }
 
 from .QQCommand_cat import QQCommand_cat
