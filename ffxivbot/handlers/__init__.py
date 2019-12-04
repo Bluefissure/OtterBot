@@ -35,7 +35,8 @@ commands = {
   "/share":"发送微博分享",
   # "/trash":"你是什么垃圾？",
   "/shorten":"微博短链",
-  "/mxh":"梅溪湖cp短打生成器（\"/mxh 海德林 佐迪亚克\"）"
+  "/mxh":"梅溪湖cp短打生成器（\"/mxh 海德林 佐迪亚克\"）",
+  "/luck": "浅草寺求签"
 }
   # "/joke":"讽刺笑话（\"/joke 996|强东|建设一流公司|程序员|公司\"）",
 
@@ -53,8 +54,7 @@ group_commands = {
   "/live":"直播订阅系统",
   "/command":"群功能停用/启用",
   "/lottery":"抽奖",
-  "/hunt":"狩猎",
-  "/luck":"浅草寺求签"
+  "/hunt":"狩猎"
 }
 
 alter_commands = {
@@ -120,6 +120,7 @@ from .QQCommand_ifttt import QQCommand_ifttt
 from .QQCommand_fsx import QQCommand_fsx
 # from .QQCommand_joke import QQCommand_joke
 from .QQCommand_mxh import QQCommand_mxh
+from .QQCommand_luck import QQCommand_luck
 
 from .arknights.QQCommand_akhr import QQCommand_akhr
 
@@ -138,6 +139,5 @@ from .QQGroupCommand_live import QQGroupCommand_live
 from .QQGroupCommand_lottery import QQGroupCommand_lottery
 from .QQGroupCommand_command import QQGroupCommand_command
 from .QQGroupCommand_hunt import QQGroupCommand_hunt
-from .QQGroupCommand_luck import QQGroupCommand_luck
 
 from .QQGroupChat import QQGroupChat
