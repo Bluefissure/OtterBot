@@ -38,8 +38,11 @@ def QQGroupCommand_command(*args, **kwargs):
                         ok_commands.append(item)
                 group.commands = json.dumps(group_commands)
                 group.save()
-                msg = " ".join(ok_commands)
-                msg += "功能已关闭"
+                if ok_commands:
+                    msg = " ".join(ok_commands)
+                    msg += "功能已关闭"
+                else:
+                    msg = "未能成功匹配功能命令，请检查后输入"
         elif(second_command=="enable"):
             if(user_info["role"]!="owner" and user_info["role"]!="admin"):
                 msg = "仅群主与管理员有权限设置群功能控制"
@@ -52,8 +55,11 @@ def QQGroupCommand_command(*args, **kwargs):
                         ok_commands.append(item)
                 group.commands = json.dumps(group_commands)
                 group.save()
-                msg = " ".join(ok_commands)
-                msg += "功能已启用"
+                if ok_commands:
+                    msg = " ".join(ok_commands)
+                    msg += "功能已启用"
+                else:
+                    msg = "未能成功匹配功能命令，请检查后输入"
         elif(second_command=="clear"):
             if(user_info["role"]!="owner" and user_info["role"]!="admin"):
                 msg = "仅群主与管理员有权限设置群功能控制"

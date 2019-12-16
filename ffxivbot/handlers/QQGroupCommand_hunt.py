@@ -407,6 +407,7 @@ def QQGroupCommand_hunt(*args, **kwargs):
                     msg = "*"
         else:
             msg = "该群并非狩猎组群组"
+        msg = msg.strip()
         reply_action = reply_message_action(receive, msg)
         action_list.append(reply_action)
         return action_list
