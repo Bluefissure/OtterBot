@@ -1170,35 +1170,28 @@ def hunt(req):
 
 
 def server2tag(server_name):
-    server_tag = ""
-    if server_name == "拉诺西亚":
-        server_tag = "lnxy"
-    elif server_name == "紫水栈桥":
-        server_tag = "zszq"
-    elif server_name == "幻影群岛":
-        server_tag = "hyqd"
-    elif server_name == "摩杜纳":
-        server_tag = "mdn"
-    elif server_name == "神意之地":
-        server_tag = "syzd"
-    elif server_name == "静语庄园":
-        server_tag = "jyzy"
-    elif server_name == "萌芽池":
-        server_tag = "myc"
-    elif server_name == "延夏":
-        server_tag = "yx"
-    elif server_name == "红玉海":
-        server_tag = "hyh"
-    elif server_name == "潮风亭":
-        server_tag = "cft"
-    elif server_name == "神拳痕":
-        server_tag = "sqh"
-    elif server_name == "白银乡":
-        server_tag = "byx"
-    elif server_name == "白金幻象":
-        server_tag = "bjhx"
-    elif server_name == "旅人栈桥":
-        server_tag = "lrzq"
-    elif server_name == "龙巢神殿":
-        server_tag = "lcsd"
-    return server_tag
+    name_tag = {
+        "红玉海":"hyh",
+        "神意之地":"syzd",
+        "幻影群岛":"hyqd",
+        "拉诺西亚":"lnxy",
+        "萌芽池":"myc",
+        "宇宙和音":"yzhy",
+        "沃仙曦染":"wxxr",
+        "晨曦王座":"cxwz",
+        "潮风亭":"cft",
+        "神拳痕":"sqh",
+        "白银乡":"byx",
+        "白金幻象":"bjhx",
+        "旅人栈桥":"lrzq",
+        "拂晓之间":"fxzj",
+        "龙巢神殿":"lcsd",
+        "紫水栈桥":"zszq",
+        "延夏":"yx",
+        "静语庄园":"jyzy",
+        "摩杜纳":"mdn",
+        "海猫茶屋":"hmcw",
+        "柔风海湾":"rfhw",
+        "琥珀原":"hpy"
+    }
+    return name_tag.get(server_name, "unknown")
