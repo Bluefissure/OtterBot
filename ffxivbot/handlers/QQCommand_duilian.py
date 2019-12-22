@@ -75,6 +75,7 @@ def QQCommand_duilian(*args, **kwargs):
             else:
                 shanglian = message_content
                 xialian = get_xialian(shanglian)
+                hengpi = ""
                 if shanglian and xialian:
                     hengpi = get_hengpi(shanglian, xialian)
                 msg = "{}\n{}\n{}".format(shanglian, xialian, hengpi)

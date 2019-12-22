@@ -17,3 +17,5 @@ Pillow==6.2.0
 tqdm==4.31.1
 cryptography==2.7
 feedparser==5.2.1
+opencv-python==4.1.2.30
+numpy==1.16.3

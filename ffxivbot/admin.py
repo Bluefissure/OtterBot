@@ -142,6 +142,12 @@ class IFTTTChannelAdmin(admin.ModelAdmin):
     search_fields = ["name ", "group"]
     raw_id_fields  = ["members"]
 
+class TreasureMapAdmin(admin.ModelAdmin):
+    list_display = ["territory", "number"]
+    search_fields = ["territory"]
+    list_filter = ["territory", "rank"]
+
+
 
 admin.site.register(QQGroup, QQGroupAdmin)
 admin.site.register(CustomReply, CustomReplyAdmin)
@@ -171,3 +177,4 @@ admin.site.register(HuntGroup, HuntGroupAdmin)
 admin.site.register(Monster, MonsterAdmin)
 admin.site.register(HuntLog, HuntLogAdmin)
 admin.site.register(IFTTTChannel, IFTTTChannelAdmin)
+admin.site.register(TreasureMap, TreasureMapAdmin)

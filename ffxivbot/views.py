@@ -779,9 +779,9 @@ def api(req):
                                             )
                                         at_msg = "[CQ:at,qq={}]".format(qquser.user_id) if req.GET.get("at", "true")=="true" else str(qquser.user_id)
                                         msg = at_msg + "通过API更新了如下HuntLog:\n{}".format(msg)
-                                else:
+                                elif req.GET.get("verbose", "true")=="true":
                                     at_msg = "[CQ:at,qq={}]".format(qquser.user_id) if req.GET.get("at", "true")=="true" else str(qquser.user_id)
-                                    msg = at_msg + "上报失败，{}所属区域({})与上报区域({})不兼容".format(monster, monster.territory, zone_name)
+                                    msg = at_msg + "上报 {} 失败，{} 与 {} 不兼容".format(monster, monster.territory, zone_name)
                                 jdata = {
                                     "action": "send_group_msg",
                                     "params": {
