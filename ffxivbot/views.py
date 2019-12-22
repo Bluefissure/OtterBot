@@ -734,7 +734,10 @@ def api(req):
                                 zone_name = reqbody["zone"]
                                 zone_name = zone_name.replace(chr(57521), "").replace(chr(57522), "2").replace(
                                     chr(57523), "3")
-                                monster = Monster.objects.get(cn_name=monster_name)
+                                try:
+                                    monster = Monster.objects.get(cn_name=monster_name)
+                                except Monster.DoesNotExist:
+                                    monster = Monster.objects.get(cn_name=re.sub("1|2|3", "", monster_name))
                                 world_name = reqbody.get("world", "None")
                                 timestamp = int(reqbody["time"])
                                 server = None
@@ -742,37 +745,43 @@ def api(req):
                                 servers = Server.objects.filter(worldId=world_id)
                                 server = servers[0] if servers.exists() else Server.objects.get(name=world_name)
                                 # handle instances
-                                if str(monster.territory) in zone_name:  # "ZoneName2", "ZoneName"
+                                if req.GET.get("strict_zone", "true")=="false" or str(monster.territory) in zone_name:  # "ZoneName2", "ZoneName"
                                     if str(monster.territory) != zone_name:  # "ZoneName2"
                                         monster_name = zone_name.replace(str(monster.territory),
                                                                          monster_name)  # "ZoneName2" -> "MonsterName2"
-                                        monster = Monster.objects.get(cn_name=monster_name)
-                                print("Get HuntLog info:\nmonster:{}\nserver:{}".format(monster, server))
-                                if HuntLog.objects.filter(
-                                        monster=monster,
-                                        server=server,
-                                        hunt_group=hunt_group,
-                                        log_type="kill",
-                                        time__gt=timestamp - 60).exists():
-                                    msg = "{}——\"{}\" 已在一分钟内记录上报，此次API调用被忽略".format(hunt_log.server, monster,
-                                                                                    time.strftime("%Y-%m-%d %H:%M:%S",
-                                                                                                  time.localtime(
-                                                                                                      timestamp))
-                                                                                    )
-                                else:
-                                    hunt_log = HuntLog(
-                                        monster=monster,
-                                        hunt_group=hunt_group,
-                                        server=server,
-                                        log_type="kill",
-                                        time=timestamp
-                                    )
-                                    hunt_log.save()
-                                    msg = "{}——\"{}\" 击杀时间: {}".format(hunt_log.server, monster, 
-                                            time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(timestamp))
+                                        try:
+                                            monster = Monster.objects.get(cn_name=monster_name)
+                                        except Monster.DoesNotExist:
+                                            monster = Monster.objects.get(cn_name=re.sub("1|2|3", "", monster_name))
+                                    print("Get HuntLog info:\nmonster:{}\nserver:{}".format(monster, server))
+                                    if HuntLog.objects.filter(
+                                            monster=monster,
+                                            server=server,
+                                            hunt_group=hunt_group,
+                                            log_type="kill",
+                                            time__gt=timestamp - 60).exists():
+                                        msg = "{}——\"{}\" 已在一分钟内记录上报，此次API调用被忽略".format(hunt_log.server, monster,
+                                                                                        time.strftime("%Y-%m-%d %H:%M:%S",
+                                                                                                      time.localtime(
+                                                                                                          timestamp))
+                                                                                        )
+                                    else:
+                                        hunt_log = HuntLog(
+                                            monster=monster,
+                                            hunt_group=hunt_group,
+                                            server=server,
+                                            log_type="kill",
+                                            time=timestamp
                                         )
+                                        hunt_log.save()
+                                        msg = "{}——\"{}\" 击杀时间: {}".format(hunt_log.server, monster, 
+                                                time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(timestamp))
+                                            )
+                                        at_msg = "[CQ:at,qq={}]".format(qquser.user_id) if req.GET.get("at", "true")=="true" else str(qquser.user_id)
+                                        msg = at_msg + "通过API更新了如下HuntLog:\n{}".format(msg)
+                                else:
                                     at_msg = "[CQ:at,qq={}]".format(qquser.user_id) if req.GET.get("at", "true")=="true" else str(qquser.user_id)
-                                    msg = at_msg + "通过API更新了如下HuntLog:\n{}".format(msg)
+                                    msg = at_msg + "上报失败，{}所属区域({})与上报区域({})不兼容".format(monster, monster.territory, zone_name)
                                 jdata = {
                                     "action": "send_group_msg",
                                     "params": {
@@ -1130,8 +1139,11 @@ def hunt(req):
                 continue
             latest_kill_log = kill_logs.latest("id")
             last_kill_time = latest_kill_log.time
-            global_maintain_log = HuntLog.objects.filter(server=server, log_type="maintain").latest("time")
-            maintain_finish_time = global_maintain_log.time
+            try:
+                global_maintain_log = HuntLog.objects.filter(server=server, log_type="maintain").latest("time")
+                maintain_finish_time = global_maintain_log.time
+            except HuntLog.DoesNotExist:
+                maintain_finish_time = 0
             maintained = (maintain_finish_time > last_kill_time)
             kill_time = max(last_kill_time, maintain_finish_time)
             spawn_cooldown = (monster.first_spawn_cooldown if maintained else monster.spawn_cooldown)
