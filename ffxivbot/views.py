@@ -735,9 +735,12 @@ def api(req):
                                 zone_name = zone_name.replace(chr(57521), "").replace(chr(57522), "2").replace(
                                     chr(57523), "3")
                                 monster = Monster.objects.get(cn_name=monster_name)
-                                world_name = reqbody["world"]
+                                world_name = reqbody.get("world", "None")
                                 timestamp = int(reqbody["time"])
-                                server = Server.objects.get(name=world_name)
+                                server = None
+                                world_id = reqbody.get("worldid", -1)
+                                servers = Server.objects.filter(worldId=world_id)
+                                server = servers[0] if servers.exists() else Server.objects.get(name=world_name)
                                 # handle instances
                                 if str(monster.territory) in zone_name:  # "ZoneName2", "ZoneName"
                                     if str(monster.territory) != zone_name:  # "ZoneName2"

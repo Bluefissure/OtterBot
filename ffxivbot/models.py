@@ -259,6 +259,7 @@ class Server(models.Model):
     areaId = models.IntegerField(default=1)
     groupId = models.IntegerField(default=25)
     alter_names = models.TextField(default="[]")
+    worldId = models.IntegerField(default=0)
 
     def __str__(self):
         return self.name
