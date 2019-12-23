@@ -68,7 +68,7 @@ def QQCommand_treasure(*args, **kwargs):
                     target_uri = treasure_map.uri
                     target = read_uri(target_uri)
                     diff = img_diff(target, template)
-                    print("diff with {}: {}".format(treasure_map, diff))
+                    # print("diff with {}: {}".format(treasure_map, diff))
                     if min_diff == -1 or diff < min_diff:
                         min_diff = diff
                         min_treasuremap = treasure_map
