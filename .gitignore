@@ -15,3 +15,5 @@ tooltip.png
 utils/nohup.out
 .idea
 db/dump.sh
+*.swp
+

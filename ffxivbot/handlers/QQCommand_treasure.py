@@ -39,19 +39,19 @@ def read_uri(uri):
 def QQCommand_treasure(*args, **kwargs):
     action_list = []
     try:
-        print("begin treasure ==============")
+        # print("begin treasure ==============")
         global_config = kwargs["global_config"]
         QQ_BASE_URL = global_config["QQ_BASE_URL"]
         receive = kwargs["receive"]
 
         receive_msg = receive["message"].replace("/treasure", "", 1).strip()
         msg_list = receive_msg.split(" ")
-        while "" in msg_list:
-            msg_list.remove("")
         second_command = msg_list[0]
         if second_command == "" or second_command == "help":
             msg = "藏宝图查询：\n/treasure $image : 查询$image\n"
         else:
+            while "" in msg_list:
+                msg_list.remove("")
             CQ_text = msg_list[0].strip()
             img_url = get_image_from_CQ(CQ_text)
             if not img_url:
@@ -66,7 +66,7 @@ def QQCommand_treasure(*args, **kwargs):
                     target_uri = treasure_map.uri
                     target = read_uri(target_uri)
                     diff = img_diff(target, template)
-                    print("diff with {}: {}".format(treasure_map, diff))
+                    # print("diff with {}: {}".format(treasure_map, diff))
                     if min_diff == -1 or diff < min_diff:
                         min_diff = diff
                         min_treasuremap = treasure_map

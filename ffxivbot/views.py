@@ -73,6 +73,8 @@ def tata(req):
     if req.is_ajax() and req.method == "POST":
         res_dict = {"response": "No response."}
         optype = req.POST.get("optype")
+        if settings.DEBUG:
+            print("optype:{}".format(optype))
         if optype == "add_or_update_bot":
             botName = req.POST.get("botName")
             botID = req.POST.get("botID")
@@ -122,6 +124,8 @@ def tata(req):
         else:
             bot_id = req.POST.get("id")
             token = req.POST.get("token")
+            if settings.DEBUG:
+                print("bot_id:{} token:{}".format(bot_id, token))
             try:
                 bot = QQBot.objects.get(id=bot_id, access_token=token)
             except Exception as e:
@@ -143,10 +147,36 @@ def tata(req):
                     "Content-Disposition"
                 ] = 'attachment; filename="{}.json"'.format(bot.user_id)
                 bot_conf = json.loads(
-                    '{"host":"0.0.0.0","port":5700,"use_http":false,"ws_host":"0.0.0.0","ws_port":6700,"use_ws":false,"ws_reverse_api_url":"ws://111.231.102.248/ws_api/","ws_reverse_event_url":"ws://111.231.102.248/ws_event/","use_ws_reverse":"yes","ws_reverse_reconnect_interval":5000,"ws_reverse_reconnect_on_code_1000":"yes","post_url":"","access_token":"SECRET","secret":"","post_message_format":"string","serve_data_files":false,"update_source":"github","update_channel":"stable","auto_check_update":false,"auto_perform_update":false,"thread_pool_size":4,"server_thread_pool_size":1,"show_log_console":false,"enable_backward_compatibility":true}'
+                    '{\
+                        "host":"0.0.0.0",\
+                        "port":5700,\
+                        "use_http":false,\
+                        "ws_host":"0.0.0.0",\
+                        "ws_port":6700,\
+                        "use_ws":false,\
+                        "ws_reverse_url": "wss://xn--v9x.net/ws/",\
+                        "use_ws_reverse":"yes",\
+                        "ws_reverse_reconnect_interval":5000,\
+                        "ws_reverse_reconnect_on_code_1000":"yes",\
+                        "post_url":"",\
+                        "access_token":"SECRET",\
+                        "secret":"",\
+                        "post_message_format":"string",\
+                        "serve_data_files":false,\
+                        "update_source":"github",\
+                        "update_channel":"stable",\
+                        "auto_check_update":false,\
+                        "auto_perform_update":false,\
+                        "thread_pool_size":4,\
+                        "server_thread_pool_size":1,\
+                        "show_log_console":false,\
+                        "enable_backward_compatibility":true\
+                    }'
                 )
+                bot_conf["access_token"] = bot.access_token
                 bot_conf["secret"] = bot.access_token
                 response.write(json.dumps(bot_conf, indent=4))
+                print("Downloading config file==============")
                 return response
         return JsonResponse(res_dict)
 
@@ -340,7 +370,9 @@ def quest_tooltip(req):
                 if res_type == "web":
                     if quest.tooltip_html == "" or nocache:
                         r = requests.get(
-                            "https://ff14.huijiwiki.com/ff14/api.php?format=json&action=parse&disablelimitreport=true&prop=text&title=%E9%A6%96%E9%A1%B5&smaxage=86400&maxage=86400&text=%7B%7B%E4%BB%BB%E5%8A%A1%2F%E6%B5%AE%E5%8A%A8%E6%91%98%E8%A6%81%7C{}%7D%7D".format(
+                            "https://ff14.huijiwiki.com/ff14/api.php\
+                            ?format=json&action=parse&disablelimitreport=true&prop=text&title=%E9%A6%96%E9%A1%B5\
+                            &smaxage=86400&maxage=86400&text=%7B%7B%E4%BB%BB%E5%8A%A1%2F%E6%B5%AE%E5%8A%A8%E6%91%98%E8%A6%81%7C{}%7D%7D".format(
                                 quest_id
                             ))
                         r_json = r.json()
