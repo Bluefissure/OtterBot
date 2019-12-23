@@ -57,7 +57,7 @@ def QQCommand_treasure(*args, **kwargs):
             if not img_url:
                 msg = "未发现图片信息"
             else:
-                res = requests.get(url=img_url, timeout=3)
+                res = requests.get(url=img_url, timeout=5)
                 template_uri = "data:" + res.headers['Content-Type'] + ";" +"base64," + base64.b64encode(res.content).decode("utf-8")
                 template = read_uri(template_uri)
                 min_diff = -1
