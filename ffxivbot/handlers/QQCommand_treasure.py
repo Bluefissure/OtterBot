@@ -82,6 +82,7 @@ def QQCommand_treasure(*args, **kwargs):
                     pos_x, pos_y = json.loads(min_treasuremap.position)
                     map_url = "https://map.wakingsands.com/#f=mark&x={}&y={}&id={}".format(pos_x, pos_y, territory.mapid)
                     msg = "地图：{} 编号：{} 坐标：({}, {})\n{}".format(territory, min_treasuremap.number, pos_x, pos_y, map_url)
+                    msg = "[CQ:at,qq={}] ".format(receive["user_id"]) + msg
         msg = msg.strip()
         reply_action = reply_message_action(receive, msg)
         action_list.append(reply_action)

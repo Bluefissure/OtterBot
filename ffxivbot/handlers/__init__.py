@@ -84,7 +84,9 @@ alter_commands = {
   "/暴击":"/fsx 暴击",
   "/信念":"/fsx 信念",
   "/坚韧":"/fsx 坚韧",
-  "/直击":"/fsx 直击"
+  "/直击":"/fsx 直击",
+  "/天气":"/weather",
+  "/宝图":"/treasure"
 }
 
 from .QQCommand_cat import QQCommand_cat
