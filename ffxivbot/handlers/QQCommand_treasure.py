@@ -62,15 +62,20 @@ def QQCommand_treasure(*args, **kwargs):
                 template = read_uri(template_uri)
                 min_diff = -1
                 min_treasuremap = None
+                max_diff = -1
+                max_treasuremap = None
                 for treasure_map in TreasureMap.objects.all():
                     target_uri = treasure_map.uri
                     target = read_uri(target_uri)
                     diff = img_diff(target, template)
-                    # print("diff with {}: {}".format(treasure_map, diff))
+                    print("diff with {}: {}".format(treasure_map, diff))
                     if min_diff == -1 or diff < min_diff:
                         min_diff = diff
                         min_treasuremap = treasure_map
-                if not min_treasuremap:
+                    if max_diff == -1 or diff > max_diff:
+                        max_diff = diff
+                        max_treasuremap = treasure_map
+                if (not min_treasuremap) or (max_diff > 0.25):
                     msg = "未查询到有效藏宝图"
                 else:
                     territory = min_treasuremap.territory
