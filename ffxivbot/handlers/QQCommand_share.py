@@ -56,34 +56,42 @@ def QQCommand_share(*args, **kwargs):
             content = " ".join(para_segs)
             img_url = get_image_from_CQ(content)
             url = "https://api.weibo.com/2/statuses/share.json"
-            content = "✨投稿✨\n"+content
-            if img_url:
-                cqimg_pattern = r"\[CQ:image,file=([A-F0-9]+.(jpg|png|jpeg|webp|bmp|gif)),url=((\w+:\/\/)[-a-zA-Z0-9:@;?&=\/%\+\.\*!'\(\),\$_\{\}\^~\[\]`#|]+)\]"
-                content = re.sub(cqimg_pattern, "", content)
-                data = {
-                    "access_token": WEIBO_TOKEN,
-                    "status": "{}\nPowered by {}".format(content, WEIBO_SAFEURL),
-                }
-                r = requests.get(img_url, timeout=5)
-                files = {'pic': r.content}
-                r = requests.post(url=url, data=data, files=files, timeout=5)
+            if not para_segs[0].startswith("_confirm"):
+                msg = "您即将投稿以下内容至獭獭微博：\n\
+======\n\
+{}\n\
+======\n\
+确认请将/share替换为/share_confirm命令并重新发送。".format(content)
             else:
-                data = {
-                    "access_token": WEIBO_TOKEN,
-                    "status": "{}\nPowered by {}".format(content, WEIBO_SAFEURL),
-                }
-                r = requests.post(url=url, data=data, timeout=5)
-            r_json = r.json()
-            if r_json.get("error", None):
-                msg = r_json.get("error", "default error")
-            else:
-                weibo_url = "https://m.weibo.cn/detail/{}".format(r_json.get("idstr"))
-                msg = "微博发送成功，请访问：{}".format(weibo_url)
-                qq.ban_share_till = time.time()+(3600 if qq.user_id != ADMIN_ID else 0)
-                sent_weibo = json.loads(qq.sent_weibo)
-                sent_weibo.append(r_json.get("id"))
-                qq.sent_weibo = json.dumps(sent_weibo)
-                qq.save(update_fields=['ban_share_till', 'sent_weibo'])
+                content = content.replace("_confirm","",1)
+                content = "✨投稿✨\n"+content
+                if img_url:
+                    cqimg_pattern = r"\[CQ:image,file=([A-F0-9]+.(jpg|png|jpeg|webp|bmp|gif)),url=((\w+:\/\/)[-a-zA-Z0-9:@;?&=\/%\+\.\*!'\(\),\$_\{\}\^~\[\]`#|]+)\]"
+                    content = re.sub(cqimg_pattern, "", content)
+                    data = {
+                        "access_token": WEIBO_TOKEN,
+                        "status": "{}\nPowered by {}".format(content, WEIBO_SAFEURL),
+                    }
+                    r = requests.get(img_url, timeout=5)
+                    files = {'pic': r.content}
+                    r = requests.post(url=url, data=data, files=files, timeout=5)
+                else:
+                    data = {
+                        "access_token": WEIBO_TOKEN,
+                        "status": "{}\nPowered by {}".format(content, WEIBO_SAFEURL),
+                    }
+                    r = requests.post(url=url, data=data, timeout=5)
+                r_json = r.json()
+                if r_json.get("error", None):
+                    msg = r_json.get("error", "default error")
+                else:
+                    weibo_url = "https://m.weibo.cn/detail/{}".format(r_json.get("idstr"))
+                    msg = "微博发送成功，请访问：{}".format(weibo_url)
+                    qq.ban_share_till = time.time()+(3600 if qq.user_id != ADMIN_ID else 0)
+                    sent_weibo = json.loads(qq.sent_weibo)
+                    sent_weibo.append(r_json.get("id"))
+                    qq.sent_weibo = json.dumps(sent_weibo)
+                    qq.save(update_fields=['ban_share_till', 'sent_weibo'])
         # print("ruturning message:{}".format(msg))
         msg = msg.strip()
         reply_action = reply_message_action(receive, msg)

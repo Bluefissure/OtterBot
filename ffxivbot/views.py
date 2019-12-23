@@ -176,7 +176,6 @@ def tata(req):
                 bot_conf["access_token"] = bot.access_token
                 bot_conf["secret"] = bot.access_token
                 response.write(json.dumps(bot_conf, indent=4))
-                print("Downloading config file==============")
                 return response
         return JsonResponse(res_dict)
 
