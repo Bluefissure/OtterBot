@@ -9,3 +9,4 @@
 ../manage.py dumpdata ffxivbot.Weather > Weather.json
 ../manage.py dumpdata ffxivbot.WeatherRate > WeatherRate.json
 ../manage.py dumpdata ffxivbot.TreasureMap > TreasureMap.json
+../manage.py dumpdata ffxivbot.Boss > Boss.json

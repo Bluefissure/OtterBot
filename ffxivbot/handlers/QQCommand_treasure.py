@@ -48,7 +48,7 @@ def QQCommand_treasure(*args, **kwargs):
         msg_list = receive_msg.split(" ")
         second_command = msg_list[0]
         if second_command == "" or second_command == "help":
-            msg = "藏宝图查询：\n/treasure $image : 查询$image\n"
+            msg = "藏宝图查询：\n/treasure $image : 查询$image\nPS:截图请不要截到图片边缘"
         else:
             while "" in msg_list:
                 msg_list.remove("")
@@ -68,6 +68,8 @@ def QQCommand_treasure(*args, **kwargs):
                     target_uri = treasure_map.uri
                     target = read_uri(target_uri)
                     diff = img_diff(target, template)
+                    # rev_diff = img_diff(template, target)
+                    # diff = min(rev_diff, diff)
                     # print("diff with {}: {}".format(treasure_map, diff))
                     if min_diff == -1 or diff < min_diff:
                         min_diff = diff
