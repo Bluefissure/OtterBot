@@ -148,29 +148,31 @@ def tata(req):
                 ] = 'attachment; filename="{}.json"'.format(bot.user_id)
                 bot_conf = json.loads(
                     '{\
-                        "host":"0.0.0.0",\
-                        "port":5700,\
-                        "use_http":false,\
-                        "ws_host":"0.0.0.0",\
-                        "ws_port":6700,\
-                        "use_ws":false,\
+                        "host": "0.0.0.0",\
+                        "port": 5700,\
+                        "use_http": false,\
+                        "ws_host": "0.0.0.0",\
+                        "ws_port": 6700,\
+                        "use_ws": false,\
                         "ws_reverse_url": "wss://xn--v9x.net/ws/",\
-                        "use_ws_reverse":"yes",\
-                        "ws_reverse_reconnect_interval":5000,\
-                        "ws_reverse_reconnect_on_code_1000":"yes",\
-                        "post_url":"",\
-                        "access_token":"SECRET",\
-                        "secret":"",\
-                        "post_message_format":"string",\
-                        "serve_data_files":false,\
-                        "update_source":"github",\
-                        "update_channel":"stable",\
-                        "auto_check_update":false,\
-                        "auto_perform_update":false,\
-                        "thread_pool_size":4,\
-                        "server_thread_pool_size":1,\
-                        "show_log_console":false,\
-                        "enable_backward_compatibility":true\
+                        "ws_reverse_use_universal_client": true,\
+                        "enable_heartbeat": true,\
+                        "use_ws_reverse": "yes",\
+                        "ws_reverse_reconnect_interval": 5000,\
+                        "ws_reverse_reconnect_on_code_1000": "yes",\
+                        "post_url": "",\
+                        "access_token": "",\
+                        "secret": "",\
+                        "post_message_format": "string",\
+                        "serve_data_files": false,\
+                        "update_source": "github",\
+                        "update_channel": "stable",\
+                        "auto_check_update": false,\
+                        "auto_perform_update": false,\
+                        "thread_pool_size": 4,\
+                        "server_thread_pool_size": 1,\
+                        "show_log_console": false,\
+                        "enable_backward_compatibility": true\
                     }'
                 )
                 bot_conf["access_token"] = bot.access_token
