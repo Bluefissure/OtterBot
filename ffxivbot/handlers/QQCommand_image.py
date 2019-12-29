@@ -22,15 +22,15 @@ def get_image_from_CQ(CQ_text):
 
 
 def upload_image(img_url):
-    original_image = requests.get(url=img_url)
+    original_image = requests.get(url=img_url, timeout=5)
     sm_req = requests.post(
-        url="https://sm.ms/api/upload", files={"smfile": original_image.content}
+        url="https://sm.ms/api/upload", files={"smfile": original_image.content}, timeout=30
     )
     return json.loads(sm_req.text)
 
 
 def delete_image(img_hash):
-    sm_req = requests.post(url="https://sm.ms/api/delete/{}".format(img_hash))
+    sm_req = requests.post(url="https://sm.ms/api/delete/{}".format(img_hash), timeout=5)
     return sm_req.status_code
 
 

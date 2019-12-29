@@ -400,6 +400,9 @@
                   var downloadLink = window.document.createElement('a');
                   var contentTypeHeader = request.getResponseHeader("Content-Type");
                   downloadLink.href = window.URL.createObjectURL(new Blob([blob], { type: contentTypeHeader }));
+                  var contentDispositionHeader = request.getResponseHeader("Content-Disposition");
+                  var ma = contentDispositionHeader.match(/filename="(\d+.json)"/);
+                  if (ma != null) fileName = ma[1];
                   downloadLink.download = fileName;
                   document.body.appendChild(downloadLink);
                   downloadLink.click();

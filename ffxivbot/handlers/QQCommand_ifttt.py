@@ -80,7 +80,7 @@ def QQCommand_ifttt(*args, **kwargs):
                         "value2": unescape(ifttt_channel.callback_link),
                         "value3": img_url
                     }
-                    r = requests.post(url, json=json_data)
+                    r = requests.post(url, json=json_data, timeout=5)
                     if r.status_code == 200:
                         success_cnt += 1
                     else:
