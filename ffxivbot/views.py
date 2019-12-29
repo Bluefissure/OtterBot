@@ -375,7 +375,7 @@ def quest_tooltip(req):
                             ?format=json&action=parse&disablelimitreport=true&prop=text&title=%E9%A6%96%E9%A1%B5\
                             &smaxage=86400&maxage=86400&text=%7B%7B%E4%BB%BB%E5%8A%A1%2F%E6%B5%AE%E5%8A%A8%E6%91%98%E8%A6%81%7C{}%7D%7D".format(
                                 quest_id
-                            ))
+                            ), timeout=5)
                         r_json = r.json()
                         # print(r_json)
                         html = r_json["parse"]["text"]["*"]

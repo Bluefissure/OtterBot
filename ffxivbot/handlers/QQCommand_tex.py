@@ -28,7 +28,7 @@ def QQCommand_tex(*args, **kwargs):
             # print(tex_msg)
             url = "http://mathurl.com/render.cgi?{}".format(tex_msg)
             # print(url)
-            r = requests.get(url)
+            r = requests.get(url, timeout=5)
             b64str = base64.b64encode(r.content).decode()
             msg = "[CQ:image,file=base64://{}]".format(b64str)
         if msg:

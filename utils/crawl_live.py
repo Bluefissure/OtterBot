@@ -34,7 +34,7 @@ def crawl_json(liveuser):
             jres = feedparser.parse(url)
             if jres.entries:
                 item = jres.entries[0]
-                info_s = requests.get("https://api.live.bilibili.com/live_user/v1/UserInfo/get_anchor_in_room?roomid={}".format(liveuser.room_id))
+                info_s = requests.get("https://api.live.bilibili.com/live_user/v1/UserInfo/get_anchor_in_room?roomid={}".format(liveuser.room_id), timeout=5)
                 info_s = info_s.json()
                 face_url = ""
                 name = ""
@@ -139,7 +139,7 @@ def crawl_live(liveuser, push=False):
                     else:
                         url = os.path.join(bot.api_post_url, "{}?access_token={}".format(jdata["action"], bot.access_token))
                         headers = {'Content-Type': 'application/json'} 
-                        r = requests.post(url=url, headers=headers, data=json.dumps(jdata["params"]))
+                        r = requests.post(url=url, headers=headers, data=json.dumps(jdata["params"]), timeout=10)
                         if r.status_code!=200:
                             logging.error(r.text)
                     group.pushed_live.add(liveuser)
