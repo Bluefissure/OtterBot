@@ -159,7 +159,7 @@ def getFollowingWeathers(territory, cnt=5, TIMEFORMAT="%m-%d %H:%M:%S", **kwargs
         weather_id = getWeatherID(territory, chance)
         pre_chance = calculateForecastTarget(now_time - 8 * 175)
         pre_weather_id = getWeatherID(territory, pre_chance)
-        print("weather_id:{}".format(weather_id))
+        # print("weather_id:{}".format(weather_id))
         try:
             weather = Weather.objects.get(id=weather_id)
         except Weather.DoesNotExist as e:

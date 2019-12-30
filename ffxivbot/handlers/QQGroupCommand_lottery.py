@@ -226,7 +226,7 @@ def QQGroupCommand_lottery(*args, **kwargs):
                                 },
                                 "id": lott.id
                             }
-                            r = requests.post(url="https://api.random.org/json-rpc/2/invoke", json=req_json)
+                            r = requests.post(url="https://api.random.org/json-rpc/2/invoke", json=req_json, timeout=5)
                             if r.status_code==200:
                                 res_json = r.json()
                                 if "error" in res_json.keys():

@@ -97,7 +97,7 @@ def call_api(bot, action, params, echo=None, **kwargs):
     elif post_type=="http":
         url = os.path.join(bot.api_post_url, "{}?access_token={}".format(action, bot.access_token))
         headers = {'Content-Type': 'application/json'} 
-        r = requests.post(url=url, headers=headers, data=json.dumps(params))
+        r = requests.post(url=url, headers=headers, data=json.dumps(params), timeout=5)
         if r.status_code!=200:
             print("HTTP Callback failed:")
             print(r.text)

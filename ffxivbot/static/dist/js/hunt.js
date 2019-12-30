@@ -1,11 +1,7 @@
-var server = "lnxy";
-var arr = true;
-var hw = true;
-var sb = true;
-var shb = true;
-var cd = false;
-var allServersButton = ["#lnxy", "#zszq", "#hyqd", "#mdn", "#syzd", "#jyzy", "#myc", "#yx", "#hyh", "#cft", "#sqh", "#byx", "#bjhx", "#lrzq", "#lcsd"];
-var allServersHiddenTag = [".lnxy", ".zszq", ".hyqd", ".mdn", ".syzd", ".jyzy", ".myc", ".yx", ".hyh", ".cft", ".sqh", ".byx", ".bjhx", ".lrzq", ".lcsd"];
+let server = "myc";
+let allServers = ["hyh", "syzd", "hyqd", "lnxy", "myc", "yzhy", "wxxr", "cxwz", "cft", "sqh", "byx", "bjhx", "lrzq", "fxzj", "lcsd", "zszq", "yx", "jyzy", "mdn", "hmcw", "rfhw", "hpy"];
+let allServersButton = ["#hyh", "#syzd", "#hyqd", "#lnxy", "#myc", "#yzhy", "#wxxr", "#cxwz", "#cft", "#sqh", "#byx", "#bjhx", "#lrzq", "#fxzj", "#lcsd", "#zszq", "#yx", "#jyzy", "#mdn", "#hmcw", "#rfhw", "#hpy"];
+let allServersHiddenTag = [".hyh", ".syzd", ".hyqd", ".lnxy", ".myc", ".yzhy", ".wxxr", ".cxwz", ".cft", ".sqh", ".byx", ".bjhx", ".lrzq", ".fxzj", ".lcsd", ".zszq", ".yx", ".jyzy", ".mdn", ".hmcw", ".rfhw", ".hpy",];
 
 $(document).ready(function () {
     if (typeof Storage !== "undefined") {
@@ -13,406 +9,74 @@ $(document).ready(function () {
             localStorage.setItem("server", server);
         }
         if (localStorage.getItem("arr") === null) {
-            localStorage.setItem("arr", arr);
+            localStorage.setItem("arr", true);
         }
         if (localStorage.getItem("hw") === null) {
-            localStorage.setItem("hw", hw);
+            localStorage.setItem("hw", true);
         }
         if (localStorage.getItem("sb") === null) {
-            localStorage.setItem("sb", sb);
+            localStorage.setItem("sb", true);
         }
         if (localStorage.getItem("shb") === null) {
-            localStorage.setItem("shb", shb);
+            localStorage.setItem("shb", true);
         }
         if (localStorage.getItem("cd") === null) {
-            localStorage.setItem("cd", cd);
+            localStorage.setItem("cd", false);
         }
         server = localStorage.getItem("server");
-        arr = localStorage.getItem("arr") === "true";
-        hw = localStorage.getItem("hw") === "true";
-        sb = localStorage.getItem("sb") === "true";
-        shb = localStorage.getItem("shb") === "true";
-        cd = localStorage.getItem("cd") === "true";
+    }
+    let buttons = ["arr", "hw", "sb", "shb", "cd"];
+    for (let button_id in buttons) {
+        let button = buttons[button_id];
+        $("#"+button).on("click", function () {
+            localStorage.setItem(button, !(localStorage.getItem(button) === "true"));
+            updateHidden();
+        });
+    }
+    for (let server_id in allServers) {
+        let server = allServers[server_id];
+        $("#"+server).on("click", function () {
+            localStorage.setItem("server", server);
+            updateHidden();
+        });
     }
     updateHidden();
     setInterval('autoRefresh()', 300000);
 });
-$(document).ready(function () {
-    $("#arr").on("click", function () {
-        if (arr) {
-            arr = false;
-        } else if (!arr) {
-            arr = true;
-        }
-        localStorage.setItem("arr", arr);
-        updateHidden()
-    });
-    $("#hw").on("click", function () {
-        if (hw) {
-            hw = false;
-        } else if (!hw) {
-            hw = true;
-        }
-        localStorage.setItem("hw", hw);
-        updateHidden()
-    });
-    $("#sb").on("click", function () {
-        if (sb) {
-            sb = false;
-        } else if (!sb) {
-            sb = true;
-        }
-        localStorage.setItem("sb", sb);
-        updateHidden()
-    });
-    $("#shb").on("click", function () {
-        if (shb) {
-            shb = false;
-        } else if (!shb) {
-            shb = true;
-        }
-        localStorage.setItem("shb", shb);
-        updateHidden()
-    });
-    $("#cd").on("click", function () {
-        if (cd) {
-            cd = false;
-        } else if (!cd) {
-            cd = true;
-        }
-        localStorage.setItem("cd", cd);
-        updateHidden()
-    });
-    $("#lnxy").on("click", function () {
-        server = "lnxy";
-        localStorage.setItem("server", "lnxy");
-        updateHidden()
-    });
-    $("#zszq").on("click", function () {
-        server = "zszq";
-        localStorage.setItem("server", "zszq");
-        updateHidden()
-    });
-    $("#hyqd").on("click", function () {
-        server = "hyqd";
-        localStorage.setItem("server", "hyqd");
-        updateHidden()
-    });
-    $("#mdn").on("click", function () {
-        server = "mdn";
-        localStorage.setItem("server", "mdn");
-        updateHidden()
-    });
-    $("#syzd").on("click", function () {
-        server = "syzd";
-        localStorage.setItem("server", "syzd");
-        updateHidden()
-    });
-    $("#jyzy").on("click", function () {
-        server = "jyzy";
-        localStorage.setItem("server", "jyzy");
-        updateHidden()
-    });
-    $("#myc").on("click", function () {
-        server = "myc";
-        localStorage.setItem("server", "myc");
-        updateHidden()
-    });
-    $("#yx").on("click", function () {
-        server = "yx";
-        localStorage.setItem("server", "yx");
-        updateHidden()
-    });
-    $("#hyh").on("click", function () {
-        server = "hyh";
-        localStorage.setItem("server", "hyh");
-        updateHidden()
-    });
-    $("#cft").on("click", function () {
-        server = "cft";
-        localStorage.setItem("server", "cft");
-        updateHidden()
-    });
-    $("#sqh").on("click", function () {
-        server = "sqh";
-        localStorage.setItem("server", "sqh");
-        updateHidden()
-    });
-    $("#byx").on("click", function () {
-        server = "byx";
-        localStorage.setItem("server", "byx");
-        updateHidden()
-    });
-    $("#bjhx").on("click", function () {
-        server = "bjhx";
-        localStorage.setItem("server", "bjhx");
-        updateHidden()
-    });
-    $("#lrzq").on("click", function () {
-        server = "lrzq";
-        localStorage.setItem("server", "lrzq");
-        updateHidden()
-    });
-    $("#lcsd").on("click", function () {
-        server = "lcsd";
-        localStorage.setItem("server", "lcsd");
-        updateHidden()
-    });
-});
 
 function updateHidden() {
-    if (arr) {
-        $(".arr").removeClass("hide-monster");
-        $("#arr").removeClass("btn-secondary");
+    let buttons = ["arr", "hw", "sb", "shb"];
+    for (let button_id in buttons) {
+        let button = buttons[button_id];
+        if (localStorage.getItem(button) === "true") {
+            $("."+button).removeClass("hide-monster");
+            $("#"+button).removeClass("btn-secondary");
+        } else {
+            $("."+button).addClass("hide-monster");
+            $("#"+button).addClass("btn-secondary");
+        }
     }
-    if (!arr) {
-        $(".arr").addClass("hide-monster");
-        $("#arr").addClass("btn-secondary");
-    }
-    if (hw) {
-        $(".hw").removeClass("hide-monster");
-        $("#hw").removeClass("btn-secondary");
-    }
-    if (!hw) {
-        $(".hw").addClass("hide-monster");
-        $("#hw").addClass("btn-secondary");
-    }
-    if (sb) {
-        $(".sb").removeClass("hide-monster");
-        $("#sb").removeClass("btn-secondary");
-    }
-    if (!sb) {
-        $(".sb").addClass("hide-monster");
-        $("#sb").addClass("btn-secondary");
-    }
-    if (shb) {
-        $(".shb").removeClass("hide-monster");
-        $("#shb").removeClass("btn-secondary");
-    }
-    if (!shb) {
-        $(".shb").addClass("hide-monster");
-        $("#shb").addClass("btn-secondary");
-    }
-    if (cd){
+    if (localStorage.getItem("cd") === "true"){
         $(".notcd").addClass("hide-cd");
         $("#cd").removeClass("btn-secondary");
-    }
-    if (!cd){
+    } else {
         $(".notcd").removeClass("hide-cd");
         $("#cd").addClass("btn-secondary");
     }
-    if (server === "lnxy") {
-        // 将列表放进临时列表内
-        let tempButtonList = allServersButton.concat();
-        let tempHiddenTag = allServersHiddenTag.concat();
-        // 移除列表内的拉诺西亚
-        tempHiddenTag.splice(0, 1);
-        tempButtonList.splice(0, 1);
-        // 轮询并添加除拉诺西亚的各服狩猎怪表格的Class
-        for (let i = 0; i < tempButtonList.length; i++) {
-            $(tempButtonList[i]).addClass("btn-secondary");
-            $(tempHiddenTag[i]).addClass("hide-server");
-        }
-        // 移除拉诺西亚的按钮和表格的Class
-        $("#lnxy").removeClass("btn-secondary");
-        $(".lnxy").removeClass("hide-server");
+    let server = localStorage.getItem("server");
+    let tempButtonList = allServersButton.concat();
+    let tempHiddenTag = allServersHiddenTag.concat();
+    let server_idx = tempHiddenTag.indexOf("."+server);
+    if (server_idx < 0)
+        return
+    tempHiddenTag.splice(server_idx, 1);
+    tempButtonList.splice(server_idx, 1);
+    for (let i = 0; i < tempButtonList.length; i++) {
+        $(tempButtonList[i]).addClass("btn-secondary");
+        $(tempHiddenTag[i]).addClass("hide-server");
     }
-    if (server === "zszq") {
-        let tempButtonList = allServersButton.concat();
-        let tempHiddenTag = allServersHiddenTag.concat();
-
-        tempHiddenTag.splice(1, 1);
-        tempButtonList.splice(1, 1);
-
-        for (let i = 0; i < tempButtonList.length; i++) {
-            $(tempButtonList[i]).addClass("btn-secondary");
-            $(tempHiddenTag[i]).addClass("hide-server");
-        }
-        $("#zszq").removeClass("btn-secondary");
-        $(".zszq").removeClass("hide-server");
-    }
-    if (server === "hyqd") {
-        let tempButtonList = allServersButton.concat();
-        let tempHiddenTag = allServersHiddenTag.concat();
-
-        tempHiddenTag.splice(2, 1);
-        tempButtonList.splice(2, 1);
-
-        for (let i = 0; i < tempButtonList.length; i++) {
-            $(tempButtonList[i]).addClass("btn-secondary");
-            $(tempHiddenTag[i]).addClass("hide-server");
-        }
-        $("#hyqd").removeClass("btn-secondary");
-        $(".hyqd").removeClass("hide-server");
-    }
-    if (server === "mdn") {
-        let tempButtonList = allServersButton.concat();
-        let tempHiddenTag = allServersHiddenTag.concat();
-
-        tempHiddenTag.splice(3, 1);
-        tempButtonList.splice(3, 1);
-
-        for (let i = 0; i < tempButtonList.length; i++) {
-            $(tempButtonList[i]).addClass("btn-secondary");
-            $(tempHiddenTag[i]).addClass("hide-server");
-        }
-        $("#mdn").removeClass("btn-secondary");
-        $(".mdn").removeClass("hide-server");
-    }
-    if (server === "syzd") {
-        let tempButtonList = allServersButton.concat();
-        let tempHiddenTag = allServersHiddenTag.concat();
-
-        tempHiddenTag.splice(4, 1);
-        tempButtonList.splice(4, 1);
-
-        for (let i = 0; i < tempButtonList.length; i++) {
-            $(tempButtonList[i]).addClass("btn-secondary");
-            $(tempHiddenTag[i]).addClass("hide-server");
-        }
-        $("#syzd").removeClass("btn-secondary");
-        $(".syzd").removeClass("hide-server");
-    }
-    if (server === "jyzy") {
-        let tempButtonList = allServersButton.concat();
-        let tempHiddenTag = allServersHiddenTag.concat();
-
-        tempHiddenTag.splice(5, 1);
-        tempButtonList.splice(5, 1);
-
-        for (let i = 0; i < tempButtonList.length; i++) {
-            $(tempButtonList[i]).addClass("btn-secondary");
-            $(tempHiddenTag[i]).addClass("hide-server");
-        }
-        $("#jyzy").removeClass("btn-secondary");
-        $(".jyzy").removeClass("hide-server");
-    }
-    if (server === "myc") {
-        let tempButtonList = allServersButton.concat();
-        let tempHiddenTag = allServersHiddenTag.concat();
-
-        tempHiddenTag.splice(6, 1);
-        tempButtonList.splice(6, 1);
-
-        for (let i = 0; i < tempButtonList.length; i++) {
-            $(tempButtonList[i]).addClass("btn-secondary");
-            $(tempHiddenTag[i]).addClass("hide-server");
-        }
-        $("#myc").removeClass("btn-secondary");
-        $(".myc").removeClass("hide-server");
-    }
-    if (server === "yx") {
-        let tempButtonList = allServersButton.concat();
-        let tempHiddenTag = allServersHiddenTag.concat();
-
-        tempHiddenTag.splice(7, 1);
-        tempButtonList.splice(7, 1);
-
-        for (let i = 0; i < tempButtonList.length; i++) {
-            $(tempButtonList[i]).addClass("btn-secondary");
-            $(tempHiddenTag[i]).addClass("hide-server");
-        }
-        $("#yx").removeClass("btn-secondary");
-        $(".yx").removeClass("hide-server");
-    }
-    if (server === "hyh") {
-        let tempButtonList = allServersButton.concat();
-        let tempHiddenTag = allServersHiddenTag.concat();
-
-        tempHiddenTag.splice(8, 1);
-        tempButtonList.splice(8, 1);
-
-        for (let i = 0; i < tempButtonList.length; i++) {
-            $(tempButtonList[i]).addClass("btn-secondary");
-            $(tempHiddenTag[i]).addClass("hide-server");
-        }
-        $("#hyh").removeClass("btn-secondary");
-        $(".hyh").removeClass("hide-server");
-    }
-    if (server === "cft") {
-        let tempButtonList = allServersButton.concat();
-        let tempHiddenTag = allServersHiddenTag.concat();
-
-        tempHiddenTag.splice(9, 1);
-        tempButtonList.splice(9, 1);
-
-        for (let i = 0; i < tempButtonList.length; i++) {
-            $(tempButtonList[i]).addClass("btn-secondary");
-            $(tempHiddenTag[i]).addClass("hide-server");
-        }
-        $("#cft").removeClass("btn-secondary");
-        $(".cft").removeClass("hide-server");
-    }
-    if (server === "sqh") {
-        let tempButtonList = allServersButton.concat();
-        let tempHiddenTag = allServersHiddenTag.concat();
-
-        tempHiddenTag.splice(10, 1);
-        tempButtonList.splice(10, 1);
-
-        for (let i = 0; i < tempButtonList.length; i++) {
-            $(tempButtonList[i]).addClass("btn-secondary");
-            $(tempHiddenTag[i]).addClass("hide-server");
-        }
-        $("#sqh").removeClass("btn-secondary");
-        $(".sqh").removeClass("hide-server");
-    }
-    if (server === "byx") {
-        let tempButtonList = allServersButton.concat();
-        let tempHiddenTag = allServersHiddenTag.concat();
-
-        tempHiddenTag.splice(11, 1);
-        tempButtonList.splice(11, 1);
-
-        for (let i = 0; i < tempButtonList.length; i++) {
-            $(tempButtonList[i]).addClass("btn-secondary");
-            $(tempHiddenTag[i]).addClass("hide-server");
-        }
-        $("#byx").removeClass("btn-secondary");
-        $(".byx").removeClass("hide-server");
-    }
-    if (server === "bjhx") {
-        let tempButtonList = allServersButton.concat();
-        let tempHiddenTag = allServersHiddenTag.concat();
-
-        tempHiddenTag.splice(12, 1);
-        tempButtonList.splice(12, 1);
-
-        for (let i = 0; i < tempButtonList.length; i++) {
-            $(tempButtonList[i]).addClass("btn-secondary");
-            $(tempHiddenTag[i]).addClass("hide-server");
-        }
-        $("#bjhx").removeClass("btn-secondary");
-        $(".bjhx").removeClass("hide-server");
-    }
-    if (server === "lrzq") {
-        let tempButtonList = allServersButton.concat();
-        let tempHiddenTag = allServersHiddenTag.concat();
-
-        tempHiddenTag.splice(12, 1);
-        tempButtonList.splice(12, 1);
-
-        for (let i = 0; i < tempButtonList.length; i++) {
-            $(tempButtonList[i]).addClass("btn-secondary");
-            $(tempHiddenTag[i]).addClass("hide-server");
-        }
-        $("#lrzq").removeClass("btn-secondary");
-        $(".lrzq").removeClass("hide-server");
-    }
-    if (server === "lcsd") {
-        let tempButtonList = allServersButton.concat();
-        let tempHiddenTag = allServersHiddenTag.concat();
-
-        tempHiddenTag.splice(12, 1);
-        tempButtonList.splice(12, 1);
-
-        for (let i = 0; i < tempButtonList.length; i++) {
-            $(tempButtonList[i]).addClass("btn-secondary");
-            $(tempHiddenTag[i]).addClass("hide-server");
-        }
-        $("#lcsd").removeClass("btn-secondary");
-        $(".lcsd").removeClass("hide-server");
-    }
+    $("#"+server).removeClass("btn-secondary");
+    $("."+server).removeClass("hide-server");
 }
 
 function autoRefresh() {

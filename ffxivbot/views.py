@@ -73,6 +73,8 @@ def tata(req):
     if req.is_ajax() and req.method == "POST":
         res_dict = {"response": "No response."}
         optype = req.POST.get("optype")
+        if settings.DEBUG:
+            print("optype:{}".format(optype))
         if optype == "add_or_update_bot":
             botName = req.POST.get("botName")
             botID = req.POST.get("botID")
@@ -122,6 +124,8 @@ def tata(req):
         else:
             bot_id = req.POST.get("id")
             token = req.POST.get("token")
+            if settings.DEBUG:
+                print("bot_id:{} token:{}".format(bot_id, token))
             try:
                 bot = QQBot.objects.get(id=bot_id, access_token=token)
             except Exception as e:
@@ -143,8 +147,35 @@ def tata(req):
                     "Content-Disposition"
                 ] = 'attachment; filename="{}.json"'.format(bot.user_id)
                 bot_conf = json.loads(
-                    '{"host":"0.0.0.0","port":5700,"use_http":false,"ws_host":"0.0.0.0","ws_port":6700,"use_ws":false,"ws_reverse_api_url":"ws://111.231.102.248/ws_api/","ws_reverse_event_url":"ws://111.231.102.248/ws_event/","use_ws_reverse":"yes","ws_reverse_reconnect_interval":5000,"ws_reverse_reconnect_on_code_1000":"yes","post_url":"","access_token":"SECRET","secret":"","post_message_format":"string","serve_data_files":false,"update_source":"github","update_channel":"stable","auto_check_update":false,"auto_perform_update":false,"thread_pool_size":4,"server_thread_pool_size":1,"show_log_console":false,"enable_backward_compatibility":true}'
+                    '{\
+                        "host": "0.0.0.0",\
+                        "port": 5700,\
+                        "use_http": false,\
+                        "ws_host": "0.0.0.0",\
+                        "ws_port": 6700,\
+                        "use_ws": false,\
+                        "ws_reverse_url": "wss://xn--v9x.net/ws/",\
+                        "ws_reverse_use_universal_client": true,\
+                        "enable_heartbeat": true,\
+                        "use_ws_reverse": "yes",\
+                        "ws_reverse_reconnect_interval": 5000,\
+                        "ws_reverse_reconnect_on_code_1000": "yes",\
+                        "post_url": "",\
+                        "access_token": "",\
+                        "secret": "",\
+                        "post_message_format": "string",\
+                        "serve_data_files": false,\
+                        "update_source": "github",\
+                        "update_channel": "stable",\
+                        "auto_check_update": false,\
+                        "auto_perform_update": false,\
+                        "thread_pool_size": 4,\
+                        "server_thread_pool_size": 1,\
+                        "show_log_console": false,\
+                        "enable_backward_compatibility": true\
+                    }'
                 )
+                bot_conf["access_token"] = bot.access_token
                 bot_conf["secret"] = bot.access_token
                 response.write(json.dumps(bot_conf, indent=4))
                 return response
@@ -340,9 +371,11 @@ def quest_tooltip(req):
                 if res_type == "web":
                     if quest.tooltip_html == "" or nocache:
                         r = requests.get(
-                            "https://ff14.huijiwiki.com/ff14/api.php?format=json&action=parse&disablelimitreport=true&prop=text&title=%E9%A6%96%E9%A1%B5&smaxage=86400&maxage=86400&text=%7B%7B%E4%BB%BB%E5%8A%A1%2F%E6%B5%AE%E5%8A%A8%E6%91%98%E8%A6%81%7C{}%7D%7D".format(
+                            "https://ff14.huijiwiki.com/ff14/api.php\
+                            ?format=json&action=parse&disablelimitreport=true&prop=text&title=%E9%A6%96%E9%A1%B5\
+                            &smaxage=86400&maxage=86400&text=%7B%7B%E4%BB%BB%E5%8A%A1%2F%E6%B5%AE%E5%8A%A8%E6%91%98%E8%A6%81%7C{}%7D%7D".format(
                                 quest_id
-                            ))
+                            ), timeout=5)
                         r_json = r.json()
                         # print(r_json)
                         html = r_json["parse"]["text"]["*"]
@@ -734,42 +767,54 @@ def api(req):
                                 zone_name = reqbody["zone"]
                                 zone_name = zone_name.replace(chr(57521), "").replace(chr(57522), "2").replace(
                                     chr(57523), "3")
-                                monster = Monster.objects.get(cn_name=monster_name)
-                                world_name = reqbody["world"]
+                                try:
+                                    monster = Monster.objects.get(cn_name=monster_name)
+                                except Monster.DoesNotExist:
+                                    monster = Monster.objects.get(cn_name=re.sub("1|2|3", "", monster_name))
+                                world_name = reqbody.get("world", "None")
                                 timestamp = int(reqbody["time"])
-                                server = Server.objects.get(name=world_name)
+                                server = None
+                                world_id = reqbody.get("worldid", -1)
+                                servers = Server.objects.filter(worldId=world_id)
+                                server = servers[0] if servers.exists() else Server.objects.get(name=world_name)
                                 # handle instances
-                                if str(monster.territory) in zone_name:  # "ZoneName2", "ZoneName"
+                                if req.GET.get("strict_zone", "true")=="false" or str(monster.territory) in zone_name:  # "ZoneName2", "ZoneName"
                                     if str(monster.territory) != zone_name:  # "ZoneName2"
                                         monster_name = zone_name.replace(str(monster.territory),
                                                                          monster_name)  # "ZoneName2" -> "MonsterName2"
-                                        monster = Monster.objects.get(cn_name=monster_name)
-                                print("Get HuntLog info:\nmonster:{}\nserver:{}".format(monster, server))
-                                if HuntLog.objects.filter(
-                                        monster=monster,
-                                        server=server,
-                                        hunt_group=hunt_group,
-                                        log_type="kill",
-                                        time__gt=timestamp - 60).exists():
-                                    msg = "{}——\"{}\" 已在一分钟内记录上报，此次API调用被忽略".format(hunt_log.server, monster,
-                                                                                    time.strftime("%Y-%m-%d %H:%M:%S",
-                                                                                                  time.localtime(
-                                                                                                      timestamp))
-                                                                                    )
-                                else:
-                                    hunt_log = HuntLog(
-                                        monster=monster,
-                                        hunt_group=hunt_group,
-                                        server=server,
-                                        log_type="kill",
-                                        time=timestamp
-                                    )
-                                    hunt_log.save()
-                                    msg = "{}——\"{}\" 击杀时间: {}".format(hunt_log.server, monster, 
-                                            time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(timestamp))
+                                        try:
+                                            monster = Monster.objects.get(cn_name=monster_name)
+                                        except Monster.DoesNotExist:
+                                            monster = Monster.objects.get(cn_name=re.sub("1|2|3", "", monster_name))
+                                    print("Get HuntLog info:\nmonster:{}\nserver:{}".format(monster, server))
+                                    if HuntLog.objects.filter(
+                                            monster=monster,
+                                            server=server,
+                                            hunt_group=hunt_group,
+                                            log_type="kill",
+                                            time__gt=timestamp - 60).exists():
+                                        msg = "{}——\"{}\" 已在一分钟内记录上报，此次API调用被忽略".format(hunt_log.server, monster,
+                                                                                        time.strftime("%Y-%m-%d %H:%M:%S",
+                                                                                                      time.localtime(
+                                                                                                          timestamp))
+                                                                                        )
+                                    else:
+                                        hunt_log = HuntLog(
+                                            monster=monster,
+                                            hunt_group=hunt_group,
+                                            server=server,
+                                            log_type="kill",
+                                            time=timestamp
                                         )
+                                        hunt_log.save()
+                                        msg = "{}——\"{}\" 击杀时间: {}".format(hunt_log.server, monster, 
+                                                time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(timestamp))
+                                            )
+                                        at_msg = "[CQ:at,qq={}]".format(qquser.user_id) if req.GET.get("at", "true")=="true" else str(qquser.user_id)
+                                        msg = at_msg + "通过API更新了如下HuntLog:\n{}".format(msg)
+                                elif req.GET.get("verbose", "true")=="true":
                                     at_msg = "[CQ:at,qq={}]".format(qquser.user_id) if req.GET.get("at", "true")=="true" else str(qquser.user_id)
-                                    msg = at_msg + "通过API更新了如下HuntLog:\n{}".format(msg)
+                                    msg = at_msg + "上报 {} 失败，{} 与 {} 不兼容".format(monster, monster.territory, zone_name)
                                 jdata = {
                                     "action": "send_group_msg",
                                     "params": {
@@ -1127,8 +1172,11 @@ def hunt(req):
                 continue
             latest_kill_log = kill_logs.latest("id")
             last_kill_time = latest_kill_log.time
-            global_maintain_log = HuntLog.objects.filter(server=server, log_type="maintain").latest("time")
-            maintain_finish_time = global_maintain_log.time
+            try:
+                global_maintain_log = HuntLog.objects.filter(server=server, log_type="maintain").latest("time")
+                maintain_finish_time = global_maintain_log.time
+            except HuntLog.DoesNotExist:
+                maintain_finish_time = 0
             maintained = (maintain_finish_time > last_kill_time)
             kill_time = max(last_kill_time, maintain_finish_time)
             spawn_cooldown = (monster.first_spawn_cooldown if maintained else monster.spawn_cooldown)
@@ -1170,35 +1218,28 @@ def hunt(req):
 
 
 def server2tag(server_name):
-    server_tag = ""
-    if server_name == "拉诺西亚":
-        server_tag = "lnxy"
-    elif server_name == "紫水栈桥":
-        server_tag = "zszq"
-    elif server_name == "幻影群岛":
-        server_tag = "hyqd"
-    elif server_name == "摩杜纳":
-        server_tag = "mdn"
-    elif server_name == "神意之地":
-        server_tag = "syzd"
-    elif server_name == "静语庄园":
-        server_tag = "jyzy"
-    elif server_name == "萌芽池":
-        server_tag = "myc"
-    elif server_name == "延夏":
-        server_tag = "yx"
-    elif server_name == "红玉海":
-        server_tag = "hyh"
-    elif server_name == "潮风亭":
-        server_tag = "cft"
-    elif server_name == "神拳痕":
-        server_tag = "sqh"
-    elif server_name == "白银乡":
-        server_tag = "byx"
-    elif server_name == "白金幻象":
-        server_tag = "bjhx"
-    elif server_name == "旅人栈桥":
-        server_tag = "lrzq"
-    elif server_name == "龙巢神殿":
-        server_tag = "lcsd"
-    return server_tag
+    name_tag = {
+        "红玉海":"hyh",
+        "神意之地":"syzd",
+        "幻影群岛":"hyqd",
+        "拉诺西亚":"lnxy",
+        "萌芽池":"myc",
+        "宇宙和音":"yzhy",
+        "沃仙曦染":"wxxr",
+        "晨曦王座":"cxwz",
+        "潮风亭":"cft",
+        "神拳痕":"sqh",
+        "白银乡":"byx",
+        "白金幻象":"bjhx",
+        "旅人栈桥":"lrzq",
+        "拂晓之间":"fxzj",
+        "龙巢神殿":"lcsd",
+        "紫水栈桥":"zszq",
+        "延夏":"yx",
+        "静语庄园":"jyzy",
+        "摩杜纳":"mdn",
+        "海猫茶屋":"hmcw",
+        "柔风海湾":"rfhw",
+        "琥珀原":"hpy"
+    }
+    return name_tag.get(server_name, "unknown")

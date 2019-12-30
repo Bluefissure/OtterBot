@@ -56,17 +56,18 @@
           </div>
         </div>
         <div class="row">
-          <!--div class="col-md-4">
-                <button class="btn btn-primary btn-block" href="{% url 'qq_login' %}">QQ登录</button>
-              </div>
-              <div class="col-md-4"></div>
-              <div class="col-md-4">
-                <button type="submit" class="btn btn-primary btn-block">登录</button>
-              </div-->
-          <div class="col-md-12">
+
+          <div class="col-md-4">
+            <button type="button" class="btn btn-primary btn-block" onclick="location.href='{% url 'qq_login' %}';">QQ登录</button>
+          </div>
+          <div class="col-md-4"></div>
+          <div class="col-md-4">
+            <button type="submit" class="btn btn-primary btn-block"><i class="fas fa-check-circle mr-2"></i>登录</button>
+          </div>
+          <!-- <div class="col-md-12">
             <button type="submit" class="btn btn-primary btn-block"><i class="fas fa-check-circle mr-2"></i>登录
             </button>
-          </div>
+          </div> -->
           <!-- /.col -->
         </div>
       </form>

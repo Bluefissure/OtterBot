@@ -5,7 +5,8 @@ import logging
 import json
 import random
 import html
-import traceback  
+import traceback
+from collections import Counter  
 
 def QQGroupCommand_custom_reply(*args, **kwargs):
     try:
@@ -45,10 +46,13 @@ def QQGroupCommand_custom_reply(*args, **kwargs):
                     item.delete()
                 msg = "自定义回复\"{}\"已删除".format(custom_key)
         elif(second_command=="list"):
+            counter = Counter()
             msg = "目前群内的自定义回复有：\n"
             replys = CustomReply.objects.filter(group=group)
             for reply in replys:
-                msg += "{}\n".format(reply.key)
+                counter[reply.key] += 1
+            for key, cnt in counter.items():
+                msg += "{}*{}\n".format(key, cnt) if cnt > 1 else "{}\n".format(key)
             msg = msg.strip()
         else:
             msg = "错误的命令，二级命令有:\"add\", \"del\", \"list\""

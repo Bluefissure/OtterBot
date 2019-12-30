@@ -49,6 +49,7 @@
                   <th style="text-align: center;">领养人QQ</th>
                   <th style="text-align: center;">在线情况</th>
                   <th style="text-align: center;">公开</th>
+                  <th style="text-align: center;">配置</th>
                   <th style="text-align: center;">删除</th>
                   <!-- <th><center>配置</center></th> -->
                 </tr>
@@ -83,9 +84,11 @@
                       </td>
                     {% endif %}
                     <td>
+                      <button type="button" class="btn btn-block btn-primary" onclick="download_conf({{ bot.id }})">下载</button>
+                    </td>
+                    <td>
                       <button type="button" class="btn btn-block btn-danger" onclick="del_bot({{ bot.id }})">删除</button>
                     </td>
-                    <!-- <td><button type="button" class="btn btn-block btn-success" onclick="download_conf({{bot.id}})">下载</button></td> -->
                   </tr>
                 {% endfor %}
 
@@ -177,6 +180,7 @@
                       style="color:green">均同意</span>
                   </div>
                   <!-- /.direct-chat-text -->
+
                 </div>
                 <div class="direct-chat-msg">
                   <div class="direct-chat-info clearfix">
@@ -378,6 +382,38 @@
           });
       }
 
+      function download_conf(id) {
+          var token = prompt("请输入Token:");
+          var request = new XMLHttpRequest();
+          request.open('POST', '', true);
+          request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+          request.setRequestHeader('X-CSRFToken', '{{ csrf_token }}');  
+          request.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+          request.responseType = 'blob';
+          request.onload = function(e) {
+              if (this.status === 200) {
+                var blob = this.response;
+                var fileName = "config.json";
+                console.log(blob);
+                if(window.navigator.msSaveOrOpenBlob) {
+                  window.navigator.msSaveBlob(blob, fileName);
+                } else {
+                  var downloadLink = window.document.createElement('a');
+                  var contentTypeHeader = request.getResponseHeader("Content-Type");
+                  downloadLink.href = window.URL.createObjectURL(new Blob([blob], { type: contentTypeHeader }));
+                  var contentDispositionHeader = request.getResponseHeader("Content-Disposition");
+                  var ma = contentDispositionHeader.match(/filename="(\d+.json)"/);
+                  if (ma != null) fileName = ma[1];
+                  downloadLink.download = fileName;
+                  document.body.appendChild(downloadLink);
+                  downloadLink.click();
+                  document.body.removeChild(downloadLink);
+               }
+            }
+          };
+          request.send("optype=download_conf&token="+token+"&id="+id+'&csrfmiddlewaretoken='+'{{ csrf_token }}');
+      }
+
       function add_or_update_bot() {
           var botName = document.getElementById("botName").value;
           var botID = document.getElementById("botID").value;
@@ -418,10 +454,6 @@
               },
           });
       }
-  </script>
-  <script type="text/javascript">
-      var tata = document.getElementById("tata");
-      tata.setAttribute("class", "active");
   </script>
 {% endblock %}
 

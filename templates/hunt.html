@@ -47,15 +47,14 @@
               </div>
               <p style="margin-bottom: 0px; margin-left: 10px;">陆行鸟区：</p>
               <div class="btn-group" role="group" style="margin-left: 10px" data-toggle="buttons">
-                <button type="button" class="btn btn-primary" id="lnxy">拉诺西亚</button>
-                <button type="button" class="btn btn-primary" id="zszq">紫水栈桥</button>
-                <button type="button" class="btn btn-primary" id="hyqd">幻影群岛</button>
-                <button type="button" class="btn btn-primary" id="mdn">摩杜纳</button>
-                <button type="button" class="btn btn-primary" id="syzd">神意之地</button>
-                <button type="button" class="btn btn-primary" id="jyzy">静语庄园</button>
-                <button type="button" class="btn btn-primary" id="myc">萌芽池</button>
-                <button type="button" class="btn btn-primary" id="yx">延夏</button>
                 <button type="button" class="btn btn-primary" id="hyh">红玉海</button>
+                <button type="button" class="btn btn-primary" id="syzd">神意之地</button>
+                <button type="button" class="btn btn-primary" id="hyqd">幻影群岛</button>
+                <button type="button" class="btn btn-primary" id="lnxy">拉诺西亚</button>
+                <button type="button" class="btn btn-primary" id="myc">萌芽池</button>
+                <button type="button" class="btn btn-primary" id="yzhy">宇宙和音</button>
+                <button type="button" class="btn btn-primary" id="wxxr">沃仙曦染</button>
+                <button type="button" class="btn btn-primary" id="cxwz">晨曦王座</button>
               </div>
               <p style="margin-bottom: 0px; margin-left: 10px;">莫古力区：</p>
               <div class="btn-group" role="group" style="margin-left: 10px" data-toggle="buttons">
@@ -64,9 +63,20 @@
                 <button type="button" class="btn btn-primary" id="byx">白银乡</button>
                 <button type="button" class="btn btn-primary" id="bjhx">白金幻象</button>
                 <button type="button" class="btn btn-primary" id="lrzq">旅人栈桥</button>
+                <button type="button" class="btn btn-primary" id="fxzj">拂晓之间</button>
                 <button type="button" class="btn btn-primary" id="lcsd">龙巢神殿</button>
               </div>
-              <table id="example1" class="table table-hover table-striped dataTable">
+              <p style="margin-bottom: 0px; margin-left: 10px;">猫小胖区：</p>
+              <div class="btn-group" role="group" style="margin-left: 10px" data-toggle="buttons">
+                <button type="button" class="btn btn-primary" id="zszq">紫水栈桥</button>
+                <button type="button" class="btn btn-primary" id="yx">延夏</button>
+                <button type="button" class="btn btn-primary" id="jyzy">静语庄园</button>
+                <button type="button" class="btn btn-primary" id="mdn">摩杜纳</button>
+                <button type="button" class="btn btn-primary" id="hmcw">海猫茶屋</button>
+                <button type="button" class="btn btn-primary" id="rfhw">柔风海湾</button>
+                <button type="button" class="btn btn-primary" id="hpy">琥珀原</button>
+              </div>
+              <table id="hunt-table" class="table table-hover table-striped dataTable">
                 <thead>
                 <tr>
                   <th style="text-align: center; vertical-align: center;">名称</th>
@@ -171,7 +181,7 @@
   <!-- page script -->
   <script>
       $(function () {
-          $('#example1').DataTable({
+          $('#hunt-table').DataTable({
               'paging': false,
               'lengthChange': false,
               'searching': false,
@@ -180,10 +190,6 @@
               'autoWidth': false
           });
       })
-  </script>
-  <script type="text/javascript">
-      var tata = document.getElementById("hunt");
-      tata.setAttribute("class", "active");
   </script>
 {% endblock %}
 

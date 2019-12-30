@@ -346,10 +346,16 @@ def QQGroupCommand_hunt(*args, **kwargs):
                         log.save()
                     msg = "全体服务器的狩猎怪击杀时间已重置"
                 else:
-                    log = HuntLog(hunt_group=hunt_group, server=hunt_group.server, log_type="maintain",
+                    try:
+                        server_name = param_segs[1].strip()
+                    except IndexError:
+                        server_name = str(hunt_group.server)
+                    server_info = Server.objects.filter(name=server_name)
+                    server = server_info[0] if server_info.exists() else hunt_group.server
+                    log = HuntLog(hunt_group=hunt_group, server=server, log_type="maintain",
                                   time=time.time())
                     log.save()
-                    msg = "{} 的狩猎怪击杀时间已重置".format(hunt_group.server)
+                    msg = "{} 的狩猎怪击杀时间已重置".format(server)
             elif ("initialize" in optype):
                 # 其实可以不使用
                 # 暂时不写入配置文件，如有自建，需要修改此处
@@ -407,6 +413,7 @@ def QQGroupCommand_hunt(*args, **kwargs):
                     msg = "*"
         else:
             msg = "该群并非狩猎组群组"
+        msg = msg.strip()
         reply_action = reply_message_action(receive, msg)
         action_list.append(reply_action)
         return action_list

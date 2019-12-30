@@ -259,6 +259,7 @@ class Server(models.Model):
     areaId = models.IntegerField(default=1)
     groupId = models.IntegerField(default=25)
     alter_names = models.TextField(default="[]")
+    worldId = models.IntegerField(default=0)
 
     def __str__(self):
         return self.name
@@ -417,6 +418,7 @@ class Lottery(models.Model):
             msg += "\n获奖者：{}".format(self.winner_info())
         return msg
 
+
 class ContentFinderItem(models.Model):
     id = models.IntegerField(primary_key=True)
     name = models.CharField(max_length=64, default="")
@@ -426,6 +428,7 @@ class ContentFinderItem(models.Model):
     def __str__(self):
         return self.name
 
+
 class CommandLog(models.Model):
     time = models.BigIntegerField(default=0)
     command = models.CharField(max_length=32)
@@ -433,6 +436,7 @@ class CommandLog(models.Model):
     bot_id = models.CharField(max_length=16)
     user_id = models.CharField(max_length=16)
     group_id = models.CharField(max_length=16)
+
 
 class HuntGroup(models.Model):
     name = models.CharField(default="", max_length=64)
@@ -483,3 +487,15 @@ class IFTTTChannel(models.Model):
 
     def __str__(self):
         return self.name
+
+
+
+class TreasureMap(models.Model):
+    territory = models.ForeignKey(Territory, blank=True, null=True, on_delete=models.CASCADE)
+    position = models.TextField(default="[0, 0]")
+    rank = models.CharField(max_length=8, default="")
+    number = models.IntegerField(default=0)
+    uri = models.TextField(default="")
+
+    def __str__(self):
+        return "{}#{}".format(self.territory, self.number)

@@ -21,6 +21,7 @@ commands = {
   "/duilian":"对联（\"/duilian 稻花香里说丰年\"）",
   "/tex":"生成tex图片（\"/tex e^{\\pi i}+1=0\"）",
   "/gate":"挖宝选门（\"/gate 3\"）",
+  "/treasure":"宝图搜寻",
   "/search":"查询物品(\"/search 神龙\")",
   "/weather":"天气信息（快捷命令\"/fog\",\"/heat_wave\",\"/thunder\",\"/kx\"）",
   "/fsx":"副属性计算（\"/fsx 直击\"）",
@@ -83,7 +84,9 @@ alter_commands = {
   "/暴击":"/fsx 暴击",
   "/信念":"/fsx 信念",
   "/坚韧":"/fsx 坚韧",
-  "/直击":"/fsx 直击"
+  "/直击":"/fsx 直击",
+  "/天气":"/weather",
+  "/宝图":"/treasure"
 }
 
 from .QQCommand_cat import QQCommand_cat
@@ -120,6 +123,7 @@ from .QQCommand_ifttt import QQCommand_ifttt
 from .QQCommand_fsx import QQCommand_fsx
 # from .QQCommand_joke import QQCommand_joke
 from .QQCommand_mxh import QQCommand_mxh
+from .QQCommand_treasure import QQCommand_treasure
 
 from .arknights.QQCommand_akhr import QQCommand_akhr
 

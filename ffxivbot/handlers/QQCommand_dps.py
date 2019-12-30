@@ -23,6 +23,7 @@ def QQCommand_dps(*args, **kwargs):
         boss_obj = None
         msg = ""
         CN_source = False
+        msg = "dps command is halt due to "
         if receive_msg.find("help") == 0 or receive_msg == "":
             msg = "1.  查询总排名\n\
 /dps [Boss] [职业] \n\
@@ -176,7 +177,6 @@ def QQCommand_dps(*args, **kwargs):
                                 )
         if isinstance(msg, str):
             msg = msg.strip()
-
         if msg:
             reply_action = reply_message_action(receive, msg)
             action_list.append(reply_action)

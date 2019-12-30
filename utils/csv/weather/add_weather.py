@@ -26,7 +26,7 @@ def get_config():
     parser = argparse.ArgumentParser(description='Weather Auto-Sync Script')
 
     parser.add_argument('-d', '--download', action='store_true',
-                        help='Download Territory.csv from ffxiv-datamining-cn')
+                        help='Download Weather.csv and WeatherRate.csv from ffxiv-datamining-cn')
     # Parse args.
     args = parser.parse_args()
     # Namespace => Dictionary.
@@ -56,7 +56,7 @@ def import_weather_from_csv(csv_file, **kwargs):
                     print("Adding Weather {}".format(weather_name))
                     weather.save()
                     add_cnt += 1
-        print("Imported {} WeatherRates".format(add_cnt))
+        print("Imported {} Weather(s)".format(add_cnt))
 
 
 def import_weatherrate_from_csv(csv_file, **kwargs):
@@ -82,7 +82,7 @@ def import_weatherrate_from_csv(csv_file, **kwargs):
                     rate.rate = json.dumps(rate_list)
                     rate.save()
                     add_cnt += 1
-        print("Imported {} WeatherRates".format(add_cnt))
+        print("Imported {} WeatherRate(s)".format(add_cnt))
 
 if __name__ == "__main__":
     config = get_config()
