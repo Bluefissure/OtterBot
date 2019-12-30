@@ -147,6 +147,10 @@ class TreasureMapAdmin(admin.ModelAdmin):
     search_fields = ["territory"]
     list_filter = ["territory", "rank"]
 
+class ScreenAdmin(admin.ModelAdmin):
+    list_display = ('name','nickname','classname')
+    search_fields = ['name','name']
+
 
 
 admin.site.register(QQGroup, QQGroupAdmin)
@@ -178,3 +182,4 @@ admin.site.register(Monster, MonsterAdmin)
 admin.site.register(HuntLog, HuntLogAdmin)
 admin.site.register(IFTTTChannel, IFTTTChannelAdmin)
 admin.site.register(TreasureMap, TreasureMapAdmin)
+admin.site.register(Screen, ScreenAdmin)
