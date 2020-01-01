@@ -36,7 +36,8 @@ commands = {
   "/share":"发送微博分享",
   # "/trash":"你是什么垃圾？",
   "/shorten":"微博短链",
-  "/mxh":"梅溪湖cp短打生成器（\"/mxh 海德林 佐迪亚克\"）"
+  "/mxh":"梅溪湖cp短打生成器（\"/mxh 海德林 佐迪亚克\"）",
+  "/hh":"光之收藏家幻化推荐(\"/hh help\")"
 }
   # "/joke":"讽刺笑话（\"/joke 996|强东|建设一流公司|程序员|公司\"）",
 
@@ -124,6 +125,7 @@ from .QQCommand_fsx import QQCommand_fsx
 # from .QQCommand_joke import QQCommand_joke
 from .QQCommand_mxh import QQCommand_mxh
 from .QQCommand_treasure import QQCommand_treasure
+from .QQCommand_hh import QQCommand_hh
 
 from .arknights.QQCommand_akhr import QQCommand_akhr
 
