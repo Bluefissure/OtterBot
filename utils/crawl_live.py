@@ -19,11 +19,23 @@ import codecs
 import urllib
 import base64
 import logging
+from logging.handlers import TimedRotatingFileHandler
 import traceback
 import feedparser
 from channels.layers import get_channel_layer
 from django.db import connection, connections
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', filename="log/crawl_live.log")
+
+logging.basicConfig(
+                level = logging.INFO,
+                format = '%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+                handlers = {
+                        TimedRotatingFileHandler(
+                                        "log/crawl_live.log",
+                                        when = "D",
+                                        backupCount = 10
+                                    )
+                        }
+            )
 
 
 def crawl_json(liveuser):
