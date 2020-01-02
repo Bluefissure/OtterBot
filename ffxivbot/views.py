@@ -341,7 +341,7 @@ def image(req):
                 map(
                     lambda x: {
                         "name": x.name,
-                        "url": "https://i.loli.net" + x.path,
+                        "url": (x.domain + x.path),
                         "category": x.key,
                         "info": "Name:{}\nCategory:{}\nUploader:{}".format(x.name, x.key, x.add_by)
                     },

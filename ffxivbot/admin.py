@@ -111,6 +111,7 @@ class TerritoryAdmin(admin.ModelAdmin):
 class ImageAdmin(admin.ModelAdmin):
     list_display = ["name", "key"]
     search_fields = ['name', 'key']
+    raw_id_fields  = ["add_by"]
 
 
 class LotteryAdmin(admin.ModelAdmin):

@@ -29,7 +29,7 @@ def search_id(glamour_id):
         "Referer": "https://www.ffxivsc.cn/page/glamour.html?glamourId={}".format(glamour_id),
         "Accept-Encoding": "gzip, deflate, br"
         }
-        r = requests.get(glamour_url,headers=headers,timeout=15)
+        r = requests.get(glamour_url,headers=headers,timeout=5)
         r = r.json()
         flag = r["flag"]
         result = {}
@@ -51,7 +51,7 @@ def search_id(glamour_id):
 
 def result_to_img(result,glamour_id,bot_version):
     try:
-        if bot_version == 'air':
+        if bot_version == 'air' and False:
             msg ="此机器人版本为Air无法发送图片,请前往原地址查看\nhttps://www.ffxivsc.cn/page/glamour.html?glamourId={}".format(glamour_id)
         else:
             text = u"{}".format(result["sc"])
@@ -97,7 +97,7 @@ def search_jr(job,race,sex,sort,time,bot_version):
         "Accept-Encoding": "gzip, deflate, br"
         }
         src_url = "https://api.ffxivsc.cn/glamour/v1/getLibraryFilterGlamours?job={}&race={}&sex={}&sort=sort_{}&time=time_{}&pageNum=1".format(job,race,sex,sort,time)
-        r = requests.get(src_url,headers=headers,timeout=15)
+        r = requests.get(src_url,headers=headers,timeout=5)
         r = r.json()
         i = random.randint(0,len(r["array"])-1)
         glamour_id = r["array"][i]["glamour_id"]

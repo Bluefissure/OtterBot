@@ -300,9 +300,12 @@ def QQGroupCommand_hunt(*args, **kwargs):
                                     last_kill_time = latest_kill_log.time
                                 except HuntLog.DoesNotExist as e:
                                     last_kill_time = 0
-                                global_maintain_log = HuntLog.objects.filter(server=server_info,
+                                try:
+                                    global_maintain_log = HuntLog.objects.filter(server=server_info,
                                                                              log_type="maintain").latest("id")
-                                maintain_finish_time = global_maintain_log.time
+                                    maintain_finish_time = global_maintain_log.time
+                                except HuntLog.DoesNotExist as e:
+                                    maintain_finish_time  = 0
                                 maintained = (maintain_finish_time > last_kill_time)
                                 kill_time = max(last_kill_time, maintain_finish_time)
                                 spawn_cooldown = (

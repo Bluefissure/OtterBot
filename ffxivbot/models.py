@@ -329,6 +329,8 @@ class Territory(models.Model):
 
 
 class Image(models.Model):
+    domain = models.CharField(max_length=128, default="https://i.loli.net")
+    url = models.CharField(max_length=128, default="")
     key = models.CharField(max_length=16, default="")
     name = models.CharField(max_length=32, default="")
     path = models.CharField(max_length=64, default="", unique=True)
