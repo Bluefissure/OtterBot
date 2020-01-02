@@ -31,7 +31,8 @@ logging.basicConfig(
                 handlers = {
                         TimedRotatingFileHandler(
                                         "log/crawl_wb.log",
-                                        when="D"
+                                        when="D",
+                                        backupCount = 10
                                     )
                         }
             )
