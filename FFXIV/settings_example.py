@@ -155,3 +155,7 @@ STATICFILES_DIRS = [
 ]
 
 USE_GRAFANA = False
+
+QQ_APP_ID = ""
+QQ_KEY = ""
+QQ_RECALL_URL = "https://xn--v9x.net/api/qqcallback"
