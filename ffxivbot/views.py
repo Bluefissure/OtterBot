@@ -111,7 +111,7 @@ def tata(req):
                 bot.api_post_url = api_post_url
                 bot.auto_accept_friend = autoFriend and "true" in autoFriend
                 bot.auto_accept_invite = autoInvite and "true" in autoInvite
-                if len(QQBot.objects.all()) >= 350 and bot_created:
+                if len(QQBot.objects.all()) >= 250 and bot_created:
                     res_dict = {"response": "error", "msg": "机器人总数过多，请稍后再试"}
                     return JsonResponse(res_dict)
                 bot.save()
@@ -807,7 +807,7 @@ def api(req):
                                             time=timestamp
                                         )
                                         hunt_log.save()
-                                        msg = "{}——\"{}\" 击杀时间: {}".format(hunt_log.server, monster, 
+                                        msg = "{}——\"{}\" 击杀时间: {}".format(hunt_log.server, monster,
                                                 time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(timestamp))
                                             )
                                         at_msg = "[CQ:at,qq={}]".format(qquser.user_id) if req.GET.get("at", "true")=="true" else str(qquser.user_id)
@@ -1165,8 +1165,8 @@ def hunt(req):
         for monster in all_monsters:
             kill_logs = HuntLog.objects.filter(
                             hunt_group__group__member_list__contains=user.user_id,
-                            monster=monster, 
-                            server=server, 
+                            monster=monster,
+                            server=server,
                             log_type="kill")
             if not kill_logs:
                 continue

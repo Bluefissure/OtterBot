@@ -193,9 +193,10 @@ class WSConsumer(AsyncWebsocketConsumer):
                     #         priority += 1
                     # except BaseException:
                     #     traceback.print_exc()
-                    match_prefix = ["/", "\\"]
-                    push_to_mq = receive["message"] and receive["message"][0] in match_prefix
-                    if "group_id" in receive:
+                    match_prefix = ["/", "\\", "[CQ:at,qq={}]".format(self_id)]
+                    push_to_mq = any([receive["message"].startswith(x) for x in match_prefix])
+                    if push_to_mq and "group_id" in receive:
+                        priority += 1
                         group_id = receive["group_id"]
                         (group, group_created) = QQGroup.objects.get_or_create(
                             group_id=group_id

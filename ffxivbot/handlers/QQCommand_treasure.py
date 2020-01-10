@@ -76,7 +76,7 @@ def QQCommand_treasure(*args, **kwargs):
         msg_list = receive_msg.split(" ")
         second_command = msg_list[0]
         if second_command == "" or second_command == "help":
-            msg = "藏宝图查询：\n/treasure $image : 查询$image\nPS:截图请尽量截全但不要截出图片边缘"
+            msg = "藏宝图查询：\n/treasure $image : 查询$image\nPS:截图请截到上下黑边,不要超过黑边."
         else:
             while "" in msg_list:
                 msg_list.remove("")
