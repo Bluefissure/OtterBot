@@ -19,14 +19,8 @@ def QQCommand_luck(*args, **kwargs):
         luck_data = LuckData.objects.filter(number=random_num)
         if luck_data.exists():
             luck_data = luck_data[0]
-            if "text" in receive["message"]:
-                text = luck_data.text
-                msg = "[CQ:at,qq=%s]" % user_id + "\n" + text
-            else:
-                base64_str = luck_data.pic_base64
-                print(base64_str)
-                msg = "[CQ:at,qq=%s]" % user_id + "[CQ:image,file=base64://{}]\n".format(base64_str)
-                msg = msg.strip()
+            text = luck_data.text
+            msg = "[CQ:at,qq=%s]" % user_id + "\n" + text
         else:
             msg = "[CQ:at,qq=%s]" % user_id + "好像出了点问题，明天再试试吧~"
 

@@ -162,7 +162,7 @@ class Boss(models.Model):
     frozen = models.BooleanField(default=False)
     patch = models.IntegerField(default=0)
     savage = models.IntegerField(default=100)   # 100 for normal; 101 for savage
-    global_server = models.IntegerField(default=3) # 3 for boss after 5.0, 1 for boss before 5.0 
+    global_server = models.IntegerField(default=3) # 3 for boss after 5.0, 1 for boss before 5.0
     cn_server = models.IntegerField(default=5) # 5 for boss after 5.0, 3 for boss before 5.0
 
     def __str__(self):
@@ -515,7 +515,6 @@ class Screen(models.Model):
 class LuckData(models.Model):
     number = models.IntegerField(default=0)
     text = models.TextField(default="")
-    pic_base64 = models.TextField(default="")
 
     def __str__(self):
         return str(self.number)
