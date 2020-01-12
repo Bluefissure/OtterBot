@@ -193,34 +193,29 @@ class WSConsumer(AsyncWebsocketConsumer):
                     #         priority += 1
                     # except BaseException:
                     #     traceback.print_exc()
-                    if receive["message"].startswith("/") or receive[
-                        "message"
-                    ].startswith("\\"):
+                    match_prefix = ["/", "\\", "[CQ:at,qq={}]".format(self_id)]
+                    push_to_mq = any([receive["message"].startswith(x) for x in match_prefix])
+                    if push_to_mq and "group_id" in receive:
                         priority += 1
-                        self.bot.save(update_fields=["event_time", "command_stat"])
+                        group_id = receive["group_id"]
+                        (group, group_created) = QQGroup.objects.get_or_create(
+                            group_id=group_id
+                        )
+                        push_to_mq = push_to_mq or "[CQ:at,qq={}]".format(self_id) in receive[
+                            "message"
+                        ] or (
+                            (group.repeat_ban > 0)
+                            or (group.repeat_length > 1 and group.repeat_prob > 0)
+                        )
+                        group_bots = json.loads(group.bots)
+                        if group_bots and (str(self_id) not in group_bots):
+                            push_to_mq = False
+                            if receive["message"].startswith("/group"):
+                                push_to_mq = True
+                    if push_to_mq:
                         receive["consumer_time"] = time.time()
                         text_data = json.dumps(receive)
                         self.pub.send(text_data, priority)
-                    else:
-                        # pass
-                        push_to_mq = False
-                        if "group_id" in receive:
-                            group_id = receive["group_id"]
-                            (group, group_created) = QQGroup.objects.get_or_create(
-                                group_id=group_id
-                            )
-                            push_to_mq = "[CQ:at,qq={}]".format(self_id) in receive[
-                                "message"
-                            ] or (
-                                (group.repeat_ban > 0)
-                                or (group.repeat_length > 1 and group.repeat_prob > 0)
-                            )
-                            # push_to_mq = "[CQ:at,qq={}]".format(self_id) in receive["message"]
-                        if push_to_mq:  # temp
-                            receive["consumer_time"] = time.time()
-                            text_data = json.dumps(receive)
-                            self.pub.send(text_data, priority)
-                    # print("publishing to mq: {}".format(text_data))
                     return
 
                 if receive["post_type"] == "request" or receive["post_type"] == "event":

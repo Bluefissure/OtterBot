@@ -123,7 +123,7 @@ from .QQCommand_shorten import QQCommand_shorten
 from .QQCommand_ifttt import QQCommand_ifttt
 from .QQCommand_fsx import QQCommand_fsx
 # from .QQCommand_joke import QQCommand_joke
-from .QQCommand_mxh import QQCommand_mxh
+# from .QQCommand_mxh import QQCommand_mxh
 from .QQCommand_treasure import QQCommand_treasure
 from .QQCommand_hh import QQCommand_hh
 from .QQCommand_luck import QQCommand_luck

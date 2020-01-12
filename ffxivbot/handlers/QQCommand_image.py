@@ -27,13 +27,13 @@ def upload_image(img_url, token=""):
         headers = {"Authorization":token}
     original_image = requests.get(url=img_url, timeout=5)
     sm_req = requests.post(
-        headers=headers, url="https://sm.ms/api/upload", files={"smfile": original_image.content}, timeout=30
+        headers=headers, url="https://sm.ms/api/v2/upload", files={"smfile": original_image.content}, timeout=30
     )
     return json.loads(sm_req.text)
 
 
 def delete_image(img_hash):
-    sm_req = requests.post(url="https://sm.ms/api/delete/{}".format(img_hash), timeout=5)
+    sm_req = requests.post(url="https://sm.ms/api/v2/delete/{}".format(img_hash), timeout=5)
     return sm_req.status_code
 
 
