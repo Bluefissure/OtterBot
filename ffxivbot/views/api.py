@@ -221,6 +221,7 @@ def api(req):
                                 world_id = reqbody.get("worldid", -1)
                                 servers = Server.objects.filter(worldId=world_id)
                                 server = servers[0] if servers.exists() else Server.objects.get(name=world_name)
+                                success = False
                                 # handle instances
                                 if req.GET.get("strict_zone", "true")=="false" or str(monster.territory) in zone_name:  # "ZoneName2", "ZoneName"
                                     if str(monster.territory) != zone_name:  # "ZoneName2"
@@ -242,6 +243,7 @@ def api(req):
                                                                                                       time.localtime(
                                                                                                           timestamp))
                                                                                         )
+                                        success = False
                                     else:
                                         hunt_log = HuntLog(
                                             monster=monster,
@@ -251,34 +253,37 @@ def api(req):
                                             time=timestamp
                                         )
                                         hunt_log.save()
-                                        msg = "{}——\"{}\" 击杀时间: {}".format(hunt_log.server, monster,
+                                        msg = "{}——\"{}\" 击杀时间: {}".format(hunt_og.server, monster,
                                                 time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(timestamp))
                                             )
                                         at_msg = "[CQ:at,qq={}]".format(qquser.user_id) if req.GET.get("at", "true")=="true" else str(qquser.user_id)
                                         msg = at_msg + "通过API更新了如下HuntLog:\n{}".format(msg)
-                                elif req.GET.get("verbose", "true")=="true":
+                                        success = True
+                                else:
                                     at_msg = "[CQ:at,qq={}]".format(qquser.user_id) if req.GET.get("at", "true")=="true" else str(qquser.user_id)
                                     msg = at_msg + "上报 {} 失败，{} 与 {} 不兼容".format(monster, monster.territory, zone_name)
-                                jdata = {
-                                    "action": "send_group_msg",
-                                    "params": {
-                                        "group_id": hunt_group.group.group_id,
-                                        "message": msg,
-                                    },
-                                    "echo": "",
-                                }
-                                if not bot.api_post_url:
-                                    async_to_sync(channel_layer.send)(
-                                        bot.api_channel_name,
-                                        {"type": "send.event", "text": json.dumps(jdata)},
-                                    )
-                                else:
-                                    url = os.path.join(bot.api_post_url,
-                                                       "{}?access_token={}".format(jdata["action"], bot.access_token))
-                                    headers = {'Content-Type': 'application/json'}
-                                    r = requests.post(url=url, headers=headers, data=json.dumps(jdata["params"]))
-                                    if r.status_code != 200:
-                                        logging.error(r.text)
+                                    success = False
+                                if success or req.GET.get("verbose", "false") == "true":
+                                    jdata = {
+                                        "action": "send_group_msg",
+                                        "params": {
+                                            "group_id": hunt_group.group.group_id,
+                                            "message": msg,
+                                        },
+                                        "echo": "",
+                                    }
+                                    if not bot.api_post_url:
+                                        async_to_sync(channel_layer.send)(
+                                            bot.api_channel_name,
+                                            {"type": "send.event", "text": json.dumps(jdata)},
+                                        )
+                                    else:
+                                        url = os.path.join(bot.api_post_url,
+                                                           "{}?access_token={}".format(jdata["action"], bot.access_token))
+                                        headers = {'Content-Type': 'application/json'}
+                                        r = requests.post(url=url, headers=headers, data=json.dumps(jdata["params"]))
+                                        if r.status_code != 200:
+                                            logging.error(r.text)
                                 httpresponse = HttpResponse(status=200)
                             except HuntGroup.DoesNotExist:
                                 print("HuntGroup:{} does not exist".format(group_id))
