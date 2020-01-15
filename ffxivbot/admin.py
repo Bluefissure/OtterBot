@@ -152,7 +152,8 @@ class ScreenAdmin(admin.ModelAdmin):
     list_display = ('name','nickname','classname')
     search_fields = ['name','name']
 
-
+class LuckDataAdmin(admin.ModelAdmin):
+    list_display = ['number']
 
 admin.site.register(QQGroup, QQGroupAdmin)
 admin.site.register(CustomReply, CustomReplyAdmin)
@@ -184,3 +185,4 @@ admin.site.register(HuntLog, HuntLogAdmin)
 admin.site.register(IFTTTChannel, IFTTTChannelAdmin)
 admin.site.register(TreasureMap, TreasureMapAdmin)
 admin.site.register(Screen, ScreenAdmin)
+admin.site.register(LuckData, LuckDataAdmin)

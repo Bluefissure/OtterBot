@@ -515,6 +515,7 @@ class Screen(models.Model):
 class LuckData(models.Model):
     number = models.IntegerField(default=0)
     text = models.TextField(default="")
+    img_url = models.CharField(max_length=128, default="")
 
     def __str__(self):
         return str(self.number)

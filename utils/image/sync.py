@@ -98,5 +98,3 @@ if __name__ == "__main__":
         save_images(**config)
     else:
         print("Add '--help' in arguments for more information.")
-    # import_weather_from_csv("Weather.csv", **config)
-    # import_weatherrate_from_csv("WeatherRate.csv", **config)

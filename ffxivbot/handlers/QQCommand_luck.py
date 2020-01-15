@@ -18,11 +18,11 @@ def QQCommand_luck(*args, **kwargs):
         random_num = get_page_num(user_id)
         luck_data = LuckData.objects.filter(number=random_num)
         if luck_data.exists():
-            luck_data = luck_data[0]
-            text = luck_data.text
-            msg = "[CQ:at,qq=%s]" % user_id + "\n" + text
+            luck_data = luck_data.first()
+            img = luck_data.img_url
+            msg = "[CQ:at,qq=%s]\n" % user_id + "[CQ:image,file={}]".format(img)
         else:
-            msg = "[CQ:at,qq=%s]" % user_id + "好像出了点问题，明天再试试吧~"
+            msg = "[CQ:at,qq=%s]\n" % user_id + "好像出了点问题，明天再试试吧~"
 
         reply_action = reply_message_action(receive, msg)
         action_list.append(reply_action)
