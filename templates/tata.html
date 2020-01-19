@@ -71,7 +71,11 @@
                     <td style="text-align: center; vertical-align: middle">{{ bot.friend_num }}</td>
                     <td style="text-align: center; vertical-align: middle">{{ bot.coolq_edition }}</td>
                     <td style="text-align: center; vertical-align: middle">{{ bot.owner_id }}</td>
-                    <td style="text-align: center; vertical-align: middle">{{ bot.online }}</td>
+                    {% if bot.online %}
+                      <td style="text-align: center; vertical-align: middle"><span style="color: #006400; "><b>在线</b></span></td>
+                    {% else %}
+                      <td style="text-align: center; vertical-align: middle"><span style="color: #8b0000; "><b>离线</b></span></td>
+                    {% endif %}
                     {% if bot.public %}
                       <td>
                         <button type="button" class="btn btn-block btn-warning" onclick="switch_public({{ bot.id }})">隐藏

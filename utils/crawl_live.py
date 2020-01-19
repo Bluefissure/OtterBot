@@ -22,9 +22,11 @@ import logging
 from logging.handlers import TimedRotatingFileHandler
 import traceback
 import feedparser
+import socket
 from channels.layers import get_channel_layer
 from django.db import connection, connections
 
+socket.setdefaulttimeout(5)
 logging.basicConfig(
                 level = logging.INFO,
                 format = '%(asctime)s - %(name)s - %(levelname)s - %(message)s',

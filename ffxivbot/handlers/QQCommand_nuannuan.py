@@ -9,12 +9,16 @@ import requests
 
 def QQCommand_nuannuan(*args, **kwargs):
     action_list = []
+    bot = kwargs["bot"]
     try:
         QQ_BASE_URL = kwargs["global_config"]["QQ_BASE_URL"]
         receive = kwargs["receive"]
         try:
             url = "http://nuannuan.yorushika.co:5000/"
-            if "text" in receive["message"]:
+            bot_version = (json.loads(bot.version_info)["coolq_edition"].lower()
+                           if bot.version_info != '{}'
+                           else "pro")
+            if bot_version != "pro" or "text" in receive["message"]:
                 url += "text/"
             r = requests.get(url=url, timeout=5)
             res = json.loads(r.text)
