@@ -71,7 +71,11 @@
                     <td style="text-align: center; vertical-align: middle">{{ bot.friend_num }}</td>
                     <td style="text-align: center; vertical-align: middle">{{ bot.coolq_edition }}</td>
                     <td style="text-align: center; vertical-align: middle">{{ bot.owner_id }}</td>
-                    <td style="text-align: center; vertical-align: middle">{{ bot.online }}</td>
+                    {% if bot.online %}
+                      <td style="text-align: center; vertical-align: middle"><span style="color: #006400;"><b>在线</b></span></td>
+                    {% else %}
+                      <td style="text-align: center; vertical-align: middle"><span style="color: #8b0000;"><b>离线</b></span></td>
+                    {% endif %}
                     {% if bot.public %}
                       <td>
                         <button type="button" class="btn btn-block btn-warning" onclick="switch_public({{ bot.id }})">隐藏
@@ -265,7 +269,7 @@
                     <img src="https://i.loli.net/2019/11/05/JHLMBRicSx8zrTZ.jpg" alt="小猪猫">
                   </div>
                   <div class="product-info">
-                    <a href="http://moguke.top/" class="product-title" target="_blank">小猪猫の家 —— 小猪猫
+                    <a href="http://moguke.top:45015/" class="product-title" target="_blank">小猪猫の家 —— 小猪猫
                       <span class="badge bg-green float-right">自建</span></a>
                     <span class="product-description">
                           獭爹的小迷妹

@@ -15,12 +15,19 @@ def QQCommand_luck(*args, **kwargs):
         action_list = []
         receive = kwargs["receive"]
         user_id = receive["user_id"]
+        bot = kwargs["bot"]
         random_num = get_page_num(user_id)
         luck_data = LuckData.objects.filter(number=random_num)
         if luck_data.exists():
             luck_data = luck_data.first()
-            img = luck_data.img_url
-            msg = "[CQ:at,qq=%s]\n" % user_id + "[CQ:image,file={}]".format(img)
+            bot_version = (json.loads(bot.version_info)["coolq_edition"].lower()
+                           if bot.version_info != '{}'
+                           else "pro")
+            if bot_version == "pro" and "text" not in receive["message"]:
+                img = luck_data.img_url
+                msg = "[CQ:at,qq=%s]\n" % user_id + "[CQ:image,file={}]".format(img)
+            else:
+                msg = "[CQ:at,qq=%s]\n" % user_id + luck_data.text
         else:
             msg = "[CQ:at,qq=%s]\n" % user_id + "好像出了点问题，明天再试试吧~"
 
