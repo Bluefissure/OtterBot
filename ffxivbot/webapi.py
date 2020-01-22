@@ -15,7 +15,7 @@ import datetime
 import pytz
 import re
 import json
-import pymysql
+#import pymysql
 import time
 from time import strftime, localtime
 from ffxivbot.models import *
