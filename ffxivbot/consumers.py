@@ -17,7 +17,6 @@ from FFXIV import settings
 import ffxivbot.handlers as handlers
 from ffxivbot.models import *
 import time
-import pymysql
 import os
 import re
 import pytz
