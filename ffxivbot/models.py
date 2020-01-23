@@ -280,6 +280,7 @@ class QQUser(models.Model):
     bot_token = models.CharField(max_length=16, blank=True)
     able_to_upload_image = models.BooleanField(default=True)
     last_api_time = models.BigIntegerField(default=0)
+    last_chat_time = models.BigIntegerField(default=0)
     api_interval = models.IntegerField(default=5)
     ban_till = models.BigIntegerField(default=0)
     ban_share_till = models.BigIntegerField(default=0)
