@@ -481,13 +481,13 @@ class HuntLog(models.Model):
         return "HuntLog#{}: {}-{} {}".format(self.id, self.server, self.monster, self.log_type)
 
 
-class TelegramChannel(models.Model):
-    name = models.CharField(default="", max_length=64)
-    group = models.ManyToManyField(QQGroup, null=True, blank=True, related_name="tele_channel")
-    last_push_time = models.BigIntegerField(default=0)
-
-    def __str__(self):
-        return self.name
+## class TelegramChannel(models.Model):
+##     name = models.CharField(default="", max_length=64)
+##     group = models.ManyToManyField(QQGroup, null=True, blank=True, related_name="tele_channel")
+##     last_push_time = models.BigIntegerField(default=0)
+##
+##     def __str__(self):
+##         return self.name
 
 
 class IFTTTChannel(models.Model):
