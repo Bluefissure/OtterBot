@@ -72,7 +72,7 @@ def crawl_wb(weibouser, push=False):
             t.save()
             for group in groups:
                 for bot in bots:
-                    group_id_list = [item["group_id"] for item in json.loads(bot.group_list)]
+                    group_id_list = [item["group_id"] for item in json.loads(bot.group_list)] if json.loads(bot.group_list) else []
                     if int(group.group_id) not in group_id_list: continue
                     try:
                         msg = get_weibotile_share(t, mode="text")
@@ -119,7 +119,7 @@ def crawl_wb(weibouser, push=False):
                                 async_to_sync(channel_layer.send)(bot.api_channel_name, {"type": "send.event", "text": json.dumps(jdata), })
                             else:
                                 url = os.path.join(bot.api_post_url, "{}?access_token={}".format(jdata["action"], bot.access_token))
-                                headers = {'Content-Type': 'application/json'} 
+                                headers = {'Content-Type': 'application/json'}
                                 r = requests.post(url=url, headers=headers, data=json.dumps(jdata["params"]), timeout=5)
                                 if r.status_code!=200:
                                     logging.error(r.text)

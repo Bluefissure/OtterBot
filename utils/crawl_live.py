@@ -9,6 +9,7 @@ django.setup()
 from ffxivbot.handlers.QQUtils import *
 from asgiref.sync import async_to_sync
 from ffxivbot.models import *
+from ffxivbot.handlers.RsshubUtil import RsshubUtil
 import re
 import json
 import time
@@ -25,6 +26,7 @@ import feedparser
 import socket
 from channels.layers import get_channel_layer
 from django.db import connection, connections
+from bs4 import BeautifulSoup
 
 socket.setdefaulttimeout(5)
 logging.basicConfig(
@@ -42,26 +44,21 @@ logging.basicConfig(
 
 def crawl_json(liveuser):
     platform = liveuser.platform
+    rsshub = RsshubUtil()
     if platform == "bilibili":
         try:
-            url = r'https://rsshub.app/bilibili/live/room/{}'.format(liveuser.room_id)
-            jres = feedparser.parse(url)
-            if jres.entries:
-                item = jres.entries[0]
-                info_s = requests.get("https://api.live.bilibili.com/live_user/v1/UserInfo/get_anchor_in_room?roomid={}".format(liveuser.room_id), timeout=5)
-                info_s = info_s.json()
+            feed = rsshub.live(liveuser.platform, room_id=liveuser.room_id)
+            if feed.entries:
+                entry = feed.entries[0]
+                title = re.sub(r"\d+-\d+-\d+ \d+:\d+:\d+", "", entry.title).strip()
                 face_url = ""
-                name = ""
-                if info_s.get("code", -1) == 0:
-                    face_url = info_s["data"]["info"]["face"]
-                    name = info_s["data"]["info"]["uname"]
+                name = feed.feed.title.replace(" 直播间开播状态", "")
                 jinfo = {
-                    "title": re.sub(r" \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}", "", item.get("title")),
+                    "title": title,
                     "status": "live"
                 }
                 if face_url: jinfo.update({"image": face_url})
                 if name: jinfo.update({"name": name})
-                # print(jinfo)
             else:
                 jinfo = {
                     "status": "offline",
@@ -76,21 +73,23 @@ def crawl_json(liveuser):
             traceback.print_exc()
     elif platform == "douyu":
         try:
-            url = r'http://open.douyucdn.cn/api/RoomApi/room/{}'.format(liveuser.room_id)
-            s = requests.get(url=url, timeout=5)
-            jres = s.json()
-            if not isinstance(jres, dict):
-                print("jres:{}".format(jres))
-            if(jres.get("error") == 0):
-                jdata = jres.get("data", None)
-                room_status = jdata.get("room_status", 2)
+            feed = rsshub.live(liveuser.platform, room_id=liveuser.room_id)
+            if feed.entries:
+                entry = feed.entries[0]
+                title = re.sub(r"\d+-\d+-\d+ \d+:\d+:\d+", "", entry.title).strip()
+                face_url = ""
+                name = feed.feed.title.replace("的斗鱼直播间", "")
                 jinfo = {
-                    "title": jdata.get("room_name"),
-                    "image": jdata.get("avatar"),
-                    "status": "live" if room_status == "1" else room_status,
-                    "name": jdata.get("owner_name")
+                    "title": title,
+                    "status": "live"
                 }
-                return jinfo
+                if face_url: jinfo.update({"image": face_url})
+                if name: jinfo.update({"name": name})
+            else:
+                jinfo = {
+                    "status": "offline",
+                }
+            return jinfo
         except Exception as e:
             logging.error("Error at parsing douyu API")
             print("Error at parsing douyu API:{}".format(type(e)))
@@ -105,7 +104,7 @@ def crawl_live(liveuser, push=False):
         logging.info("Skipping {} cuz no subscription".format(liveuser))
         return
     jinfo = crawl_json(liveuser)
-    print("jinfo:{}".format(json.dumps(jinfo)))
+    print("{} jinfo:{}".format(liveuser, json.dumps(jinfo)))
     if not jinfo:
         logging.error("Crawling {} failed, please debug the response.".format(liveuser))
         logging.error("jinfo:{}".format(jinfo))
@@ -122,16 +121,13 @@ def crawl_live(liveuser, push=False):
     pushed_group = set()
     if push and live_status=="live":
         for bot in QQBot.objects.all():
-            group_id_list = [int(item["group_id"]) for item in json.loads(bot.group_list)]
+            group_id_list = [int(item["group_id"]) for item in json.loads(bot.group_list)] if json.loads(bot.group_list) else []
             for group in liveuser.subscribed_by.all():
                 try:
                     if int(group.group_id) not in group_id_list:
                         continue
                     if (group.pushed_live.filter(name=liveuser.name, room_id=liveuser.room_id, platform=liveuser.platform).exists()):
                         continue
-                    # if (group.group_id) in pushed_group:
-                    #     continue
-                    # print(group)
                     msg = liveuser.get_share(mode="text")
                     if bot.share_banned:
                         jmsg = liveuser.get_share()
@@ -152,7 +148,7 @@ def crawl_live(liveuser, push=False):
                         async_to_sync(channel_layer.send)(bot.api_channel_name, {"type": "send.event", "text": json.dumps(jdata),})
                     else:
                         url = os.path.join(bot.api_post_url, "{}?access_token={}".format(jdata["action"], bot.access_token))
-                        headers = {'Content-Type': 'application/json'} 
+                        headers = {'Content-Type': 'application/json'}
                         r = requests.post(url=url, headers=headers, data=json.dumps(jdata["params"]), timeout=10)
                         if r.status_code!=200:
                             logging.error(r.text)
