@@ -47,7 +47,7 @@ def tata(req):
                 bot.api_post_url = api_post_url
                 bot.auto_accept_friend = autoFriend and "true" in autoFriend
                 bot.auto_accept_invite = autoInvite and "true" in autoInvite
-                if len(QQBot.objects.all()) >= 250 and bot_created:
+                if len(QQBot.objects.all()) >= 300 and bot_created:
                     res_dict = {"response": "error", "msg": "机器人总数过多，请稍后再试"}
                     return JsonResponse(res_dict)
                 bot.save()
@@ -136,7 +136,7 @@ def tata(req):
             else "-1"
         )
         group_list = json.loads(bot.group_list)
-        group_num = len(group_list)
+        group_num = len(group_list) if group_list else -1
         bb["name"] = bot.name
         if bot.public:
             bb["user_id"] = bot.user_id

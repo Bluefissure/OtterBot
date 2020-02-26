@@ -31,6 +31,9 @@ def qqpost(req):
         receive["reply_api_type"] = "http"
         text_data = json.dumps(receive)
         self_id = received_sig = req.META.get("HTTP_X_SELF_ID", "NULL")
+        # print("=============")
+        # print(self_id)
+        # print("=============")
         error_msg = "Request not handled"
         try:
             bot = QQBot.objects.get(user_id=self_id)

@@ -54,7 +54,7 @@ class VoteAdmin(admin.ModelAdmin):
 
 
 class QQBotAdmin(admin.ModelAdmin):
-    list_display = ('name', 'user_id', 'access_token', "auto_accept_friend", "auto_accept_invite")
+    list_display = ('name', 'user_id', 'access_token', "auto_accept_friend", "auto_accept_invite", "owner_id")
     search_fields = ['name', 'user_id', 'owner_id']
 
 

@@ -53,27 +53,31 @@ def api(req):
                         print("no nm_name")
             if "ffxivsc" in trackers:
                 key = req.GET.get("key")
-                # print("ffxiv-eureka {}:{}".format(instance,password))
+                # print("ffxivsc key: {}".format(key))
                 if key:
                     nm_name = req.POST.get("text")
+                    # print(nm_name)
                     if nm_name:
                         nm_level_type = get_nm_id("ffxivsc", nm_name)
                         if int(nm_level_type["type"]) > 0:
                             url = (
-                                "https://nps.ffxivsc.cn/lobby/addKillTime"
+                                "https://api.ffxivsc.cn/ffxivsc_eureka_v2-1.2/lobby/addKillTime"
                             )
                             post_data = {
-                                "killTime": strftime(
-                                    "%Y-%m-%d %H:%M", time.localtime()
-                                ),
+                                # "killTime": strftime(
+                                #     "%Y-%m-%d %H:%M", time.localtime()
+                                # ),
                                 "level": "{}".format(nm_level_type["level"]),
                                 "key": key,
                                 "type": "{}".format(nm_level_type["type"]),
                             }
                             r = requests.post(url=url, data=post_data)
                             httpresponse = HttpResponse(r)
+                        else:
+                            HttpResponse("No NM can be matched", status=500)
                     else:
                         print("no nm_name")
+                        HttpResponse("No NM name provided", status=500)
             if "qq" in trackers:
                 bot_qq = req.GET.get("bot_qq")
                 qq = req.GET.get("qq")
