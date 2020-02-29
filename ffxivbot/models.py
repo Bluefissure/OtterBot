@@ -162,7 +162,7 @@ class Boss(models.Model):
     frozen = models.BooleanField(default=False)
     patch = models.IntegerField(default=0)
     savage = models.IntegerField(default=100)   # 100 for normal; 101 for savage
-    global_server = models.IntegerField(default=3) # 3 for boss after 5.0, 1 for boss before 5.0 
+    global_server = models.IntegerField(default=3) # 3 for boss after 5.0, 1 for boss before 5.0
     cn_server = models.IntegerField(default=5) # 5 for boss after 5.0, 3 for boss before 5.0
 
     def __str__(self):
@@ -280,6 +280,7 @@ class QQUser(models.Model):
     bot_token = models.CharField(max_length=16, blank=True)
     able_to_upload_image = models.BooleanField(default=True)
     last_api_time = models.BigIntegerField(default=0)
+    last_chat_time = models.BigIntegerField(default=0)
     api_interval = models.IntegerField(default=5)
     ban_till = models.BigIntegerField(default=0)
     ban_share_till = models.BigIntegerField(default=0)
@@ -329,6 +330,8 @@ class Territory(models.Model):
 
 
 class Image(models.Model):
+    domain = models.CharField(max_length=128, default="https://i.loli.net")
+    url = models.CharField(max_length=128, default="")
     key = models.CharField(max_length=16, default="")
     name = models.CharField(max_length=32, default="")
     path = models.CharField(max_length=64, default="", unique=True)
@@ -478,6 +481,15 @@ class HuntLog(models.Model):
         return "HuntLog#{}: {}-{} {}".format(self.id, self.server, self.monster, self.log_type)
 
 
+## class TelegramChannel(models.Model):
+##     name = models.CharField(default="", max_length=64)
+##     group = models.ManyToManyField(QQGroup, null=True, blank=True, related_name="tele_channel")
+##     last_push_time = models.BigIntegerField(default=0)
+##
+##     def __str__(self):
+##         return self.name
+
+
 class IFTTTChannel(models.Model):
     name = models.CharField(default="", max_length=32)
     group = models.ForeignKey(QQGroup, null=True, blank=True, related_name="ifttt_channel", on_delete=models.CASCADE)
@@ -507,4 +519,13 @@ class Screen(models.Model):
     nickname = models.TextField(default="{}")
     classname = models.CharField(default="",max_length=64,blank=True)
     def __str__(self):
-            return str(self.name)
+
+
+
+class LuckData(models.Model):
+    number = models.IntegerField(default=0)
+    text = models.TextField(default="")
+    img_url = models.CharField(max_length=128, default="")
+
+    def __str__(self):
+        return str(self.number)

@@ -7,7 +7,6 @@ language: python
 python:
   - "3.5"
   - "3.6"
-  - "nightly" # currently points to 3.7-dev
 services:
   - redis-server
   - rabbitmq

@@ -9,6 +9,7 @@ import hashlib
 from bs4 import BeautifulSoup
 import traceback
 import re
+import time
 
 
 def QQGroupChat(*args, **kwargs):
@@ -78,7 +79,16 @@ def QQGroupChat(*args, **kwargs):
         #tuling chatbot
         chat_enable = group_commands.get("/chat", "enable") != "disable"
         if("[CQ:at,qq=%s]"%(receive["self_id"]) in receive["message"] and chat_enable):
-            # logging.debug("Tuling reply")
+            user = QQUser.objects.filter(user_id=user_id)
+            if user.exists():
+                user = user.first()
+                if user.last_chat_time + 5 > time.time():
+                    msg = "聊天太频繁啦！獭獭脑子转不过来了！！"
+                    action = reply_message_action(receive, msg)
+                    action_list.append(action)
+                    return action_list
+                user.last_chat_time = time.time()
+                user.save(update_fields=["last_chat_time"])
             receive_msg = message
             receive_msg = receive_msg.replace("[CQ:at,qq=%s]"%(receive["self_id"]),"")
             tuling_data = {}

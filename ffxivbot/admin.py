@@ -54,7 +54,7 @@ class VoteAdmin(admin.ModelAdmin):
 
 
 class QQBotAdmin(admin.ModelAdmin):
-    list_display = ('name', 'user_id', 'access_token', "auto_accept_friend", "auto_accept_invite")
+    list_display = ('name', 'user_id', 'access_token', "auto_accept_friend", "auto_accept_invite", "owner_id")
     search_fields = ['name', 'user_id', 'owner_id']
 
 
@@ -111,6 +111,7 @@ class TerritoryAdmin(admin.ModelAdmin):
 class ImageAdmin(admin.ModelAdmin):
     list_display = ["name", "key"]
     search_fields = ['name', 'key']
+    raw_id_fields  = ["add_by"]
 
 
 class LotteryAdmin(admin.ModelAdmin):
@@ -151,7 +152,8 @@ class ScreenAdmin(admin.ModelAdmin):
     list_display = ('name','nickname','classname')
     search_fields = ['name','name']
 
-
+class LuckDataAdmin(admin.ModelAdmin):
+    list_display = ['number']
 
 admin.site.register(QQGroup, QQGroupAdmin)
 admin.site.register(CustomReply, CustomReplyAdmin)
@@ -183,3 +185,4 @@ admin.site.register(HuntLog, HuntLogAdmin)
 admin.site.register(IFTTTChannel, IFTTTChannelAdmin)
 admin.site.register(TreasureMap, TreasureMapAdmin)
 admin.site.register(Screen, ScreenAdmin)
+admin.site.register(LuckData, LuckDataAdmin)

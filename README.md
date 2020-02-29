@@ -39,8 +39,3 @@ Please read [wiki](https://github.com/Bluefissure/FFXIVBOT/wiki/%E4%BD%BF%E7%94%
 ![/anime](https://i.loli.net/2018/04/11/5acd9c2f2ceea.png)
 ![/random](https://i.loli.net/2018/04/11/5acd9c2f0da51.png)
 
-## Tips
-
-- <del>This project is currently using [django-channels](https://github.com/django/channels) to support reverse websocket of http-api, if you prefer http, see [previous version](https://github.com/Bluefissure/FFXIVBOT/tree/be91c3fb3910479733db937f5f7f263dcef331a7) </del>
-- The http support is available since [this](https://github.com/Bluefissure/FFXIVBOT/commit/be453f0b2388b2d12d51de286c77b27b9d7d2dca) commit.
-
