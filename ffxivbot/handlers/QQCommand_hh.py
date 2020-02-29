@@ -42,7 +42,7 @@ def search_id(glamour_id):
             result["race"] = r['glamour_character']+"-"+r['glamour_class']
             result["tittle"] = r['glamour_title']+"-ID：{}".format(glamour_id)
             result["introduction"] = r['glamour_introduction']
-            result["img"] = r['glamour_url'].replace('api','cdn',1)+"&imageView2%2F2%2Fw%2F512%2Fformat%2Fwebp%2Finterlace%2F1%2Fq%2F80%2F"
+            result["img"] = r['glamour_url']
         else:
             result["flag"] = 400
         return result
