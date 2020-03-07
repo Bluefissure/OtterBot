@@ -18,9 +18,10 @@ from websocket import create_connection
 def api(req):
     httpresponse = None
     if req.method == "POST":
+        print("GET:{}".format(req.GET))
         tracker = req.GET.get("tracker")
-        trackers = tracker.split(",")
         print("tracker:{}".format(tracker))
+        trackers = tracker.split(",")
         if tracker:
             if "ffxiv-eureka" in trackers:
                 instance = req.GET.get("instance")
@@ -107,10 +108,13 @@ def api(req):
                         channel_layer = get_channel_layer()
                         msg = req.POST.get("text")
                         reqbody = req.body
+                        # print("reqbody:{}".format(reqbody))
                         try:
                             if reqbody:
                                 reqbody = reqbody.decode()
+                                # print("reqbody1:{}".format(reqbody))
                                 reqbody = json.loads(reqbody)
+                                # print("reqbody2:{}".format(reqbody))
                                 msg = msg or reqbody.get("content")
                                 msg = re.compile(
                                     "[\\x00-\\x08\\x0b-\\x0c\\x0e-\\x1f]"
@@ -118,7 +122,10 @@ def api(req):
                         except BaseException:
                             pass
                         if not msg:
-                            msg = github_webhook(req)
+                            try:
+                                msg = github_webhook(req)
+                            except BaseException:
+                                pass
                         if not msg:
                             print("Can't get msg from request:{}:{}".format(req, reqbody))
                             httpresponse = HttpResponse("Can't get message", status=500)
