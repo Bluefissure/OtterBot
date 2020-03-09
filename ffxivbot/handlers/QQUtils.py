@@ -375,7 +375,7 @@ def check_raid(api_url, raid_data, raid_name, wol_name, server_name):
                     else:
                         raid_info += "{}{}: 数据缺失\n".format(raid_name, l)
                 else:
-                    raid_info += "{}{} : 仍未攻破\n".format(raid_name, l)
+                    raid_info += "{}{}: 仍未攻破\n".format(raid_name, l)
             if not ok:
                 msg += "{}--{} 还没有突破过任何零式{}，请继续努力哦~\n".format(server_name, wol_name, raid_name)
             else:

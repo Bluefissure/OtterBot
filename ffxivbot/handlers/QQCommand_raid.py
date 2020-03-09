@@ -34,7 +34,7 @@ def QQCommand_raid(*args, **kwargs):
                 msg = ""
                 data = {
                     "method": "queryhreodata",
-                    "stage": 1,
+                    "stage": 2,
                     "name": wol_name,
                     "areaId": server.areaId,
                     "groupId": server.groupId,
@@ -42,24 +42,24 @@ def QQCommand_raid(*args, **kwargs):
                 msg += check_raid(
                     api_url="http://act.ff.sdo.com/20180525HeroList/Server/HeroList190128.ashx",
                     raid_data=data,
-                    raid_name="阿尔法幻境",
+                    raid_name="觉醒之章",
                     wol_name=wol_name,
                     server_name=server.name,
                 )
-                msg += check_raid(
-                    api_url="http://act.ff.sdo.com/20180525HeroList/Server/HeroList171213.ashx",
-                    raid_data=data,
-                    raid_name="西格玛幻境",
-                    wol_name=wol_name,
-                    server_name=server.name,
-                )
-                msg += check_raid(
-                    api_url="http://act.ff.sdo.com/20171213HeroList/Server/HeroList171213.ashx",
-                    raid_data=data,
-                    raid_name="德尔塔幻境",
-                    wol_name=wol_name,
-                    server_name=server.name,
-                )
+                # msg += check_raid(
+                #     api_url="http://act.ff.sdo.com/20180525HeroList/Server/HeroList171213.ashx",
+                #     raid_data=data,
+                #     raid_name="西格玛幻境",
+                #     wol_name=wol_name,
+                #     server_name=server.name,
+                # )
+                # msg += check_raid(
+                #     api_url="http://act.ff.sdo.com/20171213HeroList/Server/HeroList171213.ashx",
+                #     raid_data=data,
+                #     raid_name="德尔塔幻境",
+                #     wol_name=wol_name,
+                #     server_name=server.name,
+                # )
                 msg = msg.strip()
 
         reply_action = reply_message_action(receive, msg)
