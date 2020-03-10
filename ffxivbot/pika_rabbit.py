@@ -48,10 +48,10 @@ CONFIG_PATH = os.environ.get(
 
 def handle_message(bot, message):
     new_message = message
-    if len(json.loads(bot.disconnections)) >= 100 and isinstance(message, str):
-        new_message = message.strip() + \
-            "\n======\n本机器人 {} 已累计断开连接100次\n".format(bot) + \
-                "为了獭獭与獭窝正常运行请联系领养者 {} 升级HTTPAPI插件至4.14版本".format(bot.owner_id)
+    # if len(json.loads(bot.disconnections)) >= 100 and isinstance(message, str):
+    #     new_message = message.strip() + \
+    #         "\n======\n本机器人 {} 已累计断开连接100次\n".format(bot) + \
+    #             "为了獭獭与獭窝正常运行请联系领养者 {} 升级HTTPAPI插件至4.14版本".format(bot.owner_id)
     if isinstance(message, list):
         new_message = []
         for idx, msg in enumerate(message):
