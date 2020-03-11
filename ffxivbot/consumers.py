@@ -103,7 +103,8 @@ class WSConsumer(AsyncWebsocketConsumer):
                 LOGGER.error("Unkown user_agent: {} for {}".format(user_agent, ws_self_id))
                 return
             else:
-                if "4.14.1" not in user_agent:
+                version = user_agent.replace("CQHttp/", "").split(".")
+                if version < "4.14.1".split("."):
                     LOGGER.error("Unsupport user_agent: {} for {}".format(user_agent, ws_self_id))
                     return
 
@@ -211,12 +212,12 @@ class WSConsumer(AsyncWebsocketConsumer):
                         (group, group_created) = QQGroup.objects.get_or_create(
                             group_id=group_id
                         )
-                        # push_to_mq = push_to_mq or "[CQ:at,qq={}]".format(self_id) in receive[
-                        #     "message"
-                        # ] or (
-                        #     (group.repeat_ban > 0)
-                        #     or (group.repeat_length > 1 and group.repeat_prob > 0)
-                        # )
+                        push_to_mq = push_to_mq or "[CQ:at,qq={}]".format(self_id) in receive[
+                            "message"
+                        ] or (
+                            (group.repeat_ban > 0)
+                            or (group.repeat_length > 1 and group.repeat_prob > 0)
+                        )
                         group_bots = json.loads(group.bots)
                         if group_bots and (str(self_id) not in group_bots):
                             push_to_mq = False
