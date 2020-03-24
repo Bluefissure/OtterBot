@@ -38,7 +38,8 @@ commands = {
   "/shorten":"微博短链",
   "/mxh":"梅溪湖cp短打生成器（\"/mxh 海德林 佐迪亚克\"）",
   "/hh":"光之收藏家幻化推荐(\"/hh help\")",
-  "/luck": "浅草寺求签"
+  "/luck": "浅草寺求签",
+  "/abv": "Bilibili av/BV号互转"
 }
   # "/joke":"讽刺笑话（\"/joke 996|强东|建设一流公司|程序员|公司\"）",
 
@@ -127,6 +128,7 @@ from .QQCommand_fsx import QQCommand_fsx
 from .QQCommand_treasure import QQCommand_treasure
 from .QQCommand_hh import QQCommand_hh
 from .QQCommand_luck import QQCommand_luck
+from .QQCommand_abv import QQCommand_abv
 
 from .arknights.QQCommand_akhr import QQCommand_akhr
 
