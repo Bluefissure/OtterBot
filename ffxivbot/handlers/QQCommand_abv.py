@@ -54,17 +54,13 @@ def QQCommand_abv(*args, **kwargs):
         elif av:
             av = int(av.group(1))
             abv = ABV()
-            print(f"av2bv:{av}")
             msg = abv.av2bv(av)
-            print(f"result:{msg}")
         elif bv:
             bv = bv.group(1)
             if not bv.startswith('BV'):
                 bv = 'BV' + bv
             abv = ABV()
-            print(f"bv2av:{bv}")
             msg = 'av' + str(abv.bv2av(bv))
-            print(f"result:{msg}")
         else:
             msg = "请输入av号或BV号自动转换"
 
