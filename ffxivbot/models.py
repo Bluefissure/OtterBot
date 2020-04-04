@@ -66,7 +66,7 @@ class LiveUser(models.Model):
 
 
 class QQGroup(models.Model):
-    group_id = models.CharField(primary_key=True, max_length=16, unique=True)
+    group_id = models.CharField(primary_key=True, max_length=64, unique=True)
     welcome_msg = models.TextField(default="", blank=True)
     bots = models.TextField(default="[]")
     repeat_ban = models.IntegerField(default=-1)
@@ -125,7 +125,7 @@ class ChatMessage(models.Model):
 
 
 class BanMember(models.Model):
-    user_id = models.CharField(max_length=16)
+    user_id = models.CharField(max_length=64)
     group = models.ForeignKey(QQGroup, on_delete=models.CASCADE)
     ban_time = models.IntegerField(default=0)
     vote_list = models.TextField(default="{}")
@@ -133,7 +133,7 @@ class BanMember(models.Model):
 
 
 class Revenge(models.Model):
-    user_id = models.CharField(max_length=16)
+    user_id = models.CharField(max_length=64)
     group = models.ForeignKey(QQGroup, on_delete=models.CASCADE)
     vote_list = models.TextField(default="{}")
     timestamp = models.BigIntegerField(default=0)
@@ -191,7 +191,8 @@ class Vote(models.Model):
 
 class QQBot(models.Model):
     name = models.CharField(max_length=16)
-    user_id = models.CharField(max_length=16, unique=True)
+    user_id = models.CharField(max_length=64, unique=True)
+    wechat_id = models.CharField(max_length=64, default="")
     owner_id = models.CharField(max_length=16)
     access_token = models.CharField(max_length=16, default="")
     auto_accept_friend = models.BooleanField(default=False)
@@ -276,7 +277,7 @@ class SorryGIF(models.Model):
 
 class QQUser(models.Model):
     dbuser = models.OneToOneField(User, on_delete=models.DO_NOTHING, blank=True, null=True, related_name="qquser")
-    user_id = models.CharField(max_length=16, unique=True)
+    user_id = models.CharField(max_length=64, unique=True)
     bot_token = models.CharField(max_length=16, blank=True)
     able_to_upload_image = models.BooleanField(default=True)
     last_api_time = models.BigIntegerField(default=0)
@@ -437,8 +438,8 @@ class CommandLog(models.Model):
     command = models.CharField(max_length=32)
     message = models.TextField(default="")
     bot_id = models.CharField(max_length=16)
-    user_id = models.CharField(max_length=16)
-    group_id = models.CharField(max_length=16)
+    user_id = models.CharField(max_length=64)
+    group_id = models.CharField(max_length=64)
 
 
 class HuntGroup(models.Model):

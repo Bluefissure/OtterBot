@@ -57,15 +57,15 @@ def handle_message(bot, message):
         for idx, msg in enumerate(message):
             if msg["type"] == "share" and bot.share_banned:
                 share_data = msg["data"]
-                new_message.append(
-                    {
-                        "type": "image",
-                        "data": {
-                            "file": share_data["image"],
-                            "url": share_data["image"],
-                        },
-                    }
-                )
+                # new_message.append(
+                #     {
+                #         "type": "image",
+                #         "data": {
+                #             "file": share_data["image"],
+                #             "url": share_data["image"],
+                #         },
+                #     }
+                # )
                 new_message.append(
                     {
                         "type": "text",
@@ -93,17 +93,67 @@ def call_api(bot, action, params, echo=None, **kwargs):
     if echo:
         jdata["echo"] = echo
     post_type = kwargs.get("post_type", "websocket")
-    if post_type=="websocket":
+    if post_type == "websocket":
         async_to_sync(channel_layer.send)(
             bot.api_channel_name, {"type": "send.event", "text": json.dumps(jdata)}
         )
-    elif post_type=="http":
+    elif post_type == "http":
         url = os.path.join(bot.api_post_url, "{}?access_token={}".format(action, bot.access_token))
         headers = {'Content-Type': 'application/json'}
         r = requests.post(url=url, headers=headers, data=json.dumps(params), timeout=5)
         if r.status_code!=200:
             print("HTTP Callback failed:")
             print(r.text)
+    elif post_type == "wechat":
+        print("calling api:{}".format(action))
+        def req_url(params):
+            url = "https://ex-api.botorange.com/message/send"
+            headers = {'Content-Type': 'application/json'}
+            print("params:{}".format(json.dumps(params)))
+            r = requests.post(url=url, headers=headers, data=json.dumps(params), timeout=5)
+            if r.status_code != 200:
+                print("Wechat HTTP Callback failed:")
+                print(r.text)
+        config = json.load(open(CONFIG_PATH, encoding="utf-8"))
+        params["chatId"] = kwargs.get("chatId", "")
+        params["token"] = config.get("WECHAT_TOKEN", "")
+        if "send_" in action and "_msg" in action:
+            if isinstance(params["message"], str):
+                text = params["message"]
+                at = re.finditer(r"\[CQ:at,qq=(.*)\]", text)
+                if at:
+                    params["mention"] = [at_m.group(1) for at_m in at]
+                text = re.sub(r"\[CQ:at,qq=(.*)\]", "", text)
+                img_r = r"\[CQ:image,file=(.*?)(?:\]|,.*?\])"
+                img_m = re.search(img_r, text)
+                if img_m:  # FIXME: handle text & img message
+                    params["messageType"] = 1
+                    params["payload"] = {
+                        "url": img_m.group(1)
+                    }
+                else:
+                    params["messageType"] = 0
+                    params["payload"] = {
+                        "text": text.strip()
+                    }
+                req_url(params)
+            else:
+                for msg_seg in params["message"]:
+                    if msg_seg["type"] == "image":
+                        params["messageType"] = 1
+                        params["payload"] = {
+                            "url": msg_seg["data"]["file"]
+                        }
+                        req_url(params)
+                    elif msg_seg["type"] == "text":
+                        params["messageType"] = 0
+                        params["payload"] = {
+                            "text": msg_seg["data"]["text"].strip()
+                        }
+                        req_url(params)
+                    time.sleep(1)
+
+        
 
 
 def send_message(bot, private_group, uid, message, **kwargs):
@@ -506,15 +556,15 @@ class PikaConsumer(object):
                                 msg += "{}: {}\n".format(k, v)
                         msg = msg.strip()
                         send_message(
-                            bot, receive["message_type"], discuss_id or group_id or user_id, msg
+                            bot, receive["message_type"], discuss_id or group_id or user_id, msg,
+                            post_type=receive.get("reply_api_type", "websocket"),
+                            chatId=receive.get("chatId", "")
                         )
                     else:
                         if receive["message"].find("/update_group") == 0:
                             update_group_member_list(bot, group_id, post_type=receive.get("reply_api_type", "websocket") )
                         # get sender's user_info
-                        user_info = (
-                            receive["sender"] if "sender" in receive.keys() else None
-                        )
+                        user_info = receive.get("sender")
                         user_info = (
                             user_info
                             if (user_info and ("role" in user_info.keys()))
@@ -522,15 +572,26 @@ class PikaConsumer(object):
                         )
                         if member_list and not user_info:
                             for item in member_list:
-                                if int(item["user_id"]) == int(user_id):
+                                if str(item["user_id"]) == str(user_id):
                                     user_info = item
                                     break
                         if not user_info:
-                            raise PikaException(
-                                "No user info for user_id:{} in group:{}".format(
-                                    user_id, group_id
+                            if receive.get("reply_api_type", "websocket") == "wechat":
+                                user_info = {
+                                    "user_id": receive["user_id"],
+                                    "nickname": receive["data"]["contactName"],
+                                    "role": "member",
+                                }
+                                if receive["user_id"] not in list(map(lambda x: x["user_id"], member_list)):
+                                    member_list.append(user_info)
+                                    group.member_list = json.dumps(member_list)
+                                    group.save(update_fields=["member_list"])
+                            else:
+                                raise PikaException(
+                                    "No user info for user_id:{} in group:{}".format(
+                                        user_id, group_id
+                                    )
                                 )
-                            )
                             # LOGGER.error("No user info for user_id:{} in group:{}".format(user_id, group_id))
                             # self.acknowledge_message(basic_deliver.delivery_tag)
                             # return
@@ -553,7 +614,10 @@ class PikaConsumer(object):
                                     msg = "本群%s未在数据库注册，请群主使用/register_group命令注册" % (
                                         group_id
                                     )
-                                    send_message(bot, "group", group_id, msg)
+                                    send_message(bot, "group", group_id, msg,
+                                        post_type=receive.get("reply_api_type", "websocket"),
+                                        chatId=receive.get("chatId", "")
+                                    )
                                     break
                                 else:
                                     handle_method = getattr(
@@ -589,7 +653,8 @@ class PikaConsumer(object):
                                             action["action"],
                                             action["params"],
                                             echo=action["echo"],
-                                            post_type=receive.get("reply_api_type", "websocket")
+                                            post_type=receive.get("reply_api_type", "websocket"),
+                                            chatId=receive.get("chatId", ""),
                                         )
                                         already_reply = True
                                     if already_reply:
@@ -609,7 +674,10 @@ class PikaConsumer(object):
                         "https://github.com/Bluefissure/FFXIVBOT/wiki/"
                     )
                     msg = msg.strip()
-                    send_message(bot, receive["message_type"], group_id or user_id, msg)
+                    send_message(bot, receive["message_type"], group_id or user_id, msg,
+                        post_type=receive.get("reply_api_type", "websocket"),
+                        chatId=receive.get("chatId", "")
+                    )
 
                 if receive["message"].find("/ping") == 0:
                     msg = ""
@@ -627,7 +695,13 @@ class PikaConsumer(object):
                     msg = msg.strip()
                     LOGGER.info("{} calling command: {}".format(user_id, "/ping"))
                     print(("{} calling command: {}".format(user_id, "/ping")))
-                    send_message(bot, receive["message_type"], discuss_id or group_id or user_id, msg, post_type=receive.get("reply_api_type", "websocket"))
+                    send_message(
+                        bot,
+                        receive["message_type"],
+                        discuss_id or group_id or user_id,
+                        msg,
+                        post_type=receive.get("reply_api_type", "websocket"),
+                        chatId=receive.get("chatId", ""))
 
                 command_keys = sorted(handlers.commands.keys(), key=lambda x: -len(x))
                 for command_key in command_keys:
@@ -661,7 +735,8 @@ class PikaConsumer(object):
                                 action["action"],
                                 action["params"],
                                 echo=action["echo"],
-                                post_type=receive.get("reply_api_type", "websocket")
+                                post_type=receive.get("reply_api_type", "websocket"),
+                                chatId=receive.get("chatId", ""),
                             )
                             already_reply = True
                         break
@@ -696,7 +771,8 @@ class PikaConsumer(object):
                                 action["action"],
                                 action["params"],
                                 echo=action["echo"],
-                                post_type=receive.get("reply_api_type", "websocket")
+                                post_type=receive.get("reply_api_type", "websocket"),
+                                chatId=receive.get("chatId", ""),
                             )
 
             CONFIG_GROUP_ID = config["CONFIG_GROUP_ID"]
@@ -745,13 +821,21 @@ class PikaConsumer(object):
                         msg = group.welcome_msg.strip()
                         if msg != "":
                             msg = "[CQ:at,qq=%s]" % (user_id) + msg
-                            send_message(bot, "group", group_id, msg, post_type=receive.get("reply_api_type", "websocket"))
+                            send_message(
+                                bot, 
+                                "group", 
+                                group_id, 
+                                msg,
+                                post_type=receive.get("reply_api_type", "websocket"),
+                                chatId=receive.get("chatId", ""))
                     except Exception as e:
                         traceback.print_exc()
             # print(" [x] Received %r" % body)
         except PikaException as pe:
+            traceback.print_exc()
             LOGGER.error(pe)
         except Exception as e:
+            traceback.print_exc()
             LOGGER.error(e)
 
         self.acknowledge_message(basic_deliver.delivery_tag)

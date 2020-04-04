@@ -22,6 +22,7 @@ from django.views.decorators.cache import cache_page
 
 from ffxivbot.views import *
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', tata),
@@ -30,6 +31,7 @@ urlpatterns = [
     path('quest/tooltip/', quest_tooltip),
     path('api/', api),
     path('http/', qqpost),
+    path('wechat/message', wechatpost),
     path('image/', image),
     # path('hunt/', cache_page(60 * 2)()),
     path('hunt/', hunt),
