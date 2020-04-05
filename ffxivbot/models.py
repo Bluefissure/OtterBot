@@ -1,5 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
+from datetime import datetime
+from pytz import timezone
 import json
 import time
 
@@ -292,6 +294,7 @@ class QQUser(models.Model):
     open_id = models.CharField(default="", max_length=128, blank=True)
     vcode = models.CharField(default="", max_length=16)
     vcode_time = models.BigIntegerField(default=0)
+    timezone = models.CharField(default="Asia/Shanghai", max_length=32)
 
     def __str__(self):
         return str(self.user_id)
@@ -532,3 +535,25 @@ class LuckData(models.Model):
 
     def __str__(self):
         return str(self.number)
+
+class TurnipPrice(models.Model):
+    user = models.ForeignKey(QQUser, on_delete=models.CASCADE)
+    time = models.BigIntegerField(default=0)
+    price = models.IntegerField(default=0)
+
+    def day(self):
+        t = datetime.fromtimestamp(self.time, tz=timezone(self.user.timezone))
+        return (t.weekday() + 1) % 7  # Sunday: 0
+
+    def hour(self):
+        t = datetime.fromtimestamp(self.time, tz=timezone(self.user.timezone))
+        return t.hour
+    
+    def am_pm(self):
+        if self.day() == 0: # Sunday only have morning
+            return "am"
+        return "am" if self.hour() < 12 else "pm"
+
+    def __str__(self):
+        return "{}#{}".format(self.user, self.day())
+    
