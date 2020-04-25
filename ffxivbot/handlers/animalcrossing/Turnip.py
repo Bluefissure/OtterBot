@@ -55,11 +55,11 @@ class Turnip(object):
                 msg += "目前可能是波动型，"
             else:
                 msg += "目前是波动型，"
-            msg += "则最大卖价范围在{}至{}之间。".format(self.expe_fluc, int(1.45 * self.get_price(0)))
+            msg += "则最大卖价范围在{}至{}之间。\n".format(self.expe_fluc, int(1.45 * self.get_price(0)))
             if float(1.45*self.get_price(0)) > float(self.today) >= float(self.expe_fluc):
-                msg += "今日售价已有可能是波动型价格的最大值，可以考虑今天卖出。"
+                msg += "今日售价已有可能是波动型价格的最大值，可以考虑今天卖出。\n"
             if float(1.45*self.get_price(0)) <= float(self.today):
-                msg += "今日售价就是波动型价格的最大值，建议今天卖出。"
+                msg += "今日售价就是波动型价格的最大值，建议今天卖出。\n"
             else:
                 msg += "\n"
         if self.flag_3:
@@ -69,12 +69,12 @@ class Turnip(object):
             else:
                 self.lock_3 = True
                 msg += "目前就是三期型，"
-            msg += "则最大卖价范围在{}至{}之间".format(self.expe_3, int(6 * self.get_price(0)))
+            msg += "则最大卖价范围在{}至{}之间。\n".format(self.expe_3, int(6 * self.get_price(0)))
             if self.thr != 0:
                 if self.lock_3:
-                    msg += "今天就是三期型的售价峰值，请卖出。"
+                    msg += "今天就是三期型的售价峰值，请卖出。\n"
                 else:
-                    msg += "今天可能是三期型的售价峰值，可以考虑卖出。"
+                    msg += "今天可能是三期型的售价峰值，可以考虑卖出。\n"
         if self.flag_4 == True:
             self.expe_4 = int(1.4 * self.get_price(0))
             if self.flag_decr or self.flag_fluc or self.flag_3:
@@ -82,17 +82,17 @@ class Turnip(object):
             else:
                 self.lock_4 = True
                 msg += "目前就是四期型，"
-            msg += "则最大卖价范围在{}至{}之间。".format(self.expe_4, int(2 * self.get_price(0)))
+            msg += "则最大卖价范围在{}至{}之间。\n".format(self.expe_4, int(2 * self.get_price(0)))
             if self.fou != 0:
                 if self.lock_4:
-                    msg += "今天就是四期型的售价峰值，请卖出。"
+                    msg += "今天就是四期型的售价峰值，请卖出。\n"
                 else:
-                    msg += "今天可能是四期型的售价峰值，可以考虑卖出。"
+                    msg += "今天可能是四期型的售价峰值，可以考虑卖出。\n"
         if self.flag_decr == True:
             if self.flag_4 or self.flag_fluc or self.flag_3:
-                msg += "目前可能是递减型，要做好可能会亏的准备"
+                msg += "目前可能是递减型，要做好可能会亏的准备。\n"
             else:
-                msg += "目前就是递减型，只会越来越便宜，建议现在卖了或者等待朋友开门。"
+                msg += "目前就是递减型，只会越来越便宜，建议现在卖了或者等待朋友开门。\n"
         return msg
 
     def rough_model(self):
@@ -189,9 +189,11 @@ class Turnip(object):
                 self.record_price()
                 msg += self.make_prediction()
                 if day == 6 and am_pm == "pm":
-                    msg += "\n周六下午了害搁这等呢，赶快卖了吧。"
+                    msg += "\n周六下午了害搁这等呢，赶快卖了吧。\n"
                 if msg.strip():
                     final_msg = msg.strip()
+        if not final_msg:
+            final_msg = "预测失败，请确认已记录周日买入价格与周一上午价格。"
         return "{}:\n{}".format(price_msg, final_msg)
 
     # DRY

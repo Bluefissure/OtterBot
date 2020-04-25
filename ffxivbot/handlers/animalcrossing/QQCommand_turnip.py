@@ -151,9 +151,12 @@ https://github.com/InsulatingShell/ACTurnipPriceModel-cn/
                                 prices = price.split('/')
                                 for price_ in prices:
                                     price_list.append(s2i(price_))
-                    while price_list[-1] == -1:
+                    while price_list and price_list[-1] == -1:
                         price_list.pop()
-                    msg = tunip.load_price_list(price_list)
+                    if not price_list:
+                        msg = "啥数据都没提供你搁着预测啥呢"
+                    else:
+                        msg = tunip.load_price_list(price_list)
                 except AssertionError as e:
                     msg = "{}\n数据记录错误：{}".format(price_list, e)
             else:

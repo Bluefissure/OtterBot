@@ -90,7 +90,8 @@ alter_commands = {
   "/直击":"/fsx 直击",
   "/天气":"/weather",
   "/宝图":"/treasure",
-  "/大头菜":"/turnip"
+  "/大头菜":"/turnip",
+  "/nuannuan":"/nuannuan text"
 }
 
 from .QQCommand_cat import QQCommand_cat

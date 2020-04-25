@@ -194,7 +194,7 @@ class Vote(models.Model):
 class QQBot(models.Model):
     name = models.CharField(max_length=16)
     user_id = models.CharField(max_length=64, unique=True)
-    wechat_id = models.CharField(max_length=64, default="")
+    wechat_id = models.CharField(max_length=64, default="", blank=True)
     owner_id = models.CharField(max_length=16)
     access_token = models.CharField(max_length=16, default="")
     auto_accept_friend = models.BooleanField(default=False)
@@ -292,7 +292,7 @@ class QQUser(models.Model):
     nickname = models.CharField(default="", max_length=64, blank=True)
     avatar_url = models.CharField(default="", max_length=256, blank=True)
     open_id = models.CharField(default="", max_length=128, blank=True)
-    vcode = models.CharField(default="", max_length=16)
+    vcode = models.CharField(default="", max_length=16, blank=True)
     vcode_time = models.BigIntegerField(default=0)
     timezone = models.CharField(default="Asia/Shanghai", max_length=32)
 

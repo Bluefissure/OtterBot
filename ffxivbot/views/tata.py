@@ -93,6 +93,7 @@ def tata(req):
                 web_base = web_base.replace("https://", "")
                 web_base = web_base.replace("http://", "")
                 ws_url = "ws://" + os.path.join(web_base, "ws")
+                http_url = "http://" + os.path.join(web_base, "http")
                 bot_conf = json.loads(
                     '{\
                         "host": "0.0.0.0",\
@@ -122,7 +123,12 @@ def tata(req):
                         "enable_backward_compatibility": true\
                     }'
                 )
-                bot_conf["ws_reverse_url"] = ws_url
+                if bot.api_post_url:
+                    bot_conf["use_ws_reverse"] = False
+                    bot_conf["post_url"] = http_url
+                else:
+                    bot_conf["use_ws_reverse"] = True
+                    bot_conf["ws_reverse_url"] = ws_url
                 bot_conf["access_token"] = bot.access_token
                 bot_conf["secret"] = bot.access_token
                 response.write(json.dumps(bot_conf, indent=4))
