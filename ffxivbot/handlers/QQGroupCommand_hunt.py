@@ -28,7 +28,7 @@ def log_revoke(monster_name, hunt_group, server_info):
     if monster.exists():
         monster = monster[0]
         try:
-            latest_kill_log = HuntLog.objects.filter(monster=monster, server=server_info, log_type="kill").latest("id")
+            latest_kill_log = HuntLog.objects.filter(hunt_group=hunt_group, monster=monster, server=server_info, log_type="kill").latest("id")
         except HuntLog.DoesNotExist:
             msg = "已达到了最初状态"
         else:
