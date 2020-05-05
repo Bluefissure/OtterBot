@@ -211,13 +211,13 @@ def QQGroupCommand_hunt(*args, **kwargs):
                             monster = monster[0]
                             try:
                                 # latest_kill_log = hunt_group.hunt_log.filter(monster=monster, log_type="kill").latest("id")
-                                latest_kill_log = HuntLog.objects.filter(monster=monster, server=server_info,
+                                latest_kill_log = HuntLog.objects.filter(hunt_group=hunt_group, monster=monster, server=server_info,
                                                                          log_type="kill").latest("id")
                                 last_kill_time = latest_kill_log.time
                             except HuntLog.DoesNotExist as e:
                                 last_kill_time = 0
                             try:
-                                global_maintain_log = HuntLog.objects.filter(server=server_info,
+                                global_maintain_log = HuntLog.objects.filter(hunt_group=hunt_group, server=server_info,
                                                                              log_type="maintain").latest("id")
                                 maintain_finish_time = global_maintain_log.time
                             except HuntLog.DoesNotExist as e:
@@ -300,13 +300,13 @@ def QQGroupCommand_hunt(*args, **kwargs):
                             for monster in all_monsters:
                                 # 获取怪物在各个服务器的击杀时间
                                 try:
-                                    latest_kill_log = HuntLog.objects.filter(monster=monster, server=server_info,
+                                    latest_kill_log = HuntLog.objects.filter(hunt_group=hunt_group, monster=monster, server=server_info,
                                                                              log_type="kill").latest("id")
                                     last_kill_time = latest_kill_log.time
                                 except HuntLog.DoesNotExist as e:
                                     last_kill_time = 0
                                 try:
-                                    global_maintain_log = HuntLog.objects.filter(server=server_info,
+                                    global_maintain_log = HuntLog.objects.filter(hunt_group=hunt_group, server=server_info,
                                                                              log_type="maintain").latest("id")
                                     maintain_finish_time = global_maintain_log.time
                                 except HuntLog.DoesNotExist as e:
@@ -409,14 +409,14 @@ def QQGroupCommand_hunt(*args, **kwargs):
                     server_info = Server.objects.filter(name=server_name)
                     if server_info.exists():
                         server_info = server_info[0]
-                        try:
-                            test_get_server_group = HuntGroup.objects.get(server=server_info.id)
-                            if server_name == hunt_group.server:
-                                msg = log_revoke(monster_name, server_info)
-                            else:
-                                msg = "该群组已经有管理群组，无法编辑"
-                        except:
-                            msg = log_revoke(monster_name, hunt_group, server_info)
+                        # try:
+                        #     test_get_server_group = HuntGroup.objects.get(server=server_info.id)
+                        #     if server_name == hunt_group.server:
+                        #         msg = log_revoke(monster_name, server_info)
+                        #     else:
+                        #         msg = "该群组已经有管理群组，无法编辑"
+                        # except:
+                        msg = log_revoke(monster_name, hunt_group, server_info)
                 except IndexError:
                     msg = "*"
             elif optype == "public":
