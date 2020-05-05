@@ -33,7 +33,11 @@
 
           <div class="card">
             <div class="card-header">
-              <h3 class="card-title">这是一个表格</h3>
+              {% if resources %}
+              <h3 class="card-title">数据来源：{{resources}}</h3>
+              {% else %}
+              <h3 class="card-title">数据来源：无</h3>
+              {% endif %}
             </div>
             <!-- /.card-header -->
             <div class="card-body">

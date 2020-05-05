@@ -452,6 +452,7 @@ class HuntGroup(models.Model):
     moderator = models.ManyToManyField(QQUser, related_name="managed_hunt_group", blank=True)
     servermark = models.CharField(default="", max_length=16, blank=True, null=True)
     remark = models.CharField(default="", max_length=64, blank=True, null=True)
+    public = models.BooleanField(default=False)
     def __str__(self):
         return self.name if self.name else "{}-{}".format(self.group, self.server)
 

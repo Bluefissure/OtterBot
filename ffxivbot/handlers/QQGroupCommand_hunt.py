@@ -164,11 +164,14 @@ def QQGroupCommand_hunt(*args, **kwargs):
         action_list = []
         receive = kwargs["receive"]
         user_id = receive["user_id"]
+        user_info = kwargs["user_info"]
         group = kwargs["group"]
         msg = ""
 
         receive_msg = receive["message"].replace("/hunt", "", 1).strip()
         param_segs = receive_msg.split(" ")
+        while "" in param_segs:
+            param_segs.remove("")
         TIMEFORMAT_MDHMS = "%m-%d %H:%M:%S"
         TIMEFORMAT_YMDHMS = "%Y-%m-%d %H:%M:%S"
         TIMEFORMAT_YMDHMS0 = "%Y/%m/%d %H:%M:%S"
@@ -183,8 +186,9 @@ def QQGroupCommand_hunt(*args, **kwargs):
             except IndexError:
                 optype = "help"
             if (optype == "help"):
-                msg = "獭獭の狩猎时钟 alpha.7\n\
+                msg = "獭獭の狩猎时钟 beta.1\n\
 /hunt help：帮助\n\
+/hunt public：切换公开\n\
 /hunt check：查询相关\n\
 /hunt kill：设置击杀时间相关\n\
 /hunt edit：手动修改相关\n\
@@ -262,19 +266,20 @@ def QQGroupCommand_hunt(*args, **kwargs):
                         # 待增加nickname
                         server_name = param_segs[2].strip()
                     except IndexError:
-                        server_name = hunt_group.server
+                        server_name = hunt_group.server.name
                     edittime = time.time()
                     server_info = Server.objects.filter(name=server_name)
                     if server_info.exists():
                         server_info = server_info[0]
-                        try:
-                            test_get_server_group = HuntGroup.objects.get(server=server_info.id)
-                            if server_name == hunt_group.server:
-                                msg = monster_kill(monster_name, hunt_group, server_info, edittime)
-                            else:
-                                msg = "该群组已经有管理群组，无法编辑"
-                        except HuntGroup.DoesNotExist:
-                            msg = monster_kill(monster_name, hunt_group, server_info, edittime)
+                        # try:
+                        #     test_get_server_group = HuntGroup.objects.get(server=server_info.id)
+                        #     if server_name == hunt_group.server:
+                        #         msg = monster_kill(monster_name, hunt_group, server_info, edittime)
+                        #     else:
+                        #         msg = "该群组已经有管理群组，无法编辑"
+                        # except HuntGroup.DoesNotExist:
+                        #     msg = monster_kill(monster_name, hunt_group, server_info, edittime)
+                        msg = monster_kill(monster_name, hunt_group, server_info, edittime)
                 except IndexError:
                     msg = "狩猎时钟list命令示例：\n/hunt kill [怪物名称] <服务器>\n设置怪物的击杀时间为现在\n仅可以修改本群组对应的服务器和没有管理群组的服务器"
             elif (optype == "list"):
@@ -384,14 +389,14 @@ def QQGroupCommand_hunt(*args, **kwargs):
                     server_info = Server.objects.filter(name=server_name)
                     if server_info.exists():
                         server_info = server_info[0]
-                        try:
-                            test_get_server_group = HuntGroup.objects.get(server=server_info.id)
-                            if server_name == hunt_group.server:
-                                msg = monster_kill(monster_name, hunt_group, server_info, edittime)
-                            else:
-                                msg = "该群组已经有管理群组，无法编辑"
-                        except HuntGroup.DoesNotExist:
-                            msg = monster_kill(monster_name, hunt_group, server_info, edittime)
+                        # try:
+                        #     test_get_server_group = HuntGroup.objects.get(server=server_info.id)
+                        #     if server_name == hunt_group.server:
+                        #         msg = monster_kill(monster_name, hunt_group, server_info, edittime)
+                        #     else:
+                        #         msg = "该群组已经有管理群组，无法编辑"
+                        # except HuntGroup.DoesNotExist:
+                        msg = monster_kill(monster_name, hunt_group, server_info, edittime)
                 except IndexError:
                     msg = "狩猎时钟edit命令示例：\n/hunt edit [怪物名称] [时间] <服务器>\n时间格式例：\n1970-01-01 00:00:00\n仅可以修改本群组对应的服务器和没有管理群组的服务器"
             elif (optype == "revoke"):
@@ -414,8 +419,30 @@ def QQGroupCommand_hunt(*args, **kwargs):
                             msg = log_revoke(monster_name, hunt_group, server_info)
                 except IndexError:
                     msg = "*"
+            elif optype == "public":
+                if user_info["role"]!="owner":
+                    msg = "仅群主有权限设置狩猎群组公开与否"
+                else:
+                    hunt_group.public = not hunt_group.public
+                    hunt_group.save(update_fields=["public"])
+                    msg = "本狩猎群组已被设置为{}群组".format("公开" if hunt_group.public else "私密")
+        elif len(param_segs) == 2 and param_segs[0] == "register":
+            servers = Server.objects.filter(name=param_segs[1])
+            if user_info["role"]!="owner":
+                msg = "仅群主有权限注册狩猎群组"
+            elif not servers.exists():
+                msg = "找不到服务器\"{}\"".format(param_segs[1])
+            else:
+                server = servers[0]
+                hg = HuntGroup(
+                    name="{}-{}".format(group, server),
+                    group=group,
+                    server=server,
+                )
+                hg.save()
+                msg = "狩猎群\"{}\"已建立".format(hg.name)
         else:
-            msg = "该群并非狩猎组群组"
+            msg = "该群并非狩猎组群组，请使用\"/hunt register 服务器\"来注册狩猎群组"
         msg = msg.strip()
         reply_action = reply_message_action(receive, msg)
         action_list.append(reply_action)

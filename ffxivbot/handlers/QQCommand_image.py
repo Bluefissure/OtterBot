@@ -35,7 +35,7 @@ def upload_image(img_url, token=""):
 def delete_image(img_hash):
     sm_req = requests.post(url="https://sm.ms/api/v2/delete/{}".format(img_hash), timeout=5)
     return sm_req.status_code
-
+    
 
 def QQCommand_image(*args, **kwargs):
     action_list = []
