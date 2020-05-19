@@ -29,7 +29,7 @@ def search_id(glamour_id):
         "Referer": "https://www.ffxivsc.cn/page/glamour.html?glamourId={}".format(glamour_id),
         "Accept-Encoding": "gzip, deflate, br"
         }
-        r = requests.get(glamour_url,headers=headers,timeout=15)
+        r = requests.get(glamour_url,headers=headers,timeout=5)
         r = r.json()
         flag = r["flag"]
         result = {}
@@ -100,7 +100,7 @@ def search_jr(job,race,sex,sort,time,bot_version,item_name,item_flag=False):
             src_url = "https://api.ffxivsc.cn/glamour/v1/librarySearchItem?language=zh&job={}&itemName={}&race={}&sex={}&sort=sort_great&time=time_all".format(job,item_name,race,sex)
         else:
             src_url = "https://api.ffxivsc.cn/glamour/v1/getLibraryFilterGlamours?job={}&race={}&sex={}&sort=sort_{}&time=time_{}&pageNum=1".format(job,race,sex,sort,time)
-        r = requests.get(src_url,headers=headers,timeout=15)
+        r = requests.get(src_url,headers=headers,timeout=5)
         r = r.json()
         i = random.randint(0,len(r["array"])-1)
         glamour_id = r["array"][i]["glamour_id"]
