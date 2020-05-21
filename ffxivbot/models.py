@@ -468,6 +468,13 @@ class Monster(models.Model):
     first_pop_cooldown = models.IntegerField(default=0)
     info = models.CharField(default="", max_length=128)
     status = models.TextField(default="{}")
+
+    def spawn_cd_hour(self):
+        return self.spawn_cooldown // 3600
+
+    def pop_cd_hour(self):
+        return self.pop_cooldown // 3600
+
     def __str__(self):
         return self.cn_name if self.cn_name else self.name
 

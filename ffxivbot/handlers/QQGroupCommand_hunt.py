@@ -255,10 +255,10 @@ def QQGroupCommand_hunt(*args, **kwargs):
                         else:
                             msg = "找不到狩猎怪\"{}\"".format(monster_name)
                 except IndexError:
-                    msg = "狩猎时钟check命令示例：\n\
-/hunt check [怪物名称] <服务器>\n\
-查询怪物的击杀时间、触发时间、触发说明等信息\n\
-注：触发时间已经计算好触发条件的日期和天气等条件"
+                    msg = """狩猎时钟check命令示例：
+/hunt check [怪物名称] <服务器>
+查询怪物的击杀时间、触发时间、触发说明等信息
+注：触发时间已经计算好触发条件的日期和天气等条件"""
             elif (optype == "kill"):
                 try:
                     monster_name = param_segs[1].strip()
@@ -382,23 +382,32 @@ def QQGroupCommand_hunt(*args, **kwargs):
                     edittimestr = YMD + " " + HMS
                     edittime = int(time.mktime(time.strptime(edittimestr, TIMEFORMAT_YMDHMS)))
                     try:
-                        # 待增加nickname
                         server_name = param_segs[4].strip()
                     except IndexError:
                         server_name = hunt_group.server
                     server_info = Server.objects.filter(name=server_name)
                     if server_info.exists():
                         server_info = server_info[0]
-                        # try:
-                        #     test_get_server_group = HuntGroup.objects.get(server=server_info.id)
-                        #     if server_name == hunt_group.server:
-                        #         msg = monster_kill(monster_name, hunt_group, server_info, edittime)
-                        #     else:
-                        #         msg = "该群组已经有管理群组，无法编辑"
-                        # except HuntGroup.DoesNotExist:
-                        msg = monster_kill(monster_name, hunt_group, server_info, edittime)
+                        if monster_name.startswith("maintain"):
+                            if "global" in monster_name:
+                                for server in Server.objects.all():
+                                    log = HuntLog.objects.filter(hunt_group=hunt_group, server=server, log_type="maintain").latest("id")
+                                    log.time = edittime
+                                    log.save()
+                                msg = "全体服务器维护时间被重置为{}".format(edittimestr)
+                            else:
+                                log = HuntLog.objects.filter(hunt_group=hunt_group, server=server_info, log_type="maintain").latest("id")
+                                log.time = edittime
+                                log.save()
+                                msg = "{}的维护时间被重置为{}".format(server_info, edittimestr)
+                        else:
+                            msg = monster_kill(monster_name, hunt_group, server_info, edittime)
                 except IndexError:
-                    msg = "狩猎时钟edit命令示例：\n/hunt edit [怪物名称] [时间] <服务器>\n时间格式例：\n1970-01-01 00:00:00\n仅可以修改本群组对应的服务器和没有管理群组的服务器"
+                    msg = """狩猎时钟edit命令示例：
+/hunt edit [怪物名称] [时间] <服务器>
+/hunt edit maintain(_global) [时间] <服务器>
+时间格式例：
+1970-01-01 00:00:00"""
             elif (optype == "revoke"):
                 try:
                     monster_name = param_segs[1].strip()
