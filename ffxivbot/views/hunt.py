@@ -18,7 +18,13 @@ def hunt(req):
     for server in all_servers:
         for monster in all_monsters:
             kill_logs = HuntLog.objects.filter(
-                            Q(hunt_group__group__member_list__contains=user.user_id) | Q(hunt_group__public=True),
+                            hunt_group__group__member_list__contains=user.user_id,
+                            monster=monster,
+                            server=server,
+                            log_type="kill")
+            if not kill_logs:
+                kill_logs = HuntLog.objects.filter(
+                            hunt_group__public=True,
                             monster=monster,
                             server=server,
                             log_type="kill")
@@ -71,6 +77,7 @@ def hunt(req):
             monster_info["next_spawn_time"] = time.strftime(TIMEFORMAT_MDHMS, time.localtime(next_spawn_time))
             monster_info["next_pop_time"] = time.strftime(TIMEFORMAT_MDHMS, time.localtime(next_pop_time))
             monster_info["info"] = monster.info
+            monster_info["resource"] = str(latest_kill_log.hunt_group)
             hunt_list.append(copy.deepcopy(monster_info))
     return ren2res('hunt.html', req, {"hunt_list": hunt_list, "resources": ", ".join(list(resource_groups))})
 
