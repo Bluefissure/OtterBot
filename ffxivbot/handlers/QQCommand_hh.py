@@ -46,12 +46,12 @@ def search_id(glamour_id):
         else:
             result["flag"] = 400
         return result
-    except IndexError as e:
-        return "Error: {},未能找到id信息".format(e)
+    except Exception as e:
+        return "Error: {},未能找到id信息".format(type(e))
 
 def result_to_img(result,glamour_id,bot_version):
     try:
-        if bot_version == 'air' and False:
+        if bot_version == 'air':
             msg ="此机器人版本为Air无法发送图片,请前往原地址查看\nhttps://www.ffxivsc.cn/page/glamour.html?glamourId={}".format(glamour_id)
         else:
             text = u"{}".format(result["sc"])
@@ -83,9 +83,9 @@ def result_to_img(result,glamour_id,bot_version):
             msg = "[CQ:image,file=base64://{}]\n".format(base64_str)
         return msg
     except Exception as e:
-        return "Error: {},封面图丢失,请前往原地址查看\nhttps://www.ffxivsc.cn/page/glamour.html?glamourId={}".format(e,glamour_id)
+        return "Error: {},封面图丢失,请前往原地址查看\nhttps://www.ffxivsc.cn/page/glamour.html?glamourId={}".format(type(e),glamour_id)
 
-def search_jr(job,race,sex,sort,time,bot_version):
+def search_jr(job,race,sex,sort,time,bot_version,item_name,item_flag=False):
     try:
         if sex != "all":
             sex = "%20-%20"+sex
@@ -96,7 +96,10 @@ def search_jr(job,race,sex,sort,time,bot_version):
         "Referer": "https://www.ffxivsc.cn/page/glamourList.html",
         "Accept-Encoding": "gzip, deflate, br"
         }
-        src_url = "https://api.ffxivsc.cn/glamour/v1/getLibraryFilterGlamours?job={}&race={}&sex={}&sort=sort_{}&time=time_{}&pageNum=1".format(job,race,sex,sort,time)
+        if item_flag:
+            src_url = "https://api.ffxivsc.cn/glamour/v1/librarySearchItem?language=zh&job={}&itemName={}&race={}&sex={}&sort=sort_great&time=time_all".format(job,item_name,race,sex)
+        else:
+            src_url = "https://api.ffxivsc.cn/glamour/v1/getLibraryFilterGlamours?job={}&race={}&sex={}&sort=sort_{}&time=time_{}&pageNum=1".format(job,race,sex,sort,time)
         r = requests.get(src_url,headers=headers,timeout=5)
         r = r.json()
         i = random.randint(0,len(r["array"])-1)
@@ -105,10 +108,10 @@ def search_jr(job,race,sex,sort,time,bot_version):
         if result["flag"] == 200:
             img = result_to_img(result,glamour_id,bot_version)
         else:
-            img = "筛选条件有误：{} {} {} {} {}".format(job,race,sex,sort,time)
+            img = "筛选条件有误，请通过/hh help查看帮助信息。"
         return img
     except Exception as e:
-        return "Error: {},查询不到符合条件内容".format(e)
+        return "Error: {},查询不到符合条件内容".format(type(e))
 
 
 def QQCommand_hh(*args, **kwargs):
@@ -127,11 +130,16 @@ def QQCommand_hh(*args, **kwargs):
             msg = "/hh [职业] [种族] [性别] : 随机返回至少一个参数的幻化| /hh 占星 or /hh 拉拉菲尔 男\n"+ \
                     "参数 rank [mode] : 随机返回一个职业或种族排行榜点赞最多的幻化|/hh 占星 rank month or /hh 拉拉菲尔 男 rank\n"+ \
                     "/hh rank [mode] : 随机返回一个排行榜点赞最多的幻化(可用mode: hour, week, month, all)\n"+ \
+                    "参数 item [mode] : 查询指定装备幻化搭配，装备名必须全名且正确\n"+ \
+                    "/hh [职业] [种族] [性别] item 巫骨低吟者短衣\n"+ \
                     "Powered by https://www.ffxivsc.cn"
         else:
             if "rank" in receive_msg:
                 sort = "great"
+            if "item" in receive_msg:
+                item_flag = True
             receive_msg = receive_msg.replace('rank','',1).strip()
+            receive_msg = receive_msg.replace('item','',1).strip()
             receive_msg_tmp = receive_msg.split(" ")
             if receive_msg_tmp[-1] in ["hour", "week", "month", "all"]:
                 time = receive_msg_tmp[-1]
@@ -188,7 +196,9 @@ def QQCommand_hh(*args, **kwargs):
                 race = "all"
             if not sex:
                 sex = "all"
-            msg = search_jr(job,race,sex,sort,time,bot_version)
+            if receive_msg:
+                item_name = receive_msg
+            msg = search_jr(job,race,sex,sort,time,bot_version,item_name,item_flag)
         msg = msg.strip()
         if msg:
             reply_action = reply_message_action(receive, msg)
@@ -200,5 +210,6 @@ def QQCommand_hh(*args, **kwargs):
         action_list.append(reply_message_action(receive, msg))
         logging.error(e)
         return action_list
+
 
 
