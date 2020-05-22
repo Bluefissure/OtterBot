@@ -46,8 +46,8 @@ def search_id(glamour_id):
         else:
             result["flag"] = 400
         return result
-    except IndexError as e:
-        return "Error: {},未能找到id信息".format(e)
+    except Exception as e:
+        return "Error: {},未能找到id信息".format(type(e))
 
 def result_to_img(result,glamour_id,bot_version):
     try:
@@ -83,9 +83,9 @@ def result_to_img(result,glamour_id,bot_version):
             msg = "[CQ:image,file=base64://{}]\n".format(base64_str)
         return msg
     except Exception as e:
-        return "Error: {},封面图丢失,请前往原地址查看\nhttps://www.ffxivsc.cn/page/glamour.html?glamourId={}".format(e,glamour_id)
+        return "Error: {},封面图丢失,请前往原地址查看\nhttps://www.ffxivsc.cn/page/glamour.html?glamourId={}".format(type(e),glamour_id)
 
-def search_jr(job,race,sex,sort,time,bot_version):
+def search_jr(job,race,sex,sort,time,bot_version,item_name,item_flag=False):
     try:
         if sex != "all":
             sex = "%20-%20"+sex
@@ -96,19 +96,22 @@ def search_jr(job,race,sex,sort,time,bot_version):
         "Referer": "https://www.ffxivsc.cn/page/glamourList.html",
         "Accept-Encoding": "gzip, deflate, br"
         }
-        src_url = "https://api.ffxivsc.cn/glamour/v1/getLibraryFilterGlamours?job={}&race={}&sex={}&sort=sort_{}&time=time_{}&pageNum=1".format(job,race,sex,sort,time)
+        if item_flag:
+            src_url = "https://api.ffxivsc.cn/glamour/v1/librarySearchItem?language=zh&job={}&itemName={}&race={}&sex={}&sort=sort_great&time=time_all".format(job,item_name,race,sex)
+        else:
+            src_url = "https://api.ffxivsc.cn/glamour/v1/getLibraryFilterGlamours?job={}&race={}&sex={}&sort=sort_{}&time=time_{}&pageNum=1".format(job,race,sex,sort,time)
         r = requests.get(src_url,headers=headers,timeout=5)
         r = r.json()
-        i = random.randint(0,len(r["array"])-1)
-        glamour_id = r["array"][i]["glamour_id"]
-        result = search_id(glamour_id)
-        if result["flag"] == 200:
+        if r["flag"] == 200:
+            i = random.randint(0,len(r["array"])-1)
+            glamour_id = r["array"][i]["glamour_id"]
+            result = search_id(glamour_id)
             img = result_to_img(result,glamour_id,bot_version)
         else:
-            img = "筛选条件有误：{} {} {} {} {}".format(job,race,sex,sort,time)
+            img = "未能筛选到结果，请尝试更改筛选信息，\n职业：{}\n种族：{}\n性别：{}\n装备名称：{}".format(job,race,sex,item_name)
         return img
     except Exception as e:
-        return "Error: {},查询不到符合条件内容".format(e)
+        return "Error: {}".format(type(e))
 
 
 def QQCommand_hh(*args, **kwargs):
@@ -121,16 +124,25 @@ def QQCommand_hh(*args, **kwargs):
         sort="new"
         time="all"
         rank = False
+        item_name = ""
+        item_flag = False
         receive_msg = receive["message"].replace('/hh','',1).strip()
         bot_version = json.loads(bot.version_info)["coolq_edition"] if bot.version_info != '{}' else "air"
         if receive_msg.find("help")==0 or receive_msg=="":
-            msg = "/hh [职业] [种族] [性别] : 随机返回至少一个参数的幻化| /hh 占星 or /hh 拉拉菲尔 男\n"+ \
-                    "参数 rank [mode] : 随机返回一个职业或种族排行榜点赞最多的幻化|/hh 占星 rank month or /hh 拉拉菲尔 男 rank\n"+ \
-                    "/hh rank [mode] : 随机返回一个排行榜点赞最多的幻化(可用mode: hour, week, month, all)\n"+ \
+            msg = "/hh [职业] [种族] [性别] : 随机返回至少一个参数的幻化\n"+\
+                    "如：/hh 占星 or /hh 拉拉菲尔 男\n"+ \
+                    "可加参数 rank [mode] : 随机返回一个职业或种族排行榜点赞最多的幻化(可用mode: hour, week, month, all)\n"+ \
+                    "如：/hh 公肥 rank month \n"+ \
+                    "/hh [职业] [种族] [性别] item [mode] : 查询指定装备至今点赞排行榜的幻化搭配，装备名必须全名且正确(无“rank”参数)\n"+ \
+                    "如：/hh 公肥 item 巫骨低吟者短衣\n"+ \
                     "Powered by https://www.ffxivsc.cn"
         else:
             if "rank" in receive_msg:
                 sort = "great"
+            if "item" in receive_msg:
+                item_flag = True
+                item_name = receive_msg.split("item")[1].strip()
+                receive_msg = receive_msg.replace('item','',1).replace(item_name,'',1).strip()
             receive_msg = receive_msg.replace('rank','',1).strip()
             receive_msg_tmp = receive_msg.split(" ")
             if receive_msg_tmp[-1] in ["hour", "week", "month", "all"]:
@@ -188,7 +200,7 @@ def QQCommand_hh(*args, **kwargs):
                 race = "all"
             if not sex:
                 sex = "all"
-            msg = search_jr(job,race,sex,sort,time,bot_version)
+            msg = search_jr(job,race,sex,sort,time,bot_version,item_name,item_flag)
         msg = msg.strip()
         if msg:
             reply_action = reply_message_action(receive, msg)
@@ -200,5 +212,6 @@ def QQCommand_hh(*args, **kwargs):
         action_list.append(reply_message_action(receive, msg))
         logging.error(e)
         return action_list
+
 
 
