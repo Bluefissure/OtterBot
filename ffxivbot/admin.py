@@ -104,7 +104,7 @@ class WeatherRateAdmin(admin.ModelAdmin):
 
 
 class TerritoryAdmin(admin.ModelAdmin):
-    list_display = ["id", "name"]
+    list_display = ["id", "name", "mapid"]
     search_fields = ['name']
 
 
@@ -128,9 +128,9 @@ class HuntGroupAdmin(admin.ModelAdmin):
     raw_id_fields  = ["group", "moderator"]
 
 class MonsterAdmin(admin.ModelAdmin):
-    list_display = ["name", "cn_name", "territory", "rank"]
+    list_display = ["name", "cn_name", "territory", "rank", "spawn_cd_hour", "pop_cd_hour"]
     search_fields = ["name ", "cn_name"]
-    list_filter = ["territory", "rank"]
+    list_filter = ["rank"]
 
 class HuntLogAdmin(admin.ModelAdmin):
     list_display = ["monster", "hunt_group", "server", "log_type", "time"]

@@ -64,6 +64,7 @@ def import_territory_csv(csv_file, **kwargs):
         key_list = key_type = []
         add_cnt = 0
         updated_cnt = 0
+        updated = set()
         for row_id, row in enumerate(tqdm(reader)):
             if row_id==0:
                 pass
@@ -78,6 +79,8 @@ def import_territory_csv(csv_file, **kwargs):
                     if not place_id:
                         continue
                     place_name = place_id2name[place_id]
+                    if place_name in updated:
+                        continue
                     (territory, created) = Territory.objects.get_or_create(name=place_name)
                     if created or kwargs.get("update", False):
                         wr_id = int(row[key_list.index("WeatherRate")])
@@ -90,6 +93,7 @@ def import_territory_csv(csv_file, **kwargs):
                         territory.weather_rate = wr
                         territory.mapid = map_id
                         territory.save()
+                        updated.add(place_name)
                         if kwargs.get("update", False):
                             updated_cnt += 1
                         else:

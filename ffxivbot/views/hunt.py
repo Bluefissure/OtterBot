@@ -1,8 +1,7 @@
 import copy
 import time
-
 from django.contrib.auth.decorators import login_required
-
+from django.db.models import Q
 from ffxivbot.models import Monster, Server, HuntLog
 from .ren2res import ren2res
 
@@ -14,6 +13,7 @@ def hunt(req):
     monster_info = {}
     hunt_list = []
     user = req.user.qquser
+    resource_groups = set()
     TIMEFORMAT_MDHMS = "%m-%d %H:%M:%S"
     for server in all_servers:
         for monster in all_monsters:
@@ -23,11 +23,22 @@ def hunt(req):
                             server=server,
                             log_type="kill")
             if not kill_logs:
+                kill_logs = HuntLog.objects.filter(
+                            hunt_group__public=True,
+                            monster=monster,
+                            server=server,
+                            log_type="kill")
+            if not kill_logs:
                 continue
             latest_kill_log = kill_logs.latest("id")
+            resource_groups.add(str(latest_kill_log.hunt_group))
             last_kill_time = latest_kill_log.time
             try:
-                global_maintain_log = HuntLog.objects.filter(server=server, log_type="maintain").latest("time")
+                global_maintain_log = HuntLog.objects.filter(
+                                            hunt_group__group__member_list__contains=user.user_id,
+                                            server=server,
+                                            log_type="maintain"
+                                        ).latest("time")
                 maintain_finish_time = global_maintain_log.time
             except HuntLog.DoesNotExist:
                 maintain_finish_time = 0
@@ -51,7 +62,6 @@ def hunt(req):
                 in_cd = "notcd"
             else:
                 in_cd = ""
-
             monster_info["territory"] = monster.territory
             monster_info["monster"] = monster.cn_name
             monster_info["server"] = server
@@ -67,8 +77,9 @@ def hunt(req):
             monster_info["next_spawn_time"] = time.strftime(TIMEFORMAT_MDHMS, time.localtime(next_spawn_time))
             monster_info["next_pop_time"] = time.strftime(TIMEFORMAT_MDHMS, time.localtime(next_pop_time))
             monster_info["info"] = monster.info
+            monster_info["resource"] = str(latest_kill_log.hunt_group)
             hunt_list.append(copy.deepcopy(monster_info))
-    return ren2res('hunt.html', req, {"hunt_list": hunt_list})
+    return ren2res('hunt.html', req, {"hunt_list": hunt_list, "resources": ", ".join(list(resource_groups))})
 
 
 def server2tag(server_name):

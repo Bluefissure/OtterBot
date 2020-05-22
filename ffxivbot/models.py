@@ -452,6 +452,7 @@ class HuntGroup(models.Model):
     moderator = models.ManyToManyField(QQUser, related_name="managed_hunt_group", blank=True)
     servermark = models.CharField(default="", max_length=16, blank=True, null=True)
     remark = models.CharField(default="", max_length=64, blank=True, null=True)
+    public = models.BooleanField(default=False)
     def __str__(self):
         return self.name if self.name else "{}-{}".format(self.group, self.server)
 
@@ -467,6 +468,13 @@ class Monster(models.Model):
     first_pop_cooldown = models.IntegerField(default=0)
     info = models.CharField(default="", max_length=128)
     status = models.TextField(default="{}")
+
+    def spawn_cd_hour(self):
+        return self.spawn_cooldown // 3600
+
+    def pop_cd_hour(self):
+        return self.pop_cooldown // 3600
+
     def __str__(self):
         return self.cn_name if self.cn_name else self.name
 

@@ -51,7 +51,7 @@ def search_id(glamour_id):
 
 def result_to_img(result,glamour_id,bot_version):
     try:
-        if bot_version == 'air':
+        if bot_version == 'air' and False:
             msg ="此机器人版本为Air无法发送图片,请前往原地址查看\nhttps://www.ffxivsc.cn/page/glamour.html?glamourId={}".format(glamour_id)
         else:
             text = u"{}".format(result["sc"])
@@ -108,7 +108,7 @@ def search_jr(job,race,sex,sort,time,bot_version,item_name,item_flag=False):
             result = search_id(glamour_id)
             img = result_to_img(result,glamour_id,bot_version)
         else:
-            img = "筛选条件有误，职业：{}\n种族：{}\n性别：{}\n装备名称：{}".format(job,race,sex,item_name)
+            img = "未能筛选到结果，请尝试更改筛选信息，\n职业：{}\n种族：{}\n性别：{}\n装备名称：{}".format(job,race,sex,item_name)
         return img
     except Exception as e:
         return "Error: {}".format(type(e))
@@ -124,6 +124,8 @@ def QQCommand_hh(*args, **kwargs):
         sort="new"
         time="all"
         rank = False
+        item_name = ""
+        item_flag = False
         receive_msg = receive["message"].replace('/hh','',1).strip()
         bot_version = json.loads(bot.version_info)["coolq_edition"] if bot.version_info != '{}' else "air"
         if receive_msg.find("help")==0 or receive_msg=="":
@@ -142,6 +144,7 @@ def QQCommand_hh(*args, **kwargs):
                 item_name = receive_msg.split("item")[1].strip()
                 receive_msg = receive_msg.replace('item','',1).replace(item_name,'',1).strip()
             receive_msg = receive_msg.replace('rank','',1).strip()
+            receive_msg = receive_msg.replace('item','',1).strip()
             receive_msg_tmp = receive_msg.split(" ")
             if receive_msg_tmp[-1] in ["hour", "week", "month", "all"]:
                 time = receive_msg_tmp[-1]
