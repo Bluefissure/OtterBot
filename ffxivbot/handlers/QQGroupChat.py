@@ -20,6 +20,7 @@ def QQGroupChat(*args, **kwargs):
         QQ_BASE_URL = global_config.get("QQ_BASE_URL", None)
         TULING_API_URL = global_config.get("TULING_API_URL", None)
         TULING_API_KEY = global_config.get("TULING_API_KEY", None)
+        ADMIN_ID = global_config.get("ADMIN_ID", "")
         BOT_FATHER = global_config.get("BOT_FATHER", None)
         BOT_MOTHER = global_config.get("BOT_MOTHER", None)
         USER_NICKNAME = global_config.get("USER_NICKNAME", "小暗呆")
@@ -78,7 +79,14 @@ def QQGroupChat(*args, **kwargs):
 
         #tuling chatbot
         chat_enable = group_commands.get("/chat", "enable") != "disable"
-        if("[CQ:at,qq=%s]"%(receive["self_id"]) in receive["message"] and chat_enable):
+        chatting = "[CQ:at,qq=%s]"%(receive["self_id"]) in receive["message"]
+        wechat = False
+        if "self_wechat_id" in receive:
+            wechat = True
+            mentions = receive["data"]["payload"].get("mention", [])
+            chatting = mentions and mentions[0] == receive["self_wechat_id"]
+            print("mentions:{} chatting:{}".format(mentions, chatting))
+        if(chatting and chat_enable):
             user = QQUser.objects.filter(user_id=user_id)
             if user.exists():
                 user = user.first()
@@ -95,7 +103,7 @@ def QQGroupChat(*args, **kwargs):
             tuling_data["reqType"] = 0 
             tuling_data["perception"] = {"inputText": {"text": receive_msg}}
             tuling_data["userInfo"] = {"apiKey": TULING_API_KEY if bot.tuling_token=="" else bot.tuling_token,
-                                         "userId": receive["user_id"], 
+                                         "userId": receive["user_id"] if not wechat else ADMIN_ID, 
                                          "groupId": group.group_id
                                          }
             r = requests.post(url=TULING_API_URL,data=json.dumps(tuling_data),timeout=3)

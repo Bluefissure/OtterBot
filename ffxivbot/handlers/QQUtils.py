@@ -317,7 +317,7 @@ def search_item(name, FF14WIKI_BASE_URL, FF14WIKI_API_URL, url_quote=True):
         s = requests.Session()
         headers = {'Referer':'https://ff14.huijiwiki.com/wiki/ItemSearch?name={}'.format(urllib.parse.quote(name))}
         r = s.get(search_url, headers=headers, timeout=5)
-        # print(r.text)
+        print(search_url)
         res_data = json.loads(r.text)
         bs = BeautifulSoup(res_data["parse"]["text"]["*"], "html.parser")
         if ("没有" in bs.p.string):
@@ -349,6 +349,8 @@ def search_item(name, FF14WIKI_BASE_URL, FF14WIKI_API_URL, url_quote=True):
         }
     except json.decoder.JSONDecodeError:
         print(r.text)
+    
+    print(res_data)
     return res_data
 
 
@@ -375,7 +377,7 @@ def check_raid(api_url, raid_data, raid_name, wol_name, server_name):
                     else:
                         raid_info += "{}{}: 数据缺失\n".format(raid_name, l)
                 else:
-                    raid_info += "{}{} : 仍未攻破\n".format(raid_name, l)
+                    raid_info += "{}{}: 仍未攻破\n".format(raid_name, l)
             if not ok:
                 msg += "{}--{} 还没有突破过任何零式{}，请继续努力哦~\n".format(server_name, wol_name, raid_name)
             else:

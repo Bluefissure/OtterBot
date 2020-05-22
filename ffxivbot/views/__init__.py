@@ -3,6 +3,7 @@ from .quest import quest
 from .quest_tooltip import quest_tooltip
 from .api import api
 from .qqpost import qqpost
+from .wechatpost import wechatpost
 from .image import image
 from .hunt import hunt
 from .qq_login import qq_login

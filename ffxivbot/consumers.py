@@ -30,7 +30,7 @@ from channels.exceptions import StopConsumer
 from django.db import transaction
 
 channel_layer = get_channel_layer()
-logging.basicConfig(format="%(levelname)s:%(message)s", level=logging.ERROR)
+logging.basicConfig(format="%(levelname)s:%(asctime)s:%(name)s:%(message)s", level=logging.INFO)
 LOGGER = logging.getLogger(__name__)
 FFXIVBOT_ROOT = os.environ.get("FFXIVBOT_ROOT", settings.BASE_DIR)
 CONFIG_PATH = os.environ.get(
@@ -91,16 +91,22 @@ class WSConsumer(AsyncWebsocketConsumer):
             pass
         try:
             ws_self_id = headers["x-self-id"]
-            ws_client_role = headers["x-client-role"]
+            # ws_client_role = headers["x-client-role"]
             ws_access_token = headers.get("authorization", "empty_access_token").replace("Token", "").strip()
             client_role = headers["x-client-role"]
             user_agent = headers["user-agent"]
             if client_role != "Universal":
-                LOGGER.error("Uknown client_role: {}".format(client_role))
-                await self.accept()
+                LOGGER.error("Unkown client_role: {}".format(client_role))
+                # await self.close()
+                return
             if "CQHttp" not in user_agent:
-                LOGGER.error("Uknown user_agent: {}".format(user_agent))
-                await self.accept()
+                LOGGER.error("Unkown user_agent: {} for {}".format(user_agent, ws_self_id))
+                return
+            else:
+                version = user_agent.replace("CQHttp/", "").split(".")
+                if version < "4.14.1".split("."):
+                    LOGGER.error("Unsupport user_agent: {} for {}".format(user_agent, ws_self_id))
+                    return
 
             bot = None
             # with transaction.atomic():
@@ -128,27 +134,34 @@ class WSConsumer(AsyncWebsocketConsumer):
             LOGGER.error(
                 "%s:%s:API:AUTH_FAIL from %s" % (ws_self_id, ws_access_token, true_ip)
             )
-            await self.close()
-        except Exception as e:
+            # await self.close()
+        except:
             LOGGER.error("Unauthed connection from %s" % (true_ip))
             LOGGER.error(headers)
             traceback.print_exc()
-            await self.close()
+            # await self.close()
 
     async def disconnect(self, close_code):
         try:
-            self.pub.exit()
-            LOGGER.debug(
-                "Universal Channel disconnect from {} by channel:{} {}s".format(
+            # self.pub.exit()
+            disconnect = json.loads(self.bot.disconnections)
+            disconnect.append(int(time.time()))
+            while len(disconnect) > 100:
+                disconnect = disconnect[1:]
+            self.bot.disconnections = json.dumps(disconnect)
+            self.bot.save(update_fields=["disconnections"])
+            LOGGER.info(
+                "Universal Channel disconnect from {} by channel:{} Live for {}s, {} disconnections".format(
                     self.bot.user_id,
                     self.channel_name,
-                    int(time.time()) - int(self.bot.api_time),
+                    int(time.time()) - int(self.bot.event_time),
+                    len(disconnect)
                 )
             )
             gc.collect()
         except BaseException:
             pass
-        raise StopConsumer
+        # raise StopConsumer
 
     async def receive(self, text_data):
         # try:
@@ -164,7 +177,6 @@ class WSConsumer(AsyncWebsocketConsumer):
             self.bot.event_time = int(time.time())
             self.bot.save(update_fields=["event_time"])
             self.config = json.load(open(CONFIG_PATH, encoding="utf-8"))
-            already_reply = False
             try:
                 receive = json.loads(text_data)
                 if (
@@ -220,8 +232,8 @@ class WSConsumer(AsyncWebsocketConsumer):
                 if receive["post_type"] == "request" or receive["post_type"] == "event":
                     priority = 3
                     self.pub.send(text_data, priority)
-
             except Exception as e:
+                LOGGER.error("Error {} while handling message {}".format(type(e), text_data))
                 traceback.print_exc()
             # self.bot.save()
         else:

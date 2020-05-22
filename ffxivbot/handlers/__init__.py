@@ -38,7 +38,9 @@ commands = {
   "/shorten":"微博短链",
   "/mxh":"梅溪湖cp短打生成器（\"/mxh 海德林 佐迪亚克\"）",
   "/hh":"光之收藏家幻化推荐(\"/hh help\")",
-  "/luck": "浅草寺求签"
+  "/luck": "浅草寺求签",
+  "/abv": "Bilibili av/BV号互转",
+  "/turnip": "动物森友会大头菜价格预测"
 }
   # "/joke":"讽刺笑话（\"/joke 996|强东|建设一流公司|程序员|公司\"）",
 
@@ -87,7 +89,9 @@ alter_commands = {
   "/坚韧":"/fsx 坚韧",
   "/直击":"/fsx 直击",
   "/天气":"/weather",
-  "/宝图":"/treasure"
+  "/宝图":"/treasure",
+  "/大头菜":"/turnip",
+  "/nuannuan":"/nuannuan text"
 }
 
 from .QQCommand_cat import QQCommand_cat
@@ -127,8 +131,10 @@ from .QQCommand_fsx import QQCommand_fsx
 from .QQCommand_treasure import QQCommand_treasure
 from .QQCommand_hh import QQCommand_hh
 from .QQCommand_luck import QQCommand_luck
+from .QQCommand_abv import QQCommand_abv
 
 from .arknights.QQCommand_akhr import QQCommand_akhr
+from .animalcrossing.QQCommand_turnip import QQCommand_turnip
 
 
 from .QQGroupCommand_group import QQGroupCommand_group

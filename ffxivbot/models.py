@@ -1,5 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
+from datetime import datetime
+from pytz import timezone
 import json
 import time
 
@@ -66,7 +68,7 @@ class LiveUser(models.Model):
 
 
 class QQGroup(models.Model):
-    group_id = models.CharField(primary_key=True, max_length=16, unique=True)
+    group_id = models.CharField(primary_key=True, max_length=64, unique=True)
     welcome_msg = models.TextField(default="", blank=True)
     bots = models.TextField(default="[]")
     repeat_ban = models.IntegerField(default=-1)
@@ -125,7 +127,7 @@ class ChatMessage(models.Model):
 
 
 class BanMember(models.Model):
-    user_id = models.CharField(max_length=16)
+    user_id = models.CharField(max_length=64)
     group = models.ForeignKey(QQGroup, on_delete=models.CASCADE)
     ban_time = models.IntegerField(default=0)
     vote_list = models.TextField(default="{}")
@@ -133,7 +135,7 @@ class BanMember(models.Model):
 
 
 class Revenge(models.Model):
-    user_id = models.CharField(max_length=16)
+    user_id = models.CharField(max_length=64)
     group = models.ForeignKey(QQGroup, on_delete=models.CASCADE)
     vote_list = models.TextField(default="{}")
     timestamp = models.BigIntegerField(default=0)
@@ -191,7 +193,8 @@ class Vote(models.Model):
 
 class QQBot(models.Model):
     name = models.CharField(max_length=16)
-    user_id = models.CharField(max_length=16, unique=True)
+    user_id = models.CharField(max_length=64, unique=True)
+    wechat_id = models.CharField(max_length=64, default="", blank=True)
     owner_id = models.CharField(max_length=16)
     access_token = models.CharField(max_length=16, default="")
     auto_accept_friend = models.BooleanField(default=False)
@@ -276,7 +279,7 @@ class SorryGIF(models.Model):
 
 class QQUser(models.Model):
     dbuser = models.OneToOneField(User, on_delete=models.DO_NOTHING, blank=True, null=True, related_name="qquser")
-    user_id = models.CharField(max_length=16, unique=True)
+    user_id = models.CharField(max_length=64, unique=True)
     bot_token = models.CharField(max_length=16, blank=True)
     able_to_upload_image = models.BooleanField(default=True)
     last_api_time = models.BigIntegerField(default=0)
@@ -289,8 +292,9 @@ class QQUser(models.Model):
     nickname = models.CharField(default="", max_length=64, blank=True)
     avatar_url = models.CharField(default="", max_length=256, blank=True)
     open_id = models.CharField(default="", max_length=128, blank=True)
-    vcode = models.CharField(default="", max_length=16)
+    vcode = models.CharField(default="", max_length=16, blank=True)
     vcode_time = models.BigIntegerField(default=0)
+    timezone = models.CharField(default="Asia/Shanghai", max_length=32)
 
     def __str__(self):
         return str(self.user_id)
@@ -437,8 +441,8 @@ class CommandLog(models.Model):
     command = models.CharField(max_length=32)
     message = models.TextField(default="")
     bot_id = models.CharField(max_length=16)
-    user_id = models.CharField(max_length=16)
-    group_id = models.CharField(max_length=16)
+    user_id = models.CharField(max_length=64)
+    group_id = models.CharField(max_length=64)
 
 
 class HuntGroup(models.Model):
@@ -448,6 +452,7 @@ class HuntGroup(models.Model):
     moderator = models.ManyToManyField(QQUser, related_name="managed_hunt_group", blank=True)
     servermark = models.CharField(default="", max_length=16, blank=True, null=True)
     remark = models.CharField(default="", max_length=64, blank=True, null=True)
+    public = models.BooleanField(default=False)
     def __str__(self):
         return self.name if self.name else "{}-{}".format(self.group, self.server)
 
@@ -518,6 +523,7 @@ class Screen(models.Model):
     name = models.CharField(default="",max_length=64,blank=True)
     nickname = models.TextField(default="{}")
     classname = models.CharField(default="",max_length=64,blank=True)
+    
     def __str__(self):
         return str(self.name)
 
@@ -530,3 +536,25 @@ class LuckData(models.Model):
 
     def __str__(self):
         return str(self.number)
+
+class TurnipPrice(models.Model):
+    user = models.ForeignKey(QQUser, on_delete=models.CASCADE)
+    time = models.BigIntegerField(default=0)
+    price = models.IntegerField(default=0)
+
+    def day(self):
+        t = datetime.fromtimestamp(self.time, tz=timezone(self.user.timezone))
+        return (t.weekday() + 1) % 7  # Sunday: 0
+
+    def hour(self):
+        t = datetime.fromtimestamp(self.time, tz=timezone(self.user.timezone))
+        return t.hour
+    
+    def am_pm(self):
+        if self.day() == 0: # Sunday only have morning
+            return "am"
+        return "am" if self.hour() < 12 else "pm"
+
+    def __str__(self):
+        return "{}#{}".format(self.user, self.day())
+    

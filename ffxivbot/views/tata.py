@@ -3,7 +3,13 @@ from django.http import HttpResponse, JsonResponse
 from FFXIV import settings
 from ffxivbot.models import *
 from .ren2res import ren2res
+import json, os
 
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+FFXIVBOT_ROOT = os.environ.get("FFXIVBOT_ROOT", BASE_DIR)
+CONFIG_PATH = os.environ.get(
+    "FFXIVBOT_CONFIG", os.path.join(FFXIVBOT_ROOT, "ffxivbot/config.json")
+)
 
 def tata(req):
     if req.is_ajax() and req.method == "POST":
@@ -47,7 +53,7 @@ def tata(req):
                 bot.api_post_url = api_post_url
                 bot.auto_accept_friend = autoFriend and "true" in autoFriend
                 bot.auto_accept_invite = autoInvite and "true" in autoInvite
-                if len(QQBot.objects.all()) >= 300 and bot_created:
+                if len(QQBot.objects.all()) >= 250 and bot_created:
                     res_dict = {"response": "error", "msg": "机器人总数过多，请稍后再试"}
                     return JsonResponse(res_dict)
                 bot.save()
@@ -82,6 +88,12 @@ def tata(req):
                 response[
                     "Content-Disposition"
                 ] = 'attachment; filename="{}.json"'.format(bot.user_id)
+                config = json.load(open(CONFIG_PATH, encoding="utf-8"))
+                web_base = config.get("WEB_BASE_URL", "xn--v9x.net")
+                web_base = web_base.replace("https://", "")
+                web_base = web_base.replace("http://", "")
+                ws_url = "ws://" + os.path.join(web_base, "ws")
+                http_url = "http://" + os.path.join(web_base, "http")
                 bot_conf = json.loads(
                     '{\
                         "host": "0.0.0.0",\
@@ -90,7 +102,7 @@ def tata(req):
                         "ws_host": "0.0.0.0",\
                         "ws_port": 6700,\
                         "use_ws": false,\
-                        "ws_reverse_url": "wss://xn--v9x.net/ws/",\
+                        "ws_reverse_url": "",\
                         "ws_reverse_use_universal_client": true,\
                         "enable_heartbeat": true,\
                         "use_ws_reverse": "yes",\
@@ -111,6 +123,12 @@ def tata(req):
                         "enable_backward_compatibility": true\
                     }'
                 )
+                if bot.api_post_url:
+                    bot_conf["use_ws_reverse"] = False
+                    bot_conf["post_url"] = http_url
+                else:
+                    bot_conf["use_ws_reverse"] = True
+                    bot_conf["ws_reverse_url"] = ws_url
                 bot_conf["access_token"] = bot.access_token
                 bot_conf["secret"] = bot.access_token
                 response.write(json.dumps(bot_conf, indent=4))

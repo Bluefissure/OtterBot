@@ -28,7 +28,7 @@ def QQCommand_bot(*args, **kwargs):
             if receive["message_type"] == "group":
                 msg = "[CQ:at,qq={}] 你确定要在群里面申请token从而公之于众？".format(receive["user_id"])
             else:
-                (qquser, created) = QQUser.objects.get_or_create(
+                (qquser, _) = QQUser.objects.get_or_create(
                     user_id=receive["user_id"]
                 )
                 qquser.bot_token = second_msg
@@ -40,7 +40,7 @@ def QQCommand_bot(*args, **kwargs):
                 msg = "[CQ:at,qq={}] 你确定要在群里面申请注册认证码从而公之于众？".format(receive["user_id"])
             else:
                 vcode = ''.join(random.choices(string.ascii_uppercase + string.digits, k=16))
-                (qquser, created) = QQUser.objects.get_or_create(
+                (qquser, _) = QQUser.objects.get_or_create(
                     user_id=receive["user_id"]
                 )
                 qquser.vcode = vcode
@@ -48,7 +48,7 @@ def QQCommand_bot(*args, **kwargs):
                 qquser.save()
                 msg = "用户 {} 的注册认证码为：{}".format(qquser, qquser.vcode)
                 msg += "\n请在五分钟内访问以下地址进行注册认证："
-                msg += "{}register/?vcode={}&email={}@qq.com".format(WEB_BASE_URL, vcode, qquser)
+                msg += os.path.join(WEB_BASE_URL, "register/?vcode={}&email={}@qq.com".format(vcode, qquser))
         elif second_command == "text":
             if int(user_id) != int(bot.owner_id):
                 msg = "仅机器人领养者能修改机器人状态"
@@ -64,19 +64,17 @@ def QQCommand_bot(*args, **kwargs):
                 bot.save(update_fields=["r18"])
                 msg = "HSO已{}".format("启用" if bot.r18 else "禁用")
         elif(second_command == "info"):
-            if int(user_id) != int(bot.owner_id):
-                msg = "仅机器人领养者能查询机器人状态"
-            else:
-                friend_list = json.loads(bot.friend_list)
-                if not friend_list:
-                    friend_list = {"friends": []}
-                msg = "姓名：{}\n".format(bot.name)+\
-                        "账号：{}\n".format(bot.user_id)+\
-                        "领养者：[CQ:at,qq={}]\n".format(bot.owner_id)+\
-                        "群数量：{}\n".format(len(json.loads(bot.group_list)))+\
-                        "好友数量：{}\n".format(len(friend_list.get("friends", [])))+\
-                        "文本兼容：{}\n".format(bot.share_banned)+\
-                        "HSO: {}\n".format(bot.r18)
+            friend_list = json.loads(bot.friend_list)
+            if not friend_list:
+                friend_list = {"friends": []}
+            msg = "姓名：{}\n".format(bot.name)+\
+                    "账号：{}\n".format(bot.user_id)+\
+                    "所在窝：{}\n".format(WEB_BASE_URL.rstrip('/'))+\
+                    "领养者：{}\n".format(bot.owner_id)+\
+                    "群数量：{}\n".format(len(json.loads(bot.group_list)))+\
+                    "好友数量：{}\n".format(len(friend_list.get("friends", [])))+\
+                    "文本兼容：{}\n".format(bot.share_banned)+\
+                    "HSO: {}\n".format(bot.r18)
             msg = msg.strip()
         elif receive_msg == "update":
             if int(user_id) != int(bot.owner_id):
