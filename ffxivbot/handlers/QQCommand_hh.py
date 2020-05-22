@@ -51,7 +51,7 @@ def search_id(glamour_id):
 
 def result_to_img(result,glamour_id,bot_version):
     try:
-        if bot_version == 'air' and False:
+        if bot_version == 'air':
             msg ="此机器人版本为Air无法发送图片,请前往原地址查看\nhttps://www.ffxivsc.cn/page/glamour.html?glamourId={}".format(glamour_id)
         else:
             text = u"{}".format(result["sc"])
@@ -144,6 +144,7 @@ def QQCommand_hh(*args, **kwargs):
                 item_name = receive_msg.split("item")[1].strip()
                 receive_msg = receive_msg.replace('item','',1).replace(item_name,'',1).strip()
             receive_msg = receive_msg.replace('rank','',1).strip()
+            receive_msg = receive_msg.replace('item','',1).strip()
             receive_msg_tmp = receive_msg.split(" ")
             if receive_msg_tmp[-1] in ["hour", "week", "month", "all"]:
                 time = receive_msg_tmp[-1]

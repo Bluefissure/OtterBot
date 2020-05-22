@@ -92,8 +92,8 @@ def tata(req):
                 web_base = config.get("WEB_BASE_URL", "xn--v9x.net")
                 web_base = web_base.replace("https://", "")
                 web_base = web_base.replace("http://", "")
-                ws_url = "ws://" + os.path.join(web_base, "ws")
-                http_url = "http://" + os.path.join(web_base, "http")
+                ws_url = "ws://" + os.path.join(web_base, "ws/")
+                http_url = "http://" + os.path.join(web_base, "http/")
                 bot_conf = json.loads(
                     '{\
                         "host": "0.0.0.0",\

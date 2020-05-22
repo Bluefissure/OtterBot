@@ -72,7 +72,7 @@ def load_images(**config):
 def save_images(**config):
     keywords = ["色", "hso", "猫", "cat", "獭", "笑话", "骑", "DK", "武", "枪刃", "战士",
         "占星", "白魔", "学者", "赤魔", "召唤", "黑魔", "青魔", "诗人", "吟游", "舞者", "机工",
-        "忍者", "武士", "武僧", "龙骑"]
+        "忍者", "武士", "武僧", "龙骑", "抛竿"]
     ok_cnt = 0
     file = config.get("file", "images.txt")
     with codecs.open(file, "w", "utf8") as f:
