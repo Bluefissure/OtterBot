@@ -51,7 +51,7 @@ def search_id(glamour_id):
 
 def result_to_img(result,glamour_id,bot_version):
     try:
-        if bot_version == 'air':
+        if bot_version == 'air' and False:
             msg ="此机器人版本为Air无法发送图片,请前往原地址查看\nhttps://www.ffxivsc.cn/page/glamour.html?glamourId={}".format(glamour_id)
         else:
             text = u"{}".format(result["sc"])
