@@ -155,9 +155,6 @@ class ScreenAdmin(admin.ModelAdmin):
 class LuckDataAdmin(admin.ModelAdmin):
     list_display = ['number']
 
-class TurnipPriceAdmin(admin.ModelAdmin):
-    list_display = ['user', 'time', 'price']
-    raw_id_fields  = ["user"]
 
 admin.site.register(QQGroup, QQGroupAdmin)
 admin.site.register(CustomReply, CustomReplyAdmin)
@@ -190,4 +187,3 @@ admin.site.register(IFTTTChannel, IFTTTChannelAdmin)
 admin.site.register(TreasureMap, TreasureMapAdmin)
 admin.site.register(Screen, ScreenAdmin)
 admin.site.register(LuckData, LuckDataAdmin)
-admin.site.register(TurnipPrice, TurnipPriceAdmin)

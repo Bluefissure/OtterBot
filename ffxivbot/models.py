@@ -543,25 +543,3 @@ class LuckData(models.Model):
 
     def __str__(self):
         return str(self.number)
-
-class TurnipPrice(models.Model):
-    user = models.ForeignKey(QQUser, on_delete=models.CASCADE)
-    time = models.BigIntegerField(default=0)
-    price = models.IntegerField(default=0)
-
-    def day(self):
-        t = datetime.fromtimestamp(self.time, tz=timezone(self.user.timezone))
-        return (t.weekday() + 1) % 7  # Sunday: 0
-
-    def hour(self):
-        t = datetime.fromtimestamp(self.time, tz=timezone(self.user.timezone))
-        return t.hour
-    
-    def am_pm(self):
-        if self.day() == 0: # Sunday only have morning
-            return "am"
-        return "am" if self.hour() < 12 else "pm"
-
-    def __str__(self):
-        return "{}#{}".format(self.user, self.day())
-    

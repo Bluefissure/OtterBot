@@ -29,13 +29,14 @@ def upload_image(img_url, token=""):
     sm_req = requests.post(
         headers=headers, url="https://sm.ms/api/v2/upload", files={"smfile": original_image.content}, timeout=30
     )
+    # print(sm_req.text)
     return json.loads(sm_req.text)
 
 
 def delete_image(img_hash):
     sm_req = requests.post(url="https://sm.ms/api/v2/delete/{}".format(img_hash), timeout=5)
     return sm_req.status_code
-    
+
 
 def QQCommand_image(*args, **kwargs):
     action_list = []
