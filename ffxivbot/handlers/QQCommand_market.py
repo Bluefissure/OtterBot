@@ -122,19 +122,23 @@ Powered by https://universalis.app"""
                 msg = '找不到服务器"{}"'.format(server_name)
                 return msg
         item_name = command_seg[1]
-        msg = get_market_data(server_name, item_name)
+        hq = False
+        if (item_name.startswith("HQ")):
+            hq = True
+            item_name = item_name[2:]
+        msg = get_market_data(server_name, item_name, hq)
         user.last_api_time = time.time()
         user.save(update_fields=["last_api_time"])
         return msg
     elif command_seg[0].lower() == "upload":
         msg = """您可以使用以下几种方式上传交易数据：
 1.如果您使用过国际服的 XIVLauncher，您可以使用国服支持的Dalamud版本 https://url.cn/6L7nD0gF
-2.如果您使用过ACT，您可以加载ACT插件 Universalis Upload Plugin
-3.如果您想不依赖于其他程序，您可以使用 Universalis Standalone
-4.如果您使用过Teamcraft客户端，您可以使用其进行上传
+2.如果您使用过ACT，您可以加载ACT插件 UniversalisPlugin
+3.如果您想不依赖于其他程序，您可以使用 UniversalisStandalone
+4.如果您使用过Teamcraft客户端，您也可以使用其进行上传
 其中 2. 3. 两点所需软件请于 https://url.cn/TEY1QKKV 下载 UniversalisApp.zip
 Powered by https://universalis.app"""
-        return msg
+    return msg
 
 
 def QQCommand_market(*args, **kwargs):
