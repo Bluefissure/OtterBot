@@ -117,16 +117,13 @@ Powered by https://universalis.app"""
         elif server_name == "猫":
             server_name = "猫小胖"
         else:
-            server = Server.objects.filter(name=server_name)
-            if not server.exists():
-                msg = '找不到服务器"{}"'.format(server_name)
-                return msg
+            pass
+            # server = Server.objects.filter(name=server_name)
+            # if not server.exists():
+            #     msg = '找不到服务器"{}"'.format(server_name)
+            #     return msg
         item_name = command_seg[1]
-        hq = False
-        if (item_name.startswith("HQ")):
-            hq = True
-            item_name = item_name[2:]
-        msg = get_market_data(server_name, item_name, hq)
+        msg = get_market_data(server_name, item_name)
         user.last_api_time = time.time()
         user.save(update_fields=["last_api_time"])
         return msg

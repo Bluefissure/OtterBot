@@ -65,6 +65,7 @@ alter_commands = {
     "/pzz": "/weather 优雷卡常风之地 强风",
     "/blizzard": "/weather 优雷卡恒冰之地 暴雪",
     "/kx": "/weather 优雷卡恒冰之地 暴雪",
+    "/skr": "/weather 优雷卡涌火之地 暴雪",
     "/fog": "/weather 优雷卡恒冰之地 薄雾",
     "/thunder": "/weather 优雷卡恒冰之地 打雷",
     "/heat_wave": "/weather 优雷卡恒冰之地 热风",
