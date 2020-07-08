@@ -71,7 +71,7 @@ def get_market_data(server_name, item_name, hq=False):
         retainer_name = listing["retainerName"]
         if "dcName" in j:
             retainer_name += "({})".format(localize_world_name(listing["worldName"]))
-        msg += "{}x{} = {} {} {}\n".format(
+        msg += "{:,}x{} = {:,} {} {}\n".format(
             listing["pricePerUnit"],
             listing["quantity"],
             listing["total"],
@@ -123,7 +123,11 @@ Powered by https://universalis.app"""
             #     msg = '找不到服务器"{}"'.format(server_name)
             #     return msg
         item_name = command_seg[1]
-        msg = get_market_data(server_name, item_name)
+        hq = "hq" in item_name or "HQ" in item_name
+        if hq:
+            item_name = item_name.replace("hq", "", 1)
+            item_name = item_name.replace("HQ", "", 1)
+        msg = get_market_data(server_name, item_name, hq)
         user.last_api_time = time.time()
         user.save(update_fields=["last_api_time"])
         return msg

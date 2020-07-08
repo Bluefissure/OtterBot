@@ -150,16 +150,28 @@ def QQCommand_image(*args, **kwargs):
             category = msg_list[0].strip()
             get_info = "info" in category
             category = category.replace("info", "", 1)
-            imgs = Image.objects.filter(key=category)
-            if not imgs.exists():
-                msg = '未找到类别"{}"的图片'.format(category)
-            else:
-                img = random.sample(list(imgs), 1)[0]
-                msg = "[CQ:image,cache=0,file={}]\n".format(img.domain + img.path)
-                if get_info:
-                    msg += "{}\nCategory:{}\nUploaded by:{}\n".format(
-                        img.name, img.key, img.add_by
-                    )
+            found = False
+            tries = 0
+            while not found and tries < 10:
+                tries += 1
+                imgs = Image.objects.filter(key=category)
+                if not imgs.exists():
+                    msg = '未找到类别"{}"的图片'.format(category)
+                    found = True
+                else:
+                    img = random.sample(list(imgs), 1)[0]
+                    img_url = img.domain + img.path
+                    r = requests.head(img_url, timeout=3)
+                    if r.status_code == 404:
+                        img.delete()
+                        print("deleting {}".format(img))
+                    else:
+                        found = True
+                        msg = "[CQ:image,cache=0,file={}]\n".format(img_url)
+                        if get_info:
+                            msg += "{}\nCategory:{}\nUploaded by:{}\n".format(
+                                img.name, img.key, img.add_by
+                            )
         msg = msg.strip()
         reply_action = reply_message_action(receive, msg)
         action_list.append(reply_action)
