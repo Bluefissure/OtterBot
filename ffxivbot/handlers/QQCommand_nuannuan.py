@@ -1,10 +1,14 @@
 from .QQEventHandler import QQEventHandler
 from .QQUtils import *
+from .RsshubUtil import RsshubUtil
 from ffxivbot.models import *
 import logging
 import json
 import random
 import requests
+import re
+import traceback
+from bs4 import BeautifulSoup
 
 
 def QQCommand_nuannuan(*args, **kwargs):
@@ -14,21 +18,30 @@ def QQCommand_nuannuan(*args, **kwargs):
         QQ_BASE_URL = kwargs["global_config"]["QQ_BASE_URL"]
         receive = kwargs["receive"]
         try:
-            url = "http://nuannuan.yorushika.co:5000/"
-            bot_version = (json.loads(bot.version_info)["coolq_edition"].lower()
-                           if bot.version_info != '{}'
-                           else "pro")
-            if bot_version != "pro" or "text" in receive["message"]:
-                url += "text/"
-            r = requests.get(url=url, timeout=5)
-            res = json.loads(r.text)
-            if res["success"]:
-                msg = res.get("content", "default content")
-                msg += "\nPowered by 露儿[Yorushika]"
+            rsshub = RsshubUtil()
+            feed = rsshub.biliuservedio(15503317)
+            # print(feed)
+            pattern = r"【FF14\/时尚品鉴】第\d+期 满分攻略"
+            res_data = None
+            for item in feed["items"]:
+                # print(item["title"])
+                if re.match(pattern, item["title"]):
+                    h = BeautifulSoup(item["summary"])
+                    text = h.text.replace("个人攻略网站", "游玩C攻略站")
+                    res_data = {
+                        "url": item["id"],
+                        "title": item["title"],
+                        "content": text,
+                        "image": h.img.attrs["src"],
+                    }
+                    break
+            if not res_data:
+                msg = "无法查询到有效数据，请稍后再试"
             else:
-                msg = "Error"
+                msg = [{"type": "share", "data": res_data}]
         except Exception as e:
             msg = "Error: {}".format(type(e))
+            traceback.print_exc()
         reply_action = reply_message_action(receive, msg)
         action_list.append(reply_action)
     except Exception as e:

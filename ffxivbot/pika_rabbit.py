@@ -176,23 +176,17 @@ def call_api(bot, action, params, echo=None, **kwargs):
                 "Authorization": "Bearer {}".format(bot.tomon_bot.all()[0].token),
             }
             if attachments:
-                boundary = binascii.hexlify(os.urandom(16)).decode("ascii")
-                boundary = "-------------"
-                headers.update(
-                    {"Content-Type": "multipart/form-data; boundary=%s" % boundary}
-                )
+                payload = {"payload_json": json.dumps(data)}
+                img_format = attachments[0]["url"].split(".")[-1]
                 original_image = requests.get(attachments[0]["url"], timeout=3)
-                files = {"file": original_image.content}
+                files = [("image.{}".format(img_format), original_image.content)]
                 print("Posting Multipart to Tomon >>> {}".format(action))
                 print("{}".format(url))
-                multipart_form_data = {
-                    "payload_json": json.dumps(data),
-                    "files": ("image", original_image.content),
-                }
                 r = requests.post(
-                    headers=headers, url=url, files=multipart_form_data, timeout=30,
+                    headers=headers, url=url, files=files, data=payload, timeout=30,
                 )
                 print(headers)
+                print(r.text)
                 if r.status_code != 200:
                     print("Tomon HTTP Callback failed:")
                     print(r.text)

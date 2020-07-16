@@ -166,9 +166,9 @@ class HuntLogAdmin(admin.ModelAdmin):
 
 
 class IFTTTChannelAdmin(admin.ModelAdmin):
-    list_display = ["name", "group"]
+    list_display = ["name", "group", "last_push_time"]
     search_fields = ["name ", "group"]
-    raw_id_fields = ["members"]
+    raw_id_fields = ["members", "group"]
 
 
 class TreasureMapAdmin(admin.ModelAdmin):

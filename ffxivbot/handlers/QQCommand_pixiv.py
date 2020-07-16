@@ -11,11 +11,13 @@ import logging
 import time
 import traceback
 
+
 def revproxy(url):
     original_domain = "i.pximg.net"
     revproxy_domain = "pixiv.bluefissure.com"
     rev_url = url.replace(original_domain, revproxy_domain)
     return rev_url.replace("_webp", "")
+
 
 def is_nsfw(illust):
     if int(illust["x_restrict"]) != 0:
@@ -111,7 +113,7 @@ def search_ID(ID):
     else:
         illust = jres["illust"]
         img_url = illust["image_urls"]["large"]
-        msg = "[CQ:image,file={},cache=0]".format(revproxy(img_url))
+        msg = "[CQ:image,file={}]".format(revproxy(img_url))
     return msg
 
 

@@ -13,6 +13,7 @@ def QQCommand_gakki(*args, **kwargs):
         receive = kwargs["receive"]
         img_url = QQ_BASE_URL + "static/gakki/%s.jpg" % (random.randint(1, 1270))
         msg = "[CQ:image,file={}]".format(img_url)
+        msg = [{"type": "image", "data": {"file": img_url},}]
         reply_action = reply_message_action(receive, msg)
         action_list.append(reply_action)
         return action_list

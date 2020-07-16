@@ -552,7 +552,7 @@ class IFTTTChannel(models.Model):
     )
     members = models.ManyToManyField(QQUser, blank=True)
     last_push_time = models.BigIntegerField(default=0)
-    callback_link = models.CharField(default="", max_length=256)
+    callback_link = models.CharField(default="", max_length=256, blank=True, null=True)
 
     def __str__(self):
         return self.name
