@@ -71,6 +71,7 @@
             </div>
           </div>
         </div>
+          {% if vcode_switch %}
         <div class="form-group mb-3 input-group">
           <input type="text" class="form-control" placeholder="獭獭认证" name="Verification Code" id="vcode">
           <div class="input-group-append">
@@ -79,6 +80,7 @@
             </div>
           </div>
         </div>
+          {% endif %}
         <div class="icheck-primary">
           <input type="checkbox" id="agreeTerms" name="TOS">
           <label for="agreeTerms">
