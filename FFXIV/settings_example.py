@@ -161,5 +161,5 @@ QQ_APP_ID = ""
 QQ_KEY = ""
 QQ_RECALL_URL = "https://xn--v9x.net/api/qqcallback"
 
-# 注册时獭獭认证开关，默认关闭（？）
-OTTER_VERIFICATION = False
+# 注册时獭獭认证开关，默认开启
+OTTER_VERIFICATION = True
