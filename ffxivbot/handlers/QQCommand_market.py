@@ -54,8 +54,10 @@ def get_item_id(item_name):
     return "", -1
 
 
-def get_intl_item_id(item_name):
+def get_intl_item_id(item_name, name_lang=""):
     url = "https://xivapi.com/search?indexes=Item&string=" + item_name
+    if name_lang:
+        url = url + "&string_column=Name_" + name_lang
     r = requests.get(url, timeout=3)
     j = r.json()
     if len(j["Results"]) > 0:
@@ -67,7 +69,13 @@ def get_market_data(server_name, item_name, hq=False):
     new_item_name, item_id = get_item_id(item_name)
     if item_id < 0:
         item_name = item_name.replace("_", " ")
-        new_item_name, item_id = get_intl_item_id(item_name)
+        name_lang = ""
+        for lang in ["ja", "fr", "de"]:
+            if item_name.endswith("|{}".format(lang)):
+                item_name = item_name.replace("|{}".format(lang), "")
+                name_lang = lang
+                break
+        new_item_name, item_id = get_intl_item_id(item_name, name_lang)
         if item_id < 0:
             msg = '所查询物品"{}"不存在'.format(item_name)
             return msg
