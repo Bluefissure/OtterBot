@@ -50,20 +50,32 @@ def get_item_id(item_name):
     r = requests.get(url, timeout=3)
     j = r.json()
     if len(j["Results"]) > 0:
-        return j["Results"][0]["ID"]
-    return -1
+        return j["Results"][0]["Name"], j["Results"][0]["ID"]
+    return "", -1
+
+
+def get_intl_item_id(item_name):
+    url = "https://xivapi.com/search?indexes=Item&string=" + item_name
+    r = requests.get(url, timeout=3)
+    j = r.json()
+    if len(j["Results"]) > 0:
+        return j["Results"][0]["Name"], j["Results"][0]["ID"]
+    return "", -1
 
 
 def get_market_data(server_name, item_name, hq=False):
-    item_id = get_item_id(item_name)
+    new_item_name, item_id = get_item_id(item_name)
     if item_id < 0:
-        msg = '所查询物品"{}"不存在'.format(item_name)
-        return msg
+        item_name = item_name.replace("_", " ")
+        new_item_name, item_id = get_intl_item_id(item_name)
+        if item_id < 0:
+            msg = '所查询物品"{}"不存在'.format(item_name)
+            return msg
     url = "https://universalis.app/api/{}/{}".format(server_name, item_id)
     print("market url:{}".format(url))
     r = requests.get(url, timeout=3)
     j = r.json()
-    msg = "{} 的 {}{} 数据如下：\n".format(server_name, item_name, "(HQ)" if hq else "")
+    msg = "{} 的 {}{} 数据如下：\n".format(server_name, new_item_name, "(HQ)" if hq else "")
     listing_cnt = 0
     for listing in j["listings"]:
         if hq and not listing["hq"]:
@@ -166,3 +178,4 @@ def QQCommand_market(*args, **kwargs):
         action_list.append(reply_message_action(receive, msg))
         logging.error(e)
         traceback.print_exc()
+    return action_list
