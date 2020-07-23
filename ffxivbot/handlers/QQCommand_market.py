@@ -57,7 +57,7 @@ def get_item_id(item_name):
 def get_intl_item_id(item_name, name_lang=""):
     url = "https://xivapi.com/search?indexes=Item&string=" + item_name
     if name_lang:
-        url = url + "&string_column=Name_" + name_lang
+        url = url + "&language=" + name_lang
     r = requests.get(url, timeout=3)
     j = r.json()
     if len(j["Results"]) > 0:
