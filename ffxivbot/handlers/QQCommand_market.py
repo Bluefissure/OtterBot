@@ -153,11 +153,11 @@ Powered by https://universalis.app"""
         return msg
     elif command_seg[0].lower() == "upload":
         msg = """您可以使用以下几种方式上传交易数据：
+0.如果您使用咖啡整合的ACT，可以启用抹茶插件中的Universalis集成功能 http://url.cn/a9xaUIKs 
 1.如果您使用过国际服的 XIVLauncher，您可以使用国服支持的Dalamud版本 https://url.cn/6L7nD0gF
-2.如果您使用过ACT，您可以加载ACT插件 UniversalisPlugin
-3.如果您想不依赖于其他程序，您可以使用 UniversalisStandalone
+2.如果您使用过ACT，您可以加载ACT插件 UniversalisPlugin https://url.cn/TEY1QKKV
+3.如果您想不依赖于其他程序，您可以使用 UniversalisStandalone https://url.cn/TEY1QKKV
 4.如果您使用过Teamcraft客户端，您也可以使用其进行上传
-其中 2. 3. 两点所需软件请于 https://url.cn/TEY1QKKV 下载 UniversalisApp.zip
 Powered by https://universalis.app"""
     return msg
 

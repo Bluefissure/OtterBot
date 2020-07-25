@@ -99,16 +99,14 @@ class WSConsumer(AsyncWebsocketConsumer):
                 LOGGER.error("Unkown client_role: {}".format(client_role))
                 # await self.close()
                 return
-            if "CQHttp" not in user_agent:
-                if "MiraiHttp" not in user_agent:
-                    LOGGER.error("Unkown user_agent: {} for {}".format(user_agent, ws_self_id))
+            if "CQHttp" not in user_agent and "MiraiHttp" not in user_agent:
+                LOGGER.error("Unknown user_agent: {} for {}".format(user_agent, ws_self_id))
+                return
+            elif "CQHttp" in user_agent:
+                version = user_agent.replace("CQHttp/", "").split(".")
+                if version < "4.14.1".split("."):
+                    LOGGER.error("Unsupport user_agent: {} for {}".format(user_agent, ws_self_id))
                     return
-            else:
-                if "CQHttp" in user_agent:
-                    version = user_agent.replace("CQHttp/", "").split(".")
-                    if version < "4.14.1".split("."):
-                        LOGGER.error("Unsupport user_agent: {} for {}".format(user_agent, ws_self_id))
-                        return
 
             bot = None
             # with transaction.atomic():
