@@ -17,7 +17,6 @@ FFXIVBOT_ROOT = os.environ.get("FFXIVBOT_ROOT", settings.BASE_DIR)
 CONFIG_PATH = os.environ.get(
     "FFXIVBOT_CONFIG", os.path.join(FFXIVBOT_ROOT, "ffxivbot/config.json")
 )
-pub = PikaPublisher()
 logging.basicConfig(format="%(levelname)s:%(message)s", level=logging.DEBUG)
 LOGGER = logging.getLogger(__name__)
 
@@ -45,6 +44,7 @@ def qqpost(req):
             # print("bot {} does not provide api url".format(self_id))
             error_msg = "Bot {} does not provide api url".format(self_id)
         else:
+            pub = PikaPublisher()
             sig = hmac.new(str(bot.access_token).encode(), req.body, 'sha1').hexdigest()
             received_sig = req.META.get("HTTP_X_SIGNATURE", "NULL")[len('sha1='):]
             # print(req.META)
