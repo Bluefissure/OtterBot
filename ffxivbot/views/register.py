@@ -3,13 +3,14 @@ import re
 from django.contrib import auth
 from django.http import HttpResponseRedirect
 
+from FFXIV import settings
 from ffxivbot.models import *
 from .ren2res import ren2res
 
 
 def register(req):
     if req.method == 'GET':
-        req_dict = {}
+        req_dict = {"vcode_switch": settings.OTTER_VERIFICATION}
         if req.GET.get('err'):
             req_dict.update({'err': req.GET.get('err')})
         if req.user.is_anonymous:
@@ -43,10 +44,11 @@ def register(req):
                 newuser.username = email
                 qq = email.replace("@qq.com", "")
                 (newinfo, created) = QQUser.objects.get_or_create(user_id=qq)
-                if newinfo.vcode != vcode:
-                    return ren2res('register.html', req, {'err': "獭獭认证码不匹配"})
-                if newinfo.vcode_time + 300 < time.time():
-                    return ren2res('register.html', req, {'err': "獭獭认证码已过期"})
+                if settings.OTTER_VERIFICATION:
+                    if newinfo.vcode != vcode:
+                        return ren2res('register.html', req, {'err': "獭獭认证码不匹配"})
+                    if newinfo.vcode_time + 300 < time.time():
+                        return ren2res('register.html', req, {'err': "獭獭认证码已过期"})
                 newuser.set_password(pw1)
                 newuser.save()
                 newinfo.dbuser = newuser
