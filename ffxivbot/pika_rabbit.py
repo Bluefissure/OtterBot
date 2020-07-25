@@ -607,9 +607,13 @@ class PikaConsumer(object):
                             if member_list
                             else "本群成员信息获取失败，请尝试重启酷Q并使用/update_group刷新群成员信息\n"
                         )
+
+                        enabled_group_commands = config.get("ENABLED_GROUP_COMMANDS")
                         for (k, v) in handlers.group_commands.items():
-                            command_enable = True
+                            # k have "/" on the left side but enabled_group_commands doesn't have
+                            command_enable = enabled_group_commands is None or k[1:] in enabled_group_commands # Enabled in configuration file?
                             if group and group_commands:
+                                # Disabled for the current group?
                                 command_enable = (
                                     group_commands.get(k, "enable") == "enable"
                                 )
@@ -673,10 +677,18 @@ class PikaConsumer(object):
                         )
                         for command_key in group_command_keys:
                             if receive["message"].find(command_key) == 0:
+                                # Check if the group command is enabled in the configuration file
+                                command_name = command_key.replace("/", "", 1)
+                                # Backward compatibility for user's old configuration files without this property
+                                enabled_group_commands = config.get("ENABLED_GROUP_COMMANDS")
+                                if enabled_group_commands is not None and command_name not in enabled_group_commands:
+                                    continue
+
                                 if (
                                     receive["message_type"] == "group"
                                     and group_commands
                                 ):
+                                    # Check if the group command is disabled for the current group
                                     if (
                                         command_key in group_commands.keys()
                                         and group_commands[command_key] == "disable"
@@ -703,7 +715,7 @@ class PikaConsumer(object):
                                     handle_method = getattr(
                                         handlers,
                                         "QQGroupCommand_{}".format(
-                                            command_key.replace("/", "", 1)
+                                            command_name
                                         ),
                                     )
                                     action_list = handle_method(
@@ -744,10 +756,12 @@ class PikaConsumer(object):
 
                 if receive["message"].find("/help") == 0:
                     msg = ""
+                    enabled_commands = config.get("ENABLED_COMMANDS")
                     for (k, v) in handlers.commands.items():
-                        command_enable = True
+                        # k have "/" on the left side but enabled_commands doesn't have
+                        command_enable = enabled_commands is None or k[1:] in enabled_commands # Enabled in configuration file?
                         if group and group_commands:
-                            command_enable = group_commands.get(k, "enable") == "enable"
+                            command_enable = group_commands.get(k, "enable") == "enable"       # Disabled for the current group?
                         if command_enable:
                             msg += "{}: {}\n".format(k, v)
                     msg += "具体介绍详见Wiki使用手册: {}\n".format(
@@ -795,15 +809,24 @@ class PikaConsumer(object):
                 command_keys = sorted(handlers.commands.keys(), key=lambda x: -len(x))
                 for command_key in command_keys:
                     if receive["message"].find(command_key) == 0:
+                        # Check if the command is enabled in the configuration file
+                        command_name = command_key.replace("/", "", 1)
+                        # Backward compatibility for user's old configuration files without this property
+                        enabled_commands = config.get("ENABLED_COMMANDS")
+                        if enabled_commands is not None and command_name not in enabled_commands:
+                            continue
+
+                        # Check if the command is disabled for the current group
                         if receive["message_type"] == "group" and group_commands:
                             if (
                                 command_key in group_commands.keys()
                                 and group_commands[command_key] == "disable"
                             ):
                                 continue
+
                         handle_method = getattr(
                             handlers,
-                            "QQCommand_{}".format(command_key.replace("/", "", 1)),
+                            "QQCommand_{}".format(command_name),
                         )
                         action_list = handle_method(
                             receive=receive, global_config=config, bot=bot

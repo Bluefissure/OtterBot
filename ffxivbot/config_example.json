@@ -1,4 +1,6 @@
 {
+  "ENABLED_COMMANDS": ["cat", "gakki", "10", "bird", "comment", "search", "about", "donate", "anime", "gate", "chp", "random", "weather", "gif", "dps", "dice", "hso", "raid", "bot", "pixiv", "duilian", "image", "nuannuan", "tex", "waifu", "quest", "share", "trash", "shorten", "ifttt", "fsx", "treasure", "hh", "luck", "abv", "market", "akhr"],
+  "ENABLED_GROUP_COMMANDS": ["group", "welcome", "custom", "repeat", "repeat", "left", "ban", "revenge", "vote", "weibo", "live", "lottery", "command", "hunt"],
   "QQ_BASE_URL": "http://111.231.102.248/",
   "WEB_BASE_URL": "https://xn--v9x.net/",
   "ACCESS_TOKEN": "",
