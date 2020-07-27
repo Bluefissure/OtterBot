@@ -82,6 +82,9 @@ def get_market_data(server_name, item_name, hq=False):
     url = "https://universalis.app/api/{}/{}".format(server_name, item_id)
     print("market url:{}".format(url))
     r = requests.get(url, timeout=3)
+    if r.status_code != 200:
+        msg = "Error of HTTP request (code {}):\n{}".format(r.status_code, r.text)
+        return msg
     j = r.json()
     msg = "{} 的 {}{} 数据如下：\n".format(server_name, new_item_name, "(HQ)" if hq else "")
     listing_cnt = 0
