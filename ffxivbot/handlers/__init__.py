@@ -2,6 +2,7 @@ from .QQEventHandler import QQEventHandler
 from .QQGroupEventHandler import QQGroupEventHandler
 
 commands = {
+    "/ofish" : "获取最近海钓航班",
     "/cat": "云吸猫",
     "/gakki": "云吸gakki",
     "/10": "云吸十元",
@@ -94,8 +95,10 @@ alter_commands = {
     "/nuannuan": "/nuannuan text",
     "/nn":"/nuannuan",
     "/mitem": "/market item",
+    "/海钓": "/ofish",
 }
 
+from .QQCommand_ofish import QQCommand_ofish
 from .QQCommand_cat import QQCommand_cat
 from .QQCommand_gakki import QQCommand_gakki
 from .QQCommand_10 import QQCommand_10
