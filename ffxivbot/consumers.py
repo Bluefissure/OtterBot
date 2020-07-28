@@ -30,14 +30,14 @@ from channels.exceptions import StopConsumer
 from django.db import transaction
 
 channel_layer = get_channel_layer()
-logging.basicConfig(format="%(levelname)s:%(asctime)s:%(name)s:%(message)s", level=logging.INFO)
+logging.basicConfig(
+    format="%(levelname)s:%(asctime)s:%(name)s:%(message)s", level=logging.INFO
+)
 LOGGER = logging.getLogger(__name__)
 FFXIVBOT_ROOT = os.environ.get("FFXIVBOT_ROOT", settings.BASE_DIR)
 CONFIG_PATH = os.environ.get(
     "FFXIVBOT_CONFIG", os.path.join(FFXIVBOT_ROOT, "ffxivbot/config.json")
 )
-
-
 
 
 class PikaPublisher:
@@ -76,7 +76,9 @@ class PikaPublisher:
     def ping(self):
         self.connection.process_data_events()
 
+
 # PUB = PikaPublisher()
+
 
 class WSConsumer(AsyncWebsocketConsumer):
     async def connect(self):
@@ -92,20 +94,28 @@ class WSConsumer(AsyncWebsocketConsumer):
         try:
             ws_self_id = headers["x-self-id"]
             # ws_client_role = headers["x-client-role"]
-            ws_access_token = headers.get("authorization", "empty_access_token").replace("Token", "").strip()
+            ws_access_token = (
+                headers.get("authorization", "empty_access_token")
+                .replace("Token", "")
+                .strip()
+            )
             client_role = headers["x-client-role"]
             user_agent = headers["user-agent"]
             if client_role != "Universal":
                 LOGGER.error("Unkown client_role: {}".format(client_role))
                 # await self.close()
                 return
-            if "CQHttp" not in user_agent:
-                LOGGER.error("Unkown user_agent: {} for {}".format(user_agent, ws_self_id))
+            if "CQHttp" not in user_agent and "MiraiHttp" not in user_agent:
+                LOGGER.error(
+                    "Unknown user_agent: {} for {}".format(user_agent, ws_self_id)
+                )
                 return
-            else:
+            elif "CQHttp" in user_agent:
                 version = user_agent.replace("CQHttp/", "").split(".")
                 if version < "4.14.1".split("."):
-                    LOGGER.error("Unsupport user_agent: {} for {}".format(user_agent, ws_self_id))
+                    LOGGER.error(
+                        "Unsupport user_agent: {} for {}".format(user_agent, ws_self_id)
+                    )
                     return
 
             bot = None
@@ -155,7 +165,7 @@ class WSConsumer(AsyncWebsocketConsumer):
                     self.bot.user_id,
                     self.channel_name,
                     int(time.time()) - int(self.bot.event_time),
-                    len(disconnect)
+                    len(disconnect),
                 )
             )
             gc.collect()
@@ -205,18 +215,22 @@ class WSConsumer(AsyncWebsocketConsumer):
                     # except BaseException:
                     #     traceback.print_exc()
                     match_prefix = ["/", "\\", "[CQ:at,qq={}]".format(self_id)]
-                    push_to_mq = any([receive["message"].startswith(x) for x in match_prefix])
+                    push_to_mq = any(
+                        [receive["message"].startswith(x) for x in match_prefix]
+                    )
                     if "group_id" in receive:
                         priority += 1
                         group_id = receive["group_id"]
                         (group, group_created) = QQGroup.objects.get_or_create(
                             group_id=group_id
                         )
-                        push_to_mq = push_to_mq or "[CQ:at,qq={}]".format(self_id) in receive[
-                            "message"
-                        ] or (
-                            (group.repeat_ban > 0)
-                            or (group.repeat_length > 1 and group.repeat_prob > 0)
+                        push_to_mq = (
+                            push_to_mq
+                            or "[CQ:at,qq={}]".format(self_id) in receive["message"]
+                            or (
+                                (group.repeat_ban > 0)
+                                or (group.repeat_length > 1 and group.repeat_prob > 0)
+                            )
                         )
                         group_bots = json.loads(group.bots)
                         if group_bots and (str(self_id) not in group_bots):
@@ -233,7 +247,9 @@ class WSConsumer(AsyncWebsocketConsumer):
                     priority = 3
                     self.pub.send(text_data, priority)
             except Exception as e:
-                LOGGER.error("Error {} while handling message {}".format(type(e), text_data))
+                LOGGER.error(
+                    "Error {} while handling message {}".format(type(e), text_data)
+                )
                 traceback.print_exc()
             # self.bot.save()
         else:
@@ -244,7 +260,7 @@ class WSConsumer(AsyncWebsocketConsumer):
                     LOGGER.warning("API waring:" + text_data)
                 else:
                     LOGGER.error("API error:" + text_data)
-            if "echo" in receive.keys():
+            if "echo" in receive.keys() and receive["echo"] is not None:
                 echo = receive["echo"]
                 LOGGER.debug("echo:{} received".format(receive["echo"]))
                 if echo.find("get_group_member_list") == 0:
@@ -296,10 +312,10 @@ class WSConsumer(AsyncWebsocketConsumer):
         )
         if "[CQ:at,qq=306401806]" in json.dumps(event):
             LOGGER.info(
-                        "Universal Channel {} send_event with event:{}".format(
-                            self.channel_name, json.dumps(event)
-                        )
-                    )
+                "Universal Channel {} send_event with event:{}".format(
+                    self.channel_name, json.dumps(event)
+                )
+            )
         await self.send(event["text"])
 
     async def call_api(self, action, params, echo=None):

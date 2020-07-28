@@ -23,7 +23,9 @@ def QQCommand_hso(*args, **kwargs):
         else:
             msg = "好色哦"
             second_command_msg = receive["message"].replace("/hso", "", 1).strip()
-            if second_command_msg.startswith("enable") or second_command_msg.startswith("disable"):
+            if second_command_msg.startswith("enable") or second_command_msg.startswith(
+                "disable"
+            ):
                 if int(bot.owner_id) != int(receive["user_id"]):
                     msg = "您不是 {} 的领养者，无法修改该功能".format(bot)
                 else:
@@ -72,7 +74,7 @@ def QQCommand_hso(*args, **kwargs):
                     else:
                         idx = random.randint(0, len(img_json) - 1)
                         img = img_json[idx]
-                        msg = "[CQ:image,file={},destruct=0]".format(img["sample_url"])
+                        msg = "[CQ:image,file={}]".format(img["sample_url"])
 
         reply_action = reply_message_action(receive, msg)
         action_list.append(reply_action)

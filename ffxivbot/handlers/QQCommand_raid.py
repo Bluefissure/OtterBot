@@ -40,7 +40,7 @@ def QQCommand_raid(*args, **kwargs):
                     "groupId": server.groupId,
                 }
                 msg += check_raid(
-                    api_url="http://act.ff.sdo.com/20180525HeroList/Server/HeroList190128.ashx",
+                    api_url="https://actff1.web.sdo.com/20180525HeroList/Server/HeroList190128.ashx",
                     raid_data=data,
                     raid_name="觉醒之章",
                     wol_name=wol_name,

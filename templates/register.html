@@ -1,12 +1,13 @@
 {% load static %}
 <!DOCTYPE html>
 <html>
+
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta http-equiv="x-ua-compatible" content="ie=edge">
 
-  <link rel="shortcut icon" href="{% static tata.ico %}" type="image/x-icon"/>
+  <link rel="shortcut icon" href="{% static tata.ico %}" type="image/x-icon" />
   <title>FFXIV Toolkit CN | Bluefissure</title>
 
   <!-- Font Awesome Icons -->
@@ -20,138 +21,141 @@
   <!-- Google Font: Source Sans Pro -->
   <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700" rel="stylesheet">
 </head>
+
 <body class="hold-transition login-page">
-<div class="register-box">
-  <div class="register-logo">
-    <a href="/"><b>FFXIV</b> Toolkit CN</a>
-  </div>
-  {% if err %}
+  <div class="register-box">
+    <div class="register-logo">
+      <a href="/"><b>FFXIV</b> Toolkit CN</a>
+    </div>
+    {% if err %}
     <div class="alert alert-warning alert-dismissible">
       <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
       <h4><i class="icon fa fa-warning"></i> 注册失败！</h4>
       {{ err }}
     </div>
-  {% endif %}
-  {% if success %}
+    {% endif %}
+    {% if success %}
     <div class="alert alert-success alert-dismissible">
       <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
       <h4><i class="icon fa fa-check"></i> 注册成功!</h4>
       3秒后 <a href="/">进入站点</a>。
     </div>
     <script language="javascript" type="text/javascript">
-        setTimeout("location.href='/'", 3000);
+      setTimeout("location.href='/'", 3000);
     </script>
-  {% endif %}
-  <div class="card">
-    <div class="card-body register-card-body">
-      <p class="login-box-msg">注册新用户</p>
-      <form action="/register/" method="post">
-        {% csrf_token %}
-        <div class="form-group mb-3 input-group">
-          <input type="email" class="form-control" placeholder="Email" name="Email" id="email">
-          <div class="input-group-append">
-            <div class="input-group-text">
-              <span class="fas fa-envelope"></span>
+    {% endif %}
+    <div class="card">
+      <div class="card-body register-card-body">
+        <p class="login-box-msg">注册新用户</p>
+        <form action="/register/" method="post">
+          {% csrf_token %}
+          <div class="form-group mb-3 input-group">
+            <input type="email" class="form-control" placeholder="Email" name="Email" id="email">
+            <div class="input-group-append">
+              <div class="input-group-text">
+                <span class="fas fa-envelope"></span>
+              </div>
             </div>
           </div>
-        </div>
-        <div class="form-group mb-3 input-group">
-          <input type="password" class="form-control" placeholder="密码" name="Password">
-          <div class="input-group-append">
-            <div class="input-group-text">
-              <span class="fas fa-lock"></span>
+          <div class="form-group mb-3 input-group">
+            <input type="password" class="form-control" placeholder="密码" name="Password">
+            <div class="input-group-append">
+              <div class="input-group-text">
+                <span class="fas fa-lock"></span>
+              </div>
             </div>
           </div>
-        </div>
-        <div class="form-group mb-3 input-group">
-          <input type="password" class="form-control" placeholder="确认密码" name="Retype password">
-          <div class="input-group-append">
-            <div class="input-group-text">
-              <span class="fas fa-lock"></span>
+          <div class="form-group mb-3 input-group">
+            <input type="password" class="form-control" placeholder="确认密码" name="Retype password">
+            <div class="input-group-append">
+              <div class="input-group-text">
+                <span class="fas fa-lock"></span>
+              </div>
             </div>
           </div>
-        </div>
-        <div class="form-group mb-3 input-group">
-          <input type="text" class="form-control" placeholder="獭獭认证" name="Verification Code" id="vcode">
-          <div class="input-group-append">
-            <div class="input-group-text">
-              <span class="fas fa-address-card"></span>
+          {% if verification %}
+          <div class="form-group mb-3 input-group">
+            <input type="text" class="form-control" placeholder="獭獭认证" name="Verification Code" id="vcode">
+            <div class="input-group-append">
+              <div class="input-group-text">
+                <span class="fas fa-address-card"></span>
+              </div>
             </div>
           </div>
-        </div>
-        <div class="icheck-primary">
-          <input type="checkbox" id="agreeTerms" name="TOS">
-          <label for="agreeTerms">
-            我同意<a href="#TOS" data-toggle="modal" data-target="#TOSModal">用户协议</a>
-          </label>
-        </div>
-        <button type="submit" class="btn btn-primary btn-block">注册</button>
-      </form>
-      <a href="/login" class="text-center">我已经注册账户</a>
+          {% endif %}
+          <div class="icheck-primary">
+            <input type="checkbox" id="agreeTerms" name="TOS">
+            <label for="agreeTerms">
+              我同意<a href="#TOS" data-toggle="modal" data-target="#TOSModal">用户协议</a>
+            </label>
+          </div>
+          <button type="submit" class="btn btn-primary btn-block">注册</button>
+        </form>
+        <a href="/login" class="text-center">我已经注册账户</a>
+      </div>
     </div>
+    <!-- /.form-box -->
   </div>
-  <!-- /.form-box -->
-</div>
-<div class="modal fade" id="TOSModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h4 class="modal-title" id="TOSTitle"># Terms of Service</h4>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true">x</span>
-        </button>
-      </div>
-      <div class="modal-body" id="TOSContent">
-        ### 隐私
-        1. 用户注册时候需要提供QQ邮箱以及密码，并自行保管。QQ与邮箱为用户的唯一凭证。
-        2. 本站会加密存储用户密码，尽量保证数据安全，但并不保证这些信息的绝对安全。
-        3. 本站会监听、处理机器人接收到的聊天消息，并会在大部分情况下对消息进行散列后存储，但无法保证数据库中无明文消息。
-        4. 本站提供开放平台进行机器人领养，无法保证领养者的身份与意图，请确认身份后使用相关机器人。
-        ### 使用条款
-        1. 禁止使用本站服务进行任何违法恶意活动。
-        2. 禁止滥用本站提供的服务，包括但不仅限于本站提供的API、公众资源等。
-        3. 任何违法使用条款的用户，我们有权在不通知的情况下删除违规账户并没收使用本站服务的权利。
-        4. 使用过程中造成的所有后果均由使用者自行承担。
-        ### 其它
-        1. 本站仅限女装人类及猫注册使用。
-        2. TOS更新时用户默认遵守最新TOS。
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-primary" data-dismiss="modal">阅读完毕</button>
-      </div>
-    </div><!-- /.modal-content -->
-  </div><!-- /.modal -->
-</div>
-<!-- /.register-box -->
+  <div class="modal fade" id="TOSModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h4 class="modal-title" id="TOSTitle"># Terms of Service</h4>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">x</span>
+          </button>
+        </div>
+        <div class="modal-body" id="TOSContent">
+### 隐私
+1. 用户注册时候需要提供QQ邮箱以及密码，并自行保管。QQ与邮箱为用户的唯一凭证。
+2. 本站会加密存储用户密码，尽量保证数据安全，但并不保证这些信息的绝对安全。
+3. 本站会监听、处理机器人接收到的聊天消息，并会在大部分情况下对消息进行散列后存储，但无法保证数据库中无明文消息。
+4. 本站提供开放平台进行机器人领养，无法保证领养者的身份与意图，请确认身份后使用相关机器人。
+### 使用条款
+1. 禁止使用本站服务进行任何违法恶意活动。
+2. 禁止滥用本站提供的服务，包括但不仅限于本站提供的API、公众资源等。
+3. 任何违法使用条款的用户，我们有权在不通知的情况下删除违规账户并没收使用本站服务的权利。
+4. 使用过程中造成的所有后果均由使用者自行承担。
+### 其它
+1. 本站仅限女装人类及猫注册使用。
+2. TOS更新时用户默认遵守最新TOS。
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" data-dismiss="modal">阅读完毕</button>
+        </div>
+      </div><!-- /.modal-content -->
+    </div><!-- /.modal -->
+  </div>
+  <!-- /.register-box -->
 
-<!-- jQuery 2.2.3 -->
-<script src="{% static "plugins/jquery/jquery.min.js" %}"></script>
-<!-- Bootstrap 3.3.6 -->
-<script src="{% static "plugins/bootstrap/js/bootstrap.min.js" %}"></script>
-<!-- iCheck -->
-<!-- script src="{% static "plugins/iCheck/icheck.min.js" %}"></script -->
-<!-- Showdown -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/showdown/1.9.0/showdown.min.js"
-        integrity="sha256-LSUpTY0kkXGKvcBC9kbmgibmx3NVVgJvAEfTZbs51mU=" crossorigin="anonymous"></script>
-<script>
-    $(function () {
-        $('input').iCheck({
-            checkboxClass: 'icheckbox_square-blue',
-            radioClass: 'iradio_square-blue',
-            increaseArea: '20%' // optional
-        });
+  <!-- jQuery 2.2.3 -->
+  <script src="{% static "plugins/jquery/jquery.min.js" %}"></script>
+  <!-- Bootstrap 3.3.6 -->
+  <script src="{% static "plugins/bootstrap/js/bootstrap.min.js" %}"></script>
+  <!-- iCheck -->
+  <!-- script src="{% static "plugins/iCheck/icheck.min.js" %}"></script -->
+  <!-- Showdown -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/showdown/1.9.0/showdown.min.js"
+    integrity="sha256-LSUpTY0kkXGKvcBC9kbmgibmx3NVVgJvAEfTZbs51mU=" crossorigin="anonymous"></script>
+  <script>
+    $(function() {
+      $('input').iCheck({
+        checkboxClass: 'icheckbox_square-blue',
+        radioClass: 'iradio_square-blue',
+        increaseArea: '20%' // optional
+      });
     });
-    $(document).ready(function () {
-        let searchParams = new URLSearchParams(window.location.search);
-        $("#vcode").val(searchParams.get('vcode'));
-        $("#email").val(searchParams.get('email'));
-        let converter = new showdown.Converter({tables: true});
-        let text = $("#TOSTitle").html();
-        let mdhtml = converter.makeHtml(text);
-        $("#TOSTitle").html(mdhtml);
-        text = $("#TOSContent").html();
-        mdhtml = converter.makeHtml(text);
-        $("#TOSContent").html(mdhtml);
+    $(document).ready(function() {
+      let searchParams = new URLSearchParams(window.location.search);
+      $("#vcode").val(searchParams.get('vcode'));
+      $("#email").val(searchParams.get('email'));
+      let converter = new showdown.Converter({ tables: true });
+      let text = $("#TOSTitle").html();
+      let mdhtml = converter.makeHtml(text);
+      $("#TOSTitle").html(mdhtml);
+      text = $("#TOSContent").html();
+      mdhtml = converter.makeHtml(text);
+      $("#TOSContent").html(mdhtml);
     });
-</script>
+  </script>
 </body>

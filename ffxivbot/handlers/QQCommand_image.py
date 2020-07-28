@@ -24,18 +24,24 @@ def get_image_from_CQ(CQ_text):
 def upload_image(img_url, token=""):
     headers = {}
     if token:
-        headers = {"Authorization":token}
+        headers = {"Authorization": token}
     original_image = requests.get(url=img_url, timeout=5)
     sm_req = requests.post(
-        headers=headers, url="https://sm.ms/api/v2/upload", files={"smfile": original_image.content}, timeout=30
+        headers=headers,
+        url="https://sm.ms/api/v2/upload",
+        files={"smfile": original_image.content},
+        timeout=30,
     )
+    # print(sm_req.headers)
     return json.loads(sm_req.text)
 
 
 def delete_image(img_hash):
-    sm_req = requests.post(url="https://sm.ms/api/v2/delete/{}".format(img_hash), timeout=5)
+    sm_req = requests.post(
+        url="https://sm.ms/api/v2/delete/{}".format(img_hash), timeout=5
+    )
     return sm_req.status_code
-    
+
 
 def QQCommand_image(*args, **kwargs):
     action_list = []
@@ -70,17 +76,29 @@ def QQCommand_image(*args, **kwargs):
                         if not img_info["success"]:
                             print("img_info:{}".format(json.dumps(img_info)))
                             msg = img_info["message"]
-                            if "Image upload repeated limit, this image exists at: " in msg:
-                                url = msg.replace("Image upload repeated limit, this image exists at: ", "")
+                            if (
+                                "Image upload repeated limit, this image exists at: "
+                                in msg
+                            ):
+                                url = msg.replace(
+                                    "Image upload repeated limit, this image exists at: ",
+                                    "",
+                                )
                                 path = url.replace("https://i.loli.net", "")
                                 path = path.replace("https://vip1.loli.net", "")
-                                domain = "https://vip1.loli.net" if "https://vip1.loli.net" in url else "https://i.loli.net"
+                                domain = (
+                                    "https://vip1.loli.net"
+                                    if "https://vip1.loli.net" in url
+                                    else "https://i.loli.net"
+                                )
                                 name = copy.deepcopy(path)
                                 while "/" in name:
-                                    name = name[name.find("/")+1:]
+                                    name = name[name.find("/") + 1 :]
                                 try:
                                     img = Image.objects.get(path=path)
-                                    msg = '图片"{}"已存在于类别"{}"之中，无法重复上传'.format(img.name, img.key)
+                                    msg = '图片"{}"已存在于类别"{}"之中，无法重复上传'.format(
+                                        img.name, img.key
+                                    )
                                 except Image.DoesNotExist:
                                     img = Image(
                                         domain=domain,
@@ -96,7 +114,11 @@ def QQCommand_image(*args, **kwargs):
                         else:
                             img_info = img_info["data"]
                             url = img_info.get("url", "")
-                            domain = "https://vip1.loli.net" if "https://vip1.loli.net" in url else "https://i.loli.net"
+                            domain = (
+                                "https://vip1.loli.net"
+                                if "https://vip1.loli.net" in url
+                                else "https://i.loli.net"
+                            )
                             img = Image(
                                 domain=domain,
                                 key=category,
@@ -128,18 +150,28 @@ def QQCommand_image(*args, **kwargs):
             category = msg_list[0].strip()
             get_info = "info" in category
             category = category.replace("info", "", 1)
-            imgs = Image.objects.filter(key=category)
-            if not imgs.exists():
-                msg = '未找到类别"{}"的图片'.format(category)
-            else:
-                img = random.sample(list(imgs), 1)[0]
-                msg = "[CQ:image,cache=0,file={}]\n".format(
-                    img.domain + img.path
-                )
-                if get_info:
-                    msg += "{}\nCategory:{}\nUploaded by:{}\n".format(
-                        img.name, img.key, img.add_by
-                    )
+            found = False
+            tries = 0
+            while not found and tries < 10:
+                tries += 1
+                imgs = Image.objects.filter(key=category)
+                if not imgs.exists():
+                    msg = '未找到类别"{}"的图片'.format(category)
+                    found = True
+                else:
+                    img = random.sample(list(imgs), 1)[0]
+                    img_url = img.domain + img.path
+                    r = requests.head(img_url, timeout=3)
+                    if r.status_code == 404:
+                        img.delete()
+                        print("deleting {}".format(img))
+                    else:
+                        found = True
+                        msg = "[CQ:image,cache=0,file={}]\n".format(img_url)
+                        if get_info:
+                            msg += "{}\nCategory:{}\nUploaded by:{}\n".format(
+                                img.name, img.key, img.add_by
+                            )
         msg = msg.strip()
         reply_action = reply_message_action(receive, msg)
         action_list.append(reply_action)
