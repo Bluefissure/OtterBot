@@ -2,7 +2,6 @@ from .QQEventHandler import QQEventHandler
 from .QQGroupEventHandler import QQGroupEventHandler
 
 commands = {
-    "/ofish" : "获取最近海钓航班",
     "/cat": "云吸猫",
     "/gakki": "云吸gakki",
     "/10": "云吸十元",
@@ -40,6 +39,7 @@ commands = {
     "/shorten": "微博短链",
     "/mxh": '梅溪湖cp短打生成器（"/mxh 海德林 佐迪亚克"）',
     "/hh": '光之收藏家幻化推荐("/hh help")',
+    "/ofish": "获取最近海钓航班",
     "/luck": "浅草寺求签",
     "/abv": "Bilibili av/BV号互转",
 }
@@ -93,7 +93,7 @@ alter_commands = {
     "/天气": "/weather",
     "/宝图": "/treasure",
     "/nuannuan": "/nuannuan text",
-    "/nn":"/nuannuan",
+    "/nn": "/nuannuan",
     "/mitem": "/market item",
     "/海钓": "/ofish",
 }

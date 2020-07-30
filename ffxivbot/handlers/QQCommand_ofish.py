@@ -28,7 +28,7 @@ def QQCommand_ofish(*args, **kwargs):
                    6,3,4,1,5,2,6,3,4,1,5,2]
         routeName = ["梅尔夜晚", "梅尔白天", "梅尔黄昏", "罗塔夜晚", "罗塔白天", "罗塔黄昏"]
         routeComment = ["海龙成就 + ※珊瑚蝠鲼", "章鱼成就", "※索蒂斯 + ※依拉丝莫龙", "※索蒂斯 + ※石骨鱼", "水母成就 + 冲分推荐", "鲨鱼成就 + ※珊瑚蝠鲼"]
-        routeComment2 = ["", "1区可冲分,追梦失败转成就车", "1区可以冲水母成就", "2区可以冲海龙成就", "", "可以和鲨鱼队一起冲分"]
+        routeComment2 = ["", "1号场可冲分,追梦失败转成就车", "1号场可以冲水母成就", "2号场可以冲海龙成就", "", "可以和鲨鱼队一起冲分"]
         schedules = ["梅尔托尔海峡南(夜)-加拉迪翁湾外海(日)-梅尔托尔海峡北(夕)",
                      "梅尔托尔海峡南(日)-加拉迪翁湾外海(夕)- 梅尔托尔海峡北(夜)",
                      "梅尔托尔海峡南(夕)-加拉迪翁湾外海(夜)- 梅尔托尔海峡北(日)",
@@ -109,7 +109,7 @@ def QQCommand_ofish(*args, **kwargs):
                     rName.append(routeName[pattern[temp] - 1])
                     route += "\n"
                     num += 1
-        last_msg = route[:-1]
+        last_msg = route[:-1].strip()
         reply_action = reply_message_action(receive, last_msg)
         action_list.append(reply_action)
         return action_list
