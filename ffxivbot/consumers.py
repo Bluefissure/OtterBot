@@ -155,7 +155,13 @@ class WSConsumer(AsyncWebsocketConsumer):
         try:
             # self.pub.exit()
             disconnect = json.loads(self.bot.disconnections)
-            disconnect.append(int(time.time()))
+            cur_time = int(time.time())
+            disconnect_from_last_hour = []
+            for dis in disconnect:
+                if dis >= cur_time - 3600:
+                    disconnect_from_last_hour.append(dis)
+            disconnect_from_last_hour.append(cur_time)
+            disconnect = disconnect_from_last_hour
             while len(disconnect) > 100:
                 disconnect = disconnect[1:]
             self.bot.disconnections = json.dumps(disconnect)
@@ -281,7 +287,6 @@ class WSConsumer(AsyncWebsocketConsumer):
                     self.bot.group_list = json.dumps(receive["data"])
                     self.bot.save(update_fields=["group_list"])
                 if echo.find("_get_friend_list") == 0:
-                    # friend_list = echo.replace("_get_friend_list:","").strip()
                     self.bot.friend_list = json.dumps(receive["data"])
                     self.bot.save(update_fields=["friend_list"])
                 if echo.find("get_version_info") == 0:

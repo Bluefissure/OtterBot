@@ -112,6 +112,7 @@ def QQCommand_ofish(*args, **kwargs):
             last_msg = route[:-1].strip()
             msg = last_msg
         elif command.startswith("加拉迪翁湾外海幻海流"):
+            # from https://bbs.nga.cn/read.php?tid=20553241
             msg = """索蒂斯
 捕鱼人之识触发条件：钓起2*天堂之钥+1*海神印
 我觉得好像没什么必要用专一，除非你真的只想要它。
@@ -161,7 +162,6 @@ def QQCommand_ofish(*args, **kwargs):
 门票用刺螠钓，中等时长的中杆[!!]，实在不行可以开个专一
 (海里有像是甲胄反射的暗淡光辉！像是甲胄反射的暗淡光辉不见了……)
 时长1分钟，用磷虾"""
-#  https://bbs.nga.cn/read.php?tid=20553241
         elif command.startswith("鲨鱼成就"):
             msg = """---钓场一：加拉迪翁湾外海-黄昏---
 暴雨天气直接跳船。
