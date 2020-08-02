@@ -98,16 +98,23 @@ def on_open(ws):
 
 
 if __name__ == "__main__":
-    bot = TomonBot.objects.all()[0]
-    bot.auth()
-    bot.refresh_from_db()
-    token = bot.token
-    publisher = PikaPublisher()
-    ws = websocket.WebSocketApp(
-        "{}".format("wss://gateway.tomon.co"),
-        on_message=on_message,
-        on_error=on_error,
-        on_close=on_close,
-    )
-    ws.on_open = on_open
-    ws.run_forever()
+    while True:
+        try:
+            bot = TomonBot.objects.all()[0]
+            bot.auth()
+            bot.refresh_from_db()
+            token = bot.token
+            publisher = PikaPublisher()
+            ws = websocket.WebSocketApp(
+                "{}".format("wss://gateway.tomon.co"),
+                on_message=on_message,
+                on_error=on_error,
+                on_close=on_close,
+            )
+            ws.on_open = on_open
+            ws.run_forever()
+        except:
+            traceback.print_exc()
+        print("Exit, sleep 60s......")
+        time.sleep(60)
+

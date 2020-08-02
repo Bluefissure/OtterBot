@@ -73,11 +73,9 @@ def QQCommand_quest(*args, **kwargs):
                     "https://huiji-public.huijistatic.com/ff14/uploads/4/4a/061432.png"
                 )
                 bfs_res = bfs_quest(quest)
-                percent = (
-                    (bfs_res["back_cnt"] + 1)
-                    * 100
-                    / (bfs_res["back_cnt"] + 1 + bfs_res["forward_cnt"])
-                )
+                # fmt: off
+                percent = (bfs_res["back_cnt"]+1)*100/(bfs_res["back_cnt"]+1+bfs_res["forward_cnt"])
+                # fmt: on
                 content = "{}进度已达到{:.2f}%，剩余{}个任务".format(
                     bfs_res["now_main_scenario"], percent, bfs_res["forward_cnt"]
                 )

@@ -149,25 +149,35 @@ def call_api(bot, action, params, echo=None, **kwargs):
 
     elif post_type == "tomon":
         if "send_" in action and "_msg" in action:
-            # print("Tomon Message >>> {}".format(params["message"]))
+            print("Tomon Message >>> {}".format(params["message"]))
             attachments = []
             if isinstance(params["message"], str):
-                message = re.sub(r"\[CQ:at,qq=(.*)\]", "<@\g<1>>", params["message"])
-                message = re.sub(
-                    r"\[CQ:image,(?:cache=.,)?file=(.*)\]", " \g<1> ", params["message"]
-                )
+                message = params["message"]
+                message = re.sub(r"\[CQ:at,qq=(.*)\]", "<@\g<1>>", message)
+                img_pattern = r"\[CQ:image,(?:cache=.,)?file=(.*?)\]"
+                m = re.match(img_pattern, message)
+                if m:
+                    attachments.append({"url": m.group(1)})
+                    # message = re.sub(img_pattern, " \g<1> ", message)
+                    message = re.sub(img_pattern, "", message)
             elif isinstance(params["message"], list):
                 message = ""
                 for msg in params["message"]:
                     if msg["type"] == "text":
-                        message += msg["data"]
+                        message += msg["data"]["text"]
                     elif msg["type"] == "image":
                         img_url = msg["data"]["file"]
                         attachments.append({"url": img_url})
-
-            if attachments:
-                for img in attachments:
-                    message += img["url"] + " "
+                    elif msg["type"] == "share":
+                        share_data = msg["data"]
+                        message += "{}\n{}\n{}\n".format(
+                            share_data["title"],
+                            share_data["content"],
+                            share_data["url"],
+                        )
+            # if attachments:
+            #     for img in attachments:
+            #         message += img["url"] + " "
             nonce = kwargs.get("nonce", "")
             data = {"content": message, "nonce": nonce}
             channel_id = kwargs.get("channel_id") or params.get("group_id")
