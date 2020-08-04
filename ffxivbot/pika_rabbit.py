@@ -47,6 +47,11 @@ CONFIG_PATH = os.environ.get(
 )
 
 
+# LOG_FORMAT = ('%(levelname) -10s %(asctime)s %(name) -30s %(funcName) '
+#               '-35s %(lineno) -5d: %(message)s')
+LOGGER = logging.getLogger(__name__)
+
+
 def handle_message(bot, message):
     new_message = message
     if isinstance(message, list):
@@ -212,6 +217,82 @@ def call_api(bot, action, params, echo=None, **kwargs):
                 print("Tomon HTTP Callback failed:")
                 print(r.text)
 
+    elif post_type == "iotqq":
+        # print("IOTQQ action:")
+        # print(json.dumps(action, indent=4))
+        # print("IOTQQ params:")
+        # print(json.dumps(params, indent=4))
+        headers = {
+            "Content-Type": "application/json",
+        }
+        if bot.iotqq_auth:
+            headers.update(
+                {
+                    "Authorization": "Basic "
+                    + base64.b64encode(bot.iotqq_auth.encode()).decode()
+                }
+            )
+        if "send_" in action and "_msg" in action:
+            send_params = (
+                ("qq", bot.user_id),
+                ("funcname", "SendMsg"),
+            )
+            send_data = {
+                "toUser": params["group_id"],
+                "sendToType": 2,
+                "sendMsgType": "TextMsg",
+                "content": "",
+                "groupid": 0,
+                "atUser": 0,
+                "replayInfo": None,
+            }
+            message = params["message"]
+            attachments = []
+            if isinstance(params["message"], str):
+                message = re.sub(r"\[CQ:at,qq=(.*)\]", "[ATUSER(\g<1>)]", message)
+                img_pattern = r"\[CQ:image,(?:cache=.,)?file=(.*?)\]"
+                m = re.match(img_pattern, message)
+                if m:
+                    attachments.append({"url": m.group(1)})
+                    # message = re.sub(img_pattern, " \g<1> ", message)
+                    message = re.sub(img_pattern, "", message)
+            elif isinstance(params["message"], list):
+                message = ""
+                for msg in params["message"]:
+                    if msg["type"] == "text":
+                        message += msg["data"]["text"]
+                    elif msg["type"] == "image":
+                        img_url = msg["data"]["file"]
+                        attachments.append({"url": img_url})
+                    elif msg["type"] == "share":  # TODO: change to actual share
+                        share_data = msg["data"]
+                        message += "{}\n{}\n{}\n".format(
+                            share_data["title"],
+                            share_data["content"],
+                            share_data["url"],
+                        )
+            if attachments:
+                send_data["sendMsgType"] = "PicMsg"
+                send_data["picUrl"] = attachments[0]["url"]
+                send_data["picBase64Buf"] = ""
+                send_data["fileMd5"] = ""
+            send_data["content"] = message
+            # print("IOTQQ send_data:")
+            # print(json.dumps(send_data, indent=4))
+            r = requests.post(
+                bot.iotqq_url,
+                headers=headers,
+                params=send_params,
+                json=send_data,
+                timeout=10,
+            )
+            if r.status_code != 200:
+                print("IOTQQ HTTP Callback failed:")
+                print(r.text)
+
+    else:
+        LOGGER.error("Unsupported protocol: {}".format(post_type))
+
 
 def send_message(bot, private_group, uid, message, **kwargs):
     if private_group == "group":
@@ -243,11 +324,6 @@ class PikaException(Exception):
 
     def __init__(self, message="Default PikaException"):
         Exception.__init__(self, message)
-
-
-# LOG_FORMAT = ('%(levelname) -10s %(asctime)s %(name) -30s %(funcName) '
-#               '-35s %(lineno) -5d: %(message)s')
-LOGGER = logging.getLogger(__name__)
 
 
 class PikaConsumer(object):

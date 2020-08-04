@@ -43,6 +43,7 @@ CONFIG_PATH = os.environ.get(
 class PikaPublisher:
     def __init__(self, username="guest", password="guest", queue="ffxivbot"):
         # print("initializing pika publisher")
+        # traceback.print_stack()
         self.credentials = pika.PlainCredentials(username, password)
         self.queue = queue
         self.parameters = pika.ConnectionParameters(
