@@ -25,7 +25,7 @@ def QQCommand_luck(*args, **kwargs):
                            else "pro")
             if bot_version == "pro" and "text" not in receive["message"]:
                 img = luck_data.img_url
-                msg = "[CQ:at,qq=%s]\n" % user_id + "[CQ:image,file={}]".format(img)
+                msg = "[CQ:at,qq=%s] " % user_id + "[CQ:image,file={}]".format(img)
             else:
                 msg = "[CQ:at,qq=%s]\n" % user_id + luck_data.text
         else:

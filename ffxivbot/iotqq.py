@@ -95,10 +95,11 @@ class PyIotqq:
     ):
         self.robotqq = robotqq
         self.sio = socketio.Client()
+        headers = {}
         if auth:
-            headers = {
-                "Authorization": "Basic " + base64.b64encode(auth.encode()).decode()
-            }
+            headers.update(
+                {"Authorization": "Basic " + base64.b64encode(auth.encode()).decode()}
+            )
         self.sio.connect(
             socketio_url,
             socketio_path=socketio_path,

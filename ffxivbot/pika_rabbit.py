@@ -158,13 +158,14 @@ def call_api(bot, action, params, echo=None, **kwargs):
             attachments = []
             if isinstance(params["message"], str):
                 message = params["message"]
-                message = re.sub(r"\[CQ:at,qq=(.*)\]", "<@\g<1>>", message)
+                message = re.sub(r"\[CQ:at,qq=(.*?)\]", "<@\g<1>>", message)
+                print("message 1 >>> {}".format(message))
                 img_pattern = r"\[CQ:image,(?:cache=.,)?file=(.*?)\]"
-                m = re.match(img_pattern, message)
+                m = re.search(img_pattern, message)
                 if m:
                     attachments.append({"url": m.group(1)})
-                    # message = re.sub(img_pattern, " \g<1> ", message)
                     message = re.sub(img_pattern, "", message)
+                    print("message 2 >>> {}".format(message))
             elif isinstance(params["message"], list):
                 message = ""
                 for msg in params["message"]:
@@ -251,7 +252,7 @@ def call_api(bot, action, params, echo=None, **kwargs):
             if isinstance(params["message"], str):
                 message = re.sub(r"\[CQ:at,qq=(.*)\]", "[ATUSER(\g<1>)]", message)
                 img_pattern = r"\[CQ:image,(?:cache=.,)?file=(.*?)\]"
-                m = re.match(img_pattern, message)
+                m = re.search(img_pattern, message)
                 if m:
                     attachments.append({"url": m.group(1)})
                     # message = re.sub(img_pattern, " \g<1> ", message)
