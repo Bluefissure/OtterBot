@@ -1,3 +1,3 @@
-# FFXIVBOT
+# OtterBot
 
 Archived until further notice.
