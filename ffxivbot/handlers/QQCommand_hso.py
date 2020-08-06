@@ -18,8 +18,9 @@ def QQCommand_hso(*args, **kwargs):
         action_list = []
         receive = kwargs["receive"]
         bot = kwargs["bot"]
-        if time.time() < bot.api_time + bot.long_query_interval:
-            msg = "技能冷却中"
+        user = QQUser.objects.get(user_id=receive["user_id"])
+        if time.time() < user.last_api_time + 15:
+            msg = "[CQ:at,qq={}] 技能冷却中".format(user)
         else:
             msg = "好色哦"
             second_command_msg = receive["message"].replace("/hso", "", 1).strip()
@@ -75,6 +76,8 @@ def QQCommand_hso(*args, **kwargs):
                         idx = random.randint(0, len(img_json) - 1)
                         img = img_json[idx]
                         msg = "[CQ:image,file={}]".format(img["sample_url"])
+                        user.last_api_time = time.time()
+                        user.save(update_fields=["last_api_time"])
 
         reply_action = reply_message_action(receive, msg)
         action_list.append(reply_action)
