@@ -17,6 +17,7 @@ import argparse
 import asyncio
 import websocket
 import traceback
+from django.db import connections
 
 try:
     import thread
@@ -30,6 +31,11 @@ from FFXIV import settings
 django.setup()
 from ffxivbot.models import *
 from consumers import PikaPublisher
+
+
+def close_old_connections():
+    for conn in connections.all():
+        conn.close_if_unusable_or_obsolete()
 
 
 def on_message(ws, message):
@@ -114,6 +120,7 @@ if __name__ == "__main__":
             ws.on_open = on_open
             ws.run_forever()
         except:
+            close_old_connections()
             traceback.print_exc()
         print("Exit, sleep 60s......")
         time.sleep(60)
