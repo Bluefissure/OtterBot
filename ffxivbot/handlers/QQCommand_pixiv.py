@@ -147,7 +147,7 @@ def QQCommand_pixiv(*args, **kwargs):
         if time.time() < user.last_api_time + 15:
             msg = "[CQ:at,qq={}] 技能冷却中".format(user)
         else:
-            update_api_timeout = False
+            update_api_cooldown = False
             message_content = receive["message"].replace("/pixiv", "", 1).strip()
             msg = "default msg"
             if message_content.find("help") == 0 or message_content == "":
@@ -165,15 +165,15 @@ def QQCommand_pixiv(*args, **kwargs):
                 if mode == "":
                     mode = "week"
                 msg = search_rank(mode, receive["message_type"] != "group")
-                update_api_timeout = True
+                update_api_cooldown = True
             elif message_content.find("gif") == 0:
                 ID = message_content.replace("gif", "", 1).strip()
                 msg = search_gif_ID(ID)
-                update_api_timeout = True
+                update_api_cooldown = True
             elif str.isdecimal(message_content):
                 ID = int(message_content)
                 msg = search_ID(ID)
-                update_api_timeout = True
+                update_api_cooldown = True
             elif "CQ" in message_content and "url=" in message_content:
                 # print("matching image:{}".format(message_content))
                 tmp = message_content
@@ -181,12 +181,12 @@ def QQCommand_pixiv(*args, **kwargs):
                 tmp = tmp.replace("url=", "")
                 img_url = tmp.replace("]", "")
                 msg = search_image(img_url, receive["user_id"])
-                update_api_timeout = True
+                update_api_cooldown = True
             else:
                 word = message_content
                 msg = search_word(word, receive["message_type"] != "group")
-                update_api_timeout = True
-            if update_api_timeout:
+                update_api_cooldown = True
+            if update_api_cooldown:
                 user.last_api_time = time.time()
                 user.save(update_fields=["last_api_time"])
         if isinstance(msg, str):
