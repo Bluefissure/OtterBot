@@ -17,8 +17,6 @@ import argparse
 import asyncio
 import socketio
 import traceback
-import socketio
-import argparse
 
 try:
     import thread
@@ -30,7 +28,7 @@ os.environ["DJANGO_SETTINGS_MODULE"] = "FFXIV.settings"
 from FFXIV import settings
 
 django.setup()
-from ffxivbot.models import *
+from ffxivbot.models import QQGroup, QQBot
 from consumers import PikaPublisher
 
 
@@ -62,13 +60,13 @@ def OnGroupMsgs(msg):
             return
         member_role = "member"
         try:
-            group = Group.objects.get(group_id=msg["FromGroupId"])
+            group = QQGroup.objects.get(group_id=msg["FromGroupId"])
             member_list = json.loads(group.member_list)
             for member in member_list:
                 if member["user_id"] == msg["FromUserId"]:
                     member_role = member["role"]
                     break
-        except:
+        except QQGroup.DoesNotExist:
             pass
         data = {
             "self_id": bot.user_id,
