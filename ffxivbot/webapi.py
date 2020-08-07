@@ -256,7 +256,7 @@ def webapi(req):
 
 def github_webhook(req):
     req_json = json.loads(req.body)
-    event_type = req.META.get("HTTP_X_GITEA_EVENT") or req.META.get("HTTP_X_GOGS_EVENT") or req.META.get("HTTP_X_GITHUB_EVENT")
+    event_type = req.META.get("HTTP_X_GITHUB_EVENT")
     msg = None
     if not event_type:
         pass
