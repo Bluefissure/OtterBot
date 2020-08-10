@@ -12,10 +12,10 @@ websockets==6.0
 dice==2.3.5
 pika==0.13.1
 requests-cache==0.4.13
-Pillow==6.2.0
 tqdm==4.31.1
 cryptography==2.7
 feedparser==5.2.1
 opencv-python==4.1.2.30
 numpy==1.16.3
-Pillow==6.2.0
+Pillow>=7.1.0
+python-socketio==4.6.0

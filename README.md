@@ -1,27 +1,23 @@
-# FFXIVBOT
+# OtterBot
 
-[![Build Status](https://travis-ci.org/Bluefissure/FFXIVBOT.svg?branch=master)](https://travis-ci.org/Bluefissure/FFXIVBOT)
-[![CodeFactor](https://www.codefactor.io/repository/github/bluefissure/ffxivbot/badge/master)](https://www.codefactor.io/repository/github/bluefissure/ffxivbot/overview/master)
-[![license](https://img.shields.io/badge/license-GPL-blue.svg)](https://github.com/Bluefissure/FFXIVBOT/blob/master/LICENSE)
-[![HitCount](http://hits.dwyl.io/Bluefissure/FFXIVBOT.svg)](http://hits.dwyl.io/Bluefissure/FFXIVBOT)
+[![Build Status](https://travis-ci.org/Bluefissure/OtterBot.svg?branch=master)](https://travis-ci.org/Bluefissure/OtterBot)
+[![CodeFactor](https://www.codefactor.io/repository/github/bluefissure/otterbot/badge/master)](https://www.codefactor.io/repository/github/bluefissure/otterbot/overview/master)
+[![license](https://img.shields.io/badge/license-GPL-blue.svg)](https://github.com/Bluefissure/OtterBot/blob/master/LICENSE)
 
-A QQ bot of Final Fantasy XIV
+A QQ bot for Final Fantasy XIV (mostly served for CN server).
 
 ## Install
 
-Please read [wiki](https://github.com/Bluefissure/FFXIVBOT/wiki/%E5%BC%80%E5%8F%91%E6%96%87%E6%A1%A3) for more details.
-For Windows enviroment please check [Windows Dev Wiki](https://github.com/a08381/FFXIVBOT/wiki/Windows%E4%B8%8B%E7%9A%84%E5%BC%80%E5%8F%91%E6%96%87%E6%A1%A3) for more information.
+Please read [wiki](https://github.com/Bluefissure/OtterBot/wiki/%E5%BC%80%E5%8F%91%E6%96%87%E6%A1%A3) for more details.
 
 - python 3.5.3+
 - redis-server 4.0+
-- django, channels and so on (see [requeirements.txt](https://github.com/Bluefissure/FFXIVBOT/blob/master/requirements.txt) for details)
-- [coolq-wine(docker)](https://hub.docker.com/r/coolq/wine-coolq/) for back-end bot
-- [coolq-http-api](https://github.com/richardchien/coolq-http-api) for web communication
+- django, channels and so on (see [requeirements.txt](https://github.com/Bluefissure/OtterBot/blob/master/requirements.txt) for details)
 - [adminLTE](https://github.com/almasaeed2010/AdminLTE) for the front-end
 
 ## Use
 
-Please read [wiki](https://github.com/Bluefissure/FFXIVBOT/wiki/%E4%BD%BF%E7%94%A8%E6%96%87%E6%A1%A3) for more details.
+Please read [wiki](https://github.com/Bluefissure/OtterBot/wiki/%E4%BD%BF%E7%94%A8%E6%96%87%E6%A1%A3) for more details.
 
 - /cat : require an image of cat (crawled from [pexels](https://www.pexels.com/search/cat))
 - /search $item : search $item in [FFXIVWIKI](https://ff14.huijiwiki.com/)

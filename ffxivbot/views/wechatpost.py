@@ -17,13 +17,13 @@ FFXIVBOT_ROOT = os.environ.get("FFXIVBOT_ROOT", settings.BASE_DIR)
 CONFIG_PATH = os.environ.get(
     "FFXIVBOT_CONFIG", os.path.join(FFXIVBOT_ROOT, "ffxivbot/config.json")
 )
-pub = PikaPublisher()
 logging.basicConfig(format="%(levelname)s:%(message)s", level=logging.DEBUG)
 LOGGER = logging.getLogger(__name__)
 
 
 @csrf_exempt
 def wechatpost(req):
+    pub = PikaPublisher()
     try:
         print("wechat request headers:")
         print(req.META)

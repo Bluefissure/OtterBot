@@ -264,15 +264,15 @@ def github_webhook(req):
     elif event_type == "ping":
         msg = req_json.get("zen", "Hello from github")
     elif event_type == "push":
-        pusher = req_json.get("pusher").get("name")
+        pusher = req_json.get("pusher")
         repo = req_json.get("repository")
         msg = "New push to {}:\n".format(repo.get("full_name"))
-        msg += "Pusher: {}\n".format(pusher)
+        msg += "Pusher: {}\n".format(pusher.get("name") or pusher.get("username"))
         msg += "Ref: {}\n".format(req_json.get("ref"))
         msg += "Commits:\n"
         for commit in req_json.get("commits"):
             msg += "  {}: {}\n".format(commit["id"][:7], commit["message"])
-        msg += "Check at {}".format(req_json.get("compare"))
+        msg += "Check at {}".format(req_json.get("compare") or req_json.get("compare_url"))
     elif event_type == "pull_request":
         action = req_json.get("action")
         number = req_json.get("number")

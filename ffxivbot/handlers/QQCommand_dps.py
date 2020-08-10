@@ -24,6 +24,7 @@ def QQCommand_dps(*args, **kwargs):
         msg = ""
         CN_source = False
         msg = "dps command is halt due to "
+
         if receive_msg.find("help") == 0 or receive_msg == "":
             msg = "1.  查询总排名\n\
 /dps [Boss] [职业] \n\
@@ -101,11 +102,11 @@ def QQCommand_dps(*args, **kwargs):
                             "day#{}".format(tmp_day), "", 1
                         )
                     atk_res = crawl_dps(
-                        boss=boss_obj, 
-                        job=job_obj, 
-                        day=day, 
+                        boss=boss_obj,
+                        job=job_obj,
+                        day=day,
                         CN_source=CN_source,
-                        dps_type=dps_type
+                        dps_type=dps_type,
                     )
                     info_msg = "国服" if CN_source else "国际服"
                     info_msg += "({})".format(dps_type)
@@ -121,10 +122,7 @@ def QQCommand_dps(*args, **kwargs):
                             print(json.dumps(atk_dict))
                             percentage_list = [10, 25, 50, 75, 95, 99, 100]
                             msg = "{} {} {} day#{}:\n".format(
-                                boss.cn_name,
-                                job.cn_name,
-                                info_msg,
-                                day,
+                                boss.cn_name, job.cn_name, info_msg, day,
                             )
                             for perc in percentage_list:
                                 msg += "%s%%: %.2f\n" % (perc, atk_dict[str(perc)])
@@ -172,9 +170,7 @@ def QQCommand_dps(*args, **kwargs):
                                             atk,
                                             calc_perc,
                                         )
-                                msg += "\n计算基于{} day#{}数据".format(
-                                    info_msg, day
-                                )
+                                msg += "\n计算基于{} day#{}数据".format(info_msg, day)
         if isinstance(msg, str):
             msg = msg.strip()
         if msg:

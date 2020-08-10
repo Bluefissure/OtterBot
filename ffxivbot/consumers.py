@@ -43,6 +43,7 @@ CONFIG_PATH = os.environ.get(
 class PikaPublisher:
     def __init__(self, username="guest", password="guest", queue="ffxivbot"):
         # print("initializing pika publisher")
+        # traceback.print_stack()
         self.credentials = pika.PlainCredentials(username, password)
         self.queue = queue
         self.parameters = pika.ConnectionParameters(
@@ -155,7 +156,13 @@ class WSConsumer(AsyncWebsocketConsumer):
         try:
             # self.pub.exit()
             disconnect = json.loads(self.bot.disconnections)
-            disconnect.append(int(time.time()))
+            cur_time = int(time.time())
+            disconnect_from_last_hour = []
+            for dis in disconnect:
+                if dis >= cur_time - 3600:
+                    disconnect_from_last_hour.append(dis)
+            disconnect_from_last_hour.append(cur_time)
+            disconnect = disconnect_from_last_hour
             while len(disconnect) > 100:
                 disconnect = disconnect[1:]
             self.bot.disconnections = json.dumps(disconnect)
@@ -224,14 +231,13 @@ class WSConsumer(AsyncWebsocketConsumer):
                         (group, group_created) = QQGroup.objects.get_or_create(
                             group_id=group_id
                         )
-                        push_to_mq = (
-                            push_to_mq
-                            or "[CQ:at,qq={}]".format(self_id) in receive["message"]
-                            or (
-                                (group.repeat_ban > 0)
-                                or (group.repeat_length > 1 and group.repeat_prob > 0)
-                            )
-                        )
+                        # push_to_mq = (
+                        #     push_to_mq
+                        #     or (
+                        #         (group.repeat_ban > 0)
+                        #         or (group.repeat_length > 1 and group.repeat_prob > 0)
+                        #     )
+                        # )
                         group_bots = json.loads(group.bots)
                         if group_bots and (str(self_id) not in group_bots):
                             push_to_mq = False
@@ -282,7 +288,6 @@ class WSConsumer(AsyncWebsocketConsumer):
                     self.bot.group_list = json.dumps(receive["data"])
                     self.bot.save(update_fields=["group_list"])
                 if echo.find("_get_friend_list") == 0:
-                    # friend_list = echo.replace("_get_friend_list:","").strip()
                     self.bot.friend_list = json.dumps(receive["data"])
                     self.bot.save(update_fields=["friend_list"])
                 if echo.find("get_version_info") == 0:
