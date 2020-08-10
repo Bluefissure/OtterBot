@@ -287,10 +287,12 @@ class WSConsumer(AsyncWebsocketConsumer):
                 if echo.find("get_group_list") == 0:
                     self.bot.group_list = json.dumps(receive["data"])
                     self.bot.save(update_fields=["group_list"])
-                if echo.find("_get_friend_list") == 0:
+                if echo.find("get_friend_list") == 0:
                     self.bot.friend_list = json.dumps(receive["data"])
                     self.bot.save(update_fields=["friend_list"])
                 if echo.find("get_version_info") == 0:
+                    if "jre" in receive["data"]["coolq_directory"]:
+                        receive["data"]["coolq_edition"] = "pro"
                     self.bot.version_info = json.dumps(receive["data"])
                     self.bot.save(update_fields=["version_info"])
                 if echo.find("get_status") == 0:

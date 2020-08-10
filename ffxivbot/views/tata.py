@@ -149,8 +149,8 @@ def tata(req):
             coolq_edition = coolq_edition[0].upper() + coolq_edition[1:]
         friend_list = json.loads(bot.friend_list)
         friend_num = (
-            len(friend_list["friends"])
-            if friend_list and "friends" in friend_list.keys()
+            len(friend_list)
+            if friend_list
             else "-1"
         )
         group_list = json.loads(bot.group_list)
