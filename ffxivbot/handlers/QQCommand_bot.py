@@ -72,7 +72,7 @@ def QQCommand_bot(*args, **kwargs):
                     "所在窝：{}\n".format(WEB_BASE_URL.rstrip('/'))+\
                     "领养者：{}\n".format(bot.owner_id)+\
                     "群数量：{}\n".format(len(json.loads(bot.group_list)))+\
-                    "好友数量：{}\n".format(len(friend_list.get("friends", [])))+\
+                    "好友数量：{}\n".format(len(friend_list))+\
                     "文本兼容：{}\n".format(bot.share_banned)+\
                     "HSO: {}\n".format(bot.r18)
             msg = msg.strip()
