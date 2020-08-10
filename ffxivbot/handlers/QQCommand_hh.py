@@ -160,7 +160,7 @@ def QQCommand_hh(*args, **kwargs):
                 job_nicknames.append(jobs.name)
                 job_nicknames.sort(key=lambda x:len(x),reverse=True)
                 for item in job_nicknames:
-                    if(item == receive_msg):
+                    if(item in receive_msg):
                         receive_msg = receive_msg.replace(item,'',1).strip()
                         job = jobs.name
                         break
