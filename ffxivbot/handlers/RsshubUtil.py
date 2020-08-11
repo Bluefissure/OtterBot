@@ -45,3 +45,6 @@ class RsshubUtil(object):
         feed = self.raw_parse("/bilibili/user/video/{}".format(user))
         return feed
 
+    def biliuserdynamic(self, user):
+        feed = self.raw_parse("/bilibili/user/dynamic/{}".format(user))
+        return feed
