@@ -7,6 +7,22 @@ import time
 import datetime
 import math
 
+pattern =  [1,4,2,5,3,6,1,4,2,5,3,6,
+            4,1,5,2,6,3,4,1,5,2,6,3,
+            2,5,3,6,1,4,2,5,3,6,1,4,
+            5,2,6,3,4,1,5,2,6,3,4,1,
+            3,6,1,4,2,5,3,6,1,4,2,5,
+            6,3,4,1,5,2,6,3,4,1,5,2]
+routeName = ["梅尔夜晚", "梅尔白天", "梅尔黄昏", "罗塔夜晚", "罗塔白天", "罗塔黄昏"]
+routeComment = ["海龙成就 + ※珊瑚蝠鲼", "章鱼成就", "※索蒂斯 + ※依拉丝莫龙", "※索蒂斯 + ※石骨鱼", "水母成就 + 冲分推荐", "鲨鱼成就 + ※珊瑚蝠鲼"]
+routeComment2 = ["", "1区可冲分,追梦失败转成就车", "1区可以冲水母成就", "2区可以冲海龙成就", "", "可以和鲨鱼队一起冲分"]
+schedules = ["梅尔托尔海峡南(夜)-加拉迪翁湾外海(日)-梅尔托尔海峡北(夕)",
+            "梅尔托尔海峡南(日)-加拉迪翁湾外海(夕)- 梅尔托尔海峡北(夜)",
+            "梅尔托尔海峡南(夕)-加拉迪翁湾外海(夜)- 梅尔托尔海峡北(日)",
+            "加拉迪翁湾外海(夜)-梅尔托尔海峡南(日)- 罗塔诺海海面(夕)",
+            "加拉迪翁湾外海(日)-梅尔托尔海峡南(夕)- 罗塔诺海海面(夜)",
+            "加拉迪翁湾外海(夕)-梅尔托尔海峡南(夜)- 罗塔诺海海面(日)"]
+
 # Modified from http://fish.senriakane.com/ocean.html
 def QQCommand_ofish(*args, **kwargs):
     try:
@@ -19,22 +35,6 @@ def QQCommand_ofish(*args, **kwargs):
             command = "3" if not command else command
             count = int(command)
             count = min(count, 5)
-            # fmt: off
-            pattern = [1,4,2,5,3,6,1,4,2,5,3,6,
-                    4,1,5,2,6,3,4,1,5,2,6,3,
-                    2,5,3,6,1,4,2,5,3,6,1,4,
-                    5,2,6,3,4,1,5,2,6,3,4,1,
-                    3,6,1,4,2,5,3,6,1,4,2,5,
-                    6,3,4,1,5,2,6,3,4,1,5,2]
-            routeName = ["梅尔夜晚", "梅尔白天", "梅尔黄昏", "罗塔夜晚", "罗塔白天", "罗塔黄昏"]
-            routeComment = ["海龙成就 + ※珊瑚蝠鲼", "章鱼成就", "※索蒂斯 + ※依拉丝莫龙", "※索蒂斯 + ※石骨鱼", "水母成就 + 冲分推荐", "鲨鱼成就 + ※珊瑚蝠鲼"]
-            routeComment2 = ["", "1号场可冲分,追梦失败转成就车", "1号场可以冲水母成就", "2号场可以冲海龙成就", "", "可以和鲨鱼队一起冲分"]
-            schedules = ["梅尔托尔海峡南(夜)-加拉迪翁湾外海(日)-梅尔托尔海峡北(夕)",
-                        "梅尔托尔海峡南(日)-加拉迪翁湾外海(夕)- 梅尔托尔海峡北(夜)",
-                        "梅尔托尔海峡南(夕)-加拉迪翁湾外海(夜)- 梅尔托尔海峡北(日)",
-                        "加拉迪翁湾外海(夜)-梅尔托尔海峡南(日)- 罗塔诺海海面(夕)",
-                        "加拉迪翁湾外海(日)-梅尔托尔海峡南(夕)- 罗塔诺海海面(夜)",
-                        "加拉迪翁湾外海(夕)-梅尔托尔海峡南(夜)- 罗塔诺海海面(日)"]
             # fmt: on
             offset = 20
             date = datetime.datetime.now()
@@ -111,6 +111,64 @@ def QQCommand_ofish(*args, **kwargs):
                         num += 1
             last_msg = route[:-1].strip()
             msg = last_msg
+        elif command.startswith("海龙成就"):
+            rN = 1
+            pQ = 3
+            text = "梅尔托尔海峡北晚班（海龙成就 + ※珊瑚蝠鲼）"
+            msg = extract_route(rN, pQ, text)
+            msg += "\n查宏后面加个宏字，e.g./ofish xx成就宏"
+        elif command.startswith("海马成就"):
+            rN = 1
+            pQ = 3
+            text = "梅尔托尔海峡北晚班（海龙成就 + ※珊瑚蝠鲼）"
+            msg = extract_route(rN, pQ, text)
+            msg += "\n查宏后面加个宏字，e.g./ofish xx成就宏"
+        elif command.startswith("章鱼成就"):
+            rN = 2
+            pQ = 3
+            text = "梅尔托尔海峡北早班（章鱼成就）"
+            msg = extract_route(rN, pQ, text)
+            msg += "\n查宏后面加个宏字，e.g./ofish xx成就宏"
+        elif command.startswith("依拉丝莫龙"):
+            rN = 3
+            pQ = 3
+            text = "梅尔托尔海峡北午班（※索蒂斯 + ※依拉丝莫龙）"
+            msg = extract_route(rN, pQ, text)
+        elif command.startswith("石骨鱼"):
+            rN = 4
+            pQ = 3
+            text = "罗塔诺海海面晚班　（※索蒂斯 + ※石骨鱼）"
+            msg = extract_route(rN, pQ, text)
+        elif command.startswith("水母成就"):
+            rN = 5
+            pQ = 3
+            text = "罗塔诺海海面早班　（水母成就 + 冲分推荐）"
+            msg = extract_route(rN, pQ, text)
+            msg += "\n查宏后面加个宏字，e.g./ofish xx成就宏"
+        elif command.startswith("鲨鱼成就"):
+            rN = 6
+            pQ = 3
+            text = "罗塔诺海海面午班　（鲨鱼成就 + ※珊瑚蝠鲼）"
+            msg = extract_route(rN, pQ, text)
+            msg += "\n查宏后面加个宏字，e.g./ofish xx成就宏"
+        elif command.startswith("珊瑚蝠鲼"):
+            rN = 1
+            pQ = 2
+            text = "梅尔托尔海峡北晚班（海龙成就 + ※珊瑚蝠鲼）"
+            msg = extract_route(rN, pQ, text)
+            rN = 6
+            pQ = 2
+            text = "罗塔诺海海面午班　（鲨鱼成就 + ※珊瑚蝠鲼）"
+            msg += "\n" + extract_route(rN, pQ, text)
+        elif command.startswith("索蒂斯"):
+            rN = 3
+            pQ = 2
+            text = "梅尔托尔海峡北午班（※索蒂斯 + ※依拉丝莫龙）"
+            msg = extract_route(rN, pQ, text)
+            rN = 4
+            pQ = 2
+            text = "罗塔诺海海面晚班　（※索蒂斯 + ※石骨鱼）"
+            msg += "\n" + extract_route(rN, pQ, text)
         elif command.startswith("加拉迪翁湾外海幻海流"):
             # from https://bbs.nga.cn/read.php?tid=20553241
             msg = """索蒂斯
@@ -162,7 +220,7 @@ def QQCommand_ofish(*args, **kwargs):
 门票用刺螠钓，中等时长的中杆[!!]，实在不行可以开个专一
 (海里有像是甲胄反射的暗淡光辉！像是甲胄反射的暗淡光辉不见了……)
 时长1分钟，用磷虾"""
-        elif command.startswith("鲨鱼成就"):
+        elif command.startswith("鲨鱼成就宏"):
             msg = """---钓场一：加拉迪翁湾外海-黄昏---
 暴雨天气直接跳船。
 刺螠[!!!]→暗淡鲨，满GP可以开个专一，可能会歪到幻光巨齿鲨。满了还没遇到鲨鱼可以适当撒饵。
@@ -175,19 +233,19 @@ def QQCommand_ofish(*args, **kwargs):
 刺螠，双提24s前[!!!]→铬铁锤头鲨*4，24s后平提专一再双提，可能会歪到幻光鲈。
 幻海流中用刺螠，双提[!!!]→处刑者*4，平提[!!]→清道夫
 推荐连招：双重提钩-专一垂钓-双重提钩"""
-        elif command.startswith("章鱼成就"):
+        elif command.startswith("章鱼成就宏"):
             msg = """---钓场一：梅尔托尔海峡南-白天---
 保存GP，随便钓
 ——————————————————————————————
 ---钓场二：加拉迪翁湾外海-黄昏---
 磷虾，18s+[!!]→青色章鱼*4，阴云、薄雾18s即可双提，小雨、暴雨24s再双提，其他情况平提专一再双提
-幻海流中用磷虾，双提0-2s[!!]→人鱼发*4，2s以上平提
+幻海流中用磷虾，双提0-2.8s[!!]→人鱼发*4，2.8s以上平提
 ——————————————————————————————
 ---钓场三：梅尔托尔海峡北-夜晚---
 石沙蚕[!!!]精准提钩→幻光海马 触发幻海流
 幻海流中用磷虾，双提5s+[!!]→幻纱披风*4
 推荐连招：双重提钩-专一垂钓-双重提钩"""
-        elif command.startswith("海马成就"):
+        elif command.startswith("海马成就宏"):
             msg = """---钓场一：梅尔托尔海峡南-夜晚---
 薄雾、阴云天气直接跳船。
 石沙蚕，8s-16s的[!]→蓬松海龙，12s以上可以酌情双提
@@ -199,7 +257,7 @@ def QQCommand_ofish(*args, **kwargs):
 ---钓场三：梅尔托尔海峡北-黄昏---
 石沙蚕[!!!]精准提钩→幻光海马 触发幻海流，幻海流中双提5s以上的[!]→珊瑚海龙*4
 推荐连招：双重提钩-专一垂钓-双重提钩"""
-        elif command.startswith("水母成就"):
+        elif command.startswith("水母成就宏"):
             msg = """石沙蚕，认准4s[!]→拉诺西亚水母，自信双提
 建议使用宏：
 /ac 抛竿
@@ -216,3 +274,39 @@ def QQCommand_ofish(*args, **kwargs):
         action_list.append(reply_message_action(receive, last_msg))
         logging.error(e)
     return action_list
+
+def extract_route(rN:int, pQ:int, text:str):
+    try:
+        date = datetime.datetime.now()
+        t = date.strftime("%Y-%m-%d 16:00:00")
+        ts = int(time.mktime(time.strptime(t, '%Y-%m-%d %H:%M:%S')))
+        currentTwoHourChunks = math.floor(ts / (60*60*2))
+        offset = 16
+        temptime = currentTwoHourChunks % 72
+        tries = 0
+        matches = 0
+        matchesTimes = []
+
+
+        while (matches < pQ and tries < pQ*20):
+            temp = currentTwoHourChunks + tries + offset
+            if pattern[(temp % 72)] == rN:
+                matchesTimes.append(temp)
+                matches += 1
+            tries += 1
+        
+        i = 0
+        temptext = ""
+        while i < len(matchesTimes):
+            temppoop = datetime.datetime.fromtimestamp((matchesTimes[i] - offset) * (60 * 60 * 2))
+            temptext += (
+                temppoop.strftime("%Y-%m-%d %H:%M")
+                + "  "
+                + text
+                + "\n"
+            )
+            i += 1
+            msg = temptext[:-1]
+    except Exception as e:
+        msg = "Error: {}".format(type(e))
+    return msg
