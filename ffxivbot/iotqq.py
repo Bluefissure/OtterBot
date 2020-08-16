@@ -48,14 +48,16 @@ def OnGroupMsgs(msg):
             msg["Content"] = json.loads(msg["Content"])
         except json.decoder.JSONDecodeError:
             pass
-        # print(json.dumps(msg, indent=4, sort_keys=True))
+        print(json.dumps(msg, indent=4, sort_keys=True))
         raw_msg = (
             msg["Content"]
             if isinstance(msg["Content"], str)
             else msg["Content"].get("Content", "")
         )
+        raw_msg = raw_msg.strip()
         if "GroupPic" in msg["Content"]:
-            raw_msg += "[CQ:image,file={}]".format(msg["Content"]["GroupPic"][0]["Url"])
+            raw_msg += " [CQ:image,url={}]".format(msg["Content"]["GroupPic"][0]["Url"])
+        print(raw_msg)
         if not raw_msg.startswith("/"):
             return
         member_role = "member"

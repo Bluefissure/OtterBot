@@ -44,8 +44,17 @@ def on_message(ws, message):
     if msg["op"] == 0:
         print("Server >>> DISPATCH")
         try:
-            print(json.dumps(msg, indent=4, sort_keys=True))
+            # print(json.dumps(msg, indent=4, sort_keys=True))
+            if "content" not in msg["d"]:
+                return
             if not msg["d"]["content"].startswith("/"):
+                return
+            if msg["d"]["content"].startswith("/tomon refresh"):
+                bot.auth()
+                bot.refresh_from_db()
+                print("token:{}".format(token))
+                token = bot.token
+                print("refreshed token:{}".format(token))
                 return
             data = {
                 "self_id": bot.qqbot.user_id,
