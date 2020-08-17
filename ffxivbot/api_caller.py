@@ -149,7 +149,7 @@ class ApiCaller(object):
                 message = params["message"]
                 message = re.sub(r"\[CQ:at,qq=(.*?)\]", "<@\g<1>>", message)
                 print("message 1 >>> {}".format(message))
-                img_pattern = r"\[CQ:image,(?:cache=.,)?file=(.*?)\]"
+                img_pattern = r"\[CQ:image,(?:cache=.,)?file=(.*?)(?:\]|,.*?\])"
                 m = re.search(img_pattern, message)
                 if m:
                     attachments.append({"url": m.group(1)})
@@ -178,17 +178,23 @@ class ApiCaller(object):
                 "Authorization": "Bearer {}".format(bot.tomon_bot.all()[0].token),
             }
             if attachments:
-                payload = {"payload_json": json.dumps(data)}
-                img_format = attachments[0]["url"].split(".")[-1]
-                original_image = requests.get(attachments[0]["url"], timeout=3)
-                files = [("image.{}".format(img_format), original_image.content)]
-                print("Posting Multipart to Tomon >>> {}".format(action))
-                print("{}".format(url))
+                if attachments[0]["url"].startswith("base64://"):
+                    img_format = "jpg"
+                    img_content = base64.b64decode(
+                        attachments[0]["url"].replace("base64://", "", 1)
+                    )
+                else:
+                    img_format = attachments[0]["url"].split(".")[-1]
+                    original_image = requests.get(attachments[0]["url"], timeout=3)
+                    img_content = original_image.content
+                files = [("image.{}".format(img_format), img_content)]
+                # print("Posting Multipart to Tomon >>> {}".format(action))
+                # print("{}".format(url))
                 r = requests.post(
                     headers=headers, url=url, files=files, data=payload, timeout=30,
                 )
-                print(headers)
-                print(r.text)
+                # print(headers)
+                # print(r.text)
                 if r.status_code != 200:
                     print("Tomon HTTP Callback failed:")
                     print(r.text)
@@ -234,7 +240,7 @@ class ApiCaller(object):
             attachments = []
             if isinstance(params["message"], str):
                 message = re.sub(r"\[CQ:at,qq=(.*)\]", "[ATUSER(\g<1>)]", message)
-                img_pattern = r"\[CQ:image,(?:cache=.,)?file=(.*?)\]"
+                img_pattern = r"\[CQ:image,(?:cache=.,)?file=(.*?)(?:\]|,.*?\])"
                 m = re.search(img_pattern, message)
                 if m:
                     attachments.append({"url": m.group(1)})

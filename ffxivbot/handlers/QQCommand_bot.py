@@ -28,9 +28,7 @@ def QQCommand_bot(*args, **kwargs):
             if receive["message_type"] == "group":
                 msg = "[CQ:at,qq={}] 你确定要在群里面申请token从而公之于众？".format(receive["user_id"])
             else:
-                (qquser, _) = QQUser.objects.get_or_create(
-                    user_id=receive["user_id"]
-                )
+                (qquser, _) = QQUser.objects.get_or_create(user_id=receive["user_id"])
                 qquser.bot_token = second_msg
                 qquser.save()
                 qquser.refresh_from_db()
@@ -39,16 +37,19 @@ def QQCommand_bot(*args, **kwargs):
             if receive["message_type"] == "group":
                 msg = "[CQ:at,qq={}] 你确定要在群里面申请注册认证码从而公之于众？".format(receive["user_id"])
             else:
-                vcode = ''.join(random.choices(string.ascii_uppercase + string.digits, k=16))
-                (qquser, _) = QQUser.objects.get_or_create(
-                    user_id=receive["user_id"]
+                vcode = "".join(
+                    random.choices(string.ascii_uppercase + string.digits, k=16)
                 )
+                (qquser, _) = QQUser.objects.get_or_create(user_id=receive["user_id"])
                 qquser.vcode = vcode
                 qquser.vcode_time = time.time()
                 qquser.save()
                 msg = "用户 {} 的注册认证码为：{}".format(qquser, qquser.vcode)
                 msg += "\n请在五分钟内访问以下地址进行注册认证："
-                msg += os.path.join(WEB_BASE_URL, "register/?vcode={}&email={}@qq.com".format(vcode, qquser))
+                msg += os.path.join(
+                    WEB_BASE_URL,
+                    "register/?vcode={}&email={}@qq.com".format(vcode, qquser),
+                )
         elif second_command == "text":
             if int(user_id) != int(bot.owner_id):
                 msg = "仅机器人领养者能修改机器人状态"
@@ -63,10 +64,8 @@ def QQCommand_bot(*args, **kwargs):
                 bot.r18 = not bot.r18
                 bot.save(update_fields=["r18"])
                 msg = "HSO已{}".format("启用" if bot.r18 else "禁用")
-        elif(second_command == "info"):
+        elif second_command == "info":
             friend_list = json.loads(bot.friend_list)
-            if not friend_list:
-                friend_list = {"friends": []}
             reply_api_type = receive.get("reply_api_type", "websocket")
             protocol = reply_api_type
             if reply_api_type == "websocket":
@@ -79,15 +78,17 @@ def QQCommand_bot(*args, **kwargs):
                 protocol = "Tomon Bot"
             if reply_api_type == "iotqq":
                 protocol = "OPQBOT(IOTQQ)"
-            msg = "姓名：{}\n".format(bot.name)+\
-                    "账号：{}\n".format(bot.user_id)+\
-                    "所在窝：{}\n".format(WEB_BASE_URL.rstrip('/'))+\
-                    "领养者：{}\n".format(bot.owner_id)+\
-                    "链接协议：{}\n".format(protocol)+\
-                    "群数量：{}\n".format(len(json.loads(bot.group_list)))+\
-                    "好友数量：{}\n".format(len(friend_list.get("friends", [])))+\
-                    "文本兼容：{}\n".format(bot.share_banned)+\
-                    "HSO: {}\n".format(bot.r18)
+            msg = (
+                "姓名：{}\n".format(bot.name)
+                + "账号：{}\n".format(bot.user_id)
+                + "所在窝：{}\n".format(WEB_BASE_URL.rstrip("/"))
+                + "领养者：{}\n".format(bot.owner_id)
+                + "链接协议：{}\n".format(protocol)
+                + "群数量：{}\n".format(len(json.loads(bot.group_list)))
+                + "好友数量：{}\n".format(len(friend_list))
+                + "文本兼容：{}\n".format(bot.share_banned)
+                + "HSO: {}\n".format(bot.r18)
+            )
             msg = msg.strip()
         elif receive_msg == "update":
             if int(user_id) != int(bot.owner_id):
@@ -113,12 +114,12 @@ def QQCommand_bot(*args, **kwargs):
                 msg = "机器人状态统计请求已发送"
         elif receive_msg == "":
             msg = (
-                "/bot token $token: 申请接收ACT插件消息时认证的token\n"+\
-                "/bot update: 更新机器人统计信息\n"+\
-                "/bot info: 查看机器人信息\n"+\
-                "/bot register: 申请网站注册认证码\n"+\
-                "/bot text: 更改连接分享模式\n"+\
-                "/bot hso: HSO开关\n"
+                "/bot token $token: 申请接收ACT插件消息时认证的token\n"
+                + "/bot update: 更新机器人统计信息\n"
+                + "/bot info: 查看机器人信息\n"
+                + "/bot register: 申请网站注册认证码\n"
+                + "/bot text: 更改连接分享模式\n"
+                + "/bot hso: HSO开关\n"
             )
             msg = msg.strip()
         else:

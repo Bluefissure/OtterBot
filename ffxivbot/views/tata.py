@@ -87,7 +87,7 @@ def tata(req):
                 bot.delete()
                 res_dict["response"] = "success"
             elif optype == "download_conf":
-                response = HttpResponse(content_type="text/plain")
+                response = HttpResponse(content_type="application/octet-stream")
                 response["Content-Disposition"] = 'attachment; filename="setting.yml"'
                 config = json.load(open(CONFIG_PATH, encoding="utf-8"))
                 web_base = config.get("WEB_BASE_URL", "xn--v9x.net")
@@ -158,11 +158,7 @@ def tata(req):
         if coolq_edition != "":
             coolq_edition = coolq_edition[0].upper() + coolq_edition[1:]
         friend_list = json.loads(bot.friend_list)
-        friend_num = (
-            len(friend_list["friends"])
-            if friend_list and "friends" in friend_list.keys()
-            else "-1"
-        )
+        friend_num = len(friend_list) if friend_list else "-1"
         group_list = json.loads(bot.group_list)
         group_num = len(group_list) if group_list else -1
         bb["name"] = bot.name
