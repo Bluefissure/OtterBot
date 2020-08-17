@@ -178,6 +178,7 @@ class ApiCaller(object):
                 "Authorization": "Bearer {}".format(bot.tomon_bot.all()[0].token),
             }
             if attachments:
+                payload = {"payload_json": json.dumps(data)}
                 if attachments[0]["url"].startswith("base64://"):
                     img_format = "jpg"
                     img_content = base64.b64decode(
