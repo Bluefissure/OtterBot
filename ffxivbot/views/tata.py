@@ -98,7 +98,7 @@ def tata(req):
                 bot_conf = {
                     "debug": True,
                     str(bot.user_id): {
-                        "cacheImage": False,
+                        "cacheImage": True,
                         "http": {
                             "enable": False,
                             "host": "0.0.0.0",

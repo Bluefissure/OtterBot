@@ -287,7 +287,7 @@ class EventHandler(object):
                 )
         if receive["request_type"] == "group" and receive["sub_type"] == "invite":
             flag = receive["flag"]
-            if bot.auto_accept_invite:
+            if bot.auto_accept_invite or str(receive["user_id"]) == bot.owner_id:
                 reply_data = {
                     "flag": flag,
                     "sub_type": "invite",
