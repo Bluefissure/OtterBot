@@ -17,6 +17,7 @@ import argparse
 import asyncio
 import websocket
 import traceback
+from threading import Thread
 from django.db import connections
 
 try:
@@ -100,16 +101,30 @@ def on_close(ws):
     print("### closed ###")
 
 
+def heartbeat_tick():
+    global token
+    try:
+        while not heartbeat_tick.cancelled:
+            print("Client >>> HEARTBEAT")
+            ws.send(json.dumps({"d": {"token": token}, "op": 1}))
+            time.sleep(15)
+    except:
+        print("Client HEARTBEAT crashed")
+
+
+heartbeat_tick.cancelled = False
+
+
 def on_open(ws):
     global token
 
     def run(*args):
         ws.send(json.dumps({"d": {"token": token}, "op": 2}))
-        # time.sleep(1)
-        # ws.close()
-        # print("thread terminating...")
 
     thread.start_new_thread(run, ())
+    t = Thread(target=heartbeat_tick)
+    t.start()
+    heartbeat_tick.cancelled = False
 
 
 if __name__ == "__main__":
@@ -131,6 +146,7 @@ if __name__ == "__main__":
         except:
             close_old_connections()
             traceback.print_exc()
+            heartbeat_tick.cancelled = True
         print("Exit, sleep 60s......")
         time.sleep(60)
 
