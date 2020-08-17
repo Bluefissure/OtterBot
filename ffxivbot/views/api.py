@@ -61,9 +61,7 @@ def api(req):
                     if nm_name:
                         nm_level_type = get_nm_id("ffxivsc", nm_name)
                         if int(nm_level_type["type"]) > 0:
-                            url = (
-                                "https://api.ffxivsc.cn/ffxivsc_eureka_v2-1.2/lobby/addKillTime"
-                            )
+                            url = "https://api.ffxivsc.cn/ffxivsc_eureka_v2-1.2/lobby/addKillTime"
                             post_data = {
                                 # "killTime": strftime(
                                 #     "%Y-%m-%d %H:%M", time.localtime()
@@ -103,7 +101,9 @@ def api(req):
                         qquser.save(update_fields=["last_api_time"])
                     except QQUser.DoesNotExist:
                         print("qquser {}:{} auth fail".format(qq, token))
-                        httpresponse = HttpResponse("QQUser {}:{} auth fail".format(qq, token), status=500)
+                        httpresponse = HttpResponse(
+                            "QQUser {}:{} auth fail".format(qq, token), status=500
+                        )
                     if bot and qquser and api_rate_limit:
                         channel_layer = get_channel_layer()
                         msg = req.POST.get("text")
@@ -127,7 +127,9 @@ def api(req):
                             except BaseException:
                                 pass
                         if not msg:
-                            print("Can't get msg from request:{}:{}".format(req, reqbody))
+                            print(
+                                "Can't get msg from request:{}:{}".format(req, reqbody)
+                            )
                             httpresponse = HttpResponse("Can't get message", status=500)
                         else:
                             print("body:{}".format(req.body.decode()))
@@ -138,8 +140,8 @@ def api(req):
                                         user["user_id"]
                                         for user in json.loads(group.member_list)
                                         if (
-                                                user["role"] == "owner"
-                                                or user["role"] == "admin"
+                                            user["role"] == "owner"
+                                            or user["role"] == "admin"
                                         )
                                     ]
                                     print("group push list:{}".format(group_push_list))
@@ -147,11 +149,15 @@ def api(req):
                                     print("group:{} does not exist".format(group_id))
                             msg = handle_hunt_msg(msg)
                             if (
-                                    group
-                                    and group.api
-                                    and int(qquser.user_id) in group_push_list
+                                group
+                                and group.api
+                                and int(qquser.user_id) in group_push_list
                             ):
-                                at_msg = "[CQ:at,qq={}]".format(qquser.user_id) if req.GET.get("at", "true")=="true" else str(qquser.user_id)
+                                at_msg = (
+                                    "[CQ:at,qq={}]".format(qquser.user_id)
+                                    if req.GET.get("at", "true") == "true"
+                                    else str(qquser.user_id)
+                                )
                                 jdata = {
                                     "action": "send_group_msg",
                                     "params": {
@@ -165,7 +171,10 @@ def api(req):
                             else:
                                 jdata = {
                                     "action": "send_private_msg",
-                                    "params": {"user_id": qquser.user_id, "message": msg},
+                                    "params": {
+                                        "user_id": qquser.user_id,
+                                        "message": msg,
+                                    },
                                     "echo": "",
                                 }
                             if not bot.api_post_url:
@@ -174,10 +183,18 @@ def api(req):
                                     {"type": "send.event", "text": json.dumps(jdata)},
                                 )
                             else:
-                                url = os.path.join(bot.api_post_url,
-                                                   "{}?access_token={}".format(jdata["action"], bot.access_token))
-                                headers = {'Content-Type': 'application/json'}
-                                r = requests.post(url=url, headers=headers, data=json.dumps(jdata["params"]))
+                                url = os.path.join(
+                                    bot.api_post_url,
+                                    "{}?access_token={}".format(
+                                        jdata["action"], bot.access_token
+                                    ),
+                                )
+                                headers = {"Content-Type": "application/json"}
+                                r = requests.post(
+                                    url=url,
+                                    headers=headers,
+                                    data=json.dumps(jdata["params"]),
+                                )
                                 if r.status_code != 200:
                                     logging.error(r.text)
                             httpresponse = HttpResponse("OK", status=200)
@@ -197,7 +214,9 @@ def api(req):
                         if time.time() < qquser.last_api_time + qquser.api_interval:
                             api_rate_limit = False
                             print("qquser {} api rate limit exceed".format(qq))
-                        httpresponse = HttpResponse("User API rate limit exceed", status=500)
+                        httpresponse = HttpResponse(
+                            "User API rate limit exceed", status=500
+                        )
                     except QQUser.DoesNotExist:
                         print("qquser {}:{} auth fail".format(qq, token))
                     except QQBot.DoesNotExist:
@@ -211,49 +230,82 @@ def api(req):
                         else:
                             print("reqbody:{}".format(reqbody))
                             try:
-                                hunt_group = HuntGroup.objects.get(group__group_id=group_id)
+                                hunt_group = HuntGroup.objects.get(
+                                    group__group_id=group_id
+                                )
                                 group = hunt_group.group
                                 group_push_list = [
                                     user["user_id"]
                                     for user in json.loads(group.member_list)
                                 ]
-                                assert int(qquser.user_id) in group_push_list, "You're not in the group member list"
+                                assert (
+                                    int(qquser.user_id) in group_push_list
+                                ), "You're not in the group member list"
                                 monster_name = reqbody["monster"]
                                 zone_name = reqbody["zone"]
-                                zone_name = zone_name.replace(chr(57521), "").replace(chr(57522), "2").replace(
-                                    chr(57523), "3")
+                                zone_name = (
+                                    zone_name.replace(chr(57521), "")
+                                    .replace(chr(57522), "2")
+                                    .replace(chr(57523), "3")
+                                )
                                 try:
                                     monster = Monster.objects.get(cn_name=monster_name)
                                 except Monster.DoesNotExist:
-                                    monster = Monster.objects.get(cn_name=re.sub("1|2|3", "", monster_name))
+                                    monster = Monster.objects.get(
+                                        cn_name=re.sub("1|2|3", "", monster_name)
+                                    )
                                 world_name = reqbody.get("world", "None")
                                 timestamp = int(reqbody["time"])
                                 server = None
                                 world_id = reqbody.get("worldid", -1)
                                 servers = Server.objects.filter(worldId=world_id)
-                                server = servers[0] if servers.exists() else Server.objects.get(name=world_name)
+                                server = (
+                                    servers[0]
+                                    if servers.exists()
+                                    else Server.objects.get(name=world_name)
+                                )
                                 success = False
                                 # handle instances
-                                if req.GET.get("strict_zone", "true")=="false" or str(monster.territory) in zone_name:  # "ZoneName2", "ZoneName"
-                                    if str(monster.territory) != zone_name:  # "ZoneName2"
-                                        monster_name = zone_name.replace(str(monster.territory),
-                                                                         monster_name)  # "ZoneName2" -> "MonsterName2"
+                                if (
+                                    req.GET.get("strict_zone", "true") == "false"
+                                    or str(monster.territory) in zone_name
+                                ):  # "ZoneName2", "ZoneName"
+                                    if (
+                                        str(monster.territory) != zone_name
+                                    ):  # "ZoneName2"
+                                        monster_name = zone_name.replace(
+                                            str(monster.territory), monster_name
+                                        )  # "ZoneName2" -> "MonsterName2"
                                         try:
-                                            monster = Monster.objects.get(cn_name=monster_name)
+                                            monster = Monster.objects.get(
+                                                cn_name=monster_name
+                                            )
                                         except Monster.DoesNotExist:
-                                            monster = Monster.objects.get(cn_name=re.sub("1|2|3", "", monster_name))
-                                    print("Get HuntLog info:\nmonster:{}\nserver:{}".format(monster, server))
+                                            monster = Monster.objects.get(
+                                                cn_name=re.sub(
+                                                    "1|2|3", "", monster_name
+                                                )
+                                            )
+                                    print(
+                                        "Get HuntLog info:\nmonster:{}\nserver:{}".format(
+                                            monster, server
+                                        )
+                                    )
                                     if HuntLog.objects.filter(
-                                            monster=monster,
-                                            server=server,
-                                            hunt_group=hunt_group,
-                                            log_type="kill",
-                                            time__gt=timestamp - 60).exists():
-                                        msg = "{}——\"{}\" 已在一分钟内记录上报，此次API调用被忽略".format(server, monster,
-                                                                                        time.strftime("%Y-%m-%d %H:%M:%S",
-                                                                                                      time.localtime(
-                                                                                                          timestamp))
-                                                                                        )
+                                        monster=monster,
+                                        server=server,
+                                        hunt_group=hunt_group,
+                                        log_type="kill",
+                                        time__gt=timestamp - 60,
+                                    ).exists():
+                                        msg = '{}——"{}" 已在一分钟内记录上报，此次API调用被忽略'.format(
+                                            server,
+                                            monster,
+                                            time.strftime(
+                                                "%Y-%m-%d %H:%M:%S",
+                                                time.localtime(timestamp),
+                                            ),
+                                        )
                                         success = False
                                     else:
                                         hunt_log = HuntLog(
@@ -261,18 +313,35 @@ def api(req):
                                             hunt_group=hunt_group,
                                             server=server,
                                             log_type="kill",
-                                            time=timestamp
+                                            time=timestamp,
                                         )
                                         hunt_log.save()
-                                        msg = "{}——\"{}\" 击杀时间: {}".format(hunt_og.server, monster,
-                                                time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(timestamp))
-                                            )
-                                        at_msg = "[CQ:at,qq={}]".format(qquser.user_id) if req.GET.get("at", "true")=="true" else str(qquser.user_id)
-                                        msg = at_msg + "通过API更新了如下HuntLog:\n{}".format(msg)
+                                        msg = '{}——"{}" 击杀时间: {}'.format(
+                                            hunt_log.server,
+                                            monster,
+                                            time.strftime(
+                                                "%Y-%m-%d %H:%M:%S",
+                                                time.localtime(timestamp),
+                                            ),
+                                        )
+                                        at_msg = (
+                                            "[CQ:at,qq={}]".format(qquser.user_id)
+                                            if req.GET.get("at", "true") == "true"
+                                            else str(qquser.user_id)
+                                        )
+                                        msg = at_msg + "通过API更新了如下HuntLog:\n{}".format(
+                                            msg
+                                        )
                                         success = True
                                 else:
-                                    at_msg = "[CQ:at,qq={}]".format(qquser.user_id) if req.GET.get("at", "true")=="true" else str(qquser.user_id)
-                                    msg = at_msg + "上报 {} 失败，{} 与 {} 不兼容".format(monster, monster.territory, zone_name)
+                                    at_msg = (
+                                        "[CQ:at,qq={}]".format(qquser.user_id)
+                                        if req.GET.get("at", "true") == "true"
+                                        else str(qquser.user_id)
+                                    )
+                                    msg = at_msg + "上报 {} 失败，{} 与 {} 不兼容".format(
+                                        monster, monster.territory, zone_name
+                                    )
                                     success = False
                                 if success or req.GET.get("verbose", "false") == "true":
                                     jdata = {
@@ -286,26 +355,45 @@ def api(req):
                                     if not bot.api_post_url:
                                         async_to_sync(channel_layer.send)(
                                             bot.api_channel_name,
-                                            {"type": "send.event", "text": json.dumps(jdata)},
+                                            {
+                                                "type": "send.event",
+                                                "text": json.dumps(jdata),
+                                            },
                                         )
                                     else:
-                                        url = os.path.join(bot.api_post_url,
-                                                           "{}?access_token={}".format(jdata["action"], bot.access_token))
-                                        headers = {'Content-Type': 'application/json'}
-                                        r = requests.post(url=url, headers=headers, data=json.dumps(jdata["params"]))
+                                        url = os.path.join(
+                                            bot.api_post_url,
+                                            "{}?access_token={}".format(
+                                                jdata["action"], bot.access_token
+                                            ),
+                                        )
+                                        headers = {"Content-Type": "application/json"}
+                                        r = requests.post(
+                                            url=url,
+                                            headers=headers,
+                                            data=json.dumps(jdata["params"]),
+                                        )
                                         if r.status_code != 200:
                                             logging.error(r.text)
                                 httpresponse = HttpResponse(status=200)
                             except HuntGroup.DoesNotExist:
                                 print("HuntGroup:{} does not exist".format(group_id))
-                                httpresponse = HttpResponse("HuntGroup:{} does not exist".format(group_id), status=500)
+                                httpresponse = HttpResponse(
+                                    "HuntGroup:{} does not exist".format(group_id),
+                                    status=500,
+                                )
                             except Monster.DoesNotExist:
                                 print("Monster:{} does not exist".format(monster_name))
-                                httpresponse = HttpResponse("Monster:{} does not exist".format(monster_name),
-                                                            status=500)
+                                httpresponse = HttpResponse(
+                                    "Monster:{} does not exist".format(monster_name),
+                                    status=500,
+                                )
                             except Server.DoesNotExist:
                                 print("Server:{} does not exist".format(world_name))
-                                httpresponse = HttpResponse("Server:{} does not exist".format(world_name), status=500)
+                                httpresponse = HttpResponse(
+                                    "Server:{} does not exist".format(world_name),
+                                    status=500,
+                                )
                             except AssertionError as e:
                                 print(str(e))
                                 httpresponse = HttpResponse(str(e), status=500)
@@ -337,7 +425,11 @@ def api(req):
                     }
                     return JsonResponse(res_dict)
                 return HttpResponse("Default API Error, contact dev please", status=500)
-    return httpresponse if httpresponse else HttpResponse("Default API Error, contact dev please.", status=500)
+    return (
+        httpresponse
+        if httpresponse
+        else HttpResponse("Default API Error, contact dev please.", status=500)
+    )
 
 
 def get_nm_id(tracker, nm_name):

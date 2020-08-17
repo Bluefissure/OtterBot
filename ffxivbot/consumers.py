@@ -269,7 +269,7 @@ class WSConsumer(AsyncWebsocketConsumer):
             if "echo" in receive.keys() and receive["echo"] is not None:
                 echo = receive["echo"]
                 LOGGER.debug("echo:{} received".format(receive["echo"]))
-                if echo.find("get_group_member_list") == 0:
+                if "get_group_member_list" in echo:
                     group_id = echo.replace("get_group_member_list:", "").strip()
                     try:
                         # group = QQGroup.objects.select_for_update().get(group_id=group_id)
@@ -284,16 +284,16 @@ class WSConsumer(AsyncWebsocketConsumer):
                         LOGGER.error("QQGroup.DoesNotExist:{}".format(group_id))
                         return
                     LOGGER.debug("group %s member updated" % (group.group_id))
-                if echo.find("get_group_list") == 0:
+                if "get_group_list" in echo:
                     self.bot.group_list = json.dumps(receive["data"])
                     self.bot.save(update_fields=["group_list"])
-                if echo.find("_get_friend_list") == 0:
+                if "get_friend_list" in echo:
                     self.bot.friend_list = json.dumps(receive["data"])
                     self.bot.save(update_fields=["friend_list"])
-                if echo.find("get_version_info") == 0:
+                if "get_version_info" in echo:
                     self.bot.version_info = json.dumps(receive["data"])
                     self.bot.save(update_fields=["version_info"])
-                if echo.find("get_status") == 0:
+                if "get_status" in echo:
                     user_id = echo.split(":")[1]
                     if not receive["data"] or not receive["data"]["good"]:
                         LOGGER.error(
