@@ -195,7 +195,7 @@ class EventHandler(object):
                 time_from_receive = time_from_receive / 1000
             msg = ""
             if "detail" in receive["message"]:
-                msg += "[CQ:at,qq={}]\ncoolq->server: {:.2f}s\nserver->rabbitmq: {:.2f}s\nhandle init: {:.2f}s".format(
+                msg += "[CQ:at,qq={}]\nclient->server: {:.2f}s\nserver->rabbitmq: {:.2f}s\nhandle init: {:.2f}s".format(
                     receive["user_id"],
                     receive["consumer_time"] - time_from_receive,
                     receive["pika_time"] - receive["consumer_time"],
