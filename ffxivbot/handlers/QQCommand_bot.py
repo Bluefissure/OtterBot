@@ -67,10 +67,23 @@ def QQCommand_bot(*args, **kwargs):
             friend_list = json.loads(bot.friend_list)
             if not friend_list:
                 friend_list = {"friends": []}
+            reply_api_type = receive.get("reply_api_type", "websocket")
+            protocol = reply_api_type
+            if reply_api_type == "websocket":
+                protocol = "反向Websocket"
+            if reply_api_type == "http":
+                protocol = "HTTP"
+            if reply_api_type == "wechat":
+                protocol = "微信"
+            if reply_api_type == "tomon":
+                protocol = "Tomon Bot"
+            if reply_api_type == "iotqq":
+                protocol = "OPQBOT(IOTQQ)"
             msg = "姓名：{}\n".format(bot.name)+\
                     "账号：{}\n".format(bot.user_id)+\
                     "所在窝：{}\n".format(WEB_BASE_URL.rstrip('/'))+\
                     "领养者：{}\n".format(bot.owner_id)+\
+                    "链接协议：{}\n".format(protocol)+\
                     "群数量：{}\n".format(len(json.loads(bot.group_list)))+\
                     "好友数量：{}\n".format(len(friend_list.get("friends", [])))+\
                     "文本兼容：{}\n".format(bot.share_banned)+\
