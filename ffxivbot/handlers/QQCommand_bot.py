@@ -66,15 +66,9 @@ def QQCommand_bot(*args, **kwargs):
                 msg = "HSO已{}".format("启用" if bot.r18 else "禁用")
         elif second_command == "info":
             friend_list = json.loads(bot.friend_list)
-            if friend_list == None:
-                friend_list = 0
-            else:
-                friend_list = len(friend_list)
+            friend_list_cnt = len(friend_list) if friend_list else 0
             group_list = json.loads(bot.group_list)
-            if group_list == None:
-                group_list = 0
-            else:
-                group_list = len(group_list)
+            group_list_cnt = len(group_list) if group_list else 0
             reply_api_type = receive.get("reply_api_type", "websocket")
             protocol = reply_api_type
             if reply_api_type == "websocket":
@@ -93,8 +87,8 @@ def QQCommand_bot(*args, **kwargs):
                 + "所在窝：{}\n".format(WEB_BASE_URL.rstrip("/"))
                 + "领养者：{}\n".format(bot.owner_id)
                 + "链接协议：{}\n".format(protocol)
-                + "群数量：{}\n".format(group_list)
-                + "好友数量：{}\n".format(friend_list)
+                + "群数量：{}\n".format(group_list_cnt)
+                + "好友数量：{}\n".format(friend_list_cnt)
                 + "文本兼容：{}\n".format(bot.share_banned)
                 + "HSO: {}\n".format(bot.r18)
             )
@@ -108,9 +102,9 @@ def QQCommand_bot(*args, **kwargs):
                 )
                 action_list.append(
                     {
-                        "action": "_get_friend_list",
+                        "action": "get_friend_list",
                         "params": {"flat": True},
-                        "echo": "_get_friend_list",
+                        "echo": "get_friend_list",
                     }
                 )
                 action_list.append(
