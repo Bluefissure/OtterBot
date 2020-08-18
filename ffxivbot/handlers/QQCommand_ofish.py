@@ -7,21 +7,98 @@ import time
 import datetime
 import math
 
-pattern =  [1,4,2,5,3,6,1,4,2,5,3,6,
-            4,1,5,2,6,3,4,1,5,2,6,3,
-            2,5,3,6,1,4,2,5,3,6,1,4,
-            5,2,6,3,4,1,5,2,6,3,4,1,
-            3,6,1,4,2,5,3,6,1,4,2,5,
-            6,3,4,1,5,2,6,3,4,1,5,2]
+pattern = [
+    1,
+    4,
+    2,
+    5,
+    3,
+    6,
+    1,
+    4,
+    2,
+    5,
+    3,
+    6,
+    4,
+    1,
+    5,
+    2,
+    6,
+    3,
+    4,
+    1,
+    5,
+    2,
+    6,
+    3,
+    2,
+    5,
+    3,
+    6,
+    1,
+    4,
+    2,
+    5,
+    3,
+    6,
+    1,
+    4,
+    5,
+    2,
+    6,
+    3,
+    4,
+    1,
+    5,
+    2,
+    6,
+    3,
+    4,
+    1,
+    3,
+    6,
+    1,
+    4,
+    2,
+    5,
+    3,
+    6,
+    1,
+    4,
+    2,
+    5,
+    6,
+    3,
+    4,
+    1,
+    5,
+    2,
+    6,
+    3,
+    4,
+    1,
+    5,
+    2,
+]
 routeName = ["梅尔夜晚", "梅尔白天", "梅尔黄昏", "罗塔夜晚", "罗塔白天", "罗塔黄昏"]
-routeComment = ["海龙成就 + ※珊瑚蝠鲼", "章鱼成就", "※索蒂斯 + ※依拉丝莫龙", "※索蒂斯 + ※石骨鱼", "水母成就 + 冲分推荐", "鲨鱼成就 + ※珊瑚蝠鲼"]
+routeComment = [
+    "海龙成就 + ※珊瑚蝠鲼",
+    "章鱼成就",
+    "※索蒂斯 + ※依拉丝莫龙",
+    "※索蒂斯 + ※石骨鱼",
+    "水母成就 + 冲分推荐",
+    "鲨鱼成就 + ※珊瑚蝠鲼",
+]
 routeComment2 = ["", "1区可冲分,追梦失败转成就车", "1区可以冲水母成就", "2区可以冲海龙成就", "", "可以和鲨鱼队一起冲分"]
-schedules = ["梅尔托尔海峡南(夜)-加拉迪翁湾外海(日)-梅尔托尔海峡北(夕)",
-            "梅尔托尔海峡南(日)-加拉迪翁湾外海(夕)- 梅尔托尔海峡北(夜)",
-            "梅尔托尔海峡南(夕)-加拉迪翁湾外海(夜)- 梅尔托尔海峡北(日)",
-            "加拉迪翁湾外海(夜)-梅尔托尔海峡南(日)- 罗塔诺海海面(夕)",
-            "加拉迪翁湾外海(日)-梅尔托尔海峡南(夕)- 罗塔诺海海面(夜)",
-            "加拉迪翁湾外海(夕)-梅尔托尔海峡南(夜)- 罗塔诺海海面(日)"]
+schedules = [
+    "梅尔托尔海峡南(夜)-加拉迪翁湾外海(日)-梅尔托尔海峡北(夕)",
+    "梅尔托尔海峡南(日)-加拉迪翁湾外海(夕)- 梅尔托尔海峡北(夜)",
+    "梅尔托尔海峡南(夕)-加拉迪翁湾外海(夜)- 梅尔托尔海峡北(日)",
+    "加拉迪翁湾外海(夜)-梅尔托尔海峡南(日)- 罗塔诺海海面(夕)",
+    "加拉迪翁湾外海(日)-梅尔托尔海峡南(夕)- 罗塔诺海海面(夜)",
+    "加拉迪翁湾外海(夕)-梅尔托尔海峡南(夜)- 罗塔诺海海面(日)",
+]
 
 # Modified from http://fish.senriakane.com/ocean.html
 def QQCommand_ofish(*args, **kwargs):
@@ -116,19 +193,19 @@ def QQCommand_ofish(*args, **kwargs):
             pQ = 3
             text = "梅尔托尔海峡北晚班（海龙成就 + ※珊瑚蝠鲼）"
             msg = extract_route(rN, pQ, text)
-            msg += "\n查宏后面加个宏字，e.g./ofish 宏xx成就"
+            msg += "\n查宏前面加个宏字，e.g./ofish 宏xx成就"
         elif command.startswith("海马成就"):
             rN = 1
             pQ = 3
             text = "梅尔托尔海峡北晚班（海龙成就 + ※珊瑚蝠鲼）"
             msg = extract_route(rN, pQ, text)
-            msg += "\n查宏后面加个宏字，e.g./ofish 宏xx成就"
+            msg += "\n查宏前面加个宏字，e.g./ofish 宏xx成就"
         elif command.startswith("章鱼成就"):
             rN = 2
             pQ = 3
             text = "梅尔托尔海峡北早班（章鱼成就）"
             msg = extract_route(rN, pQ, text)
-            msg += "\n查宏后面加个宏字，e.g./ofish 宏xx成就"
+            msg += "\n查宏前面加个宏字，e.g./ofish 宏xx成就"
         elif command.startswith("依拉丝莫龙"):
             rN = 3
             pQ = 3
@@ -144,13 +221,13 @@ def QQCommand_ofish(*args, **kwargs):
             pQ = 3
             text = "罗塔诺海海面早班　（水母成就 + 冲分推荐）"
             msg = extract_route(rN, pQ, text)
-            msg += "\n查宏后面加个宏字，e.g./ofish 宏xx成就"
+            msg += "\n查宏前面加个宏字，e.g./ofish 宏xx成就"
         elif command.startswith("鲨鱼成就"):
             rN = 6
             pQ = 3
             text = "罗塔诺海海面午班　（鲨鱼成就 + ※珊瑚蝠鲼）"
             msg = extract_route(rN, pQ, text)
-            msg += "\n查宏后面加个宏字，e.g./ofish 宏xx成就"
+            msg += "\n查宏前面加个宏字，e.g./ofish 宏xx成就"
         elif command.startswith("珊瑚蝠鲼"):
             rN = 1
             pQ = 2
@@ -275,36 +352,33 @@ def QQCommand_ofish(*args, **kwargs):
         logging.error(e)
     return action_list
 
-def extract_route(rN:int, pQ:int, text:str):
+
+def extract_route(rN: int, pQ: int, text: str):
     try:
         date = datetime.datetime.now()
         t = date.strftime("%Y-%m-%d 16:00:00")
-        ts = int(time.mktime(time.strptime(t, '%Y-%m-%d %H:%M:%S')))
-        currentTwoHourChunks = math.floor(ts / (60*60*2))
+        ts = int(time.mktime(time.strptime(t, "%Y-%m-%d %H:%M:%S")))
+        currentTwoHourChunks = math.floor(ts / (60 * 60 * 2))
         offset = 16
         temptime = currentTwoHourChunks % 72
         tries = 0
         matches = 0
         matchesTimes = []
 
-
-        while (matches < pQ and tries < pQ*20):
+        while matches < pQ and tries < pQ * 20:
             temp = currentTwoHourChunks + tries + offset
             if pattern[(temp % 72)] == rN:
                 matchesTimes.append(temp)
                 matches += 1
             tries += 1
-        
+
         i = 0
         temptext = ""
         while i < len(matchesTimes):
-            temppoop = datetime.datetime.fromtimestamp((matchesTimes[i] - offset) * (60 * 60 * 2))
-            temptext += (
-                temppoop.strftime("%Y-%m-%d %H:%M")
-                + "  "
-                + text
-                + "\n"
+            temppoop = datetime.datetime.fromtimestamp(
+                (matchesTimes[i] - offset) * (60 * 60 * 2)
             )
+            temptext += temppoop.strftime("%Y-%m-%d %H:%M") + "  " + text + "\n"
             i += 1
             msg = temptext[:-1]
     except Exception as e:
