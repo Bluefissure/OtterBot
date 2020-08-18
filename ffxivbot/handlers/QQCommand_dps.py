@@ -87,6 +87,10 @@ def QQCommand_dps(*args, **kwargs):
                         receive_msg = receive_msg.replace("CN", "", 1).replace(
                             "国服", "", 1
                         )
+                        msg = "玩尼玛国服logs"
+                        reply_action = reply_message_action(receive, msg)
+                        action_list.append(reply_action)
+                        return action_list
                     dps_type = "adps"
                     if "rdps" in receive_msg:
                         dps_type = "rdps"
