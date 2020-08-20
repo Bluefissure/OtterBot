@@ -152,6 +152,8 @@ Powered by https://universalis.app"""
         if hq:
             item_name = item_name.replace("hq", "", 1)
             item_name = item_name.replace("HQ", "", 1)
+        if item_name.startswith("第二期重建用的") and not item_name.endswith("（检）"):
+            item_name = item_name + "（检）"
         msg = get_market_data(server_name, item_name, hq)
         user.last_api_time = time.time()
         user.save(update_fields=["last_api_time"])
