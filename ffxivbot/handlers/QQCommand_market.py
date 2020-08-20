@@ -114,6 +114,18 @@ def get_market_data(server_name, item_name, hq=False):
     return msg
 
 
+def handle_item_name_abbr(item_name):
+    if item_name.startswith("第二期重建用的") and not item_name.endswith("（检）"):
+        item_name = item_name + "（检）"
+    if item_name.upper() == "G12":
+        item_name = "陈旧的缠尾蛟革地图"
+    if item_name.upper() == "G11":
+        item_name = "陈旧的绿飘龙革地图"
+    if item_name.upper() == "G10":
+        item_name = "陈旧的瞪羚革地图"
+    return item_name
+
+
 def handle_command(command_seg, user, group):
     help_msg = """/market item $name $server: 查询$server服务器的$name物品交易数据
 /market upload: 如何上报数据
@@ -152,8 +164,7 @@ Powered by https://universalis.app"""
         if hq:
             item_name = item_name.replace("hq", "", 1)
             item_name = item_name.replace("HQ", "", 1)
-        if item_name.startswith("第二期重建用的") and not item_name.endswith("（检）"):
-            item_name = item_name + "（检）"
+        item_name = handle_item_name_abbr(item_name)
         msg = get_market_data(server_name, item_name, hq)
         user.last_api_time = time.time()
         user.save(update_fields=["last_api_time"])
