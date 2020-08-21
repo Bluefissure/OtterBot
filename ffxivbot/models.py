@@ -600,8 +600,11 @@ class TomonBot(models.Model):
     token = models.CharField(max_length=256, blank=True)
     last_heartbeat = models.BigIntegerField(default=0)
     heartbeat_interval = models.BigIntegerField(default=0)
+    bot = models.BooleanField(default=False)
 
     def auth(self, api_base="https://beta.tomon.co/api/v1"):
+        if self.bot:
+            return
         auth_url = os.path.join(api_base, "auth/login")
         payload = {"full_name": self.username, "password": self.password}
         r = requests.post(auth_url, data=payload)
@@ -611,4 +614,3 @@ class TomonBot(models.Model):
             self.save()
         else:
             print("Error Response: {}\n{}".format(r.status_code, r.json()))
-        return r

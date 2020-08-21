@@ -118,7 +118,7 @@ def handle_item_name_abbr(item_name):
     if item_name.startswith("第二期重建用的") and not item_name.endswith("（检）"):
         item_name = item_name + "（检）"
     if item_name.startswith("第二期重建用的") and item_name.endswith("(检)"):
-        item_name = item_name.replace("(","（").replace(")","）")
+        item_name = item_name.replace("(", "（").replace(")", "）")
     if item_name.upper() == "G12":
         item_name = "陈旧的缠尾蛟革地图"
     if item_name.upper() == "G11":
@@ -131,7 +131,7 @@ def handle_item_name_abbr(item_name):
         item_name = "陈旧的巨龙革地图图"
     if item_name.upper() == "G7":
         item_name = "陈旧的飞龙革地图"
-    if item_name.upper() == "深绿"
+    if item_name == "深绿":
         item_name = "深层传送魔纹的地图"
     return item_name
 
