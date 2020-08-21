@@ -123,6 +123,14 @@ def handle_item_name_abbr(item_name):
         item_name = "陈旧的绿飘龙革地图"
     if item_name.upper() == "G10":
         item_name = "陈旧的瞪羚革地图"
+    if item_name.upper() == "G9":
+        item_name = "陈旧的迦迦纳怪鸟革地图"
+    if item_name.upper() == "G8":
+        item_name = "陈旧的巨龙革地图图"
+    if item_name.upper() == "G7":
+        item_name = "陈旧的飞龙革地图"
+    if item_name.upper() == "深绿"
+        item_name = "深层传送魔纹的地图"
     return item_name
 
 
