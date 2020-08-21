@@ -117,6 +117,8 @@ def get_market_data(server_name, item_name, hq=False):
 def handle_item_name_abbr(item_name):
     if item_name.startswith("第二期重建用的") and not item_name.endswith("（检）"):
         item_name = item_name + "（检）"
+    if item_name.startswith("第二期重建用的") and item_name.endswith("(检)"):
+        item_name = item_name.replace("(","（").replace(")","）")
     if item_name.upper() == "G12":
         item_name = "陈旧的缠尾蛟革地图"
     if item_name.upper() == "G11":
