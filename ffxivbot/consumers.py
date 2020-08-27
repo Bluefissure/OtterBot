@@ -249,7 +249,10 @@ class WSConsumer(AsyncWebsocketConsumer):
                         self.pub.send(text_data, priority)
                     return
 
-                if receive["post_type"] == "request" or receive["post_type"] == "event":
+                if (
+                    receive["post_type"] == "request"
+                    or receive["post_type"] == "notice"
+                ):
                     priority = 3
                     self.pub.send(text_data, priority)
             except Exception as e:
