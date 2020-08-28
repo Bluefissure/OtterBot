@@ -14,10 +14,13 @@ def QQCommand_fsx(*args,**kwargs):
         s_msg = receive["message"].replace("/fsx","",1).strip()
         nlv = 3300
         msg = '版本 5.0 Lv80 等级基数:3300\n'
-        number = int(re.findall(r'\d+',s_msg)[0])
-        number = min(number, 99999)
-        number = max(number, 0)
-        if s_msg.find("help")==0 or s_msg=="":
+        match_list = re.findall(r'\d+',s_msg)
+        number = -1
+        if (match_list):
+            number = int(match_list[0])
+            number = min(number, 99999)
+            number = max(number, 0)
+        if s_msg.find("help")==0 or s_msg=="" or number < 0:
             msg = '计算副属性,参数有暴击、直击、信念、坚韧、速度\n如：/fsx 暴击 2400'
         elif '暴击' in s_msg:
             critical = number - 380
