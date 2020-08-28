@@ -166,7 +166,7 @@ class EventHandler(object):
                                 break
         # Handle /help
         if receive["message"].startswith("/help"):
-            msg = '帮助:\n'
+            msg = "帮助:\n"
             msgLineCount = 0
             for (k, v) in handlers.commands.items():
                 command_enable = True  # always True for private
@@ -188,7 +188,7 @@ class EventHandler(object):
                             channel_id=receive.get("channel_id", ""),
                             nonce=receive.get("nonce", ""),
                         )
-                        msg = '帮助:\n'
+                        msg = "帮助:\n"
                         msgLineCount = 0
             msg += "具体介绍详见Wiki使用手册: {}\n".format(
                 "https://github.com/Bluefissure/OtterBot/wiki"
