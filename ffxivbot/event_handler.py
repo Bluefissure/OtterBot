@@ -177,7 +177,7 @@ class EventHandler(object):
                 if command_enable:
                     msg += "{}: {}\n".format(k, v)
                     msgLineCount = msgLineCount + 1
-                    if msgLineCount == 22:
+                    if msgLineCount == 20:
                         msg = msg.strip()
                         self.api_caller.send_message(
                             receive["message_type"],
