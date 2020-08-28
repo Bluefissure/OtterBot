@@ -166,7 +166,8 @@ class EventHandler(object):
                                 break
         # Handle /help
         if receive["message"].startswith("/help"):
-            msg = ""
+            msg = '帮助:\n'
+            msgLineCount = 0
             for (k, v) in handlers.commands.items():
                 command_enable = True  # always True for private
                 if group and group_commands:
@@ -175,6 +176,20 @@ class EventHandler(object):
                     )  # hide if disabled in group
                 if command_enable:
                     msg += "{}: {}\n".format(k, v)
+                    msgLineCount = msgLineCount + 1
+                    if msgLineCount == 22:
+                        msg = msg.strip()
+                        self.api_caller.send_message(
+                            receive["message_type"],
+                            group_id or user_id,
+                            msg,
+                            post_type=receive.get("reply_api_type", "websocket"),
+                            chatId=receive.get("chatId", ""),
+                            channel_id=receive.get("channel_id", ""),
+                            nonce=receive.get("nonce", ""),
+                        )
+                        msg = '帮助:\n'
+                        msgLineCount = 0
             msg += "具体介绍详见Wiki使用手册: {}\n".format(
                 "https://github.com/Bluefissure/OtterBot/wiki"
             )
