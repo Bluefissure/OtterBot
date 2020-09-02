@@ -54,7 +54,9 @@ class EventHandler(object):
                 member_list = json.loads(group.member_list)
                 if group_created or not member_list:
                     self.api_caller.update_group_member_list(
-                        group_id, post_type=receive.get("reply_api_type", "websocket"),
+                        group_id,
+                        post_type=receive.get("reply_api_type", "websocket"),
+                        channel_id=receive.get("channel_id", ""),
                     )
             except json.decoder.JSONDecodeError:
                 member_list = []
@@ -83,7 +85,9 @@ class EventHandler(object):
             else:
                 if receive["message"].startswith("/update_group"):
                     self.api_caller.update_group_member_list(
-                        group_id, post_type=receive.get("reply_api_type", "websocket"),
+                        group_id,
+                        post_type=receive.get("reply_api_type", "websocket"),
+                        channel_id=receive.get("channel_id", ""),
                     )
                 # get sender's user_info
                 user_info = receive.get("sender")
@@ -160,6 +164,7 @@ class EventHandler(object):
                                         "reply_api_type", "websocket"
                                     ),
                                     chatId=receive.get("chatId", ""),
+                                    channel_id=receive.get("channel_id", ""),
                                 )
                                 already_reply = True
                             if already_reply:
@@ -281,11 +286,14 @@ class EventHandler(object):
             flag = receive["flag"]
             if bot.auto_accept_friend:
                 reply_data = {"flag": flag, "approve": True}
-                print("calling set_friend_add_request:{}".format(json.dumps(reply_data)))
+                print(
+                    "calling set_friend_add_request:{}".format(json.dumps(reply_data))
+                )
                 self.api_caller.call_api(
                     "set_friend_add_request",
                     reply_data,
                     post_type=receive.get("reply_api_type", "websocket"),
+                    channel_id=receive.get("channel_id", ""),
                 )
         if receive["request_type"] == "group" and receive["sub_type"] == "invite":
             flag = receive["flag"]
@@ -316,6 +324,7 @@ class EventHandler(object):
                     "set_group_add_request",
                     reply_data,
                     post_type=receive.get("reply_api_type", "websocket"),
+                    channel_id=receive.get("channel_id", ""),
                 )
                 time.sleep(1)
                 reply_data = {
@@ -327,12 +336,13 @@ class EventHandler(object):
                     "set_group_special_title",
                     reply_data,
                     post_type=receive.get("reply_api_type", "websocket"),
+                    channel_id=receive.get("channel_id", ""),
                 )
 
     def on_notice(self, receive, **kwargs):
         print("on_notice:{}".format(json.dumps(receive)))
         bot = self.bot
-        if receive["notice_type"] == "group_increase":
+        if receive.get("notice_type") == "group_increase":
             group_id = receive["group_id"]
             user_id = receive["user_id"]
             try:

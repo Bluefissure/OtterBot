@@ -6,6 +6,7 @@ import requests
 from channels.layers import get_channel_layer
 from channels.exceptions import StopConsumer
 from asgiref.sync import async_to_sync
+from .models import QQGroup, QQBot, QQUser
 
 
 class ApiCaller(object):
@@ -141,20 +142,26 @@ class ApiCaller(object):
                     time.sleep(1)
 
     def third_party_tomon(self, action, params, echo=None, **kwargs):
+        base_url = "https://beta.tomon.co/api/v1"
         bot = self.bot
+        channel_id = kwargs.get("channel_id")
+        group_id = params.get("group_id")
+        headers = {
+            "Authorization": "Bearer {}".format(bot.tomon_bot.all()[0].token),
+        }
         if "send_" in action and "_msg" in action:
             print("Tomon Message >>> {}".format(params["message"]))
             attachments = []
             if isinstance(params["message"], str):
                 message = params["message"]
                 message = re.sub(r"\[CQ:at,qq=(.*?)\]", "<@\g<1>>", message)
-                print("message 1 >>> {}".format(message))
+                # print("message 1 >>> {}".format(message))
                 img_pattern = r"\[CQ:image,(?:cache=.,)?file=(.*?)(?:\]|,.*?\])"
                 m = re.search(img_pattern, message)
                 if m:
                     attachments.append({"url": m.group(1)})
                     message = re.sub(img_pattern, "", message)
-                    print("message 2 >>> {}".format(message))
+                    # print("message 2 >>> {}".format(message))
             elif isinstance(params["message"], list):
                 message = ""
                 for msg in params["message"]:
@@ -172,11 +179,7 @@ class ApiCaller(object):
                         )
             nonce = kwargs.get("nonce", "")
             data = {"content": message, "nonce": nonce}
-            channel_id = kwargs.get("channel_id") or params.get("group_id")
-            url = "https://beta.tomon.co/api/v1/channels/{}/messages".format(channel_id)
-            headers = {
-                "Authorization": "Bearer {}".format(bot.tomon_bot.all()[0].token),
-            }
+            url = base_url + "/channels/{}/messages".format(channel_id)
             if attachments:
                 payload = {"payload_json": json.dumps(data)}
                 if attachments[0]["url"].startswith("base64://"):
@@ -189,27 +192,31 @@ class ApiCaller(object):
                     original_image = requests.get(attachments[0]["url"], timeout=3)
                     img_content = original_image.content
                 files = [("image.{}".format(img_format), img_content)]
-                # print("Posting Multipart to Tomon >>> {}".format(action))
-                # print("{}".format(url))
                 r = requests.post(
                     headers=headers, url=url, files=files, data=payload, timeout=30,
                 )
-                # print(headers)
-                # print(r.text)
                 if r.status_code != 200:
                     print("Tomon HTTP Callback failed:")
                     print(r.text)
                 return
             headers.update({"Content-Type": "application/json"})
-            # print("Posting Json to Tomon >>> {}".format(action))
-            # print("{}".format(url))
-            # print("{}".format(json.dumps(data)))
             r = requests.post(
                 url=url, headers=headers, data=json.dumps(data), timeout=3
             )
             if r.status_code != 200:
                 print("Tomon HTTP Callback failed:")
                 print(r.text)
+        if action == "get_group_member_list":
+            url = base_url + "/guilds/{}/roles".format(group_id)
+            headers.update({"Content-Type": "application/json"})
+            r = requests.get(url=url, headers=headers, timeout=3)
+            if r.status_code != 200:
+                print("Tomon HTTP Callback failed:")
+                print(r.text)
+                return
+            group, _ = QQGroup.objects.get_or_create(group_id=group_id)
+            group.member_list = json.dumps(r.json())
+            group.save(update_fields=["member_list"])
 
     def third_party_iotqq(self, action, params, echo=None, **kwargs):
         bot = self.bot

@@ -19,6 +19,7 @@ import websocket
 import traceback
 from threading import Thread
 from django.db import connections
+from enum import Enum, unique
 
 try:
     import thread
@@ -32,6 +33,13 @@ from FFXIV import settings
 django.setup()
 from ffxivbot.models import *
 from consumers import PikaPublisher
+
+
+@unique
+class Permissions(Enum):
+    CREATE_INVITE = 1 << 0
+    ADMINISTRATOR = 1 << 3
+    # TODO: add necessary permissions
 
 
 def close_old_connections():
@@ -48,7 +56,11 @@ def on_message(ws, message):
             # print(json.dumps(msg, indent=4, sort_keys=True))
             if "content" not in msg["d"]:
                 return
+            if msg["d"]["content"] is None:
+                return
             if not msg["d"]["content"].startswith("/"):
+                return
+            if msg["d"]["author"]["is_bot"]:
                 return
             if msg["d"]["content"].startswith("/tomon refresh"):
                 bot.auth()
@@ -57,6 +69,19 @@ def on_message(ws, message):
                 token = bot.token
                 print("refreshed token:{}".format(token))
                 return
+            channel_id = msg["d"]["channel_id"]
+            group_id = msg["d"]["guild_id"]
+            group = QQGroup.objects.get(group_id=group_id)
+            member_list = json.loads(group.member_list)
+            member_map = {}
+            for m in member_list:
+                member_map[m["id"]] = m
+            roles = msg["d"]["member"]["roles"]
+            role = "member"
+            for r in roles:
+                if(member_map[r]["permissions"] & Permissions.ADMINISTRATOR.value):
+                    role = "owner"
+                    break
             data = {
                 "self_id": bot.qqbot.user_id,
                 "user_id": msg["d"]["author"]["id"],
@@ -64,11 +89,11 @@ def on_message(ws, message):
                 "consumer_time": time.time(),
                 "post_type": "message",
                 "message_type": "group",
-                "group_id": msg["d"]["channel_id"],
+                "group_id": group_id,
                 "channel_id": msg["d"]["channel_id"],
                 "message": msg["d"]["content"],
                 "reply_api_type": "tomon",
-                "sender": {"role": "member"},
+                "sender": {"role": role},
                 "nonce": msg["d"]["nonce"],
             }
             text_data = json.dumps(data)
