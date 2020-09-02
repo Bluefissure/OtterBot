@@ -200,14 +200,22 @@ class WSConsumer(AsyncWebsocketConsumer):
                     receive["post_type"] == "meta_event"
                     and receive["meta_event_type"] == "heartbeat"
                 ):
-                    LOGGER.info(
-                        "bot:{} Event heartbeat at time:{}".format(
-                            self.bot.user_id, int(time.time())
-                        )
-                    )
+                    # LOGGER.info(
+                    #     "bot:{} Event heartbeat at time:{}".format(
+                    #         self.bot.user_id, int(time.time())
+                    #     )
+                    # )
                     self.pub.ping()
                     # await self.call_api("get_status",{},"get_status:{}".format(self.bot_user_id))
                 self_id = receive["self_id"]
+
+                if (
+                    receive["post_type"] == "request"
+                    or receive["post_type"] == "notice"
+                ):
+                    LOGGER.info("Dev Debugging........")
+                    LOGGER.info(json.dumps(receive))
+
                 if "message" in receive.keys():
                     # if int(self_id)==3299510002:
                     #     LOGGER.info("receving prototype message:{}".format(receive["message"]))

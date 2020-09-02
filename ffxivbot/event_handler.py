@@ -272,6 +272,7 @@ class EventHandler(object):
                     )
 
     def on_request(self, receive, **kwargs):
+        print("on_request:{}".format(json.dumps(receive)))
         bot = self.bot
         config = kwargs.get("config")
         config_group_id = config["CONFIG_GROUP_ID"]
@@ -280,6 +281,7 @@ class EventHandler(object):
             flag = receive["flag"]
             if bot.auto_accept_friend:
                 reply_data = {"flag": flag, "approve": True}
+                print("calling set_friend_add_request:{}".format(json.dumps(reply_data)))
                 self.api_caller.call_api(
                     "set_friend_add_request",
                     reply_data,
@@ -293,6 +295,7 @@ class EventHandler(object):
                     "sub_type": "invite",
                     "approve": True,
                 }
+                print("calling set_group_add_request:{}".format(json.dumps(reply_data)))
                 self.api_caller.call_api(
                     "set_group_add_request",
                     reply_data,
@@ -308,6 +311,7 @@ class EventHandler(object):
             qs = QQBot.objects.filter(owner_id=user_id)
             if qs.count() > 0:
                 reply_data = {"flag": flag, "sub_type": "add", "approve": True}
+                print("calling set_group_add_request:{}".format(json.dumps(reply_data)))
                 self.api_caller.call_api(
                     "set_group_add_request",
                     reply_data,
@@ -326,6 +330,7 @@ class EventHandler(object):
                 )
 
     def on_notice(self, receive, **kwargs):
+        print("on_notice:{}".format(json.dumps(receive)))
         bot = self.bot
         if receive["notice_type"] == "group_increase":
             group_id = receive["group_id"]
@@ -335,6 +340,7 @@ class EventHandler(object):
                 welcome_msg = group.welcome_msg.strip()
                 if welcome_msg:
                     msg = "[CQ:at,qq=%s]" % (user_id) + welcome_msg
+                    print("calling send_message:{}".format(msg))
                     self.api_caller.send_message(
                         "group",
                         group_id,
