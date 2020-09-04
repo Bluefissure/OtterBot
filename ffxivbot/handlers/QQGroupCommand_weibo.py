@@ -10,7 +10,7 @@ from bs4 import BeautifulSoup
 def get_weibotile_share(weibotile):
     content_json = json.loads(weibotile.content)
     mblog = content_json["mblog"]
-    bs = BeautifulSoup(mblog["text"],"html.parser")
+    bs = BeautifulSoup(mblog["text"],"lxml")
     res_data = {
         "url":content_json["scheme"],
         "title":bs.get_text().replace("\u200b","")[:32],

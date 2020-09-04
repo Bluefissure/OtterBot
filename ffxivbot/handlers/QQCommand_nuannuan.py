@@ -48,7 +48,7 @@ def extract_nn(feed):
         for item in feed["items"]:
             # print(item["title"])
             if re.match(pattern, item["title"]):
-                h = BeautifulSoup(item["summary"])
+                h = BeautifulSoup(item["summary"], "lxml")
                 text = h.text.replace("个人攻略网站", "游玩C攻略站")
                 res_data = {
                     "url": item["id"],

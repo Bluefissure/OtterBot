@@ -45,19 +45,14 @@ def localize_world_name(world_name):
     return world_name
 
 
-def get_item_id(item_name):
-    url = "https://cafemaker.wakingsands.com/search?indexes=Item&string=" + item_name
-    r = requests.get(url, timeout=3)
-    j = r.json()
-    if len(j["Results"]) > 0:
-        return j["Results"][0]["Name"], j["Results"][0]["ID"]
-    return "", -1
-
-
-def get_intl_item_id(item_name, name_lang=""):
+def get_item_id(item_name, name_lang=""):
     url = "https://xivapi.com/search?indexes=Item&string=" + item_name
     if name_lang:
         url = url + "&language=" + name_lang
+    if name_lang == "cn":
+        url = (
+            "https://cafemaker.wakingsands.com/search?indexes=Item&string=" + item_name
+        )
     r = requests.get(url, timeout=3)
     j = r.json()
     if len(j["Results"]) > 0:
@@ -66,7 +61,7 @@ def get_intl_item_id(item_name, name_lang=""):
 
 
 def get_market_data(server_name, item_name, hq=False):
-    new_item_name, item_id = get_item_id(item_name)
+    new_item_name, item_id = get_item_id(item_name, "cn")
     if item_id < 0:
         item_name = item_name.replace("_", " ")
         name_lang = ""
@@ -75,7 +70,7 @@ def get_market_data(server_name, item_name, hq=False):
                 item_name = item_name.replace("|{}".format(lang), "")
                 name_lang = lang
                 break
-        new_item_name, item_id = get_intl_item_id(item_name, name_lang)
+        new_item_name, item_id = get_item_id(item_name, name_lang)
         if item_id < 0:
             msg = '所查询物品"{}"不存在'.format(item_name)
             return msg
@@ -83,7 +78,9 @@ def get_market_data(server_name, item_name, hq=False):
     print("market url:{}".format(url))
     r = requests.get(url, timeout=3)
     if r.status_code != 200:
-        msg = "Error of HTTP request (code {}):\n{}".format(r.status_code, r.text)
+        if r.status_code == 404:
+            msg = "请确认所查询物品可交易且不可在NPC处购买\n"
+        msg += "Error of HTTP request (code {}):\n{}".format(r.status_code, r.text)
         return msg
     j = r.json()
     msg = "{} 的 {}{} 数据如下：\n".format(server_name, new_item_name, "(HQ)" if hq else "")
@@ -152,7 +149,7 @@ Powered by https://universalis.app"""
         if len(command_seg) != 3:
             msg = "参数错误：\n/market item $name $server: 查询$server服务器的$name物品交易数据"
             return msg
-        server_name = command_seg[2]
+        server_name = command_seg[-1]
         if server_name == "陆行鸟" or server_name == "莫古力" or server_name == "猫小胖":
             pass
         elif server_name == "鸟":
@@ -167,7 +164,7 @@ Powered by https://universalis.app"""
             # if not server.exists():
             #     msg = '找不到服务器"{}"'.format(server_name)
             #     return msg
-        item_name = command_seg[1]
+        item_name = " ".join(command_seg[1:-1])
         hq = "hq" in item_name or "HQ" in item_name
         if hq:
             item_name = item_name.replace("hq", "", 1)

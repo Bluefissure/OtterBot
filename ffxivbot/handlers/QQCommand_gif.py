@@ -63,7 +63,7 @@ def QQCommand_gif(*args, **kwargs):
                             s = requests.post(
                                 url=url, data=json.dumps(gen_data), timeout=2
                             )
-                            bs = BeautifulSoup(s.text, "html.parser")
+                            bs = BeautifulSoup(s.text, "lxml")
                             a = bs.find_all("a")[0]
                             img_url = SORRY_BASE_URL + a.attrs["href"]
                             logging.debug("img_url:%s" % (img_url))

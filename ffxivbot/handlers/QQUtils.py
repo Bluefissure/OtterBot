@@ -11,17 +11,19 @@ from bs4 import BeautifulSoup
 from ffxivbot.models import *
 
 
+CAFEMAKER = "https://cafemaker.wakingsands.com"
+XIVAPI = "https://xivapi.com"
+
+
 def reply_message_action(receive, msg):
-    action = {
-        "action": "",
-        "params": {},
-        "echo": ""
-    }
-    if (receive["message_type"] == "group"):
-        action.update({
-            "action": "send_group_msg",
-            "params": {"group_id": receive["group_id"], "message": msg}
-        })
+    action = {"action": "", "params": {}, "echo": ""}
+    if receive["message_type"] == "group":
+        action.update(
+            {
+                "action": "send_group_msg",
+                "params": {"group_id": receive["group_id"], "message": msg},
+            }
+        )
     elif receive["message_type"] == "discuss":
         action.update(
             {
@@ -30,10 +32,12 @@ def reply_message_action(receive, msg):
             }
         )
     else:
-        action.update({
-            "action": "send_private_msg",
-            "params": {"user_id": receive["user_id"], "message": msg}
-        })
+        action.update(
+            {
+                "action": "send_private_msg",
+                "params": {"user_id": receive["user_id"], "message": msg},
+            }
+        )
     return action
 
 
@@ -41,17 +45,13 @@ def group_ban_action(group_id, user_id, duration):
     action = {
         "action": "set_group_ban",
         "params": {"group_id": group_id, "user_id": user_id, "duration": duration},
-        "echo": ""
+        "echo": "",
     }
     return action
 
 
 def delete_message_action(message_id):
-    action = {
-        "action": "delete_msg",
-        "params": {"message_id": message_id},
-        "echo": ""
-    }
+    action = {"action": "delete_msg", "params": {"message_id": message_id}, "echo": ""}
     return action
 
 
@@ -59,17 +59,18 @@ def delete_message_action(message_id):
 def get_weibotile_share(weibotile, mode="json"):
     content_json = json.loads(weibotile.content)
     mblog = content_json["mblog"]
-    bs = BeautifulSoup(mblog["text"], "html.parser")
+    bs = BeautifulSoup(mblog["text"], "lxml")
     tmp = {
         "url": content_json["scheme"],
         "title": bs.get_text().replace("\u200b", "")[:32],
-        "content": "From {}\'s Weibo".format(weibotile.owner),
+        "content": "From {}'s Weibo".format(weibotile.owner),
         "image": mblog["user"]["profile_image_url"],
     }
     res_data = tmp
     if mode == "text":
-        res_data = "[[CQ:share,url={},title={},content={},image={}]]".format(tmp["url"], tmp["title"], tmp["content"],
-                                                                             tmp["image"])
+        res_data = "[[CQ:share,url={},title={},content={},image={}]]".format(
+            tmp["url"], tmp["title"], tmp["content"], tmp["image"]
+        )
     logging.debug("weibo_share")
     logging.debug(json.dumps(res_data))
     return res_data
@@ -91,8 +92,8 @@ def calculateForecastTarget(unixSeconds):
 
     calcBase = totalDays * 100 + increment
 
-    step1 = (((calcBase << 11) % (0x100000000)) ^ calcBase)
-    step2 = (((step1 >> 8) % (0x100000000)) ^ step1)
+    step1 = ((calcBase << 11) % (0x100000000)) ^ calcBase
+    step2 = ((step1 >> 8) % (0x100000000)) ^ step1
 
     return step2 % 100
 
@@ -169,17 +170,21 @@ def getFollowingWeathers(territory, cnt=5, TIMEFORMAT="%m-%d %H:%M:%S", **kwargs
         except Weather.DoesNotExist as e:
             raise e
 
-        weathers.append({
-            "pre_name": "{}".format(pre_weather),
-            "name": "{}".format(weather),
-            "ET": "{}:00".format(getEorzeaHour(now_time)),
-            "LT": "{}".format(time.strftime(TIMEFORMAT, time.localtime(now_time))),
-        })
+        weathers.append(
+            {
+                "pre_name": "{}".format(pre_weather),
+                "name": "{}".format(weather),
+                "ET": "{}:00".format(getEorzeaHour(now_time)),
+                "LT": "{}".format(time.strftime(TIMEFORMAT, time.localtime(now_time))),
+            }
+        )
         now_time += 8 * 175
     return weathers
 
 
-def getSpecificWeatherTimes(territory, weathers, cnt=5, TIMEFORMAT_MDHMS="%m-%d %H:%M:%S"):
+def getSpecificWeatherTimes(
+    territory, weathers, cnt=5, TIMEFORMAT_MDHMS="%m-%d %H:%M:%S"
+):
     unixSeconds = int(time.time())
     weatherStartTime = getWeatherTimeFloor(unixSeconds)
     count = cnt
@@ -188,7 +193,7 @@ def getSpecificWeatherTimes(territory, weathers, cnt=5, TIMEFORMAT_MDHMS="%m-%d 
     weather_rate = json.loads(territory.weather_rate.rate)
     now_time = weatherStartTime
     try_time = 0
-    while (match < abs(count) and try_time <= 1000):
+    while match < abs(count) and try_time <= 1000:
         try_time += 1
         chance = calculateForecastTarget(now_time)
         weather_id = getWeatherID(territory, chance)
@@ -200,12 +205,16 @@ def getSpecificWeatherTimes(territory, weathers, cnt=5, TIMEFORMAT_MDHMS="%m-%d 
             raise e
         for weather in weathers:
             if weather_id == weather.id:
-                times.append({
-                    "pre_name": "{}".format(pre_weather),
-                    "name": "{}".format(weather),
-                    "ET": "{}:00".format(getEorzeaHour(now_time)),
-                    "LT": "{}".format(time.strftime(TIMEFORMAT_MDHMS, time.localtime(now_time))),
-                })
+                times.append(
+                    {
+                        "pre_name": "{}".format(pre_weather),
+                        "name": "{}".format(weather),
+                        "ET": "{}:00".format(getEorzeaHour(now_time)),
+                        "LT": "{}".format(
+                            time.strftime(TIMEFORMAT_MDHMS, time.localtime(now_time))
+                        ),
+                    }
+                )
                 match += 1
                 break
         now_time += 8 * 175
@@ -221,30 +230,24 @@ def crawl_dps(boss, job, day=0, CN_source=False, dps_type="adps"):
         boss.cn_server if CN_source else boss.global_server,
         boss.patch,
         job.name,
-        dps_type
+        dps_type,
     )
     print("fflogs url:{}".format(fflogs_url))
     s = requests.Session()
-    s.headers.update({'referer': 'https://www.fflogs.com'})
+    s.headers.update({"referer": "https://www.fflogs.com"})
     r = s.get(url=fflogs_url, timeout=5)
     tot_days = 0
     percentage_list = [10, 25, 50, 75, 95, 99, 100]
     atk_res = {}
     for perc in percentage_list:
         if perc == 100:
-            re_str = (
-                    "series"
-                    + r".data.push\([+-]?(0|([1-9]\d*))(\.\d+)?\)"
-            )
+            re_str = "series" + r".data.push\([+-]?(0|([1-9]\d*))(\.\d+)?\)"
         else:
-            re_str = (
-                    "series%s" % (perc)
-                    + r".data.push\([+-]?(0|([1-9]\d*))(\.\d+)?\)"
-            )
+            re_str = "series%s" % (perc) + r".data.push\([+-]?(0|([1-9]\d*))(\.\d+)?\)"
         ptn = re.compile(re_str)
         find_res = ptn.findall(r.text)
         if CN_source and boss.cn_offset:
-            find_res = find_res[boss.cn_offset:]
+            find_res = find_res[boss.cn_offset :]
         # print("found {} atk_res".format(len(find_res)))
         try:
             if day == -1:
@@ -256,10 +259,7 @@ def crawl_dps(boss, job, day=0, CN_source=False, dps_type="adps"):
                 atk_res[str(perc)] = find_res[-1]
             else:
                 return "No data found"
-        ss = (
-                atk_res[str(perc)][1]
-                + atk_res[str(perc)][2]
-        )
+        ss = atk_res[str(perc)][1] + atk_res[str(perc)][2]
         if ss == "":
             ss = "0"
         atk = float(ss)
@@ -268,88 +268,103 @@ def crawl_dps(boss, job, day=0, CN_source=False, dps_type="adps"):
     return atk_res
 
 
-def get_item_info(url):
+def get_item_info(data, lang="", item_url=""):
+    api_base = CAFEMAKER if lang == "cn" else XIVAPI
+    url = api_base + data["Url"]
+    if lang == "cn":
+        lang = "chs"
     try:
         r = requests.get(url, timeout=5)
+        j = r.json()
+        name = j["Name_{}".format(lang)] if lang else j["Name"]
+        desc = j["Description_{}".format(lang)] if lang else j["Description"]
+        if not desc:
+            desc = name
         if r.status_code == 200:
-            bs = BeautifulSoup(r.text, "html.parser")
-            item_info = bs.find_all(class_='infobox-item ff14-content-box')[0]
-            item_title = item_info.find_all(class_='infobox-item--name-title')[0]
-            item_title_text = item_title.get_text().strip()
-            if item_title.img and item_title.img.attrs["alt"] == "Hq.png":
-                item_title_text += "(HQ)"
-            logging.debug("item_title_text:%s" % (item_title_text))
-            item_img = item_info.find_all(class_='item-icon--img')[0]
-            item_img_url = item_img.img.attrs['src'] if item_img and item_img.img else ""
-            item_content = item_info.find_all(class_='ff14-content-box-block')[0]
-            # print(item_info.prettify())
-            item_content_text = item_title_text
-            try:
-                item_content_text = item_content.p.get_text().strip()
-            except Exception as e:
-                traceback.print_exc()
             res_data = {
-                "url": url,
-                "title": item_title_text,
-                "content": item_content_text,
-                "image": item_img_url,
+                "url": item_url,
+                "title": name,
+                "content": desc,
+                "image": api_base + j["Icon"],
             }
         else:
             res_data = {
                 "url": url,
-                "title": "FF14 WIKI 炸了",
+                "title": "FF14 API 炸了",
                 "content": "HTTP {}".format(r.status_code),
                 "image": "",
             }
     except requests.exceptions.ReadTimeout:
         res_data = {
             "url": url,
-            "title": "道具界面请求超时了" % (name),
+            "title": "%s 的道具查询请求超时了" % (data["Name"]),
             "content": "不信你自己打开看看",
             "image": "",
         }
     return res_data
 
 
+def get_xivapi_item(item_name, name_lang=""):
+    api_base = CAFEMAKER if name_lang == "cn" else XIVAPI
+    url = api_base + "/search?indexes=Item&string=" + item_name
+    if name_lang:
+        url = url + "&language=" + name_lang
+    r = requests.get(url, timeout=3)
+    j = r.json()
+    return j, url
+
+
 def search_item(name, FF14WIKI_BASE_URL, FF14WIKI_API_URL, url_quote=True):
-    search_url = FF14WIKI_API_URL + "?format=json&action=parse&title=ItemSearch&text={{ItemSearch|name=%s}}" % (name)
     try:
-        s = requests.Session()
-        headers = {'Referer':'https://ff14.huijiwiki.com/wiki/ItemSearch?name={}'.format(urllib.parse.quote(name))}
-        r = s.get(search_url, headers=headers, timeout=5)
-        print(search_url)
-        res_data = json.loads(r.text)
-        bs = BeautifulSoup(res_data["parse"]["text"]["*"], "html.parser")
-        if ("没有" in bs.p.string):
+        found = False
+        for lang in ["cn", "en", "ja", "fr", "de"]:
+            j, search_url = get_xivapi_item(name, lang)
+            if j.get("Results"):
+                found = True
+                name_lang = lang
+                break
+        if not found:
             return False
-        res_num = int(bs.p.string.split(" ")[1])
-        item_names = bs.find_all(class_="item-name")
-        if len(item_names) == 1:
-            item_name = item_names[0].a.string
-            item_url = FF14WIKI_BASE_URL + item_names[0].a.attrs['href']
-            logging.debug("%s %s" % (item_name, item_url))
-            res_data = get_item_info(item_url)
+        api_base = CAFEMAKER if name_lang == "cn" else XIVAPI
+        res_num = j["Pagination"]["ResultsTotal"]
+        if res_num == 1:
+            item_name = j["Results"][0]["Name"]
+            item_url = (
+                FF14WIKI_BASE_URL
+                + "/wiki/"
+                + urllib.parse.quote("物品")
+                + ":"
+                + urllib.parse.quote(item_name)
+            )
+            if name_lang == "en":
+                item_url = "http://www.garlandtools.org/db/#item/{}".format(
+                    j["Results"][0]["ID"]
+                )
+            elif name_lang == "ja":
+                item_url = "https://eriones.com/search?i=%E3%82%AB%E3%83%96%E3%82%B9%E3%81%AE%E8%82%89"
+            logging.debug("/search %s %s" % (item_name, item_url))
+            res_data = get_item_info(j.get("Results")[0], name_lang, item_url)
         else:
-            item_img = bs.find_all(class_="item-icon--img")[0]
-            item_img_url = item_img.img.attrs['src']
-            search_url = FF14WIKI_BASE_URL + "/wiki/ItemSearch?name=" + urllib.parse.quote(name)
+            search_url = (
+                FF14WIKI_BASE_URL + "/wiki/ItemSearch?name=" + urllib.parse.quote(name)
+            )
             res_data = {
                 "url": search_url,
                 "title": "%s 的搜索结果" % (name),
                 "content": "在最终幻想XIV中找到了 %s 个物品" % (res_num),
-                "image": item_img_url,
+                "image": api_base + j["Results"][0]["Icon"],
             }
         logging.debug("res_data:%s" % (res_data))
     except requests.exceptions.ReadTimeout:
         res_data = {
-            "url": FF14WIKI_BASE_URL + "/wiki/ItemSearch?name=" + urllib.parse.quote(name),
+            "url": search_url,
             "title": "%s 的搜索请求超时了" % (name),
             "content": "不信你自己打开看看",
             "image": "",
         }
     except json.decoder.JSONDecodeError:
         print(r.text)
-    
+
     print(res_data)
     return res_data
 
@@ -360,7 +375,7 @@ def check_raid(api_url, raid_data, raid_name, wol_name, server_name):
         r = requests.post(url=api_url, data=data, timeout=5)
         res = json.loads(r.text)
         msg = ""
-        if (int(res["Code"]) != 0):
+        if int(res["Code"]) != 0:
             msg += res["Message"]
         else:
             ok = False
@@ -379,9 +394,14 @@ def check_raid(api_url, raid_data, raid_name, wol_name, server_name):
                 else:
                     raid_info += "{}{}: 仍未攻破\n".format(raid_name, l)
             if not ok:
-                msg += "{}--{} 还没有突破过任何零式{}，请继续努力哦~\n".format(server_name, wol_name, raid_name)
+                msg += "{}--{} 还没有突破过任何零式{}，请继续努力哦~\n".format(
+                    server_name, wol_name, raid_name
+                )
             else:
-                msg = "{}--{} 的 {} 挑战情况如下：\n".format(server_name, wol_name, raid_name) + raid_info
+                msg = (
+                    "{}--{} 的 {} 挑战情况如下：\n".format(server_name, wol_name, raid_name)
+                    + raid_info
+                )
     except requests.exceptions.ReadTimeout:
         msg = "raid请求超时，请检查后台日志"
     return msg
