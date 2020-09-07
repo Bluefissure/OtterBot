@@ -25,11 +25,11 @@ def QQCommand_nuannuan(*args, **kwargs):
                 rsshub = RsshubUtil()
                 feed = rsshub.biliuserdynamic(15503317)
                 res_data = extract_nn(feed)
-            # print(feed)
             if not res_data:
                 msg = "无法查询到有效数据，请稍后再试"
             else:
                 msg = [{"type": "share", "data": res_data}]
+                # print(msg)
         except Exception as e:
             msg = "Error: {}".format(type(e))
             traceback.print_exc()
@@ -40,6 +40,7 @@ def QQCommand_nuannuan(*args, **kwargs):
         action_list.append(reply_message_action(receive, msg))
         logging.error(e)
     return action_list
+
 
 def extract_nn(feed):
     try:

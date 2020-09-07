@@ -73,7 +73,6 @@ class EventHandler(object):
                         msg += "{}: {}\n".format(k, v)
                 msg = msg.strip()
                 self.api_caller.send_message(
-                    bot,
                     receive["message_type"],
                     discuss_id or group_id or user_id,
                     msg,
