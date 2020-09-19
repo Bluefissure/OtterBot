@@ -36,13 +36,13 @@ def search_id(glamour_id):
         if flag == 200:
             r = r["array"][0]
             result["flag"] = 200
-            result["sc"] = "主手：{0:{6}<25}\t副手：{1}-{2}\n\n\n头部：{3:{6}<25}\t耳环：{4}-{5}\n\n\n".format(r['glamour_weaponry']+"-"+r['glamour_weaponry_color'],r['glamour_second'],r['glamour_second_color'],r['glamour_headgear']+"-"+r['glamour_headgear_color'],r['glamour_earringsgear'],r['glamour_earringsgear_color'],chr(12288),end = '')+ \
-                           "上衣：{0:{6}<25}\t项链：{1}-{2}\n\n\n手套：{3:{6}<25}\t手镯：{4}-{5}\n\n\n".format(r['glamour_bodygear']+"-"+r['glamour_bodygear_color'],r['glamour_necklacegear'],r['glamour_necklacegear_color'],r['glamour_handgear']+"-"+r['glamour_handgear_color'],r['glamour_armillaegear'],r['glamour_armillaegear_color'],chr(12288),end = '')+ \
-                           "腿部：{0:{6}<25}\t戒指：{1}-{2}\n\n\n脚部：{3:{6}<25}\t戒指：{4}-{5}".format(r['glamour_leggear']+"-"+r['glamour_leggear_color'],r['glamour_RingLgear'],r['glamour_RingLgear_color'],r['glamour_footgear']+"-"+r['glamour_footgear_color'],r['glamour_RingRgear'],r['glamour_RingRgear_color'],chr(12288),end = '')
-            result["race"] = r['glamour_character']+"-"+r['glamour_class']
-            result["tittle"] = r['glamour_title']+"-ID：{}".format(glamour_id)
-            result["introduction"] = r['glamour_introduction']
-            result["img"] = r['glamour_url']
+            result["sc"] = "主手：{0:{6}<25}\t副手：{1}-{2}\n\n\n头部：{3:{6}<25}\t耳环：{4}-{5}\n\n\n".format(r['glamourWeaponry']+"-"+r['glamourWeaponryColor'],r['glamourSecond'],r['glamourSecondColor'],r['glamourHeadgear']+"-"+r['glamourHeadgearColor'],r['glamourEarringsgear'],r['glamourEarringsgearColor'],chr(12288),end = '')+ \
+                           "上衣：{0:{6}<25}\t项链：{1}-{2}\n\n\n手套：{3:{6}<25}\t手镯：{4}-{5}\n\n\n".format(r['glamourBodygear']+"-"+r['glamourBodygearColor'],r['glamourNecklacegear'],r['glamourNecklacegearColor'],r['glamourHandgear']+"-"+r['glamourHandgearColor'],r['glamourArmillaegear'],r['glamourArmillaegearColor'],chr(12288),end = '')+ \
+                           "腿部：{0:{6}<25}\t戒指：{1}-{2}\n\n\n脚部：{3:{6}<25}\t戒指：{4}-{5}".format(r['glamourLeggear']+"-"+r['glamourLeggearColor'],r['glamourRingLgear'],r['glamourRingLgearColor'],r['glamourFootgear']+"-"+r['glamourFootgearColor'],r['glamourRingRgear'],r['glamourRingRgearColor'],chr(12288),end = '')
+            result["race"] = r['glamourCharacter']+"-"+r['glamourClass']
+            result["tittle"] = r['glamourTitle']+"-ID：{}".format(glamour_id)
+            result["introduction"] = r['glamourIntroduction']
+            result["img"] = r['glamourUrl']
         else:
             result["flag"] = 400
         return result
@@ -87,24 +87,23 @@ def result_to_img(result,glamour_id,bot_version):
 
 def search_jr(job,race,sex,sort,time,bot_version,item_name,item_flag=False):
     try:
-        if sex != "all":
-            sex = "%20-%20"+sex
         headers={
         "Host": "api.ffxivsc.cn",
         "Origin": "https://www.ffxivsc.cn",
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.87 Safari/537.36",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.102 Safari/537.36",
         "Referer": "https://www.ffxivsc.cn/page/glamourList.html",
         "Accept-Encoding": "gzip, deflate, br"
         }
         if item_flag:
-            src_url = "https://api.ffxivsc.cn/glamour/v1/librarySearchItem?language=zh&job={}&itemName={}&race={}&sex={}&sort=sort_great&time=time_all".format(job,item_name,race,sex)
+            src_url = "https://api.ffxivsc.cn/glamour/v1/librarySearchItem?language=zh&job={}&itemName={}&race={}&sex={}&sort=1&time=0".format(job,item_name,race,sex)
         else:
-            src_url = "https://api.ffxivsc.cn/glamour/v1/getLibraryFilterGlamours?job={}&race={}&sex={}&sort=sort_{}&time=time_{}&pageNum=1".format(job,race,sex,sort,time)
+            src_url = "https://api.ffxivsc.cn/glamour/v1/getLibraryFilterGlamours?job={}&race={}&sex={}&sort={}&time={}&pageNum=1".format(job,race,sex,sort,time)
+
         r = requests.get(src_url,headers=headers,timeout=5)
         r = r.json()
         if r["flag"] == 200:
             i = random.randint(0,len(r["array"])-1)
-            glamour_id = r["array"][i]["glamour_id"]
+            glamour_id = r["array"][i]["glamourId"]
             result = search_id(glamour_id)
             img = result_to_img(result,glamour_id,bot_version)
         else:
@@ -121,8 +120,8 @@ def QQCommand_hh(*args, **kwargs):
         QQ_BASE_URL = global_config["QQ_BASE_URL"]
         action_list = []
         receive = kwargs["receive"]
-        sort="new"
-        time="all"
+        sort="0" # sort = "all"
+        time="0" # time = "now"
         rank = False
         item_name = ""
         item_flag = False
@@ -138,7 +137,7 @@ def QQCommand_hh(*args, **kwargs):
                     "Powered by https://www.ffxivsc.cn"
         else:
             if "rank" in receive_msg:
-                sort = "great"
+                sort = "1" # sort = "great"
             if "item" in receive_msg:
                 item_flag = True
                 item_name = receive_msg.split("item")[1].strip()
@@ -146,8 +145,8 @@ def QQCommand_hh(*args, **kwargs):
             receive_msg = receive_msg.replace('rank','',1).strip()
             receive_msg = receive_msg.replace('item','',1).strip()
             receive_msg_tmp = receive_msg.split(" ")
-            if receive_msg_tmp[-1] in ["hour", "week", "month", "all"]:
-                time = receive_msg_tmp[-1]
+            if {"hour": "1", "week": "2", "month" :"3", "all": "0"}.get(receive_msg_tmp[-1]):
+                time = {"hour": "1", "week": "2", "month" :"3", "all": "0"}.get(receive_msg_tmp[-1])
             job = None
             race = None
             sex = None
@@ -162,7 +161,7 @@ def QQCommand_hh(*args, **kwargs):
                 for item in job_nicknames:
                     if(item in receive_msg):
                         receive_msg = receive_msg.replace(item,'',1).strip()
-                        job = jobs.name
+                        job = jobs.id
                         break
                 if(job):
                     break
@@ -177,7 +176,7 @@ def QQCommand_hh(*args, **kwargs):
                 for item in race_nicknames:
                     if(item in receive_msg):
                         receive_msg = receive_msg.replace(item,'',1).strip()
-                        race = races.name
+                        race = races.id
                         break
                 if(race):
                     break
@@ -191,16 +190,16 @@ def QQCommand_hh(*args, **kwargs):
                 for item in sex_nicknames:
                     if(item in receive_msg):
                         receive_msg = receive_msg.replace(item,'',1).strip()
-                        sex = sexs.name
+                        sex = sexs.id
                         break
                 if(sex):
                     break
             if not job:
-                job = "all"
+                job = "0" # job = "all"
             if not race:
-                race = "all"
+                race = "0" # race = "all"
             if not sex:
-                sex = "all"
+                sex = "0" # sex = "all"
             msg = search_jr(job,race,sex,sort,time,bot_version,item_name,item_flag)
         msg = msg.strip()
         if msg:
