@@ -1,6 +1,7 @@
 *.pyc
 .python-version
 *.log
+*.log.*
 *.sqlite3
 config.json
 venv/
