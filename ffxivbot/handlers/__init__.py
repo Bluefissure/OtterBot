@@ -31,6 +31,7 @@ commands = {
     "/quest": '任务查询("/quest 狂乱前奏")',
     "/nuannuan": "本周金蝶暖暖作业",
     "/hso": "好色哦",
+    "/hhsh": "好好说话",
     "/bot": "机器人相关功能",
     "/ifttt": "IFTTT推送系统",
     "/akhr": "罗德岛公开招募",
@@ -116,6 +117,7 @@ from .QQCommand_gif import QQCommand_gif
 from .QQCommand_dps import QQCommand_dps
 from .QQCommand_dice import QQCommand_dice
 from .QQCommand_hso import QQCommand_hso
+from .QQCommand_hhsh import QQCommand_hhsh  # be sure to come before /hh
 from .QQCommand_raid import QQCommand_raid
 from .QQCommand_bot import QQCommand_bot
 from .QQCommand_pixiv import QQCommand_pixiv
