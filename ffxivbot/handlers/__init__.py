@@ -39,12 +39,12 @@ commands = {
     # "/trash":"你是什么垃圾？",
     "/shorten": "微博短链",
     #"/mxh": '梅溪湖cp短打生成器（"/mxh 海德林 佐迪亚克"）',
+    # "/joke":"讽刺笑话（\"/joke 996|强东|建设一流公司|程序员|公司\"）",
     "/hh": '光之收藏家幻化推荐("/hh help")',
     "/ofish": "获取最近海钓航班",
     "/luck": "浅草寺求签",
     "/abv": "Bilibili av/BV号互转",
 }
-# "/joke":"讽刺笑话（\"/joke 996|强东|建设一流公司|程序员|公司\"）",
 
 group_commands = {
     "/group": "群相关功能控制",
@@ -99,53 +99,57 @@ alter_commands = {
     "/海钓": "/ofish",
 }
 
-from .QQCommand_ofish import QQCommand_ofish
-from .QQCommand_cat import QQCommand_cat
-from .QQCommand_gakki import QQCommand_gakki
-from .QQCommand_10 import QQCommand_10
-from .QQCommand_bird import QQCommand_bird
-from .QQCommand_comment import QQCommand_comment
-from .QQCommand_search import QQCommand_search
-from .QQCommand_about import QQCommand_about
-from .QQCommand_donate import QQCommand_donate
-from .QQCommand_anime import QQCommand_anime
-from .QQCommand_gate import QQCommand_gate
-from .QQCommand_chp import QQCommand_chp
-from .QQCommand_random import QQCommand_random
-from .QQCommand_weather import QQCommand_weather
-from .QQCommand_gif import QQCommand_gif
+# FFXIV Commands
 from .QQCommand_dps import QQCommand_dps
-from .QQCommand_dice import QQCommand_dice
-from .QQCommand_hso import QQCommand_hso
-from .QQCommand_hhsh import QQCommand_hhsh  # be sure to come before /hh
-from .QQCommand_raid import QQCommand_raid
-from .QQCommand_bot import QQCommand_bot
-from .QQCommand_pixiv import QQCommand_pixiv
-
-# from .QQCommand_music import QQCommand_music
-from .QQCommand_duilian import QQCommand_duilian
-from .QQCommand_image import QQCommand_image
-from .QQCommand_nuannuan import QQCommand_nuannuan
-from .QQCommand_tex import QQCommand_tex
-from .QQCommand_waifu import QQCommand_waifu
-from .QQCommand_quest import QQCommand_quest
-from .QQCommand_share import QQCommand_share
-from .QQCommand_trash import QQCommand_trash
-from .QQCommand_shorten import QQCommand_shorten
-from .QQCommand_ifttt import QQCommand_ifttt
 from .QQCommand_fsx import QQCommand_fsx
-
-# from .QQCommand_joke import QQCommand_joke
-# from .QQCommand_mxh import QQCommand_mxh
-from .QQCommand_treasure import QQCommand_treasure
-from .QQCommand_hh import QQCommand_hh
-from .QQCommand_luck import QQCommand_luck
-from .QQCommand_abv import QQCommand_abv
+from .QQCommand_gate import QQCommand_gate
 from .QQCommand_market import QQCommand_market
+from .QQCommand_nuannuan import QQCommand_nuannuan
+from .QQCommand_ofish import QQCommand_ofish
+from .QQCommand_quest import QQCommand_quest
+from .QQCommand_raid import QQCommand_raid
+from .QQCommand_search import QQCommand_search
+from .QQCommand_treasure import QQCommand_treasure
+from .QQCommand_weather import QQCommand_weather
 
+# Universal Commands
+from .QQCommand_10 import QQCommand_10
+from .QQCommand_about import QQCommand_about
+from .QQCommand_abv import QQCommand_abv
+from .QQCommand_anime import QQCommand_anime
+from .QQCommand_bird import QQCommand_bird
+from .QQCommand_cat import QQCommand_cat
+from .QQCommand_chp import QQCommand_chp
+from .QQCommand_dice import QQCommand_dice
+from .QQCommand_duilian import QQCommand_duilian
+from .QQCommand_gakki import QQCommand_gakki
+from .QQCommand_gif import QQCommand_gif
+from .QQCommand_hhsh import QQCommand_hhsh  # be sure to come before /hh
+from .QQCommand_hh import QQCommand_hh
+from .QQCommand_hso import QQCommand_hso
+from .QQCommand_ifttt import QQCommand_ifttt
+from .QQCommand_image import QQCommand_image
+from .QQCommand_luck import QQCommand_luck
+# from .QQCommand_joke import QQCommand_joke
+# from .QQCommand_music import QQCommand_music
+# from .QQCommand_mxh import QQCommand_mxh
+from .QQCommand_pixiv import QQCommand_pixiv
+from .QQCommand_random import QQCommand_random
+from .QQCommand_share import QQCommand_share
+from .QQCommand_shorten import QQCommand_shorten
+from .QQCommand_tex import QQCommand_tex
+from .QQCommand_trash import QQCommand_trash
+from .QQCommand_waifu import QQCommand_waifu
+
+# Configure Commands
+from .QQCommand_bot import QQCommand_bot
+from .QQCommand_comment import QQCommand_comment
+from .QQCommand_donate import QQCommand_donate
+
+# Arknights Commands
 from .arknights.QQCommand_akhr import QQCommand_akhr
 
-
+# Group Commands
 from .QQGroupCommand_group import QQGroupCommand_group
 from .QQGroupCommand_welcome import QQGroupCommand_welcome
 from .QQGroupCommand_custom_reply import QQGroupCommand_custom_reply
