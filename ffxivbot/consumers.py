@@ -106,7 +106,7 @@ class WSConsumer(AsyncWebsocketConsumer):
                 LOGGER.error("Unkown client_role: {}".format(client_role))
                 # await self.close()
                 return
-            if "CQHttp" not in user_agent and "MiraiHttp" not in user_agent:
+            if "CQHttp" not in user_agent and "MiraiHttp" not in user_agent and "OneBot" not in user_agent:
                 LOGGER.error(
                     "Unknown user_agent: {} for {}".format(user_agent, ws_self_id)
                 )
@@ -118,6 +118,10 @@ class WSConsumer(AsyncWebsocketConsumer):
                         "Unsupport user_agent: {} for {}".format(user_agent, ws_self_id)
                     )
                     return
+            elif "OneBot" in user_agent and "Bearer" in ws_access_token:
+                # onebot基于rfc6750往token加入了Bearer
+                ws_access_token = ws_access_token.replace("Bearer", "").strip()
+
 
             bot = None
             # with transaction.atomic():
