@@ -12,6 +12,103 @@ CONFIG_PATH = os.environ.get(
 )
 
 
+def generate_bot_conf(bot, client, web_base, http_url, ws_url):
+    bot_conf = {"error": "Unsupported client."}
+    if client == "Mirai":
+        bot_conf = {
+            "debug": True,
+            str(bot.user_id): {
+                "cacheImage": True,
+                "http": {
+                    "enable": False,
+                    "host": "0.0.0.0",
+                    "port": 5700,
+                    "accessToken": "",
+                    "postUrl": "",
+                    "postMessageFormat": "string",
+                    "secret": "",
+                },
+                "ws_reverse": [
+                    {
+                        "enable": True,
+                        "postMessageFormat": "string",
+                        "reverseHost": web_base,
+                        "reversePort": 80,
+                        "accessToken": "",
+                        "reversePath": "/ws",
+                        "reverseApiPath": "/api",
+                        "reverseEventPath": "/event",
+                        "useUniversal": True,
+                        "reconnectInterval": 3000,
+                    }
+                ],
+                "ws": {
+                    "enable": False,
+                    "postMessageFormat": "string",
+                    "accessToken": "SECRET",
+                    "wsHost": "0.0.0.0",
+                    "wsPort": 8080,
+                },
+            },
+        }
+        if bot.api_post_url:
+            bot_conf[str(bot.user_id)]["http"]["enable"] = True
+            bot_conf[str(bot.user_id)]["http"]["postUrl"] = http_url
+            bot_conf[str(bot.user_id)]["http"]["secret"] = bot.access_token
+            bot_conf[str(bot.user_id)]["ws_reverse"][0]["enable"] = False
+        else:
+            bot_conf[str(bot.user_id)]["ws_reverse"][0]["enable"] = True
+            bot_conf[str(bot.user_id)]["ws_reverse"][0][
+                "accessToken"
+            ] = bot.access_token
+        bot_conf = yaml.dump(bot_conf).encode()
+    elif client == "OICQ":
+        access_token = '"{}"'.format(bot.access_token)
+        if bot.api_post_url:
+            use_http = "true"
+            post_url = '"{}",'.format(http_url)
+            ws_reverse_url = ""
+        else:
+            use_http = "false"
+            post_url = ""
+            ws_reverse_url = '"{}",'.format(ws_url)
+        conf = (use_http, access_token, access_token, post_url, ws_reverse_url)
+        # print(conf)
+        bot_conf = bot_conf = """"use strict";
+module.exports = {{
+    general: {{
+        platform:           2,
+        kickoff:            false,
+        ignore_self:        true,
+        web_image_timeout:  30,
+        web_record_timeout: 30,
+        debug:              false,
+
+        host:               "0.0.0.0",
+        port:               5700,
+        use_http:           {},
+        use_ws:             false,
+        access_token:       {},
+        secret:             {},
+        post_timeout:       30,
+        post_message_format:"string",
+        enable_heartbeat:   false,
+        heartbeat_interval: 15000,
+        event_filter:       "",
+        post_url: [
+            {}
+        ],
+        ws_reverse_url: [ 
+            {}
+        ],
+        ws_reverse_reconnect_interval: 3000,
+    }}
+}};""".format(
+            *conf
+        )
+    return bot_conf
+
+
 def tata(req):
     if req.is_ajax() and req.method == "POST":
         res_dict = {"response": "No response."}
@@ -69,8 +166,9 @@ def tata(req):
         else:
             bot_id = req.POST.get("id")
             token = req.POST.get("token")
+            client = req.POST.get("client")
             if settings.DEBUG:
-                print("bot_id:{} token:{}".format(bot_id, token))
+                print("bot_id:{} token:{} client:{}".format(bot_id, token, client))
             try:
                 bot = QQBot.objects.get(id=bot_id, access_token=token)
             except Exception as e:
@@ -95,53 +193,8 @@ def tata(req):
                 web_base = web_base.replace("http://", "").strip("/")
                 ws_url = "ws://" + os.path.join(web_base, "ws/")
                 http_url = "http://" + os.path.join(web_base, "http/")
-                bot_conf = {
-                    "debug": True,
-                    str(bot.user_id): {
-                        "cacheImage": True,
-                        "http": {
-                            "enable": False,
-                            "host": "0.0.0.0",
-                            "port": 5700,
-                            "accessToken": "",
-                            "postUrl": "",
-                            "postMessageFormat": "string",
-                            "secret": "",
-                        },
-                        "ws_reverse": [
-                            {
-                                "enable": True,
-                                "postMessageFormat": "string",
-                                "reverseHost": web_base,
-                                "reversePort": 80,
-                                "accessToken": "",
-                                "reversePath": "/ws",
-                                "reverseApiPath": "/api",
-                                "reverseEventPath": "/event",
-                                "useUniversal": True,
-                                "reconnectInterval": 3000,
-                            }
-                        ],
-                        "ws": {
-                            "enable": False,
-                            "postMessageFormat": "string",
-                            "accessToken": "SECRET",
-                            "wsHost": "0.0.0.0",
-                            "wsPort": 8080,
-                        },
-                    },
-                }
-                if bot.api_post_url:
-                    bot_conf[str(bot.user_id)]["http"]["enable"] = True
-                    bot_conf[str(bot.user_id)]["http"]["postUrl"] = http_url
-                    bot_conf[str(bot.user_id)]["http"]["secret"] = bot.access_token
-                    bot_conf[str(bot.user_id)]["ws_reverse"][0]["enable"] = False
-                else:
-                    bot_conf[str(bot.user_id)]["ws_reverse"][0]["enable"] = True
-                    bot_conf[str(bot.user_id)]["ws_reverse"][0][
-                        "accessToken"
-                    ] = bot.access_token
-                response.write(yaml.dump(bot_conf).encode())
+                bot_conf = generate_bot_conf(bot, client, web_base, http_url, ws_url)
+                response.write(bot_conf)
                 return response
         return JsonResponse(res_dict)
 

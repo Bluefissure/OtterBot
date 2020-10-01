@@ -90,8 +90,10 @@
                   </td>
                   {% endif %}
                   <td>
-                    <button type="button" class="btn btn-block btn-primary"
-                      onclick="download_conf({{ bot.id }})">下载</button>
+                    <!-- <button type="button" class="btn btn-block btn-primary"
+                      onclick="download_conf({{ bot.id }})">下载</button> -->
+                    <a class="btn btn-block btn-primary open-DownloadConf" href="#downloadConf" data-id="{{ bot.id }}"
+                      data-toggle="modal" data-target="#DownloadConf">下载</a>
                   </td>
                   <td>
                     <button type="button" class="btn btn-block btn-danger" onclick="del_bot({{ bot.id }})">删除</button>
@@ -107,6 +109,38 @@
         </div>
         <!-- /.card -->
       </div>
+    </div>
+    <div class="modal fade" id="DownloadConf" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h4 class="modal-title" id="TOSTitle">配置下载</h4>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">x</span>
+            </button>
+          </div>
+          <div class="modal-body" id="TOSContent">
+            <div style="display: none;">
+              <label for="accessToken">Bot Id</label>
+              <input type="text" class="form-control" id="downloadConfBotId" readonly="readonly">
+            </div>
+            <div>
+              <label for="accessToken">Access Token</label>
+              <input type="text" class="form-control" id="downloadConfToken" placeholder="" maxlength="16">
+            </div>
+            <div class="form-group">
+              <label>客户端</label>
+              <select class="form-control" id="downloadConfClient">
+                <option>Mirai</option>
+                <option>OICQ</option>
+              </select>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-primary" onclick="download_conf()">下载</button>
+          </div>
+        </div><!-- /.modal-content -->
+      </div><!-- /.modal -->
     </div>
     <div class="row">
       <div class="col-md-6">
@@ -341,6 +375,10 @@
 <script src="{% static "dist/js/demo.js" %}"></script>
 <!-- page script -->
 <script>
+  $(document).on("click", ".open-DownloadConf", function() {
+    var botId = $(this).data('id');
+    $("#downloadConfBotId").val(botId);
+  });
   $(function() {
     $('#example1').DataTable({
       "scrollX": false,
@@ -357,15 +395,15 @@
         "sLoadingRecords": "载入中...",
         "sInfoThousands": ",",
         "oPaginate": {
-            "sFirst": "首页",
-            "sPrevious": "上页",
-            "sNext": "下页",
-            "sLast": "末页"
+          "sFirst": "首页",
+          "sPrevious": "上页",
+          "sNext": "下页",
+          "sLast": "末页"
         },
         // 排序方式
         "oAria": {
-            "sSortAscending": ": 以升序排列此列",
-            "sSortDescending": ": 以降序排列此列"
+          "sSortAscending": ": 以升序排列此列",
+          "sSortDescending": ": 以降序排列此列"
         }
       }
     });
@@ -426,7 +464,10 @@
   }
 
   function download_conf(id) {
-    var token = prompt("请输入Token:");
+    id = $("#downloadConfBotId").val();
+    var token = $("#downloadConfToken").val();
+    var client = $("#downloadConfClient").val();
+    console.log(id + "|" + token + "|" + client);
     var request = new XMLHttpRequest();
     request.open('POST', '', true);
     request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
@@ -436,7 +477,7 @@
     request.onload = function(e) {
       if (this.status === 200) {
         var blob = this.response;
-        var fileName = "setting.yml";
+        var fileName = client === "Mirai" ? "setting.yml" : "config.js";
         console.log(blob);
         if (window.navigator.msSaveOrOpenBlob) {
           window.navigator.msSaveBlob(blob, fileName);
@@ -444,9 +485,11 @@
           var downloadLink = window.document.createElement('a');
           var contentTypeHeader = request.getResponseHeader("Content-Type");
           downloadLink.href = window.URL.createObjectURL(new Blob([blob], { type: contentTypeHeader }));
+          /*
           var contentDispositionHeader = request.getResponseHeader("Content-Disposition");
           let ma = contentDispositionHeader.match(/filename="(.+)"/);
           if (ma != null) fileName = ma[1];
+          */
           downloadLink.download = fileName;
           document.body.appendChild(downloadLink);
           downloadLink.click();
@@ -454,7 +497,7 @@
         }
       }
     };
-    request.send("optype=download_conf&token=" + token + "&id=" + id + '&csrfmiddlewaretoken=' + '{{ csrf_token }}');
+    request.send("optype=download_conf&token=" + token + "&id=" + id + "&client=" + client + '&csrfmiddlewaretoken=' + '{{ csrf_token }}');
   }
 
   function add_or_update_bot() {
