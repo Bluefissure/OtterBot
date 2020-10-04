@@ -467,7 +467,7 @@
     id = $("#downloadConfBotId").val();
     var token = $("#downloadConfToken").val();
     var client = $("#downloadConfClient").val();
-    console.log(id + "|" + token + "|" + client);
+    // console.log(id + "|" + token + "|" + client);
     var request = new XMLHttpRequest();
     request.open('POST', '', true);
     request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
@@ -478,7 +478,7 @@
       if (this.status === 200) {
         var blob = this.response;
         var fileName = client === "Mirai" ? "setting.yml" : "config.js";
-        console.log(blob);
+        // console.log(blob);
         if (window.navigator.msSaveOrOpenBlob) {
           window.navigator.msSaveBlob(blob, fileName);
         } else {
