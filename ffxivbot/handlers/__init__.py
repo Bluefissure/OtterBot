@@ -24,7 +24,7 @@ commands = {
     "/treasure": "宝图搜寻",
     "/search": '查询物品("/search 神龙")',
     "/market": '交易板数据("/market item 2级刚力之幻药")',
-    "/weather": '天气信息（快捷命令"/fog","/heat_wave","/thunder","/kx"）',
+    "/weather": '天气信息("/weather 优雷卡恒冰之地")',
     "/fsx": '副属性计算（"/fsx 直击"）',
     "/dps": 'DPS排名（"/dps 8s 骑士"）',
     "/raid": '零式英雄榜（"/raid 蓝色裂痕 萌芽池"）',
@@ -38,7 +38,7 @@ commands = {
     "/share": "发送微博分享",
     # "/trash":"你是什么垃圾？",
     "/shorten": "微博短链",
-    #"/mxh": '梅溪湖cp短打生成器（"/mxh 海德林 佐迪亚克"）',
+    # "/mxh": '梅溪湖cp短打生成器（"/mxh 海德林 佐迪亚克"）',
     # "/joke":"讽刺笑话（\"/joke 996|强东|建设一流公司|程序员|公司\"）",
     "/hh": '光之收藏家幻化推荐("/hh help")',
     "/ofish": "获取最近海钓航班",
@@ -130,6 +130,7 @@ from .QQCommand_hso import QQCommand_hso
 from .QQCommand_ifttt import QQCommand_ifttt
 from .QQCommand_image import QQCommand_image
 from .QQCommand_luck import QQCommand_luck
+
 # from .QQCommand_joke import QQCommand_joke
 # from .QQCommand_music import QQCommand_music
 # from .QQCommand_mxh import QQCommand_mxh

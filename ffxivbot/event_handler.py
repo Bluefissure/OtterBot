@@ -2,6 +2,7 @@ import time
 import json
 from .models import QQGroup, QQBot, QQUser
 from .api_caller import ApiCaller
+from handlers.QQUtils import text2img
 import handlers
 
 
@@ -71,6 +72,10 @@ class EventHandler(object):
                         command_enable = group_commands.get(k, "enable") == "enable"
                     if command_enable:
                         msg += "{}: {}\n".format(k, v)
+                msg = text2img(msg)
+                msg += "具体介绍详见Wiki使用手册: \n{}\n".format(
+                    "https://github.com/Bluefissure/OtterBot/wiki"
+                )
                 msg = msg.strip()
                 self.api_caller.send_message(
                     receive["message_type"],
@@ -179,7 +184,8 @@ class EventHandler(object):
                     )  # hide if disabled in group
                 if command_enable:
                     msg += "{}: {}\n".format(k, v)
-            msg += "具体介绍详见Wiki使用手册: {}\n".format(
+            msg = text2img(msg)
+            msg += "具体介绍详见Wiki使用手册: \n{}\n".format(
                 "https://github.com/Bluefissure/OtterBot/wiki"
             )
             msg = msg.strip()

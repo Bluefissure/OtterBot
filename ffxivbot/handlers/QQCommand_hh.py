@@ -105,8 +105,10 @@ def result_to_img(result, glamour_id, bot_version):
             pic_foo = Image.open(file)
             pic_foo = pic_foo.resize((521, 1000), Image.ANTIALIAS)
             logo = Image.open(
-                os.path.dirname(os.path.abspath(__file__))
-                + "/resources/image/logoBlack.jpg"
+                os.path.join(
+                    os.path.dirname(os.path.abspath(__file__)),
+                    "resources/image/logoBlack.jpg",
+                )
             )
             im = Image.new("RGB", (2000, 1000), (255, 255, 255))
             im.paste(pic_foo)
@@ -167,6 +169,7 @@ def search_jr(job, race, sex, sort, time, bot_version, item_name, item_flag=Fals
             result = search_id(glamour_id)
             img = result_to_img(result, glamour_id, bot_version)
         else:
+            print(r)
             img = "未能筛选到结果，请尝试更改筛选信息，\n职业：{}\n种族：{}\n性别：{}\n装备名称：{}".format(
                 job, race, sex, item_name
             )
