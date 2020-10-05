@@ -80,14 +80,13 @@ def api(req):
                     if nm_name:
                         nm_level_type = get_nm_id("ffxivsc", nm_name)
                         if int(nm_level_type["type"]) > 0:
-                            url = "https://api.ffxivsc.cn/ffxivsc_eureka_v2-1.2/lobby/addKillTime"
+                            url = "https://api.ffxivsc.cn/ffxivsc_eureka_v3-3.0/lobby/addKillTime"
                             post_data = {
                                 "level": "{}".format(nm_level_type["level"]),
                                 "key": key,
                                 "type": "{}".format(nm_level_type["type"]),
                             }
                             r = requests.post(url=url, data=post_data)
-                            print(r.text)  # it seems api calling got banned
                             httpresponse = HttpResponse(r)
                         else:
                             return HttpResponse(
