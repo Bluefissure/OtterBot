@@ -145,6 +145,11 @@ def api(req):
                             except BaseException:
                                 pass
                         if not msg:
+                            try:
+                                msg = get_matcha_nm_name(req)
+                            except BaseException:
+                                pass
+                        if not msg:
                             print(
                                 "Can't get msg from request:{}:{}".format(req, reqbody)
                             )

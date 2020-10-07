@@ -125,7 +125,7 @@ from .QQCommand_duilian import QQCommand_duilian
 from .QQCommand_gakki import QQCommand_gakki
 from .QQCommand_gif import QQCommand_gif
 from .QQCommand_hhsh import QQCommand_hhsh  # be sure to come before /hh
-from .QQCommand_hh import QQCommand_hh
+from .QQCommand_hh import QQCommand_hh  # FFXIV Command
 from .QQCommand_hso import QQCommand_hso
 from .QQCommand_ifttt import QQCommand_ifttt
 from .QQCommand_image import QQCommand_image
