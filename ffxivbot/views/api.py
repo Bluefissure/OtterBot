@@ -31,6 +31,23 @@ def get_matcha_nm_name(req):
     return nm_name
 
 
+def get_matcha_fate_name(req):
+    fate_name = ""
+    try:
+        matcha_json = json.loads(req.body)
+        if matcha_json.get("event") == "Fate":
+            incoming_data = matcha_json.get("data")
+            event_type = incoming_data.get("type")
+            if event_type == "start":
+                fate_id = incoming_data.get("fate")
+                fate_name = fate_id2name(fate_id)
+            else:
+                print("Won't handle fate event other than 'start'.")
+    except JSONDecodeError:
+        pass
+    return fate_name
+
+
 @csrf_exempt
 def api(req):
     httpresponse = None
@@ -146,7 +163,7 @@ def api(req):
                                 pass
                         if not msg:
                             try:
-                                msg = get_matcha_nm_name(req)
+                                msg = get_matcha_fate_name(req)
                             except BaseException:
                                 pass
                         if not msg:
@@ -453,6 +470,14 @@ def api(req):
         if httpresponse
         else HttpResponse("Default API Error, contact dev please.", status=500)
     )
+
+
+def fate_id2name(fate_id):
+    r = requests.get(
+        "http://cafemaker.wakingsands.com/Fate/{}".format(fate_id), timeout=3
+    )
+    j = r.json()
+    return j.get("Name")
 
 
 def nm_id2name(fate_id):
