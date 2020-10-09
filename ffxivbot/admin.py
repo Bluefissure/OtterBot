@@ -190,6 +190,12 @@ class TomonBotAdmin(admin.ModelAdmin):
     list_display = ["username", "qqbot"]
 
 
+class CommandLogAdmin(admin.ModelAdmin):
+    list_display = ["time", "command", "user_id", "bot_id", "group_id"]
+    search_fields = ["command", "user_id", "bot_id", "group_id"]
+    list_filter = ["command"]
+
+
 admin.site.register(QQGroup, QQGroupAdmin)
 admin.site.register(CustomReply, CustomReplyAdmin)
 admin.site.register(ChatMessage, ChatMessageAdmin)
@@ -222,3 +228,4 @@ admin.site.register(TreasureMap, TreasureMapAdmin)
 admin.site.register(Screen, ScreenAdmin)
 admin.site.register(LuckData, LuckDataAdmin)
 admin.site.register(TomonBot, TomonBotAdmin)
+admin.site.register(CommandLog, CommandLogAdmin)

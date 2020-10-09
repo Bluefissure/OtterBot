@@ -8,6 +8,7 @@ import requests
 import traceback
 import time
 import copy
+from urllib.parse import urlparse
 from bs4 import BeautifulSoup
 
 
@@ -67,10 +68,14 @@ def QQCommand_image(*args, **kwargs):
                     msg = "[CQ:at,qq={}] 您由于触犯规则无权上传图片".format(receive["user_id"])
                 else:
                     category = msg_list[1].strip()
+                    if category.startswith("$"):
+                        category = category[1:]
                     CQ_text = msg_list[2].strip()
                     img_url = get_image_from_CQ(CQ_text)
                     if not img_url:
                         msg = "未发现图片信息"
+                    elif not category:
+                        msg = "请选择上传图片类别"
                     else:
                         img_info = upload_image(img_url, SMMS_TOKEN)
                         if not img_info["success"]:
@@ -84,13 +89,9 @@ def QQCommand_image(*args, **kwargs):
                                     "Image upload repeated limit, this image exists at: ",
                                     "",
                                 )
-                                path = url.replace("https://i.loli.net", "")
-                                path = path.replace("https://vip1.loli.net", "")
-                                domain = (
-                                    "https://vip1.loli.net"
-                                    if "https://vip1.loli.net" in url
-                                    else "https://i.loli.net"
-                                )
+                                o = urlparse(url)
+                                path = o.path
+                                domain = "{}://{}".format(o.scheme, o.netloc)
                                 name = copy.deepcopy(path)
                                 while "/" in name:
                                     name = name[name.find("/") + 1 :]
@@ -114,11 +115,9 @@ def QQCommand_image(*args, **kwargs):
                         else:
                             img_info = img_info["data"]
                             url = img_info.get("url", "")
-                            domain = (
-                                "https://vip1.loli.net"
-                                if "https://vip1.loli.net" in url
-                                else "https://i.loli.net"
-                            )
+                            o = urlparse(url)
+                            path = o.path
+                            domain = "{}://{}".format(o.scheme, o.netloc)
                             img = Image(
                                 domain=domain,
                                 key=category,

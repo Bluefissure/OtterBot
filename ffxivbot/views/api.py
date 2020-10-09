@@ -214,6 +214,15 @@ def api(req):
                                     },
                                     "echo": "",
                                 }
+                                log = CommandLog(
+                                    time=time.time(),
+                                    command="api:qq",
+                                    message=json.dumps(jdata),
+                                    bot_id=bot.user_id,
+                                    user_id=qquser.user_id,
+                                    group_id=group.group_id
+                                )
+                                log.save()
                             else:
                                 jdata = {
                                     "action": "send_private_msg",
@@ -223,6 +232,15 @@ def api(req):
                                     },
                                     "echo": "",
                                 }
+                                log = CommandLog(
+                                    time=time.time(),
+                                    command="api:qq",
+                                    message=json.dumps(jdata),
+                                    bot_id=bot.user_id,
+                                    user_id=qquser.user_id,
+                                    group_id=""
+                                )
+                                log.save()
                             if not bot.api_post_url:
                                 async_to_sync(channel_layer.send)(
                                     bot.api_channel_name,
