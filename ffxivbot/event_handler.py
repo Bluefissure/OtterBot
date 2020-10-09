@@ -345,7 +345,7 @@ class EventHandler(object):
                 )
 
     def on_notice(self, receive, **kwargs):
-        print("on_notice:{}".format(json.dumps(receive)))
+        # print("on_notice:{}".format(json.dumps(receive)))
         bot = self.bot
         if receive.get("notice_type") == "group_increase" or (
             receive.get("notice_type") == "group"

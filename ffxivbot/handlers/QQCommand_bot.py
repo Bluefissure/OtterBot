@@ -64,6 +64,13 @@ def QQCommand_bot(*args, **kwargs):
                 bot.r18 = not bot.r18
                 bot.save(update_fields=["r18"])
                 msg = "HSO已{}".format("启用" if bot.r18 else "禁用")
+        elif second_command == "api":
+            if int(user_id) != int(bot.owner_id):
+                msg = "仅机器人领养者能修改机器人状态"
+            else:
+                bot.api = not bot.api
+                bot.save(update_fields=["api"])
+                msg = "API已{}".format("启用" if bot.api else "禁用")
         elif second_command == "info":
             friend_list = json.loads(bot.friend_list)
             friend_list_cnt = len(friend_list) if friend_list else 0
@@ -91,6 +98,7 @@ def QQCommand_bot(*args, **kwargs):
                 + "好友数量：{}\n".format(friend_list_cnt)
                 + "文本兼容：{}\n".format(bot.share_banned)
                 + "HSO: {}\n".format(bot.r18)
+                + "API: {}\n".format(bot.api)
             )
             msg = msg.strip()
         elif receive_msg == "update":
@@ -126,7 +134,7 @@ def QQCommand_bot(*args, **kwargs):
             )
             msg = msg.strip()
         else:
-            msg = '无效的二级命令，二级命令有:"token","update","info","register","text","hso"'
+            msg = '无效的二级命令，二级命令有:"token","update","info","register","text","hso","api"'
 
         msg = msg.strip()
         if msg:

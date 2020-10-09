@@ -237,6 +237,7 @@ class QQBot(models.Model):
     friend_list = models.TextField(default="{}")
     public = models.BooleanField(default=True)
     r18 = models.BooleanField(default=False)
+    api = models.BooleanField(default=True)
     disconnections = models.TextField(default="[]")
     disconnect_time = models.BigIntegerField(default=0)
     command_stat = models.TextField(default="{}")

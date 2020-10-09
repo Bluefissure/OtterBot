@@ -125,8 +125,13 @@ def api(req):
                     api_rate_limit = True
                     try:
                         bot = QQBot.objects.get(user_id=bot_qq)
-                    except QQBot.DoesNotExist:
-                        print("bot {} does not exist".format(bot_qq))
+                    except QQBot.DoesNotExist as e:
+                        print("Bot {} does not exist".format(bot_qq))
+                    if bot and not bot.api:
+                        print("API for bot {} is disabled".format(bot_qq))
+                        httpresponse = HttpResponse(
+                            "API for bot {} is disabled".format(bot_qq), status=500
+                        )
                     try:
                         qquser = QQUser.objects.get(user_id=qq, bot_token=token)
                         if time.time() < qquser.last_api_time + qquser.api_interval:
@@ -139,7 +144,8 @@ def api(req):
                         httpresponse = HttpResponse(
                             "QQUser {}:{} auth fail".format(qq, token), status=500
                         )
-                    if bot and qquser and api_rate_limit:
+
+                    if bot and bot.api and qquser and api_rate_limit:
                         channel_layer = get_channel_layer()
                         msg = req.POST.get("text")
                         reqbody = req.body
