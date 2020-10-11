@@ -164,6 +164,7 @@ def QQCommand_image(*args, **kwargs):
                     if r.status_code == 404:
                         img.delete()
                         print("deleting {}".format(img))
+                        msg = "本次请求的图片被图床删掉了 = =\n再试一次吧~~"
                     else:
                         found = True
                         msg = "[CQ:image,cache=0,file={}]\n".format(img_url)
