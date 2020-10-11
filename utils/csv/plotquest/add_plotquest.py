@@ -70,8 +70,7 @@ def import_plotquest_from_csv(csv_file, **kwargs):
                 new_name = (
                     quest_name.replace("\ue0be", "").replace("\ue0bf", "").strip()
                 )
-                if created or language == "cn":
-                    quest.name = new_name
+                quest.name = new_name
                 quest.quest_type = quest_type
                 lname = json.loads(quest.language_names)
                 lname.update({language: new_name})
