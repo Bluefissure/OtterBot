@@ -147,6 +147,8 @@ def QQCommand_image(*args, **kwargs):
                     msg = '图片"{}"删除完毕'.format(name)
         else:
             category = msg_list[0].strip()
+            if category.startswith("$"):
+                category = category[1:]
             get_info = "info" in category
             category = category.replace("info", "", 1)
             found = False
