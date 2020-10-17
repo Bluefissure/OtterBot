@@ -4,6 +4,7 @@ from .models import QQGroup, QQBot, QQUser
 from .api_caller import ApiCaller
 from handlers.QQUtils import text2img
 import handlers
+import traceback
 
 
 class EventHandler(object):

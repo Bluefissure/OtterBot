@@ -9,6 +9,9 @@ import feedparser
 import traceback
 import requests
 import time
+import math
+import difflib
+import urllib.parse
 from bs4 import BeautifulSoup
 
 
@@ -46,38 +49,57 @@ def QQCommand_hso(*args, **kwargs):
                 else:
                     msg = '请输入"/hso add $name1 $name2"将$name1替换成$name2'
             else:
-                if random.randint(0, 10) == 0:
-                    msg = "好色哦"
-                else:
-                    page = random.randint(1, 50)
-                    params = "limit=20&page={}".format(page)
-                    if second_command_msg != "":
-                        alter_tags = HsoAlterName.objects.all()
-                        for alter in alter_tags:
-                            second_command_msg = second_command_msg.replace(
-                                alter.name, alter.key
+                page = random.randint(1, 50)
+                params = "limit=20&page={}".format(page)
+                if second_command_msg != "":
+                    alter_tags = HsoAlterName.objects.all()
+                    for alter in alter_tags:
+                        second_command_msg = second_command_msg.replace(
+                            alter.name, alter.key
+                        )
+                    tag_name = second_command_msg.replace(" ", "_")
+                    tag_name = urllib.parse.quote(tag_name)
+                    tag_url = "https://konachan.com/tag.json?name={}".format(tag_name)
+                    r = requests.get(tag_url, timeout=(5, 60))
+                    tags = r.json()
+                    if tags:
+                        tag_name_list = list(map(lambda x: x["name"], tags))
+                        close_matches = difflib.get_close_matches(
+                            tag_name, tag_name_list
+                        )
+                        # print("close_matches:{}".format(", ".join(close_matches)))
+                        tag_name = close_matches[0]
+                        count = 0
+                        for tag in tags:
+                            if tag["name"] == tag_name:
+                                count = tag["count"]
+                        params = (
+                            ""
+                            if count <= 100
+                            else "page={}&".format(
+                                random.randint(1, math.ceil(count / 100))
                             )
-                        params = "tags={}".format(second_command_msg)
-                    api_url = "https://konachan.com/post.json?{}".format(params)
-                    # print(api_url+"===============================================")
-                    r = requests.get(api_url, timeout=(5, 60))
-                    img_json = json.loads(r.text)
+                        )
+                        params += "tags={}".format(tag_name)
+                api_url = "https://konachan.com/post.json?{}".format(params)
+                # print(api_url + "\n===============================================")
+                r = requests.get(api_url, timeout=(5, 60))
+                img_json = r.json()
 
-                    if receive["message_type"] == "group":
-                        tmp_list = []
-                        for item in img_json:
-                            if item["rating"] == "s":
-                                tmp_list.append(item)
-                        img_json = tmp_list
+                if receive["message_type"] == "group":
+                    tmp_list = []
+                    for item in img_json:
+                        if item["rating"] == "s":
+                            tmp_list.append(item)
+                    img_json = tmp_list
 
-                    if len(img_json) == 0:
-                        msg = "未能找到所需图片"
-                    else:
-                        idx = random.randint(0, len(img_json) - 1)
-                        img = img_json[idx]
-                        msg = "[CQ:image,file={}]".format(img["sample_url"])
-                        user.last_api_time = time.time()
-                        user.save(update_fields=["last_api_time"])
+                if not img_json:
+                    msg = "未能找到所需图片"
+                else:
+                    img = random.choice(img_json)
+                    msg = "[CQ:image,file={}]".format(img["sample_url"])
+                    user.last_api_time = time.time()
+                    user.save(update_fields=["last_api_time"])
 
         reply_action = reply_message_action(receive, msg)
         action_list.append(reply_action)
@@ -87,3 +109,4 @@ def QQCommand_hso(*args, **kwargs):
         action_list.append(reply_message_action(receive, msg))
         logging.error(e)
         traceback.print_exc()
+    return []
