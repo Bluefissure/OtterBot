@@ -53,13 +53,16 @@ def QQCommand_hso(*args, **kwargs):
                 params = "limit=20&page={}".format(page)
                 if second_command_msg != "":
                     alter_tags = HsoAlterName.objects.all()
+                    replaced = False
+                    tag_backup = second_command_msg.strip()
+                    tag_name = second_command_msg.strip().replace(" ", "_")
                     for alter in alter_tags:
-                        second_command_msg = second_command_msg.replace(
-                            alter.name, alter.key
-                        )
-                    tag_name = second_command_msg.replace(" ", "_")
+                        if alter.name == tag_name:
+                            tag_name = tag_name.replace(alter.name, alter.key)
+                            replaced = True
                     tag_name = urllib.parse.quote(tag_name)
                     tag_url = "https://konachan.com/tag.json?name={}".format(tag_name)
+                    # print("tag_url:{}".format(tag_url))
                     r = requests.get(tag_url, timeout=(5, 60))
                     tags = r.json()
                     if tags:
@@ -68,7 +71,11 @@ def QQCommand_hso(*args, **kwargs):
                             tag_name, tag_name_list
                         )
                         # print("close_matches:{}".format(", ".join(close_matches)))
-                        tag_name = close_matches[0]
+                        tag_name = (
+                            close_matches[0]
+                            if close_matches
+                            else random.choice(tag_name_list)
+                        )
                         count = 0
                         for tag in tags:
                             if tag["name"] == tag_name:
@@ -81,6 +88,13 @@ def QQCommand_hso(*args, **kwargs):
                             )
                         )
                         params += "tags={}".format(tag_name)
+                    else:
+                        params = "tags={}".format(tag_name)
+                    msg = (
+                        'Tag: "{}" -> "{}"\n'.format(tag_backup, tag_name)
+                        if tag_backup != tag_name
+                        else ""
+                    )
                 api_url = "https://konachan.com/post.json?{}".format(params)
                 # print(api_url + "\n===============================================")
                 r = requests.get(api_url, timeout=(5, 60))
@@ -94,10 +108,10 @@ def QQCommand_hso(*args, **kwargs):
                     img_json = tmp_list
 
                 if not img_json:
-                    msg = "未能找到所需图片"
+                    msg += "未能找到所需图片"
                 else:
                     img = random.choice(img_json)
-                    msg = "[CQ:image,file={}]".format(img["sample_url"])
+                    msg += "[CQ:image,file={}]".format(img["sample_url"])
                     user.last_api_time = time.time()
                     user.save(update_fields=["last_api_time"])
 
