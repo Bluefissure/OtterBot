@@ -443,6 +443,7 @@ def text2img(text):
 class TagCompletion(object):
     "补全konachan搜图的tag"
     def __init__(self, vocab):
+        self.force = False
         self.TAGS = json.load(open(vocab, "r", encoding="utf-8"))
 
     def freq(self, word):
@@ -461,13 +462,15 @@ class TagCompletion(object):
                 input_tag_name, self.TAGS.keys()
             )
             if close_matches:
-                print("select by close match")
+                # print("select by close match")
                 real_tag = close_matches[0]
                 count = self.TAGS[real_tag]
             else:
+                if not self.force:
+                    return input_tag_name
                 "尝试进行max-edit-distance=2的纠错"
                 "所有tag本地化之后，本段代码一般不会被运行"
-                print("Select by correction")
+                # print("Select by correction")
                 edits1_collections = self.edits1(input_tag_name)
                 edits2_collections = self.edits2(input_tag_name, edits1_collections)
                 candidates = (set(w for w in [input_tag_name] if w in self.TAGS) or

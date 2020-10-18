@@ -65,7 +65,7 @@ def QQCommand_hso(*args, **kwargs):
                     if tags:
                         count = 0
                         if len(tags) == 1:
-                            count = corrector.TAGS[tags[0]]
+                            count = corrector.TAGS.get(tags[0], 0)
                         params = (
                             "limit=100&"
                             if count <= 100
