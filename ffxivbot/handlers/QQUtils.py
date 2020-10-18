@@ -457,7 +457,6 @@ class TagCompletion(object):
         if self.TAGS.get(input_tag_name, None) is not None:
             real_tag = input_tag_name
         else:
-            "子集匹配"
             close_matches = difflib.get_close_matches(
                 input_tag_name, self.TAGS.keys()
             )
@@ -468,8 +467,8 @@ class TagCompletion(object):
             else:
                 if not self.force:
                     return input_tag_name
-                "尝试进行max-edit-distance=2的纠错"
-                "所有tag本地化之后，本段代码一般不会被运行"
+                # 尝试进行max-edit-distance=2的纠错
+                # 所有tag本地化之后，本段代码一般不会被运行
                 # print("Select by correction")
                 edits1_collections = self.edits1(input_tag_name)
                 edits2_collections = self.edits2(input_tag_name, edits1_collections)
@@ -494,6 +493,6 @@ class TagCompletion(object):
         return set(deletes + transposes + replaces + inserts)
 
     def edits2(self, tag, edits1=None):
-        "避免重复计算"
+        # 避免重复计算
         edits1 = self.edits1(tag) if edits1 is None else edits1
         return (e2 for e1 in edits1 for e2 in self.edits1(e1))

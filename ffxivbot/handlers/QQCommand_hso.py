@@ -74,7 +74,7 @@ def QQCommand_hso(*args, **kwargs):
                             )
                         )
                         params += "tags={}".format("+".join(list(
-                            map(lambda tag: urllib.parse.quote(tag), tags)
+                            map(urllib.parse.quote, tags)
                         )))
                     else:
                         tags = [random.choice(list(corrector.TAGS.keys()))]
