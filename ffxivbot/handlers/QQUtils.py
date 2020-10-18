@@ -1,6 +1,7 @@
 import json
 import logging
 import io
+import os
 import re
 import time
 import traceback
@@ -441,7 +442,7 @@ def text2img(text):
     return msg
 
 class TagCompletion(object):
-    "补全konachan搜图的tag"
+    # 补全konachan搜图的tag
     def __init__(self, vocab):
         self.force = False
         self.TAGS = json.load(open(vocab, "r", encoding="utf-8"))
@@ -450,10 +451,6 @@ class TagCompletion(object):
         return self.TAGS.get(word, 0)
 
     def select_tag(self, input_tag_name):
-        """
-        :param word: 输入
-        :return: 更正后的词
-        """
         if self.TAGS.get(input_tag_name, None) is not None:
             real_tag = input_tag_name
         else:
@@ -496,3 +493,13 @@ class TagCompletion(object):
         # 避免重复计算
         edits1 = self.edits1(tag) if edits1 is None else edits1
         return (e2 for e1 in edits1 for e2 in self.edits1(e1))
+
+def update_konachan_tags():
+  # 截至2020.10.19 konachan拥有近8万个各种种类的tag
+  url = "https://konachan.net/tag.json?limit=999999"
+  all_tags = requests.get(url).json()
+  reserved_tags = {
+    tag["name"]: tag["count"]
+    for tag in filter(lambda tag: not tag["ambiguous"] and tag["count"] and re.match(r"^.*[a-z0-9\u4e00-\u9fa5].*$", tag["name"], re.I), all_tags)
+  }
+  json.dump(reserved_tags, open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "konachan_tags.json"), 'w', encoding='utf-8'))
