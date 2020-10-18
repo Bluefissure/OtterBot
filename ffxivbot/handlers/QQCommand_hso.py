@@ -55,44 +55,33 @@ def QQCommand_hso(*args, **kwargs):
                     alter_tags = HsoAlterName.objects.all()
                     replaced = False
                     tag_backup = second_command_msg.strip()
-                    tag_name = second_command_msg.strip().replace(" ", "_")
+                    tags = second_command_msg.strip().split(" ")
                     for alter in alter_tags:
-                        if alter.name == tag_name:
-                            tag_name = tag_name.replace(alter.name, alter.key)
+                        if alter.name in tags:
+                            tag_name = tags[tags.index(alter.name)] = alter.key
                             replaced = True
-                    tag_name = urllib.parse.quote(tag_name)
-                    tag_url = "https://konachan.com/tag.json?name={}".format(tag_name)
-                    # print("tag_url:{}".format(tag_url))
-                    r = requests.get(tag_url, timeout=(5, 60))
-                    tags = r.json()
+                    corrector = TagCompletion(os.path.join(os.path.dirname(os.path.abspath(__file__)), "konachan_tags.json"))
+                    tags = list(map(corrector.select_tag, tags))
                     if tags:
-                        tag_name_list = list(map(lambda x: x["name"], tags))
-                        close_matches = difflib.get_close_matches(
-                            tag_name, tag_name_list
-                        )
-                        # print("close_matches:{}".format(", ".join(close_matches)))
-                        tag_name = (
-                            close_matches[0]
-                            if close_matches
-                            else random.choice(tag_name_list)
-                        )
                         count = 0
-                        for tag in tags:
-                            if tag["name"] == tag_name:
-                                count = tag["count"]
+                        if len(tags) == 1:
+                            count = corrector.TAGS[tags[0]]
                         params = (
-                            ""
+                            "limit=100&"
                             if count <= 100
                             else "page={}&".format(
                                 random.randint(1, math.ceil(count / 100))
                             )
                         )
-                        params += "tags={}".format(tag_name)
+                        params += "tags={}".format("+".join(list(
+                            map(lambda tag: urllib.parse.quote(tag), tags)
+                        )))
                     else:
-                        params = "tags={}".format(tag_name)
+                        tags = [random.choice(list(corrector.TAGS.keys()))]
+                        params = "tags={}".format(tags[0])
                     msg = (
-                        'Tag: "{}" -> "{}"\n'.format(tag_backup, tag_name)
-                        if tag_backup != tag_name
+                        'Tag: "{}" -> "{}"\n'.format(tag_backup, tags[0])
+                        if tag_backup != " ".join(tags)
                         else ""
                     )
                 api_url = "https://konachan.com/post.json?{}".format(params)

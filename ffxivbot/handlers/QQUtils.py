@@ -7,6 +7,9 @@ import traceback
 import urllib
 import requests
 import base64
+import random
+import math
+import difflib
 from bs4 import BeautifulSoup
 from PIL import ImageFont, ImageDraw
 from PIL import Image as PILImage
@@ -437,3 +440,57 @@ def text2img(text):
     msg = "[CQ:image,file=base64://{}]\n".format(base64_str)
     return msg
 
+class TagCompletion(object):
+    "补全konachan搜图的tag"
+    def __init__(self, vocab):
+        self.TAGS = json.load(open(vocab, "r", encoding="utf-8"))
+
+    def freq(self, word):
+        return self.TAGS.get(word, 0)
+
+    def select_tag(self, input_tag_name):
+        """
+        :param word: 输入
+        :return: 更正后的词
+        """
+        if self.TAGS.get(input_tag_name, None) is not None:
+            real_tag = input_tag_name
+        else:
+            "子集匹配"
+            close_matches = difflib.get_close_matches(
+                input_tag_name, self.TAGS.keys()
+            )
+            if close_matches:
+                print("select by close match")
+                real_tag = close_matches[0]
+                count = self.TAGS[real_tag]
+            else:
+                "尝试进行max-edit-distance=2的纠错"
+                "所有tag本地化之后，本段代码一般不会被运行"
+                print("Select by correction")
+                edits1_collections = self.edits1(input_tag_name)
+                edits2_collections = self.edits2(input_tag_name, edits1_collections)
+                candidates = (set(w for w in [input_tag_name] if w in self.TAGS) or
+                              set(w for w in edits1_collections if w in self.TAGS) or
+                              set(w for w in edits2_collections if w in self.TAGS))
+
+                real_tag = max(candidates, key=self.freq)
+                if self.freq(real_tag) == 0:
+                    real_tag = random.choice(list(self.TAGS.keys()))
+                count = self.TAGS[real_tag]
+        return real_tag
+
+
+    def edits1(self, tag):
+        letters    = 'abcdefghijklmnopqrstuvwxyz_.*/()'
+        splits     = [(tag[:i], tag[i:])    for i in range(len(tag) + 1)]
+        deletes    = [L + R[1:]               for L, R in splits if R]
+        transposes = [L + R[1] + R[0] + R[2:] for L, R in splits if len(R)>1]
+        replaces   = [L + c + R[1:]           for L, R in splits if R for c in letters]
+        inserts    = [L + c + R               for L, R in splits for c in letters]
+        return set(deletes + transposes + replaces + inserts)
+
+    def edits2(self, tag, edits1=None):
+        "避免重复计算"
+        edits1 = self.edits1(tag) if edits1 is None else edits1
+        return (e2 for e1 in edits1 for e2 in self.edits1(e1))
