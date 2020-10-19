@@ -460,46 +460,20 @@ class TagCompletion(object):
             if close_matches:
                 # print("select by close match")
                 real_tag = close_matches[0]
-                count = self.TAGS[real_tag]
             else:
                 if not self.force:
-                    return input_tag_name
-                # 尝试进行max-edit-distance=2的纠错
-                # 所有tag本地化之后，本段代码一般不会被运行
-                # print("Select by correction")
-                edits1_collections = self.edits1(input_tag_name)
-                edits2_collections = self.edits2(input_tag_name, edits1_collections)
-                candidates = (set(w for w in [input_tag_name] if w in self.TAGS) or
-                              set(w for w in edits1_collections if w in self.TAGS) or
-                              set(w for w in edits2_collections if w in self.TAGS))
-
-                real_tag = max(candidates, key=self.freq)
-                if self.freq(real_tag) == 0:
+                    real_tag = input_tag_name
+                else:
+                    # 强制返回一个合法（有搜索结果）的随机tag
                     real_tag = random.choice(list(self.TAGS.keys()))
-                count = self.TAGS[real_tag]
         return real_tag
 
-
-    def edits1(self, tag):
-        letters    = 'abcdefghijklmnopqrstuvwxyz_.*/()'
-        splits     = [(tag[:i], tag[i:])    for i in range(len(tag) + 1)]
-        deletes    = [L + R[1:]               for L, R in splits if R]
-        transposes = [L + R[1] + R[0] + R[2:] for L, R in splits if len(R)>1]
-        replaces   = [L + c + R[1:]           for L, R in splits if R for c in letters]
-        inserts    = [L + c + R               for L, R in splits for c in letters]
-        return set(deletes + transposes + replaces + inserts)
-
-    def edits2(self, tag, edits1=None):
-        # 避免重复计算
-        edits1 = self.edits1(tag) if edits1 is None else edits1
-        return (e2 for e1 in edits1 for e2 in self.edits1(e1))
-
 def update_konachan_tags():
-  # 截至2020.10.19 konachan拥有近8万个各种种类的tag
-  url = "https://konachan.net/tag.json?limit=999999"
-  all_tags = requests.get(url).json()
-  reserved_tags = {
-    tag["name"]: tag["count"]
-    for tag in filter(lambda tag: not tag["ambiguous"] and tag["count"] and re.match(r"^.*[a-z0-9\u4e00-\u9fa5].*$", tag["name"], re.I), all_tags)
-  }
-  json.dump(reserved_tags, open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "konachan_tags.json"), 'w', encoding='utf-8'))
+    # 截至2020.10.19 konachan拥有近8万个各种种类的tag
+    url = "https://konachan.net/tag.json?limit=999999"
+    all_tags = requests.get(url, timeout=(5, 60)).json()
+    reserved_tags = {
+        tag["name"]: tag["count"]
+        for tag in filter(lambda tag: not tag["ambiguous"] and tag["count"] and re.match(r"^.*[a-z0-9\u4e00-\u9fa5].*$", tag["name"], re.I), all_tags)
+    }
+    json.dump(reserved_tags, open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "resources", "konachan_tags.json"), 'w', encoding='utf-8'))

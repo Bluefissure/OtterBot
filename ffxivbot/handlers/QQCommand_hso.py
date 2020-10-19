@@ -58,14 +58,14 @@ def QQCommand_hso(*args, **kwargs):
                     tags = second_command_msg.strip().split(" ")
                     for alter in alter_tags:
                         if alter.name in tags:
-                            tag_name = tags[tags.index(alter.name)] = alter.key
+                            tags[tags.index(alter.name)] = alter.key
                             replaced = True
-                    corrector = TagCompletion(os.path.join(os.path.dirname(os.path.abspath(__file__)), "konachan_tags.json"))
+                    corrector = TagCompletion(os.path.join(os.path.dirname(os.path.abspath(__file__)), "resources", "konachan_tags.json"))
                     tags = list(map(corrector.select_tag, tags))
                     if tags:
                         count = 0
                         if len(tags) == 1:
-                            count = corrector.TAGS.get(tags[0], 0)
+                            count = corrector.freq(tags[0])
                         params = (
                             "limit=100&"
                             if count <= 100
