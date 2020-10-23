@@ -20,11 +20,10 @@ jobs:
       uses: zhulik/redis-action@1.1.0
     - name: Setup MySQL
       uses: mirromutth/mysql-action@v1.1
-    - name: Create MySQL Table & User
-      run: |
-        mysql -e 'CREATE DATABASE FFXIV_DEV;'
-        mysql -u root -e "CREATE USER 'FFXIV_DEV'@'localhost' IDENTIFIED BY 'PASSWORD';"
-        mysql -u root -e "GRANT ALL ON *.* TO 'FFXIV_DEV'@'localhost';"
+      with:
+        mysql database: FFXIV_DEV
+        mysql user: FFXIV_DEV
+        mysql password: PASSWORD
     - name: Setup RabbitMQ
       uses: nijel/rabbitmq-action@v1.0.0
     - name: Set up Python 3.6
