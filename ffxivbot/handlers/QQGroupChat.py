@@ -59,11 +59,11 @@ def QQGroupChat(*args, **kwargs):
         ).hexdigest()
         chat = r.get(message_hash) or '{"times":0,"repeated":false}'
         chat_stat = json.loads(chat)
-        chat_times = chat_stat["times"]
+        chat_times = chat_stat["times"] + 1
         chat_repeated = chat_stat["repeated"]
         r.set(
             message_hash,
-            json.dumps({"times": chat_times + 1, "repeated": False}),
+            json.dumps({"times": chat_times, "repeated": chat_repeated}),
             ex=60,
         )
         if chat_times >= group.repeat_ban > 0:
@@ -85,9 +85,10 @@ def QQGroupChat(*args, **kwargs):
         ):
             if random.randint(1, 100) <= group.repeat_prob:
                 action_list.append(reply_message_action(receive, message))
+                chat_repeated = True
                 r.set(
                     message_hash,
-                    json.dumps({"times": chat_times + 1, "repeated": True}),
+                    json.dumps({"times": chat_times, "repeated": chat_repeated}),
                     ex=60,
                 )
 
