@@ -94,7 +94,11 @@ def QQGroupChat(*args, **kwargs):
         # tuling chatbot
         chat_enable = group_commands.get("/chat", "enable") != "disable"
         chatting = (
-            re.search(r"\[CQ:at,qq=\d+(,text=.*)?\]", receive["message"]) is not None
+            re.search(
+                "\[CQ:at,qq={}(,text=.*)?\]".format(receive["self_id"]),
+                receive["message"],
+            )
+            is not None
         )
         wechat = False
         if "self_wechat_id" in receive:
