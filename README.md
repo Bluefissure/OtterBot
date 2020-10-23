@@ -1,6 +1,9 @@
 # OtterBot
 
-[![Build Status](https://travis-ci.org/Bluefissure/OtterBot.svg?branch=master)](https://travis-ci.org/Bluefissure/OtterBot)
+![ActionsStatus](https://github.com/Bluefissure/OtterBot/workflows/Python%203.6/badge.svg)
+![ActionsStatus](https://github.com/Bluefissure/OtterBot/workflows/Python%203.7/badge.svg)
+![ActionsStatus](https://github.com/Bluefissure/OtterBot/workflows/Python%203.8/badge.svg)
+
 [![CodeFactor](https://www.codefactor.io/repository/github/bluefissure/otterbot/badge/master)](https://www.codefactor.io/repository/github/bluefissure/otterbot/overview/master)
 [![license](https://img.shields.io/badge/license-GPL-blue.svg)](https://github.com/Bluefissure/OtterBot/blob/master/LICENSE)
 
