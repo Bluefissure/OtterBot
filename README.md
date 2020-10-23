@@ -13,7 +13,7 @@ A QQ bot for Final Fantasy XIV (mostly served for CN server).
 
 Please read [wiki](https://github.com/Bluefissure/OtterBot/wiki/%E5%BC%80%E5%8F%91%E6%96%87%E6%A1%A3) for more details.
 
-- python 3.5.3+
+- python 3.6+
 - redis-server 4.0+
 - django, channels and so on (see [requeirements.txt](https://github.com/Bluefissure/OtterBot/blob/master/requirements.txt) for details)
 - [adminLTE](https://github.com/almasaeed2010/AdminLTE) for the front-end
