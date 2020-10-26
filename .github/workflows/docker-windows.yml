@@ -1,0 +1,23 @@
+name: Windows Docker
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+    runs-on: windows-2019
+    steps:
+      - uses: actions/checkout@master
+      - name: Build and Push Windows Docker
+        working-directory: .
+        run: |
+          docker login -u $env:USER -p $env:TOKEN
+          docker build
+          docker image push bluefissure/win-latest
+          docker logout
+        env:
+          USER: ${{ secrets.DOCKERHUB_USERNAME }}
+          TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
