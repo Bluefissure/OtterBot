@@ -3,7 +3,9 @@ from django.http import HttpResponse, JsonResponse
 from FFXIV import settings
 from ffxivbot.models import *
 from .ren2res import ren2res
-import json, os, yaml
+import json
+import os
+import yaml
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 FFXIVBOT_ROOT = os.environ.get("FFXIVBOT_ROOT", BASE_DIR)
@@ -127,10 +129,10 @@ def tata(req):
             if len(botName) < 2:
                 res_dict = {"response": "error", "msg": "机器人昵称太短"}
                 return JsonResponse(res_dict)
-            elif len(accessToken) < 5:
+            if len(accessToken) < 5:
                 res_dict = {"response": "error", "msg": "Access Token太短"}
                 return JsonResponse(res_dict)
-            elif not ownerID.strip():
+            if not ownerID.strip():
                 res_dict = {"response": "error", "msg": "领养者不能为空"}
                 return JsonResponse(res_dict)
             bots = QQBot.objects.filter(user_id=botID)
@@ -141,9 +143,8 @@ def tata(req):
                 if bots[0].access_token != accessToken:
                     res_dict = {"response": "error", "msg": "Token错误，请确认后重试。"}
                     return JsonResponse(res_dict)
-                else:
-                    bot = bots[0]
-                    bot_created = False
+                bot = bots[0]
+                bot_created = False
             if bot:
                 bot.name = botName
                 bot.owner_id = ownerID
@@ -163,39 +164,38 @@ def tata(req):
                     "token": bot.access_token,
                 }
             return JsonResponse(res_dict)
-        else:
-            bot_id = req.POST.get("id")
-            token = req.POST.get("token")
-            client = req.POST.get("client")
-            if settings.DEBUG:
-                print("bot_id:{} token:{} client:{}".format(bot_id, token, client))
-            try:
-                bot = QQBot.objects.get(id=bot_id, access_token=token)
-            except Exception as e:
-                if "QQBot matching query does not exist" in str(e):
-                    res_dict = {"response": "error", "msg": "Token错误，请确认后重试。"}
-                else:
-                    res_dict = {"response": "error", "msg": str(e)}
-                return JsonResponse(res_dict)
-            if optype == "switch_public":
-                bot.public = not bot.public
-                bot.save()
-                res_dict["response"] = "success"
-            elif optype == "del_bot":
-                bot.delete()
-                res_dict["response"] = "success"
-            elif optype == "download_conf":
-                response = HttpResponse(content_type="application/octet-stream")
-                response["Content-Disposition"] = 'attachment; filename="setting.yml"'
-                config = json.load(open(CONFIG_PATH, encoding="utf-8"))
-                web_base = config.get("WEB_BASE_URL", "xn--v9x.net")
-                web_base = web_base.replace("https://", "")
-                web_base = web_base.replace("http://", "").strip("/")
-                ws_url = "ws://" + os.path.join(web_base, "ws/")
-                http_url = "http://" + os.path.join(web_base, "http/")
-                bot_conf = generate_bot_conf(bot, client, web_base, http_url, ws_url)
-                response.write(bot_conf)
-                return response
+        bot_id = req.POST.get("id")
+        token = req.POST.get("token")
+        client = req.POST.get("client")
+        if settings.DEBUG:
+            print("bot_id:{} token:{} client:{}".format(bot_id, token, client))
+        try:
+            bot = QQBot.objects.get(id=bot_id, access_token=token)
+        except Exception as e:
+            if "QQBot matching query does not exist" in str(e):
+                res_dict = {"response": "error", "msg": "Token错误，请确认后重试。"}
+            else:
+                res_dict = {"response": "error", "msg": str(e)}
+            return JsonResponse(res_dict)
+        if optype == "switch_public":
+            bot.public = not bot.public
+            bot.save()
+            res_dict["response"] = "success"
+        elif optype == "del_bot":
+            bot.delete()
+            res_dict["response"] = "success"
+        elif optype == "download_conf":
+            response = HttpResponse(content_type="application/octet-stream")
+            response["Content-Disposition"] = 'attachment; filename="setting.yml"'
+            config = json.load(open(CONFIG_PATH, encoding="utf-8"))
+            web_base = config.get("WEB_BASE_URL", "xn--v9x.net")
+            web_base = web_base.replace("https://", "")
+            web_base = web_base.replace("http://", "").strip("/")
+            ws_url = "ws://" + os.path.join(web_base, "ws/")
+            http_url = "http://" + os.path.join(web_base, "http/")
+            bot_conf = generate_bot_conf(bot, client, web_base, http_url, ws_url)
+            response.write(bot_conf)
+            return response
         return JsonResponse(res_dict)
 
     bots = QQBot.objects.all()
