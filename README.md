@@ -1,8 +1,6 @@
 # OtterBot
 
 [![ActionsStatus](https://github.com/Bluefissure/OtterBot/workflows/Python%203.6/badge.svg)](https://github.com/Bluefissure/OtterBot/actions?query=workflow%3A%22Python+3.6%22)
-[![ActionsStatus](https://github.com/Bluefissure/OtterBot/workflows/Python%203.7/badge.svg)](https://github.com/Bluefissure/OtterBot/actions?query=workflow%3A%22Python+3.7%22)
-[![ActionsStatus](https://github.com/Bluefissure/OtterBot/workflows/Python%203.8/badge.svg)](https://github.com/Bluefissure/OtterBot/actions?query=workflow%3A%22Python+3.8%22)
 
 [![CodeFactor](https://www.codefactor.io/repository/github/bluefissure/otterbot/badge/master)](https://www.codefactor.io/repository/github/bluefissure/otterbot/overview/master)
 [![license](https://img.shields.io/badge/license-GPL-blue.svg)](https://github.com/Bluefissure/OtterBot/blob/master/LICENSE)
