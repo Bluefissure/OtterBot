@@ -104,6 +104,7 @@ class QQGroup(models.Model):
     )
     commands = models.TextField(default="{}")
     api = models.BooleanField(default=False)
+    wordcloud = models.BooleanField(default=False)
     server = models.ForeignKey(
         Server, on_delete=models.DO_NOTHING, blank=True, null=True
     )

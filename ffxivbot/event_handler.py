@@ -18,9 +18,8 @@ class EventHandler(object):
         already_reply = False
         user_id = receive["user_id"]
         if QQBot.objects.filter(user_id=user_id).exists():
-            raise Exception(
-                "{} reply from another bot:{}".format(receive["self_id"], user_id)
-            )
+            print("{} reply from another bot:{}".format(receive["self_id"], user_id))
+            return
         (user, created) = QQUser.objects.get_or_create(user_id=user_id)
         if 0 < time.time() < user.ban_till:
             raise Exception("User {} get banned till {}".format(user_id, user.ban_till))
