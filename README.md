@@ -1,9 +1,8 @@
 # OtterBot
 
-[![ActionsStatus](https://github.com/Bluefissure/OtterBot/workflows/Python%203.6/badge.svg)](https://github.com/Bluefissure/OtterBot/actions?query=workflow%3A%22Python+3.6%22)
+[![ActionsStatus](https://github.com/Bluefissure/OtterBot/workflows/Python%203.6/badge.svg)](https://github.com/Bluefissure/OtterBot/actions?query=workflow%3A%22Python+3.6%22) [![CodeFactor](https://www.codefactor.io/repository/github/bluefissure/otterbot/badge/master)](https://www.codefactor.io/repository/github/bluefissure/otterbot/overview/master) [![license](https://img.shields.io/badge/license-GPL-blue.svg)](https://github.com/Bluefissure/OtterBot/blob/master/LICENSE)
 
-[![CodeFactor](https://www.codefactor.io/repository/github/bluefissure/otterbot/badge/master)](https://www.codefactor.io/repository/github/bluefissure/otterbot/overview/master)
-[![license](https://img.shields.io/badge/license-GPL-blue.svg)](https://github.com/Bluefissure/OtterBot/blob/master/LICENSE)
+[![Build Status](https://img.shields.io/docker/cloud/build/bluefissure/otterbot.svg)](https://cloud.docker.com/repository/docker/bluefissure/otterbot) [![Downloads](https://img.shields.io/docker/pulls/bluefissure/otterbot.svg)](https://cloud.docker.com/repository/docker/bluefissure/otterbot)  [![Size](https://img.shields.io/docker/image-size/bluefissure/otterbot)](https://cloud.docker.com/repository/docker/bluefissure/otterbot)
 
 A QQ bot for Final Fantasy XIV (mostly served for CN server).
 
