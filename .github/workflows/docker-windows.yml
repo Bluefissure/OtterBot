@@ -1,4 +1,4 @@
-name: Windows Docker
+name: Docker Windows
 
 on:
   push:
@@ -15,7 +15,7 @@ jobs:
         working-directory: .
         run: |
           docker login -u $env:USER -p $env:TOKEN
-          docker build
+          docker build -t bluefissure/win-latest .
           docker image push bluefissure/win-latest
           docker logout
         env:
