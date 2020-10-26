@@ -12,6 +12,8 @@ import traceback
 import re
 import time
 import redis
+import jieba
+from collections import Counter
 
 
 def QQGroupChat(*args, **kwargs):
@@ -92,6 +94,21 @@ def QQGroupChat(*args, **kwargs):
                     ex=60,
                 )
 
+        # jieba tokenize and wordcloud
+        url_pattern = r"(?:http|https):\/\/((?:[\w-]+)(?:\.[\w-]+)+)(?:[\w.,@?^=%&amp;:\/~+#-]*[\w@?^=%&amp;\/~+#-])?"
+        group_id_hash = hashlib.md5(
+            ("{}|{}".format(group.group_id, settings.SECRET_KEY)).encode()
+        ).hexdigest()
+        if group.wordcloud:
+            group_mem = r.get(group_id_hash) or "{}"
+            group_mem = json.loads(group_mem)
+            word_cnt = Counter(group_mem.get("words", {}))
+            clear_message = re.sub(r"\[CQ:.*?\]", "", message)
+            clear_message = re.sub(url_pattern, "", clear_message)
+            word_cnt.update(Counter(jieba.lcut(clear_message)))
+            group_mem.update({"words": word_cnt})
+            r.set(group_id_hash, json.dumps(group_mem))
+
         # tuling chatbot
         chat_enable = group_commands.get("/chat", "enable") != "disable"
         chatting = (
@@ -146,11 +163,7 @@ def QQGroupChat(*args, **kwargs):
                 msg = msg.replace("图灵工程师爸爸", BOT_FATHER)
                 msg = msg.replace("图灵工程师妈妈", BOT_MOTHER)
                 msg = msg.replace("小主人", USER_NICKNAME)
-            msg = re.sub(
-                r"(?:http|https):\/\/((?:[\w-]+)(?:\.[\w-]+)+)(?:[\w.,@?^=%&amp;:\/~+#-]*[\w@?^=%&amp;\/~+#-])?",
-                "http://ff.sdo.com",
-                msg,
-            )
+            msg = re.sub(url_pattern, "http://ff.sdo.com", msg)
             msg = "[CQ:at,qq=%s] " % (receive["user_id"]) + msg
             action = reply_message_action(receive, msg)
             action_list.append(action)
