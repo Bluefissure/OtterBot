@@ -15,8 +15,8 @@ jobs:
         working-directory: .
         run: |
           docker login -u $env:USER -p $env:TOKEN
-          docker build -t bluefissure/win-latest .
-          docker image push bluefissure/win-latest
+          docker build .
+          docker image push bluefissure/otterbot:win-latest
           docker logout
         env:
           USER: ${{ secrets.DOCKERHUB_USERNAME }}
