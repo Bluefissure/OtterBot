@@ -61,6 +61,7 @@ group_commands = {
     "/command": "群功能停用/启用",
     "/lottery": "抽奖",
     "/hunt": "狩猎",
+    "/wordcloud": "聊天词云",
 }
 
 alter_commands = {
@@ -165,5 +166,6 @@ from .QQGroupCommand_live import QQGroupCommand_live
 from .QQGroupCommand_lottery import QQGroupCommand_lottery
 from .QQGroupCommand_command import QQGroupCommand_command
 from .QQGroupCommand_hunt import QQGroupCommand_hunt
+from .QQGroupCommand_wordcloud import QQGroupCommand_wordcloud
 
 from .QQGroupChat import QQGroupChat
