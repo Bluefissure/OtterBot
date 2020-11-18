@@ -52,55 +52,54 @@ def on_message(ws, message):
     msg = json.loads(message)
     if msg["op"] == 0:
         print("Server >>> DISPATCH")
-        try:
-            # print(json.dumps(msg, indent=4, sort_keys=True))
-            if "content" not in msg["d"]:
-                return
-            if msg["d"]["content"] is None:
-                return
-            if not msg["d"]["content"].startswith("/"):
-                return
-            if msg["d"]["author"]["is_bot"]:
-                return
-            if msg["d"]["content"].startswith("/tomon refresh"):
-                bot.auth()
-                bot.refresh_from_db()
-                print("token:{}".format(token))
-                token = bot.token
-                print("refreshed token:{}".format(token))
-                return
-            channel_id = msg["d"]["channel_id"]
-            group_id = msg["d"]["guild_id"]
-            group = QQGroup.objects.get(group_id=group_id)
-            member_list = json.loads(group.member_list)
-            member_map = {}
-            for m in member_list:
-                member_map[m["id"]] = m
-            roles = msg["d"]["member"]["roles"]
-            role = "member"
-            for r in roles:
-                if(member_map[r]["permissions"] & Permissions.ADMINISTRATOR.value):
-                    role = "owner"
-                    break
-            data = {
-                "self_id": bot.qqbot.user_id,
-                "user_id": msg["d"]["author"]["id"],
-                "time": time.time(),
-                "consumer_time": time.time(),
-                "post_type": "message",
-                "message_type": "group",
-                "group_id": group_id,
-                "channel_id": msg["d"]["channel_id"],
-                "message": msg["d"]["content"],
-                "reply_api_type": "tomon",
-                "sender": {"role": role},
-                "nonce": msg["d"]["nonce"],
-            }
-            text_data = json.dumps(data)
-            priority = 1
-            publisher.send(text_data, priority)
-        except Exception as e:
-            traceback.print_exc()
+        # print(json.dumps(msg, indent=4, sort_keys=True))
+        if "content" not in msg["d"]:
+            return
+        if msg["d"]["content"] is None:
+            return
+        if not msg["d"]["content"].startswith("/"):
+            return
+        if msg["d"]["author"]["is_bot"]:
+            return
+        if msg["d"]["content"].startswith("/tomon refresh"):
+            bot.auth()
+            bot.refresh_from_db()
+            print("token:{}".format(token))
+            token = bot.token
+            print("refreshed token:{}".format(token))
+            return
+        channel_id = msg["d"]["channel_id"]
+        group_id = msg["d"]["guild_id"]
+        group, created = QQGroup.objects.get_or_create(group_id=group_id)
+        if created:
+            group.save()
+        member_list = json.loads(group.member_list)
+        member_map = {}
+        for m in member_list:
+            member_map[m["id"]] = m
+        roles = msg["d"]["member"]["roles"]
+        role = "member"
+        for r in roles:
+            if member_map[r]["permissions"] & Permissions.ADMINISTRATOR.value:
+                role = "owner"
+                break
+        data = {
+            "self_id": bot.qqbot.user_id,
+            "user_id": msg["d"]["author"]["id"],
+            "time": time.time(),
+            "consumer_time": time.time(),
+            "post_type": "message",
+            "message_type": "group",
+            "group_id": group_id,
+            "channel_id": msg["d"]["channel_id"],
+            "message": msg["d"]["content"],
+            "reply_api_type": "tomon",
+            "sender": {"role": role},
+            "nonce": msg["d"]["nonce"],
+        }
+        text_data = json.dumps(data)
+        priority = 1
+        publisher.send(text_data, priority)
     elif msg["op"] == 1:
         print("Server >>> HEARTBEAT")
         ws.send(json.dumps({"d": {"token": token}, "op": 4}))
@@ -162,11 +161,11 @@ if __name__ == "__main__":
             publisher = PikaPublisher()
             ws = websocket.WebSocketApp(
                 "{}".format("wss://gateway.tomon.co"),
+                on_open=on_open,
                 on_message=on_message,
                 on_error=on_error,
                 on_close=on_close,
             )
-            ws.on_open = on_open
             ws.run_forever()
         except:
             close_old_connections()

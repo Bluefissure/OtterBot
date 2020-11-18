@@ -96,6 +96,7 @@ def QQGroupChat(*args, **kwargs):
 
         # jieba tokenize and wordcloud
         url_pattern = r"(?:http|https):\/\/((?:[\w-]+)(?:\.[\w-]+)+)(?:[\w.,@?^=%&amp;:\/~+#-]*[\w@?^=%&amp;\/~+#-])?"
+        word_pattern = r"^([\u4e00-\u9fff\w]+)$"
         group_id_hash = hashlib.md5(
             ("{}|{}".format(group.group_id, settings.SECRET_KEY)).encode()
         ).hexdigest()
@@ -105,19 +106,17 @@ def QQGroupChat(*args, **kwargs):
             word_cnt = Counter(group_mem.get("words", {}))
             clear_message = re.sub(r"\[CQ:.*?\]", "", message)
             clear_message = re.sub(url_pattern, "", clear_message)
-            word_cnt.update(Counter(jieba.lcut(clear_message)))
+            word_list = list(
+                filter(lambda x: re.match(word_pattern, x), jieba.lcut(clear_message))
+            )
+            word_cnt.update(Counter(word_list))
             group_mem.update({"words": word_cnt})
             r.set(group_id_hash, json.dumps(group_mem))
 
         # tuling chatbot
         chat_enable = group_commands.get("/chat", "enable") != "disable"
-        chatting = (
-            re.search(
-                "\[CQ:at,qq={}(,text=.*)?\]".format(receive["self_id"]),
-                receive["message"],
-            )
-            is not None
-        )
+        at_self_pattern = "\[CQ:at,qq={}(,text=.*)?\]".format(receive["self_id"])
+        chatting = re.search(at_self_pattern, receive["message"],) is not None
         wechat = False
         if "self_wechat_id" in receive:
             wechat = True
@@ -137,9 +136,7 @@ def QQGroupChat(*args, **kwargs):
                 user.last_chat_time = time.time()
                 user.save(update_fields=["last_chat_time"])
             receive_msg = message
-            receive_msg = receive_msg.replace(
-                "[CQ:at,qq=%s]" % (receive["self_id"]), ""
-            )
+            receive_msg = re.sub(at_self_pattern, "", receive_msg)
             tuling_data = {}
             tuling_data["reqType"] = 0
             tuling_data["perception"] = {"inputText": {"text": receive_msg}}
