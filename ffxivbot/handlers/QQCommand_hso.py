@@ -49,6 +49,7 @@ def QQCommand_hso(*args, **kwargs):
                 else:
                     msg = '请输入"/hso add $name1 $name2"将$name1替换成$name2'
             else:
+                random.seed(time.time())
                 page = random.randint(1, 50)
                 params = "limit=20&page={}".format(page)
                 if second_command_msg != "":
