@@ -58,7 +58,8 @@ def generate_bot_conf(bot, client, web_base, http_url, ws_url):
                     "wsPort": 8080,
                 },
             },
-        }
+        },
+    }
         if bot.api_post_url:
             bot_conf[str(bot.user_id)]["http"]["enable"] = True
             bot_conf[str(bot.user_id)]["http"]["postUrl"] = http_url
