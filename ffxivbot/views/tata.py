@@ -23,9 +23,10 @@ def generate_bot_conf(bot, client, web_base, http_url, ws_url):
               str(bot.user_id): {
                 "cacheImage": True,
                 "cacheRecord": True,
-                "heartbeat":
-                    "enable": False
+                "heartbeat": {
+                    "enable": True
                     "interval": 15000
+                },
                 "http": {
                     "enable": False,
                     "host": "0.0.0.0",
@@ -46,7 +47,7 @@ def generate_bot_conf(bot, client, web_base, http_url, ws_url):
                         "reverseApiPath": "/api",
                         "reverseEventPath": "/event",
                         "useUniversal": True,
-                        "useTLS": False
+                        "useTLS": False,
                         "reconnectInterval": 3000,
                     }
                 ],
