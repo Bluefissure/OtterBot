@@ -18,9 +18,14 @@ def generate_bot_conf(bot, client, web_base, http_url, ws_url):
     bot_conf = {"error": "Unsupported client."}
     if client == "Mirai":
         bot_conf = {
-            "debug": True,
-            str(bot.user_id): {
+            "proxy":"" ,
+            "bots": 
+              str(bot.user_id): {
                 "cacheImage": True,
+                "cacheRecord": True,
+                "heartbeat":
+                    "enable": False
+                    "interval": 15000
                 "http": {
                     "enable": False,
                     "host": "0.0.0.0",
@@ -41,6 +46,7 @@ def generate_bot_conf(bot, client, web_base, http_url, ws_url):
                         "reverseApiPath": "/api",
                         "reverseEventPath": "/event",
                         "useUniversal": True,
+                        "useTLS": False
                         "reconnectInterval": 3000,
                     }
                 ],
@@ -80,11 +86,10 @@ def generate_bot_conf(bot, client, web_base, http_url, ws_url):
 module.exports = {{
     general: {{
         platform:           2,
-        kickoff:            false,
         ignore_self:        true,
-        web_image_timeout:  30,
-        web_record_timeout: 30,
+        resend:             true,
         debug:              false,
+        use_cqhttp_notice:  false,
 
         host:               "0.0.0.0",
         port:               5700,
@@ -96,6 +101,7 @@ module.exports = {{
         post_message_format:"string",
         enable_heartbeat:   false,
         heartbeat_interval: 15000,
+        rate_limit_interval:500,
         event_filter:       "",
         post_url: [
             {}
