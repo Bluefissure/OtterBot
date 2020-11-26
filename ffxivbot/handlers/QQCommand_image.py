@@ -1,6 +1,7 @@
 from .QQEventHandler import QQEventHandler
 from .QQUtils import *
 from ffxivbot.models import *
+from django.db.models import Q
 import logging
 import json
 import random
@@ -51,6 +52,7 @@ def QQCommand_image(*args, **kwargs):
         QQ_BASE_URL = global_config["QQ_BASE_URL"]
         SMMS_TOKEN = global_config.get("SMMS_TOKEN", "")
         receive = kwargs["receive"]
+        bot = kwargs["bot"]
 
         receive_msg = receive["message"].replace("/image", "", 1).strip()
         msg_list = receive_msg.split(" ")
@@ -109,6 +111,7 @@ def QQCommand_image(*args, **kwargs):
                                         img_hash="null",
                                         timestamp=int(time.time()),
                                         add_by=qquser,
+                                        add_by_bot=bot,
                                     )
                                 img.save()
                                 msg = '图片"{}"上传至类别"{}"成功'.format(img.name, img.key)
@@ -127,6 +130,7 @@ def QQCommand_image(*args, **kwargs):
                                 timestamp=img_info.get("timestamp", 0),
                                 url=url,
                                 add_by=qquser,
+                                add_by_bot=bot,
                             )
                             img.save()
                             msg = '图片"{}"上传至类别"{}"成功'.format(img.name, img.key)
@@ -138,7 +142,10 @@ def QQCommand_image(*args, **kwargs):
                 (qquser, created) = QQUser.objects.get_or_create(
                     user_id=receive["user_id"]
                 )
-                imgs = Image.objects.filter(name=name, add_by=qquser)
+                imgs = Image.objects.filter(
+                    Q(name=name),
+                    Q(add_by=qquser) | Q(add_by_bot__owner_id=qquser.user_id),
+                )
                 if not imgs.exists():
                     msg = '未找到名为"{}"的图片或您无权删除这张图片'.format(name)
                 else:

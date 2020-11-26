@@ -364,7 +364,14 @@ class Image(models.Model):
     img_hash = models.CharField(max_length=32, default="")
     timestamp = models.IntegerField(default=0)
     add_by = models.ForeignKey(
-        QQUser, on_delete=models.CASCADE, related_name="upload_images"
+        QQUser, on_delete=models.DO_NOTHING, related_name="upload_images"
+    )
+    add_by_bot = models.ForeignKey(
+        QQBot,
+        on_delete=models.DO_NOTHING,
+        related_name="upload_images",
+        blank=True,
+        null=True,
     )
 
     def __str__(self):
