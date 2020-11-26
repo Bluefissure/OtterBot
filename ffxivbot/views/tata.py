@@ -19,7 +19,7 @@ def generate_bot_conf(bot, client, web_base, http_url, ws_url):
     if client == "Mirai":
         bot_conf = {
             "proxy":"" ,
-            "bots": 
+            "bots": {
               str(bot.user_id): {
                 "cacheImage": True,
                 "cacheRecord": True,
