@@ -116,6 +116,7 @@ def QQGroupChat(*args, **kwargs):
         # tuling chatbot
         chat_enable = group_commands.get("/chat", "enable") != "disable"
         at_self_pattern = "\[CQ:at,qq={}(,text=.*)?\]".format(receive["self_id"])
+        reply_pattern = "\[CQ:reply,id=.*?\]"
         chatting = re.search(at_self_pattern, receive["message"],) is not None
         wechat = False
         if "self_wechat_id" in receive:
@@ -137,6 +138,7 @@ def QQGroupChat(*args, **kwargs):
                 user.save(update_fields=["last_chat_time"])
             receive_msg = message
             receive_msg = re.sub(at_self_pattern, "", receive_msg)
+            receive_msg = re.sub(reply_pattern, "", receive_msg)
             tuling_data = {}
             tuling_data["reqType"] = 0
             tuling_data["perception"] = {"inputText": {"text": receive_msg}}
