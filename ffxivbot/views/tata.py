@@ -194,7 +194,7 @@ def tata(req):
             res_dict["response"] = "success"
         elif optype == "download_conf":
             response = HttpResponse(content_type="application/octet-stream")
-            response["Content-Disposition"] = 'attachment; filename="setting.yml"'
+            response["Content-Disposition"] = 'attachment; filename="settings.yml"'
             config = json.load(open(CONFIG_PATH, encoding="utf-8"))
             web_base = config.get("WEB_BASE_URL", "xn--v9x.net")
             web_base = web_base.replace("https://", "")

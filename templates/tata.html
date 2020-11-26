@@ -477,7 +477,7 @@
     request.onload = function(e) {
       if (this.status === 200) {
         var blob = this.response;
-        var fileName = client === "Mirai" ? "setting.yml" : "config.js";
+        var fileName = client === "Mirai" ? "settings.yml" : "config.js";
         // console.log(blob);
         if (window.navigator.msSaveOrOpenBlob) {
           window.navigator.msSaveBlob(blob, fileName);
