@@ -91,7 +91,7 @@ module.exports = {{
         ignore_self:        true,
         resend:             true,
         debug:              false,
-        use_cqhttp_notice:  false,
+        use_cqhttp_notice:  true,
 
         host:               "0.0.0.0",
         port:               5700,
