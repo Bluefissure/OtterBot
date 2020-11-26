@@ -30,9 +30,27 @@ jobs:
       uses: actions/setup-python@v2
       with:
         python-version: 3.6
-    - name: Install dependencies
+    - name: Upgrade pip
       run: |
         python -m pip install --upgrade pip
+
+    - name: Get pip cache dir
+      id: pip-cache
+      run: |
+        echo "::set-output name=dir::$(pip cache dir)"
+
+    - name: pip cache
+      id: cache
+      uses: actions/cache@v2
+      with:
+        path: ${{ steps.pip-cache.outputs.dir }}
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+
+    - name: Install dependencies
+      if: steps.cache.outputs.cache-hit != 'true'
+      run: |
         pip install flake8 pytest
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
     - name: Test
