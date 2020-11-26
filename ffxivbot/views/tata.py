@@ -24,8 +24,8 @@ def generate_bot_conf(bot, client, web_base, http_url, ws_url):
                 "cacheImage": True,
                 "cacheRecord": True,
                 "heartbeat": {
-                    "enable": True
-                    "interval": 15000
+                    "enable": True,
+                    "interval": 15000,
                 },
                 "http": {
                     "enable": False,
