@@ -62,13 +62,13 @@ def generate_bot_conf(bot, client, web_base, http_url, ws_url):
         },
     }
         if bot.api_post_url:
-            bot_conf[str(bot.user_id)]["http"]["enable"] = True
-            bot_conf[str(bot.user_id)]["http"]["postUrl"] = http_url
-            bot_conf[str(bot.user_id)]["http"]["secret"] = bot.access_token
-            bot_conf[str(bot.user_id)]["ws_reverse"][0]["enable"] = False
+            bot_conf["bots"][str(bot.user_id)]["http"]["enable"] = True
+            bot_conf["bots"][str(bot.user_id)]["http"]["postUrl"] = http_url
+            bot_conf["bots"][str(bot.user_id)]["http"]["secret"] = bot.access_token
+            bot_conf["bots"][str(bot.user_id)]["ws_reverse"][0]["enable"] = False
         else:
-            bot_conf[str(bot.user_id)]["ws_reverse"][0]["enable"] = True
-            bot_conf[str(bot.user_id)]["ws_reverse"][0][
+            bot_conf["bots"][str(bot.user_id)]["ws_reverse"][0]["enable"] = True
+            bot_conf["bots"][str(bot.user_id)]["ws_reverse"][0][
                 "accessToken"
             ] = bot.access_token
         bot_conf = yaml.dump(bot_conf).encode()
