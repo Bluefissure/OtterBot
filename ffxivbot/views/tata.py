@@ -72,7 +72,7 @@ def generate_bot_conf(bot, client, web_base, http_url, ws_url):
                 "accessToken"
             ] = bot.access_token
         bot_conf = yaml.dump(bot_conf).encode()
-    elif client == "OneBot-YaYa":
+    elif client == "YaYa":
         bot_conf = {
             "version": "1.0.5",
             "master":  12345678,
