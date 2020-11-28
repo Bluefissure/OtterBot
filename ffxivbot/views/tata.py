@@ -123,7 +123,7 @@ def generate_bot_conf(bot, client, web_base, http_url, ws_url):
                 },
             ],
         }
-        bot_conf["bots"][0]["bot"] = bot.user_id
+        bot_conf["bots"][0]["bot"] = int(bot.user_id)
         bot_conf["master"] = int(bot.owner_id)
         if bot.api_post_url:
             bot_conf["bots"][0]["http"][0]["name"] = "tata"
