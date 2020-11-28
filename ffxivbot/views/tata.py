@@ -145,12 +145,12 @@ def generate_bot_conf(bot, client, web_base, http_url, ws_url):
         if bot.api_post_url:
             use_http = "true"
             use_ws = "false"
-            post_url = '"{}"'.format(http_url)
+            post_url = '{{"{}":"{}"}}'.format(http_url, bot.access_token)
             ws_reverse_url = ""
         else:
             use_http = "false"
             use_ws = "true"
-            post_url = ""
+            post_url = "{}"
             ws_reverse_url = '"{}"'.format(ws_url)
         conf = (bot.user_id, bot.access_token, use_http, post_url, use_ws, ws_reverse_url)
         bot_conf = """{{
