@@ -3,204 +3,173 @@
 
 
 {% block content %}
-  <!-- Content Header (Page header) -->
-  <div class="content-header">
-    <div class="container-fluid">
-      <h1 class="m-0 text-dark">獭の图库</h1>
+<!-- Content Header (Page header) -->
+<div class="content-header">
+  <div class="container-fluid">
+    <h1 class="m-0 text-dark">獭の图库</h1>
+  </div>
+</div>
+
+<!-- Main content -->
+<section class="content">
+  <div class="container-fluid">
+    <!-- Default card -->
+    <div class="card card-primary">
+      <div class="card-header with-border">
+        <h3 class="card-title">图库</h3>
+      </div>
+      <div class="card-body">
+
+        <div class="row">
+          <div class="col-md-2"></div>
+          <div class="col-md-8 text-center">
+            <div class="input-group input-group-sm">
+              <input type="text" class="form-control" id="inputCategory">
+              <span class="input-group-btn">
+                <button type="button" class="btn btn-default btn-sm ajax" title="Ajax Request" onclick="get_images()">
+                  <i class="fas fa-spin fa-sync-alt"></i> 刷新
+                </button>
+              </span>
+            </div>
+          </div>
+          <div class="col-md-2"></div>
+        </div>
+        <div class="row">
+          <div id="images1" class="images col-xs-3 text-center"></div>
+          <div id="images2" class="images col-xs-3 text-center"></div>
+          <div id="images3" class="images col-xs-3 text-center"></div>
+          <div id="images4" class="images col-xs-3 text-center"></div>
+        </div>
+      </div>
+      <!-- /.card-body -->
+      <div class="card-footer">
+        Powered by <a href="https://sm.ms/" target="_blank">sm.ms</a>
+      </div>
+      <!-- /.card-footer-->
     </div>
+    <!-- /.card -->
   </div>
 
-  <!-- Main content -->
-  <section class="content">
-    <div class="container-fluid">
-      <!-- Default card -->
-      <div class="card card-primary">
-        <div class="card-header with-border">
-          <h3 class="card-title">图库</h3>
-        </div>
-        <div class="card-body">
-
-          <div class="row">
-            <div class="col-md-2"></div>
-            <div class="col-md-8 text-center">
-              <div class="input-group input-group-sm">
-                <input type="text" class="form-control" id="inputCategory">
-                <span class="input-group-btn">
-                  <button type="button" class="btn btn-default btn-sm ajax" title="Ajax Request" onclick="get_images()">
-                    <i class="fas fa-spin fa-sync-alt"></i> 刷新
-                  </button>
-                </span>
-              </div>
-            </div>
-            <div class="col-md-2"></div>
-          </div>
-          <div class="row">
-            <div id="images" class="col-xs-12 text-center">
-            </div>
-          </div>
-        </div>
-        <!-- /.card-body -->
-        <div class="card-footer">
-          Powered by <a href="https://sm.ms/" target="_blank">sm.ms</a>
-        </div>
-        <!-- /.card-footer-->
-      </div>
-      <!-- /.card -->
-    </div>
-
-  </section>
-  <!-- /.content -->
+</section>
+<!-- /.content -->
 
 
 {% endblock %}
 
 <!-- ./wrapper -->
 {% block script %}
-  <script src="https://d3js.org/d3.v4.min.js" charset="utf-8"></script>
-  <script src="{% static "dist/js/dagre-d3.js" %}"></script>
-  <!-- jQuery 3 -->
-  <script src="{% static "plugins/jquery/jquery.min.js" %}"></script>
+<script src="https://d3js.org/d3.v4.min.js" charset="utf-8"></script>
+<script src="{% static "dist/js/dagre-d3.js" %}"></script>
+<!-- jQuery 3 -->
+<script src="{% static "plugins/jquery/jquery.min.js" %}"></script>
 
-  <!-- <link rel="stylesheet" href="https://dagrejs.github.io/project/dagre-d3/latest/demo/tipsy.css">
+<!-- <link rel="stylesheet" href="https://dagrejs.github.io/project/dagre-d3/latest/demo/tipsy.css">
   <script src="https://code.jquery.com/jquery-1.9.1.min.js"></script>
   <script src="https://dagrejs.github.io/project/dagre-d3/latest/demo/tipsy.js"></script>
    -->
-  <link rel="stylesheet" href="https://cdn.bootcss.com/tooltipster/3.3.0/css/tooltipster.min.css">
-  <script type="text/javascript" src="https://cdn.bootcss.com/tooltipster/3.3.0/js/jquery.tooltipster.min.js"></script>
-  <!-- <script src="https://cdn.bootcss.com/svg.js/2.6.5/svg.js"></script> -->
-  <!-- <script type="text/javascript" src="/static/dist/js/svg.screenbcard.js"></script> -->
-  <!-- <script type="text/javascript" src="/static/dist/js/tooltipster.bundle.min.js"></script> -->
-  <!-- <script type="text/javascript" src="/static/dist/js/plugins/tooltipster/SVG/tooltipster-SVG.min.js"></script> -->
+<link rel="stylesheet" href="https://cdn.bootcss.com/tooltipster/3.3.0/css/tooltipster.min.css">
+<script type="text/javascript" src="https://cdn.bootcss.com/tooltipster/3.3.0/js/jquery.tooltipster.min.js"></script>
+<!-- <script src="https://cdn.bootcss.com/svg.js/2.6.5/svg.js"></script> -->
+<!-- <script type="text/javascript" src="/static/dist/js/svg.screenbcard.js"></script> -->
+<!-- <script type="text/javascript" src="/static/dist/js/tooltipster.bundle.min.js"></script> -->
+<!-- <script type="text/javascript" src="/static/dist/js/plugins/tooltipster/SVG/tooltipster-SVG.min.js"></script> -->
 
-  <!-- Bootstrap 3.3.7 -->
-  <script src="{% static "plugins/bootstrap/js/bootstrap.bundle.min.js" %}"></script>
-  <!-- FastClick -->
-  <script src="{% static "plugins/fastclick/fastclick.js" %}"></script>
-  <!-- AdminLTE App -->
-  <script src="{% static "dist/js/adminlte.min.js" %}"></script>
-  <!-- AdminLTE for demo purposes -->
-  <script src="{% static "dist/js/demo.js" %}"></script>
+<!-- Bootstrap 3.3.7 -->
+<script src="{% static "plugins/bootstrap/js/bootstrap.bundle.min.js" %}"></script>
+<!-- FastClick -->
+<script src="{% static "plugins/fastclick/fastclick.js" %}"></script>
+<!-- AdminLTE App -->
+<script src="{% static "dist/js/adminlte.min.js" %}"></script>
+<!-- AdminLTE for demo purposes -->
+<script src="{% static "dist/js/demo.js" %}"></script>
 
-  <!-- <style type="text/css">
-    .row {
-    display: flex;
-    flex-wrap: wrap;
-    padding: 0 4px;
+<style type="text/css">
+  .images {
+    /* Prevent vertical gaps */
+    line-height: 10;
+    width: 25% !important;
+    height: 100%;
+
+    -webkit-column-count: 1;
+    -webkit-column-gap: 0px;
+    -moz-column-count: 1;
+    -moz-column-gap: 0px;
+    column-count: 1;
+    column-gap: 0px;
   }
-  
-  /* Create four equal columns that sits next to each other */
-  .column {
-    flex: 16%;
-    max-width: 16%;
-    padding: 0 4px;
+
+  .images img {
+    /* Just in case there are inline attributes */
+    width: 100% !important;
+    height: auto !important;
   }
-  
-  .column img {
-    margin-top: 8px;
-    vertical-align: middle;
-  }
-  
-  /* Responsive layout - makes a two column-layout instead of four columns */
-  @media screen and (max-width: 800px) {
-    .column {
-      flex: 50%;
-      max-width: 50%;
+</style>
+<script type="text/javascript">
+  var able_to_reload_images = false;
+  var cached_images = [];
+
+  function get_images(clear_cache = 1) {
+    var images = [document.getElementById("images1"), document.getElementById("images2"), document.getElementById("images3"), document.getElementById("images4")];
+    var cat = document.getElementById("inputCategory").value;
+    if (clear_cache) {
+      cached_images = [];
     }
-  }
-  
-  /* Responsive layout - makes the two columns stack on top of each other instead of next to each other */
-  @media screen and (max-width: 600px) {
-    .column {
-      flex: 100%;
-      max-width: 100%;
-    }
-  }
-  </style> -->
-  <style type="text/css">
-    #images {
-      /* Prevent vertical gaps */
-      line-height: 10;
-
-      -webkit-column-count: 4;
-      -webkit-column-gap: 0px;
-      -moz-column-count: 4;
-      -moz-column-gap: 0px;
-      column-count: 4;
-      column-gap: 0px;
-    }
-
-    #images img {
-      /* Just in case there are inline attributes */
-      width: 100% !important;
-      height: auto !important;
-    }
-
-  </style>
-  <script type="text/javascript">
-      var able_to_reload_images = false;
-      var cached_images = [];
-
-      function get_images(clear_cache = 1) {
-          var images = document.getElementById("images");
-          var cat = document.getElementById("inputCategory").value;
+    // console.log(cached_images);
+    $.ajax({
+      type: 'POST',
+      url: '',
+      async: true,
+      contentType: 'application/json',
+      headers: { "X-CSRFToken": '{{csrf_token}}' },
+      data: JSON.stringify({ "optype": "get_images", "category": cat, "cached_images": cached_images }),
+      dataType: 'json',
+      success: function(data) {
+        if (data.response != "success") {
+          if (data.response == "error") {
+            alert(data.msg);
+          } else {
+            alert(data.response);
+            // console.log(data);
+          }
+        } else {
           if (clear_cache) {
-              cached_images = [];
+            for (let image of images)
+              image.innerHTML = "";
           }
-          // console.log(cached_images);
-          $.ajax({
-              type: 'POST',
-              url: '',
-              async: true,
-              contentType: 'application/json',
-              headers: {"X-CSRFToken": '{{csrf_token}}'},
-              data: JSON.stringify({"optype": "get_images", "category": cat, "cached_images": cached_images}),
-              dataType: 'json',
-              success: function (data) {
-                  if (data.response != "success") {
-                      if (data.response == "error") {
-                          alert(data.msg);
-                      } else {
-                          alert(data.response);
-                          // console.log(data);
-                      }
-                  } else {
-                      if (clear_cache) {
-                          images.innerHTML = "";
-                      }
-                      // console.log(data);
-                      for (var image_index in data.images) {
-                          var image = data.images[image_index];
-                          // console.log(image);
-                          var img = document.createElement('img');
-                          img.setAttribute("class", "img-responsive");
-                          img.setAttribute("src", image.url);
-                          img.setAttribute("alt", image.category);
-                          img.setAttribute("title", image.info);
-                          var a = document.createElement('a');
-                          a.setAttribute("href", image.url);
-                          a.setAttribute("target", "_blank");
-                          a.appendChild(img);
-                          images.appendChild(a);
-                          cached_images.push(image.name);
-                      }
-                      able_to_reload_images = true;
-
-                  }
-              },
-          });
-      }
-
-      window.onmousewheel = function () {
-          var scrollT = document.body.scrollTop || document.documentElement.scrollTop;
-          currtTop = document.documentElement.clientHeight + scrollT;
-          if (currtTop >= document.body.scrollHeight * 0.9) {
-              if (able_to_reload_images) {
-                  able_to_reload_images = false;
-                  get_images(clear_cache = 0);
-              }
+          // console.log(data);
+          for (var image_index in data.images) {
+            var image = data.images[image_index];
+            // console.log(image);
+            var img = document.createElement('img');
+            img.setAttribute("class", "img-responsive");
+            img.setAttribute("src", image.url);
+            img.setAttribute("alt", image.category);
+            img.setAttribute("title", image.info);
+            var a = document.createElement('a');
+            a.setAttribute("href", image.url);
+            a.setAttribute("target", "_blank");
+            a.appendChild(img);
+            images.sort((x, y) => x.offsetHeight > y.offsetHeight ? 1 : -1);
+            images[0].appendChild(a);
+            cached_images.push(image.name);
           }
+          able_to_reload_images = true;
+        }
+      },
+    });
+  }
+
+  window.onmousewheel = function() {
+    var scrollT = document.body.scrollTop || document.documentElement.scrollTop;
+    currtTop = document.documentElement.clientHeight + scrollT;
+    if (currtTop >= document.body.scrollHeight * 0.9) {
+      if (able_to_reload_images) {
+        able_to_reload_images = false;
+        get_images(clear_cache = 0);
       }
-  </script>
+    }
+  }
+</script>
 
 
 
