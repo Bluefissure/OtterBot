@@ -5,6 +5,7 @@ from ffxivbot.models import *
 from .ren2res import ren2res
 import json
 import os
+import re
 import yaml
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -14,8 +15,39 @@ CONFIG_PATH = os.environ.get(
 )
 
 
-def generate_bot_conf(bot, client, web_base, http_url, ws_url):
+def generate_web_base(web_base_url: str) -> dict:
+    host = "localhost"
+    port = 80
+    path = ""
+    use_tls = False
+    if web_base_url.startswith("https://"):
+        use_tls = True
+    pattern = re.compile(r'^(?:https?://)?(?P<host>[^:]+)(?::(?P<port>\d+))?(?:/(?P<path>.*))?$')
+    matches = pattern.match(web_base_url)
+    if matches:
+        host = matches.group("host")
+        port = matches.group("port") if matches.group("port") else 80
+        path = matches.group("path") if matches.group("path") else ""
+    if use_tls and port == 80:
+        port = 443
+    if path != "" and not path.endswith("/"):
+        path = path + "/"
+    return {
+        "host": host,
+        "port": port,
+        "path": path,
+        "use_tls": use_tls
+    }
+
+
+def generate_bot_conf(bot: QQBot, client: str, host: str = "localhost", port: int = 80, path: str = "", use_tls: bool = False):
     bot_conf = {"error": "Unsupported client."}
+    if use_tls:
+        ws_url = f"wss://{host}:{port}/{path}ws/"
+        http_url = f"https://{host}:{port}/{path}http/"
+    else:
+        ws_url = f"ws://{host}:{port}/{path}ws/"
+        http_url = f"http://{host}:{port}/{path}http/"
     if client == "Mirai":
         bot_conf = {
             "proxy": "",
@@ -37,14 +69,14 @@ def generate_bot_conf(bot, client, web_base, http_url, ws_url):
                         {
                             "enable": True,
                             "postMessageFormat": "string",
-                            "reverseHost": web_base,
-                            "reversePort": 80,
+                            "reverseHost": host,
+                            "reversePort": port,
                             "accessToken": "",
-                            "reversePath": "/ws",
-                            "reverseApiPath": "/api",
-                            "reverseEventPath": "/event",
+                            "reversePath": f"/{path}ws",
+                            "reverseApiPath": f"/{path}api",
+                            "reverseEventPath": f"/{path}event",
                             "useUniversal": True,
-                            "useTLS": False,
+                            "useTLS": use_tls,
                             "reconnectInterval": 3000,
                         }
                     ],
@@ -134,9 +166,7 @@ def generate_bot_conf(bot, client, web_base, http_url, ws_url):
         else:
             bot_conf["bots"][0]["websocket_reverse"][0]["name"] = "tata"
             bot_conf["bots"][0]["websocket_reverse"][0]["enable"] = True
-            bot_conf["bots"][0]["websocket_reverse"][0][
-                "url"
-            ] = f"ws://{web_base}:80/ws"
+            bot_conf["bots"][0]["websocket_reverse"][0]["url"] = ws_url
             bot_conf["bots"][0]["websocket_reverse"][0][
                 "access_token"
             ] = bot.access_token
@@ -331,12 +361,9 @@ def tata(req):
             response = HttpResponse(content_type="application/octet-stream")
             response["Content-Disposition"] = 'attachment; filename="settings.yml"'
             config = json.load(open(CONFIG_PATH, encoding="utf-8"))
-            web_base = config.get("WEB_BASE_URL", "xn--v9x.net")
-            web_base = web_base.replace("https://", "")
-            web_base = web_base.replace("http://", "").strip("/")
-            ws_url = "ws://" + os.path.join(web_base, "ws/")
-            http_url = "http://" + os.path.join(web_base, "http/")
-            bot_conf = generate_bot_conf(bot, client, web_base, http_url, ws_url)
+            web_base_url = config.get("WEB_BASE_URL", "xn--v9x.net")
+            web_base = generate_web_base(web_base_url=web_base_url)
+            bot_conf = generate_bot_conf(bot, client, **web_base)
             response.write(bot_conf)
             return response
         return JsonResponse(res_dict)
