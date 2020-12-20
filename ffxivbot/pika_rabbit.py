@@ -45,6 +45,9 @@ USE_GRAFANA = getattr(settings, "USE_GRAFANA", False)
 CONFIG_PATH = os.environ.get(
     "FFXIVBOT_CONFIG", os.path.join(FFXIVBOT_ROOT, "ffxivbot/config.json")
 )
+logging.basicConfig(
+    format="%(levelname)s:%(asctime)s:%(name)s:%(message)s", level=logging.INFO
+)
 LOGGER = logging.getLogger(__name__)
 
 

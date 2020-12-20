@@ -21,7 +21,7 @@ def QQCommand_nuannuan(*args, **kwargs):
             rsshub = RsshubUtil()
             feed = rsshub.biliuservedio(15503317)
             res_data = extract_nn(feed)
-            print("res_data:{}".format(res_data))
+            # print("res_data:{}".format(res_data))
             if not res_data:
                 feed = rsshub.biliuserdynamic(15503317)
                 res_data = extract_nn(feed)
@@ -46,9 +46,9 @@ def extract_nn(feed):
     try:
         pattern = r"【FF14\/时尚品鉴】第\d+期 满分攻略"
         for item in feed["items"]:
-            print(item["title"])
+            # print(item["title"])
             if re.match(pattern, item["title"]):
-                print("matched")
+                # print("matched")
                 h = BeautifulSoup(item["summary"], "lxml")
                 text = h.text.replace("个人攻略网站", "游玩C攻略站")
                 res_data = {
