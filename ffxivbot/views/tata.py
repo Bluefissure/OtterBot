@@ -22,7 +22,7 @@ def generate_web_base(web_base_url: str) -> dict:
     use_tls = False
     if web_base_url.startswith("https://"):
         use_tls = True
-    pattern = re.compile(r'^(?:https?://)?(?P<host>[^:]+)(?::(?P<port>\d+))?(?:/(?P<path>.*))?$')
+    pattern = re.compile(r'^(?:https?://)?(?P<host>[^:/]+)(?::(?P<port>\d+))?(?:/(?P<path>.*))?$')
     matches = pattern.match(web_base_url)
     if matches:
         host = matches.group("host")
