@@ -1,7 +1,9 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.utils.html import mark_safe
 from datetime import datetime
 from pytz import timezone
+from urllib.parse import urlparse
 import requests
 import os
 import json
@@ -376,6 +378,24 @@ class Image(models.Model):
 
     def __str__(self):
         return self.name
+
+    def get_url(self):
+        if self.path.startswith("http"):
+            url = self.path
+            o = urlparse(url)
+            self.domain = "{}://{}".format(o.scheme, o.netloc)
+            self.path = o.path
+            self.url = url
+            self.save(update_fields=["domain", "path", "url"])
+        return self.url if self.url else (self.domain + self.path)
+
+    def image_tag(self):
+        return mark_safe(
+            '<img src="%s" style="max-width: 300px; max-height: 150px; resize: both;overflow: scroll;"/>'
+            % (self.get_url())
+        )
+
+    image_tag.short_description = "Image"
 
 
 class Lottery(models.Model):

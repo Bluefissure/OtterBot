@@ -124,8 +124,9 @@ class TerritoryAdmin(admin.ModelAdmin):
 
 
 class ImageAdmin(admin.ModelAdmin):
-    list_display = ["name", "key", "add_by"]
+    list_display = ["name", "key", "add_by", "image_tag"]
     search_fields = ["name", "key", "add_by__user_id"]
+    readonly_fields = ["image_tag"]
     raw_id_fields = ["add_by"]
 
 

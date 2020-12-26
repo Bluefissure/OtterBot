@@ -21,7 +21,7 @@ def image(req):
                 map(
                     lambda x: {
                         "name": x.name,
-                        "url": (x.domain + x.path),
+                        "url": (x.get_url()),
                         "category": x.key,
                         "info": "Name:{}\nCategory:{}\nUploader:{}".format(x.name, x.key, x.add_by)
                     },
