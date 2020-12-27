@@ -69,9 +69,7 @@ def QQCommand_image(*args, **kwargs):
                 if not qquser.able_to_upload_image:
                     msg = "[CQ:at,qq={}] 您由于触犯规则无权上传图片".format(receive["user_id"])
                 else:
-                    category = msg_list[1].strip()
-                    if category.startswith("$"):
-                        category = category[1:]
+                    category = msg_list[1].strip().strip("$")
                     CQ_text = msg_list[2].strip()
                     img_url = get_image_from_CQ(CQ_text)
                     if not img_url:
