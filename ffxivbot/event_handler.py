@@ -358,7 +358,7 @@ class EventHandler(object):
                 welcome_msg = group.welcome_msg.strip()
                 if welcome_msg:
                     msg = "[CQ:at,qq=%s]" % (user_id) + welcome_msg
-                    print("calling send_message:{}".format(msg))
+                    # print("calling send_message:{}".format(msg))
                     self.api_caller.send_message(
                         "group",
                         group_id,
@@ -370,3 +370,12 @@ class EventHandler(object):
                     )
             except Exception as e:
                 traceback.print_exc()
+
+        if receive.get("notice_type") == "group_admin" or (
+            receive.get("notice_type") == "group" and receive.get("sub_type") == "admin"
+        ):
+            self.api_caller.update_group_member_list(
+                receive["group_id"],
+                post_type=receive.get("reply_api_type", "websocket"),
+                channel_id=receive.get("channel_id", ""),
+            )
