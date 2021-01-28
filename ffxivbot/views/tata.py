@@ -284,6 +284,29 @@ module.exports = {{
     return bot_conf
 
 
+def get_bot_version(obj: dict):
+    ver = ""
+    if obj.get("go-cqhttp"):
+        ver = "Go"
+    elif obj.get("app_name"):
+        name = obj.get("app_name")
+        if name.find("YaYa") != -1:
+            ver = "XQ"
+        elif name.find("onebot-mirai") != -1:
+            ver = "Mirai"
+    elif obj.get("name"):
+        name = obj.get("name")
+        if name.find("oicq") != -1:
+            ver = "OICQ"
+    elif obj.get("coolq_directory"):
+        dire = obj.get("coolq_directory")
+        if dire.find("CQHTTPMirai") != -1:
+            ver = "Mirai\n(Low)"
+        if dire.find("jre\\bin") != -1:
+            ver = "Mirai\n(Native)"
+    return ver
+
+
 def tata(req):
     if req.is_ajax() and req.method == "POST":
         res_dict = {"response": "No response."}
@@ -373,13 +396,7 @@ def tata(req):
     for bot in bots:
         bb = {}
         version_info = json.loads(bot.version_info)
-        coolq_edition = (
-            version_info["coolq_edition"]
-            if version_info and "coolq_edition" in version_info.keys()
-            else ""
-        )
-        if coolq_edition != "":
-            coolq_edition = coolq_edition[0].upper() + coolq_edition[1:]
+        coolq_edition = get_bot_version(version_info)
         friend_list = json.loads(bot.friend_list)
         friend_num = len(friend_list) if friend_list else "-1"
         group_list = json.loads(bot.group_list)
