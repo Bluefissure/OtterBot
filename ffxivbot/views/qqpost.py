@@ -140,8 +140,8 @@ def qqpost(req):
                         if echo.find("get_group_list") == 0:
                             bot.group_list = json.dumps(receive["data"])
                             bot.save(update_fields=["group_list"])
-                        if echo.find("_get_friend_list") == 0:
-                            # friend_list = echo.replace("_get_friend_list:","").strip()
+                        if echo.find("get_friend_list") == 0:
+                            # friend_list = echo.replace("get_friend_list:","").strip()
                             bot.friend_list = json.dumps(receive["data"])
                             bot.save(update_fields=["friend_list"])
                         if echo.find("get_version_info") == 0:
