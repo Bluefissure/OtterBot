@@ -294,6 +294,8 @@ def get_bot_version(obj: dict):
             ver = "XQ"
         elif name.find("onebot-mirai") != -1:
             ver = "Mirai"
+        elif name.find("cqhttp-mirai") != -1:
+            ver = "Mirai\n(Low)"
     elif obj.get("name"):
         name = obj.get("name")
         if name.find("oicq") != -1:
