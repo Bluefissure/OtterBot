@@ -3,6 +3,8 @@ from .QQGroupEventHandler import QQGroupEventHandler
 
 commands = {
     "/cat": "云吸猫",
+    "/dog": "云吸狗",
+    "/fox": "云吸狐",
     "/gakki": "云吸gakki",
     "/10": "云吸十元",
     "/bird": "云吸飞鸟",
@@ -120,6 +122,8 @@ from .QQCommand_abv import QQCommand_abv
 from .QQCommand_anime import QQCommand_anime
 from .QQCommand_bird import QQCommand_bird
 from .QQCommand_cat import QQCommand_cat
+from .QQCommand_dog import QQCommand_dog
+from .QQCommand_fox import QQCommand_fox
 from .QQCommand_chp import QQCommand_chp
 from .QQCommand_dice import QQCommand_dice
 from .QQCommand_duilian import QQCommand_duilian
