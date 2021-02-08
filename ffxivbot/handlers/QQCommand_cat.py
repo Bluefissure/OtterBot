@@ -19,9 +19,9 @@ def QQCommand_cat(*args, **kwargs):
             try:
                 api_url = "https://api.thecatapi.com/v1/images/search"
                 img_url = requests.get(api_url).json()[0]["url"]
-            except Exception as e:
+            except Exception as catapi:
                 img_url = QQ_BASE_URL + "static/cat/%s.jpg" % (random.randint(0, 750))
-                logging.error(e)
+                logging.error(catapi)
         msg = "[CQ:image,file={}]".format(img_url)
         msg = [{"type": "image", "data": {"file": img_url},}]
         reply_action = reply_message_action(receive, msg)
