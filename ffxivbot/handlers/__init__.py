@@ -67,6 +67,7 @@ group_commands = {
 }
 
 alter_commands = {
+    "/bzy": "/weather 南方博兹雅战线",
     "/pzz": "/weather 优雷卡常风之地 强风",
     "/blizzard": "/weather 优雷卡恒冰之地 暴雪",
     "/kx": "/weather 优雷卡恒冰之地 暴雪",
