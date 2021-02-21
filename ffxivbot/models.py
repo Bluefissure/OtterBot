@@ -4,6 +4,7 @@ from django.utils.html import mark_safe
 from datetime import datetime
 from pytz import timezone
 from urllib.parse import urlparse
+import hashlib
 import requests
 import os
 import json
@@ -643,3 +644,13 @@ class TomonBot(models.Model):
             self.save()
         else:
             print("Error Response: {}\n{}".format(r.status_code, r.json()))
+
+
+class HousingPreset(models.Model):
+    items_hash = models.CharField(primary_key=True, max_length=32)
+    location_id = models.IntegerField(default=0)
+    name = models.CharField(max_length=256)
+    items = models.TextField(blank=True)
+    tags = models.TextField(blank=True)
+    uploader = models.CharField(max_length=256)
+    user_id = models.CharField(max_length=32)

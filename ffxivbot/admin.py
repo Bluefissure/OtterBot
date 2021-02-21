@@ -196,6 +196,10 @@ class CommandLogAdmin(admin.ModelAdmin):
     search_fields = ["command", "user_id", "bot_id", "group_id"]
     list_filter = ["command"]
 
+class HousingPresetAdmin(admin.ModelAdmin):
+    list_display = ["items_hash", "name", "tags",  "uploader"]
+    search_fields = ["items_hash", "name", "tags", "uploader"]
+
 
 admin.site.register(QQGroup, QQGroupAdmin)
 admin.site.register(CustomReply, CustomReplyAdmin)
@@ -230,3 +234,4 @@ admin.site.register(Screen, ScreenAdmin)
 admin.site.register(LuckData, LuckDataAdmin)
 admin.site.register(TomonBot, TomonBotAdmin)
 admin.site.register(CommandLog, CommandLogAdmin)
+admin.site.register(HousingPreset, HousingPresetAdmin)
