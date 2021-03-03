@@ -9,6 +9,7 @@ services:
       MYSQL_DATABASE: FFXIV_DEV
     volumes:
       - ./docker/mysql-data:/var/lib/mysql
+    command: ['mysqld', '--character-set-server=utf8mb4', '--collation-server=utf8mb4_unicode_ci']
     networks:
       - otterbot_network
   web:
