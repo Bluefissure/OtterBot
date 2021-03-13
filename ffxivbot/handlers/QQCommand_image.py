@@ -13,16 +13,6 @@ from urllib.parse import urlparse
 from bs4 import BeautifulSoup
 
 
-def get_image_from_CQ(CQ_text):
-    if "url=" in CQ_text:
-        tmp = CQ_text
-        tmp = tmp[tmp.find("url=") : -1]
-        tmp = tmp.replace("url=", "")
-        img_url = tmp.replace("]", "")
-        return img_url
-    return None
-
-
 def upload_image(img_url, token=""):
     headers = {}
     if token:
@@ -72,7 +62,7 @@ def QQCommand_image(*args, **kwargs):
                 else:
                     category = msg_list[1].strip().strip("$")
                     CQ_text = msg_list[2].strip()
-                    img_url = get_image_from_CQ(CQ_text)
+                    img_url = get_CQ_image(CQ_text)
                     if not img_url:
                         msg = "未发现图片信息"
                     elif not category:

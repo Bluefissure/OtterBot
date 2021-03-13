@@ -21,6 +21,11 @@ from ffxivbot.models import *
 CAFEMAKER = "https://cafemaker.wakingsands.com"
 XIVAPI = "https://xivapi.com"
 
+def get_CQ_image(CQ_text):
+    image_pattern = r"\[CQ:(?:image),.*(?:url|file)=(https?://.*)\]"
+    match = re.findall(image_pattern, CQ_text)
+    return match[0] if match else None
+
 
 def reply_message_action(receive, msg):
     action = {"action": "", "params": {}, "echo": ""}

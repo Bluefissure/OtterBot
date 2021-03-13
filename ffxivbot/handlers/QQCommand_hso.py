@@ -98,10 +98,10 @@ def QQCommand_hso(*args, **kwargs):
                     img_json = tmp_list
 
                 if not img_json:
-                    msg += "未能找到所需图片"
+                    msg = "未能找到所需图片"
                 else:
                     img = random.choice(img_json)
-                    msg += "[CQ:image,file={}]".format(img["sample_url"])
+                    msg = "[CQ:image,file={}]".format(img["sample_url"])
                     user.last_api_time = time.time()
                     user.save(update_fields=["last_api_time"])
 

@@ -30,6 +30,7 @@ commands = {
     "/raid": '零式英雄榜（"/raid 蓝色裂痕 萌芽池"）',
     "/quest": '任务查询("/quest 狂乱前奏")',
     "/nuannuan": "本周金蝶暖暖作业",
+    "/genshin": "原神圣遗物评分",
     "/hso": "好色哦",
     "/hhsh": "好好说话",
     "/bot": "机器人相关功能",
@@ -43,7 +44,7 @@ commands = {
     "/hh": '光之收藏家幻化推荐("/hh help")',
     "/ofish": "获取最近海钓航班",
     "/luck": "浅草寺求签",
-    "/abv": "Bilibili av/BV号互转",
+    #"/abv": "Bilibili av/BV号互转",
 }
 
 group_commands = {
@@ -72,6 +73,8 @@ alter_commands = {
     "/fog": "/weather 优雷卡恒冰之地 薄雾",
     "/thunder": "/weather 优雷卡恒冰之地 打雷",
     "/heat_wave": "/weather 优雷卡恒冰之地 热风",
+    "/weather bzy": "/weather 南方博兹雅战线",
+    "/bzy": "/weather 南方博兹雅战线",
     "/register_group": "/group register",
     "/welcome_demo": "/welcome demo",
     "/set_welcome_msg": "/welcome set",
@@ -112,6 +115,9 @@ from .QQCommand_raid import QQCommand_raid
 from .QQCommand_search import QQCommand_search
 from .QQCommand_treasure import QQCommand_treasure
 from .QQCommand_weather import QQCommand_weather
+
+# Genshin Commands
+from .QQCommand_genshin import QQCommand_genshin
 
 # Universal Commands
 from .QQCommand_10 import QQCommand_10
