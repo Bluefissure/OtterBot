@@ -19,7 +19,7 @@ opencv-python==4.1.2.30
 numpy==1.16.3
 Pillow>=7.1.0
 python-socketio==4.6.0
-PyYAML==5.3.1
+PyYAML==5.4
 redis==3.1.0
 jieba==0.39
 wordcloud==1.8.0
