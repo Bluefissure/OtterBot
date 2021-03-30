@@ -1,4 +1,5 @@
 channels==2.3.1
+channels-redis>=2.2.1
 tqdm==4.31.1
 wordcloud==1.8.0
 pika==0.13.1
