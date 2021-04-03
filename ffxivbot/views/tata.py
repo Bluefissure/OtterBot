@@ -22,7 +22,9 @@ def generate_web_base(web_base_url: str) -> dict:
     use_tls = False
     if web_base_url.startswith("https://"):
         use_tls = True
-    pattern = re.compile(r'^(?:https?://)?(?P<host>[^:/]+)(?::(?P<port>\d+))?(?:/(?P<path>.*))?$')
+    pattern = re.compile(
+        r"^(?:https?://)?(?P<host>[^:/]+)(?::(?P<port>\d+))?(?:/(?P<path>.*))?$"
+    )
     matches = pattern.match(web_base_url)
     if matches:
         host = matches.group("host")
@@ -32,15 +34,17 @@ def generate_web_base(web_base_url: str) -> dict:
         port = 443
     if path != "" and not path.endswith("/"):
         path = path + "/"
-    return {
-        "host": host,
-        "port": port,
-        "path": path,
-        "use_tls": use_tls
-    }
+    return {"host": host, "port": port, "path": path, "use_tls": use_tls}
 
 
-def generate_bot_conf(bot: QQBot, client: str, host: str = "localhost", port: int = 80, path: str = "", use_tls: bool = False):
+def generate_bot_conf(
+    bot: QQBot,
+    client: str,
+    host: str = "localhost",
+    port: int = 80,
+    path: str = "",
+    use_tls: bool = False,
+):
     bot_conf = {"error": "Unsupported client."}
     if use_tls:
         ws_url = f"wss://{host}:{port}/{path}ws/"
@@ -182,7 +186,14 @@ def generate_bot_conf(bot: QQBot, client: str, host: str = "localhost", port: in
             use_ws = "true"
             post_url = "{}"
             ws_reverse_url = '"{}"'.format(ws_url)
-        conf = (bot.user_id, bot.access_token, use_http, post_url, use_ws, ws_reverse_url)
+        conf = (
+            bot.user_id,
+            bot.access_token,
+            use_http,
+            post_url,
+            use_ws,
+            ws_reverse_url,
+        )
         bot_conf = """{{
     uin: {}
     password: ""
@@ -406,14 +417,18 @@ def tata(req):
         bb["name"] = bot.name
         if bot.public:
             bb["user_id"] = bot.user_id
+            bb["owner_id"] = bot.owner_id
         else:
-            mid = len(bot.user_id) // 2
-            user_id = bot.user_id[: mid - 2] + "*" * 4 + bot.user_id[mid + 2 :]
-            bb["user_id"] = user_id
+
+            def mask_id(user_id):
+                mid = len(user_id) // 2
+                return user_id[: mid - 2] + "*" * 4 + user_id[mid + 2 :]
+
+            bb["user_id"] = mask_id(bot.user_id)
+            bb["owner_id"] = mask_id(bot.owner_id)
         bb["group_num"] = group_num
         bb["friend_num"] = friend_num
         bb["coolq_edition"] = coolq_edition
-        bb["owner_id"] = bot.owner_id
         bb["online"] = time.time() - bot.event_time < 300
         bb["id"] = bot.id
         bb["public"] = bot.public
