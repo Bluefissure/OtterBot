@@ -8,6 +8,7 @@ from time import strftime
 from asgiref.sync import async_to_sync
 from django.http import HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
+from django.db import transaction
 from channels.layers import get_channel_layer
 from ffxivbot.models import *
 from ffxivbot.webapi import github_webhook, webapi
@@ -355,48 +356,50 @@ def api(req):
                                             monster, server
                                         )
                                     )
-                                    if HuntLog.objects.filter(
-                                        monster=monster,
-                                        server=server,
-                                        hunt_group=hunt_group,
-                                        log_type="kill",
-                                        time__gt=timestamp - 60,
-                                    ).exists():
-                                        msg = '{}——"{}" 已在一分钟内记录上报，此次API调用被忽略'.format(
-                                            server,
-                                            monster,
-                                            time.strftime(
-                                                "%Y-%m-%d %H:%M:%S",
-                                                time.localtime(timestamp),
-                                            ),
-                                        )
-                                        success = False
-                                    else:
-                                        hunt_log = HuntLog(
+                                    
+                                    with transaction.atomic():
+                                        if HuntLog.objects.filter(
                                             monster=monster,
-                                            hunt_group=hunt_group,
                                             server=server,
+                                            hunt_group=hunt_group,
                                             log_type="kill",
-                                            time=timestamp,
-                                        )
-                                        hunt_log.save()
-                                        msg = '{}——"{}" 击杀时间: {}'.format(
-                                            hunt_log.server,
-                                            monster,
-                                            time.strftime(
-                                                "%Y-%m-%d %H:%M:%S",
-                                                time.localtime(timestamp),
-                                            ),
-                                        )
-                                        at_msg = (
-                                            "[CQ:at,qq={}]".format(qquser.user_id)
-                                            if req.GET.get("at", "true") == "true"
-                                            else str(qquser.user_id)
-                                        )
-                                        msg = at_msg + "通过API更新了如下HuntLog:\n{}".format(
-                                            msg
-                                        )
-                                        success = True
+                                            time__gt=timestamp - 60,
+                                        ).exists():
+                                            msg = '{}——"{}" 已在一分钟内记录上报，此次API调用被忽略'.format(
+                                                server,
+                                                monster,
+                                                time.strftime(
+                                                    "%Y-%m-%d %H:%M:%S",
+                                                    time.localtime(timestamp),
+                                                ),
+                                            )
+                                            success = False
+                                        else:
+                                            hunt_log = HuntLog(
+                                                monster=monster,
+                                                hunt_group=hunt_group,
+                                                server=server,
+                                                log_type="kill",
+                                                time=timestamp,
+                                            )
+                                            hunt_log.save()
+                                            msg = '{}——"{}" 击杀时间: {}'.format(
+                                                hunt_log.server,
+                                                monster,
+                                                time.strftime(
+                                                    "%Y-%m-%d %H:%M:%S",
+                                                    time.localtime(timestamp),
+                                                ),
+                                            )
+                                            at_msg = (
+                                                "[CQ:at,qq={}]".format(qquser.user_id)
+                                                if req.GET.get("at", "true") == "true"
+                                                else str(qquser.user_id)
+                                            )
+                                            msg = at_msg + "通过API更新了如下HuntLog:\n{}".format(
+                                                msg
+                                            )
+                                            success = True
                                 else:
                                     at_msg = (
                                         "[CQ:at,qq={}]".format(qquser.user_id)

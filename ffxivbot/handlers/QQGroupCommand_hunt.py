@@ -3,6 +3,7 @@ from django.db.models import Q
 from ffxivbot.handlers.QQUtils import *
 from ffxivbot.models import *
 
+import logging
 
 
 def monster_kill(monster_name, hunt_group, server_info, edittime):
@@ -11,41 +12,49 @@ def monster_kill(monster_name, hunt_group, server_info, edittime):
     monster = Monster.objects.filter(Q(name=monster_name) | Q(cn_name=monster_name))
     if monster.exists():
         monster = monster[0]
-        log = HuntLog(monster=monster,
-                      hunt_group=hunt_group,
-                      server=server_info,
-                      log_type="kill",
-                      time=edittime
-                      )
+        log = HuntLog(
+            monster=monster,
+            hunt_group=hunt_group,
+            server=server_info,
+            log_type="kill",
+            time=edittime,
+        )
         log.save()
-        msg = "{}的\"{}\"击杀时间已记录\n记录时间：{}".format(server_info.name, monster, time_str)
+        msg = '{}的"{}"击杀时间已记录\n记录时间：{}'.format(server_info.name, monster, time_str)
+        logging.info("hunt_group:{}\nmsg:{}".format(hunt_group, msg))
     else:
-        msg = "找不到狩猎怪\"{}\"".format(monster_name)
+        msg = '找不到狩猎怪"{}"'.format(monster_name)
     return msg
+
 
 def log_revoke(monster_name, hunt_group, server_info):
     monster = Monster.objects.filter(Q(name=monster_name) | Q(cn_name=monster_name))
     if monster.exists():
         monster = monster[0]
         try:
-            latest_kill_log = HuntLog.objects.filter(hunt_group=hunt_group, monster=monster, server=server_info, log_type="kill").latest("id")
+            latest_kill_log = HuntLog.objects.filter(
+                hunt_group=hunt_group,
+                monster=monster,
+                server=server_info,
+                log_type="kill",
+            ).latest("id")
         except HuntLog.DoesNotExist:
             msg = "已达到了最初状态"
         else:
             msg = "已删除：\n{}".format(latest_kill_log.get_info())
             latest_kill_log.delete()
-            log = HuntLog(monster=monster,
-                          hunt_group=hunt_group,
-                          server=server_info,
-                          log_type="revoke",
-                          time=time.time()
-                          )
+            log = HuntLog(
+                monster=monster,
+                hunt_group=hunt_group,
+                server=server_info,
+                log_type="revoke",
+                time=time.time(),
+            )
             log.save()
 
     else:
-        msg = "找不到狩猎怪\"{}\"".format(monster_name)
+        msg = '找不到狩猎怪"{}"'.format(monster_name)
     return msg
-
 
 
 # def monster_edit_bak(monster_name, hunt_group, server_info, YMD, HMS):
@@ -77,7 +86,6 @@ def log_revoke(monster_name, hunt_group, server_info):
 #     return msg
 
 
-
 def handle_special_mob(monster, next_spawn_time):
     now_time = time.time()
     trigger_time_info = ""
@@ -85,15 +93,21 @@ def handle_special_mob(monster, next_spawn_time):
     ntt_eorzea_day = getEorzeaDay(now_time)
     if monster.cn_name.startswith("咕尔呱洛斯"):
         if ntt_eorzea_day < 17:
-            next_trigger_time = (getEorzeaYear(
-                now_time) * 12 * 32 * 24 * 175) + (getEorzeaMonth(
-                now_time) * 32 * 24 * 175) + (15 * 24 * 175) + (17 * 175)
+            next_trigger_time = (
+                (getEorzeaYear(now_time) * 12 * 32 * 24 * 175)
+                + (getEorzeaMonth(now_time) * 32 * 24 * 175)
+                + (15 * 24 * 175)
+                + (17 * 175)
+            )
         elif ntt_eorzea_day >= 17 and ntt_eorzea_day <= 20:
             next_trigger_time = now_time
         elif ntt_eorzea_day > 20:
-            next_trigger_time = (getEorzeaYear(
-                now_time) * 12 * 32 * 24 * 175) + ((getEorzeaMonth(
-                now_time) + 1) * 32 * 24 * 175) + (15 * 24 * 175) + (17 * 175)
+            next_trigger_time = (
+                (getEorzeaYear(now_time) * 12 * 32 * 24 * 175)
+                + ((getEorzeaMonth(now_time) + 1) * 32 * 24 * 175)
+                + (15 * 24 * 175)
+                + (17 * 175)
+            )
         if next_trigger_time > next_spawn_time:
             trigger_time_info = "\n（触发时间计算为ET当月第16天17:00）"
             get_trigger_time = next_trigger_time
@@ -101,50 +115,72 @@ def handle_special_mob(monster, next_spawn_time):
         if ntt_eorzea_day >= 1 and ntt_eorzea_day <= 4:
             next_trigger_time = now_time
         elif ntt_eorzea_day > 4:
-            next_trigger_time = (getEorzeaYear(
-                now_time) * 12 * 32 * 24 * 175) + ((getEorzeaMonth(
-                now_time) + 1) * 32 * 24 * 175)
+            next_trigger_time = (getEorzeaYear(now_time) * 12 * 32 * 24 * 175) + (
+                (getEorzeaMonth(now_time) + 1) * 32 * 24 * 175
+            )
         if next_trigger_time > next_spawn_time:
             trigger_time_info = "\n（触发时间计算为ET当月第1天00:00）"
             get_trigger_time = next_trigger_time
     elif monster.cn_name.startswith("巨大鳐"):
         if ntt_eorzea_day < 17:
-            next_trigger_time = (getEorzeaYear(
-                now_time) * 12 * 32 * 24 * 175) + (getEorzeaMonth(
-                now_time) * 32 * 24 * 175) + (15 * 24 * 175) + (12 * 175)
+            next_trigger_time = (
+                (getEorzeaYear(now_time) * 12 * 32 * 24 * 175)
+                + (getEorzeaMonth(now_time) * 32 * 24 * 175)
+                + (15 * 24 * 175)
+                + (12 * 175)
+            )
         elif ntt_eorzea_day >= 17 and ntt_eorzea_day <= 20:
             next_trigger_time = now_time
         elif ntt_eorzea_day > 20:
-            next_trigger_time = (getEorzeaYear(
-                now_time) * 12 * 32 * 24 * 175) + ((getEorzeaMonth(
-                now_time) + 1) * 32 * 24 * 175) + (15 * 24 * 175) + (12 * 175)
+            next_trigger_time = (
+                (getEorzeaYear(now_time) * 12 * 32 * 24 * 175)
+                + ((getEorzeaMonth(now_time) + 1) * 32 * 24 * 175)
+                + (15 * 24 * 175)
+                + (12 * 175)
+            )
         if next_trigger_time > next_spawn_time:
             trigger_time_info = "\n（触发时间计算为ET当月第16天12:00）"
             get_trigger_time = next_trigger_time
     elif monster.cn_name.startswith("伽洛克"):
         # 算法有问题，待更新
         a = 0
-        garlok_spawn_weathers = getFollowingWeathers(territory=monster.territory, cnt=1000,
-                                                     TIMEFORMAT="%Y-%m-%d %H:%M:%S", unixSeconds=now_time, Garlok=True)
+        garlok_spawn_weathers = getFollowingWeathers(
+            territory=monster.territory,
+            cnt=1000,
+            TIMEFORMAT="%Y-%m-%d %H:%M:%S",
+            unixSeconds=now_time,
+            Garlok=True,
+        )
         for spawn_weather in garlok_spawn_weathers:
-            if spawn_weather["name"] == "碧空" or spawn_weather["name"] == "晴朗" or spawn_weather["name"] == "阴云" or \
-                    spawn_weather["name"] == "薄雾":
+            if (
+                spawn_weather["name"] == "碧空"
+                or spawn_weather["name"] == "晴朗"
+                or spawn_weather["name"] == "阴云"
+                or spawn_weather["name"] == "薄雾"
+            ):
                 a += 1
             else:
                 a = 0
             if a == 9:
-                next_trigger_time = int(time.mktime(time.strptime(spawn_weather["LT"], '%Y-%m-%d %H:%M:%S')))
+                next_trigger_time = int(
+                    time.mktime(time.strptime(spawn_weather["LT"], "%Y-%m-%d %H:%M:%S"))
+                )
                 break
         if next_trigger_time > next_spawn_time:
             trigger_time_info = "\n（触发时间计算为连续不下雨的ET 第9天的00:00）"
             get_trigger_time = next_trigger_time
     elif monster.cn_name.startswith("雷德罗巨蛇"):
-        Laider_spawn_weathers = getFollowingWeathers(territory=monster.territory, cnt=1000,
-                                                     TIMEFORMAT="%Y-%m-%d %H:%M:%S", unixSeconds=now_time)
+        Laider_spawn_weathers = getFollowingWeathers(
+            territory=monster.territory,
+            cnt=1000,
+            TIMEFORMAT="%Y-%m-%d %H:%M:%S",
+            unixSeconds=now_time,
+        )
         for spawn_weather in Laider_spawn_weathers:
             if spawn_weather["name"] == "小雨" and spawn_weather["pre_name"] == "小雨":
-                next_trigger_time = int(time.mktime(time.strptime(spawn_weather["LT"], '%Y-%m-%d %H:%M:%S'))) + (
-                        2 * 175)
+                next_trigger_time = int(
+                    time.mktime(time.strptime(spawn_weather["LT"], "%Y-%m-%d %H:%M:%S"))
+                ) + (2 * 175)
                 break
         if next_trigger_time > next_spawn_time:
             trigger_time_info = "\n（触发时间计算为两次雨天后的ET 2小时后）"
@@ -153,7 +189,8 @@ def handle_special_mob(monster, next_spawn_time):
         special_msg = ""
     else:
         special_msg = "\n下次触发时间：{}".format(
-            time.strftime('%m-%d %H:%M:%S', time.localtime(get_trigger_time)))
+            time.strftime("%m-%d %H:%M:%S", time.localtime(get_trigger_time))
+        )
     return special_msg, trigger_time_info
 
 
@@ -185,7 +222,7 @@ def QQGroupCommand_hunt(*args, **kwargs):
                 optype = param_segs[0].strip()
             except IndexError:
                 optype = "help"
-            if (optype == "help"):
+            if optype == "help":
                 msg = "獭獭の狩猎时钟 beta.1\n\
 /hunt help：帮助\n\
 /hunt public：切换公开\n\
@@ -195,7 +232,7 @@ def QQGroupCommand_hunt(*args, **kwargs):
 /hunt list：列出相关\n\
 /hunt maintain：设置当前服务器为维护后状态\n\
 /hunt maintain_global：设置全体服务器为维护后状态"
-            elif (optype == "check"):
+            elif optype == "check":
                 try:
                     monster_name = param_segs[1].strip()
                     try:
@@ -206,60 +243,115 @@ def QQGroupCommand_hunt(*args, **kwargs):
                     server_info = Server.objects.filter(name=server_name)
                     if server_info.exists():
                         server_info = server_info[0]
-                        monster = Monster.objects.filter(Q(name=monster_name) | Q(cn_name=monster_name))
+                        monster = Monster.objects.filter(
+                            Q(name=monster_name) | Q(cn_name=monster_name)
+                        )
                         if monster.exists():
                             monster = monster[0]
                             try:
                                 # latest_kill_log = hunt_group.hunt_log.filter(monster=monster, log_type="kill").latest("id")
-                                latest_kill_log = HuntLog.objects.filter(hunt_group=hunt_group, monster=monster, server=server_info,
-                                                                         log_type="kill").latest("id")
+                                latest_kill_log = HuntLog.objects.filter(
+                                    hunt_group=hunt_group,
+                                    monster=monster,
+                                    server=server_info,
+                                    log_type="kill",
+                                ).latest("id")
                                 last_kill_time = latest_kill_log.time
                             except HuntLog.DoesNotExist as e:
                                 last_kill_time = 0
                             try:
-                                global_maintain_log = HuntLog.objects.filter(hunt_group=hunt_group, server=server_info,
-                                                                             log_type="maintain").latest("id")
+                                global_maintain_log = HuntLog.objects.filter(
+                                    hunt_group=hunt_group,
+                                    server=server_info,
+                                    log_type="maintain",
+                                ).latest("id")
                                 maintain_finish_time = global_maintain_log.time
                             except HuntLog.DoesNotExist as e:
                                 maintain_finish_time = 0
-                            maintained = (maintain_finish_time > last_kill_time)
+                            maintained = maintain_finish_time > last_kill_time
                             kill_time = max(last_kill_time, maintain_finish_time)
-                            spawn_cooldown = (monster.first_spawn_cooldown if maintained else monster.spawn_cooldown)
-                            pop_cooldown = (monster.first_pop_cooldown if maintained else monster.pop_cooldown)
+                            spawn_cooldown = (
+                                monster.first_spawn_cooldown
+                                if maintained
+                                else monster.spawn_cooldown
+                            )
+                            pop_cooldown = (
+                                monster.first_pop_cooldown
+                                if maintained
+                                else monster.pop_cooldown
+                            )
                             next_spawn_time = kill_time + spawn_cooldown
                             next_pop_time = kill_time + pop_cooldown
                             schedulef = (time.time() - kill_time) / pop_cooldown
                             schedule = "{:.2%}".format(schedulef)
                             # next_spawn_time, next_pop_time = handle_special_mob(monster, next_spawn_time, next_pop_time)
-                            special_msg, trigger_time_info = handle_special_mob(monster, next_spawn_time)
+                            special_msg, trigger_time_info = handle_special_mob(
+                                monster, next_spawn_time
+                            )
                             if server_name:
-                                msg = "{} {} {}\n".format(monster.territory, monster.cn_name, server_name) + \
-                                      "进度：{}\n".format(schedule) + \
-                                      "上次击杀时间：{}\n".format(time.strftime(TIMEFORMAT_MDHMS, time.localtime(kill_time))) + \
-                                      "开始触发时间：{}\n".format(
-                                          time.strftime(TIMEFORMAT_MDHMS, time.localtime(next_spawn_time))) + \
-                                      "高概率触发时间：{}\n".format(
-                                          time.strftime(TIMEFORMAT_MDHMS, time.localtime(next_pop_time))) + \
-                                      "触发方法：{}\n".format(monster.info) + \
-                                      "{}".format(special_msg) + "{}".format(trigger_time_info)
+                                msg = (
+                                    "{} {} {}\n".format(
+                                        monster.territory, monster.cn_name, server_name
+                                    )
+                                    + "进度：{}\n".format(schedule)
+                                    + "上次击杀时间：{}\n".format(
+                                        time.strftime(
+                                            TIMEFORMAT_MDHMS, time.localtime(kill_time)
+                                        )
+                                    )
+                                    + "开始触发时间：{}\n".format(
+                                        time.strftime(
+                                            TIMEFORMAT_MDHMS,
+                                            time.localtime(next_spawn_time),
+                                        )
+                                    )
+                                    + "高概率触发时间：{}\n".format(
+                                        time.strftime(
+                                            TIMEFORMAT_MDHMS,
+                                            time.localtime(next_pop_time),
+                                        )
+                                    )
+                                    + "触发方法：{}\n".format(monster.info)
+                                    + "{}".format(special_msg)
+                                    + "{}".format(trigger_time_info)
+                                )
                             else:
-                                msg = "{} {} {}\n".format(monster.territory, monster.cn_name, hunt_group.server) + \
-                                      "进度：{}\n".format(schedule) + \
-                                      "上次击杀时间：{}\n".format(time.strftime(TIMEFORMAT_MDHMS, time.localtime(kill_time))) + \
-                                      "开始触发时间：{}\n".format(
-                                          time.strftime(TIMEFORMAT_MDHMS, time.localtime(next_spawn_time))) + \
-                                      "高概率触发时间：{}\n".format(
-                                          time.strftime(TIMEFORMAT_MDHMS, time.localtime(next_pop_time))) + \
-                                      "触发方法：{}\n".format(monster.info) + \
-                                      "{}".format(special_msg) + "{}".format(trigger_time_info)
+                                msg = (
+                                    "{} {} {}\n".format(
+                                        monster.territory,
+                                        monster.cn_name,
+                                        hunt_group.server,
+                                    )
+                                    + "进度：{}\n".format(schedule)
+                                    + "上次击杀时间：{}\n".format(
+                                        time.strftime(
+                                            TIMEFORMAT_MDHMS, time.localtime(kill_time)
+                                        )
+                                    )
+                                    + "开始触发时间：{}\n".format(
+                                        time.strftime(
+                                            TIMEFORMAT_MDHMS,
+                                            time.localtime(next_spawn_time),
+                                        )
+                                    )
+                                    + "高概率触发时间：{}\n".format(
+                                        time.strftime(
+                                            TIMEFORMAT_MDHMS,
+                                            time.localtime(next_pop_time),
+                                        )
+                                    )
+                                    + "触发方法：{}\n".format(monster.info)
+                                    + "{}".format(special_msg)
+                                    + "{}".format(trigger_time_info)
+                                )
                         else:
-                            msg = "找不到狩猎怪\"{}\"".format(monster_name)
+                            msg = '找不到狩猎怪"{}"'.format(monster_name)
                 except IndexError:
                     msg = """狩猎时钟check命令示例：
 /hunt check [怪物名称] <服务器>
 查询怪物的击杀时间、触发时间、触发说明等信息
 注：触发时间已经计算好触发条件的日期和天气等条件"""
-            elif (optype == "kill"):
+            elif optype == "kill":
                 try:
                     monster_name = param_segs[1].strip()
                     try:
@@ -279,10 +371,12 @@ def QQGroupCommand_hunt(*args, **kwargs):
                         #         msg = "该群组已经有管理群组，无法编辑"
                         # except HuntGroup.DoesNotExist:
                         #     msg = monster_kill(monster_name, hunt_group, server_info, edittime)
-                        msg = monster_kill(monster_name, hunt_group, server_info, edittime)
+                        msg = monster_kill(
+                            monster_name, hunt_group, server_info, edittime
+                        )
                 except IndexError:
                     msg = "狩猎时钟list命令示例：\n/hunt kill [怪物名称] <服务器>\n设置怪物的击杀时间为现在\n仅可以修改本群组对应的服务器和没有管理群组的服务器"
-            elif (optype == "list"):
+            elif optype == "list":
                 try:
                     setype = param_segs[1].strip()
                     if setype == "cd":
@@ -300,40 +394,74 @@ def QQGroupCommand_hunt(*args, **kwargs):
                             for monster in all_monsters:
                                 # 获取怪物在各个服务器的击杀时间
                                 try:
-                                    latest_kill_log = HuntLog.objects.filter(hunt_group=hunt_group, monster=monster, server=server_info,
-                                                                             log_type="kill").latest("id")
+                                    latest_kill_log = HuntLog.objects.filter(
+                                        hunt_group=hunt_group,
+                                        monster=monster,
+                                        server=server_info,
+                                        log_type="kill",
+                                    ).latest("id")
                                     last_kill_time = latest_kill_log.time
                                 except HuntLog.DoesNotExist as e:
                                     last_kill_time = 0
                                 try:
-                                    global_maintain_log = HuntLog.objects.filter(hunt_group=hunt_group, server=server_info,
-                                                                             log_type="maintain").latest("id")
+                                    global_maintain_log = HuntLog.objects.filter(
+                                        hunt_group=hunt_group,
+                                        server=server_info,
+                                        log_type="maintain",
+                                    ).latest("id")
                                     maintain_finish_time = global_maintain_log.time
                                 except HuntLog.DoesNotExist as e:
-                                    maintain_finish_time  = 0
-                                maintained = (maintain_finish_time > last_kill_time)
+                                    maintain_finish_time = 0
+                                maintained = maintain_finish_time > last_kill_time
                                 kill_time = max(last_kill_time, maintain_finish_time)
                                 spawn_cooldown = (
-                                    monster.first_spawn_cooldown if maintained else monster.spawn_cooldown)
-                                pop_cooldown = (monster.first_pop_cooldown if maintained else monster.pop_cooldown)
+                                    monster.first_spawn_cooldown
+                                    if maintained
+                                    else monster.spawn_cooldown
+                                )
+                                pop_cooldown = (
+                                    monster.first_pop_cooldown
+                                    if maintained
+                                    else monster.pop_cooldown
+                                )
                                 next_spawn_time = kill_time + spawn_cooldown
                                 next_pop_time = kill_time + pop_cooldown
                                 schedulef = (time.time() - kill_time) / pop_cooldown
                                 schedule = "{:.2%}".format(schedulef)
                                 # next_spawn_time, next_pop_time = handle_special_mob(monster, next_spawn_time, next_pop_time)
-                                special_msg, trigger_time_info = handle_special_mob(monster, next_spawn_time)
+                                special_msg, trigger_time_info = handle_special_mob(
+                                    monster, next_spawn_time
+                                )
                                 if next_spawn_time <= time.time():
                                     cd_msg_list.append(
-                                        "{} {} {}\n高概率触发时间：{} {}".format(monster.territory, monster.cn_name, schedule,
-                                                                         time.strftime(TIMEFORMAT_MDHMS,
-                                                                                       time.localtime(next_pop_time)),
-                                                                         special_msg))
-                                elif next_spawn_time - 3600 < time.time() < next_spawn_time:
+                                        "{} {} {}\n高概率触发时间：{} {}".format(
+                                            monster.territory,
+                                            monster.cn_name,
+                                            schedule,
+                                            time.strftime(
+                                                TIMEFORMAT_MDHMS,
+                                                time.localtime(next_pop_time),
+                                            ),
+                                            special_msg,
+                                        )
+                                    )
+                                elif (
+                                    next_spawn_time - 3600
+                                    < time.time()
+                                    < next_spawn_time
+                                ):
                                     qcd_msg_list.append(
-                                        "{} {} {}\n开始触发时间：{} {}".format(monster.territory, monster.cn_name, schedule,
-                                                                        time.strftime(TIMEFORMAT_MDHMS,
-                                                                                      time.localtime(next_spawn_time)),
-                                                                        special_msg))
+                                        "{} {} {}\n开始触发时间：{} {}".format(
+                                            monster.territory,
+                                            monster.cn_name,
+                                            schedule,
+                                            time.strftime(
+                                                TIMEFORMAT_MDHMS,
+                                                time.localtime(next_spawn_time),
+                                            ),
+                                            special_msg,
+                                        )
+                                    )
                             if cd_msg_list:
                                 msg += "可以触发的s怪：\n"
                                 for cd_msg in cd_msg_list:
@@ -347,10 +475,15 @@ def QQGroupCommand_hunt(*args, **kwargs):
                                 msg = "暂时莫得可以触发的s怪qwq"
                 except IndexError:
                     msg = "狩猎时钟list命令示例：\n/hunt list [选项] <服务器>\n选项解释：\ncd：列出可触发的s"
-            elif ("maintain" in optype):
+            elif "maintain" in optype:
                 if "global" in optype:
                     for server in Server.objects.all():
-                        log = HuntLog(hunt_group=hunt_group, server=server, log_type="maintain", time=time.time())
+                        log = HuntLog(
+                            hunt_group=hunt_group,
+                            server=server,
+                            log_type="maintain",
+                            time=time.time(),
+                        )
                         log.save()
                     msg = "全体服务器的狩猎怪击杀时间已重置"
                 else:
@@ -359,28 +492,41 @@ def QQGroupCommand_hunt(*args, **kwargs):
                     except IndexError:
                         server_name = str(hunt_group.server)
                     server_info = Server.objects.filter(name=server_name)
-                    server = server_info[0] if server_info.exists() else hunt_group.server
-                    log = HuntLog(hunt_group=hunt_group, server=server, log_type="maintain",
-                                  time=time.time())
+                    server = (
+                        server_info[0] if server_info.exists() else hunt_group.server
+                    )
+                    log = HuntLog(
+                        hunt_group=hunt_group,
+                        server=server,
+                        log_type="maintain",
+                        time=time.time(),
+                    )
                     log.save()
                     msg = "{} 的狩猎怪击杀时间已重置".format(server)
-            elif ("initialize" in optype):
+            elif "initialize" in optype:
                 # 其实可以不使用
                 # 暂时不写入配置文件，如有自建，需要修改此处
                 if user_id == 2875726738 or user_id == 306401806:
                     for server in Server.objects.all():
                         for monster in Monster.objects.all():
-                            log = HuntLog(monster=monster, hunt_group=hunt_group, server=server, log_type="kill",
-                                          time=time.time())
+                            log = HuntLog(
+                                monster=monster,
+                                hunt_group=hunt_group,
+                                server=server,
+                                log_type="kill",
+                                time=time.time(),
+                            )
                             log.save()
                     msg = "时钟功能初始化成功"
-            elif (optype == "edit"):
+            elif optype == "edit":
                 try:
                     monster_name = param_segs[1].strip()
                     YMD = param_segs[2].strip()
                     HMS = param_segs[3].strip()
                     edittimestr = YMD + " " + HMS
-                    edittime = int(time.mktime(time.strptime(edittimestr, TIMEFORMAT_YMDHMS)))
+                    edittime = int(
+                        time.mktime(time.strptime(edittimestr, TIMEFORMAT_YMDHMS))
+                    )
                     try:
                         server_name = param_segs[4].strip()
                     except IndexError:
@@ -391,24 +537,34 @@ def QQGroupCommand_hunt(*args, **kwargs):
                         if monster_name.startswith("maintain"):
                             if "global" in monster_name:
                                 for server in Server.objects.all():
-                                    log = HuntLog.objects.filter(hunt_group=hunt_group, server=server, log_type="maintain").latest("id")
+                                    log = HuntLog.objects.filter(
+                                        hunt_group=hunt_group,
+                                        server=server,
+                                        log_type="maintain",
+                                    ).latest("id")
                                     log.time = edittime
                                     log.save()
                                 msg = "全体服务器维护时间被重置为{}".format(edittimestr)
                             else:
-                                log = HuntLog.objects.filter(hunt_group=hunt_group, server=server_info, log_type="maintain").latest("id")
+                                log = HuntLog.objects.filter(
+                                    hunt_group=hunt_group,
+                                    server=server_info,
+                                    log_type="maintain",
+                                ).latest("id")
                                 log.time = edittime
                                 log.save()
                                 msg = "{}的维护时间被重置为{}".format(server_info, edittimestr)
                         else:
-                            msg = monster_kill(monster_name, hunt_group, server_info, edittime)
+                            msg = monster_kill(
+                                monster_name, hunt_group, server_info, edittime
+                            )
                 except IndexError:
                     msg = """狩猎时钟edit命令示例：
 /hunt edit [怪物名称] [时间] <服务器>
 /hunt edit maintain(_global) [时间] <服务器>
 时间格式例：
 1970-01-01 00:00:00"""
-            elif (optype == "revoke"):
+            elif optype == "revoke":
                 try:
                     monster_name = param_segs[1].strip()
                     try:
@@ -429,7 +585,7 @@ def QQGroupCommand_hunt(*args, **kwargs):
                 except IndexError:
                     msg = "*"
             elif optype == "public":
-                if user_info["role"]!="owner":
+                if user_info["role"] != "owner":
                     msg = "仅群主有权限设置狩猎群组公开与否"
                 else:
                     hunt_group.public = not hunt_group.public
@@ -437,21 +593,19 @@ def QQGroupCommand_hunt(*args, **kwargs):
                     msg = "本狩猎群组已被设置为{}群组".format("公开" if hunt_group.public else "私密")
         elif len(param_segs) == 2 and param_segs[0] == "register":
             servers = Server.objects.filter(name=param_segs[1])
-            if user_info["role"]!="owner":
+            if user_info["role"] != "owner":
                 msg = "仅群主有权限注册狩猎群组"
             elif not servers.exists():
-                msg = "找不到服务器\"{}\"".format(param_segs[1])
+                msg = '找不到服务器"{}"'.format(param_segs[1])
             else:
                 server = servers[0]
                 hg = HuntGroup(
-                    name="{}-{}".format(group, server),
-                    group=group,
-                    server=server,
+                    name="{}-{}".format(group, server), group=group, server=server,
                 )
                 hg.save()
-                msg = "狩猎群\"{}\"已建立".format(hg.name)
+                msg = '狩猎群"{}"已建立'.format(hg.name)
         else:
-            msg = "该群并非狩猎组群组，请使用\"/hunt register 服务器\"来注册狩猎群组"
+            msg = '该群并非狩猎组群组，请使用"/hunt register 服务器"来注册狩猎群组'
         msg = msg.strip()
         reply_action = reply_message_action(receive, msg)
         action_list.append(reply_action)

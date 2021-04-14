@@ -12,7 +12,6 @@ import traceback
 import re
 import time
 import redis
-import jieba
 from collections import Counter
 
 
@@ -101,6 +100,8 @@ def QQGroupChat(*args, **kwargs):
             ("{}|{}".format(group.group_id, settings.SECRET_KEY)).encode()
         ).hexdigest()
         if group.wordcloud:
+            import jieba
+
             group_mem = r.get(group_id_hash) or "{}"
             group_mem = json.loads(group_mem)
             word_cnt = Counter(group_mem.get("words", {}))
