@@ -14,7 +14,7 @@ import traceback
 
 def search_word(word):
     urlword = urllib.parse.quote(word)
-    url = "https://api.imjad.cn/cloudmusic/?type=search&s={}".format(urlword)
+    url = "https://hibi.shadniw.ml/api/netease/?type=search&s={}".format(urlword)
     r = requests.get(url=url)
     jres = json.loads(r.text)
     status_code = jres["code"]
