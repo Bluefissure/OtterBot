@@ -59,7 +59,7 @@ def search_image(img_url, qq=None):
 def search_rank(mode, nsfw=False):
     the_day_before_yesterday_time = time.time() - 3600 * 24 * 2
     date = time.strftime("%Y-%m-%d", time.localtime(the_day_before_yesterday_time))
-    url = "https://api.imjad.cn/pixiv/v2/?type=rank&mode={}&date={}".format(mode, date)
+    url = "https://hibi.shadniw.ml/api/pixiv/?type=rank&mode={}&date={}".format(mode, date)
     # print("url:{}====================".format(url))
     r = requests.get(url=url, timeout=(5, 30))
     jres = json.loads(r.text)
@@ -83,7 +83,7 @@ def search_rank(mode, nsfw=False):
 
 def search_word(word, nsfw=False):
     urlword = urllib.parse.quote(word)
-    url = "https://api.imjad.cn/pixiv/v2/?type=search&word={}&page=1".format(urlword)
+    url = "https://hibi.shadniw.ml/api/pixiv/?type=search&word={}&page=1".format(urlword)
     r = requests.get(url=url, timeout=(5, 30))
     jres = json.loads(r.text)
     illusts = jres["illusts"]
@@ -105,7 +105,7 @@ def search_word(word, nsfw=False):
 
 
 def search_ID(ID):
-    url = "https://api.imjad.cn/pixiv/v2/?type=illust&id={}".format(ID)
+    url = "https://hibi.shadniw.ml/api/pixiv/?type=illust&id={}".format(ID)
     r = requests.get(url=url, timeout=(5, 30))
     jres = json.loads(r.text)
     if "error" in jres.keys():
@@ -158,7 +158,7 @@ def QQCommand_pixiv(*args, **kwargs):
                     + "/pixiv $img : 在P站以图搜图(用法参考/anime功能)\n"
                     + "/pixiv rank $mode : 随机返回一个排行榜的图片(可用mode: day, week, month等)\n"
                     + "PS: 利用此功能发送NSFW图片的行为请等同于调用命令者发送\n"
-                    + "Powered by https://api.imjad.cn, https://saucenao.com and http://ugoira.dataprocessingclub.org/"
+                    + "Powered by https://api.imjad.cn, https://github.com/mixmoe/HibiAPI, https://saucenao.com and http://ugoira.dataprocessingclub.org/"
                 )
             elif message_content.find("rank") == 0:
                 mode = message_content.replace("rank", "", 1).strip()
