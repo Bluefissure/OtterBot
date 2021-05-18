@@ -10,6 +10,40 @@ import re
 import traceback
 from bs4 import BeautifulSoup
 
+def extract_url(text: str):
+    try:
+        aid = re.compile(r'(av|AV)\d+').search(text)
+        bvid = re.compile(r'(BV|bv)([a-zA-Z0-9])+').search(text)
+        if bvid:
+            url = f'https://api.bilibili.com/x/web-interface/view?bvid={bvid[0]}'
+        else:
+            url = f'https://api.bilibili.com/x/web-interface/view?aid={aid[0][2:]}'
+        return url
+    except:
+        traceback.print_exc()
+    return None
+
+def extract_nn(feed):
+    try:
+        pattern = r"【FF14\/时尚品鉴】第\d+期 满分攻略"
+        for item in feed["items"]:
+            if re.match(pattern, item["title"]):
+                h = BeautifulSoup(item["summary"], "lxml")
+                image = re.sub('https://www.bilibili.com/video/', '', h.img.attrs["src"])
+                api_url = extract_url(item["link"])
+                r = requests.get(api_url, timeout=3).json()
+                text = r['data']['desc']
+                text = text.replace("个人攻略网站", "游玩C攻略站")
+                res_data = {
+                    "url": item["id"],
+                    "title": item["title"],
+                    "content": text,
+                    "image": image,
+                }
+                return res_data
+    except:
+        traceback.print_exc()
+    return None
 
 def QQCommand_nuannuan(*args, **kwargs):
     action_list = []
@@ -40,24 +74,3 @@ def QQCommand_nuannuan(*args, **kwargs):
         action_list.append(reply_message_action(receive, msg))
         logging.error(e)
     return action_list
-
-
-def extract_nn(feed):
-    try:
-        pattern = r"【FF14\/时尚品鉴】第\d+期 满分攻略"
-        for item in feed["items"]:
-            # print(item["title"])
-            if re.match(pattern, item["title"]):
-                # print("matched")
-                h = BeautifulSoup(item["summary"], "lxml")
-                text = h.text.replace("个人攻略网站", "游玩C攻略站")
-                res_data = {
-                    "url": item["id"],
-                    "title": item["title"],
-                    "content": text,
-                    "image": h.img.attrs["src"],
-                }
-                return res_data
-    except:
-        traceback.print_exc()
-    return None

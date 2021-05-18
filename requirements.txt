@@ -1,6 +1,6 @@
 beautifulsoup4==4.6.0
 bs4==0.0.1
-Django==2.2.18
+Django==2.2.20
 mysqlclient==1.4.6
 pytz==2018.3
 requests>=2.20.0
@@ -23,4 +23,4 @@ PyYAML==5.4
 redis==3.1.0
 jieba==0.39
 wordcloud==1.8.0
-lxml==4.6.2
+lxml==4.6.3
