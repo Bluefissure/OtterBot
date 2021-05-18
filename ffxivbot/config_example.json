@@ -14,6 +14,7 @@
   "SORRY_BASE_URL": "https://sorry.xuty.cc",
   "TULING_API_URL": "http://openapi.tuling123.com/openapi/api/v2",
   "TULING_API_KEY": "",
+  "SAUCENAO_API_KEY": "",
   "OCR_TYPE": "baidu",
   "BAIDU_OCR_ACCESSTOKEN": "",
   "TENCENT_OCR_SECRETID": "",
