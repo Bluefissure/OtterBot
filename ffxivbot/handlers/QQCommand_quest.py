@@ -1,6 +1,7 @@
 from .QQEventHandler import QQEventHandler
 from .QQUtils import *
 from ffxivbot.models import *
+from difflib import SequenceMatcher
 import logging
 import json
 import random
@@ -59,15 +60,13 @@ def QQCommand_quest(*args, **kwargs):
         receive = kwargs["receive"]
         receive_message = receive["message"]
         quest_name = receive_message.replace("/quest", "").strip()
-        quests = PlotQuest.objects.filter(name__icontains=quest_name).order_by("-id")
+        quests = PlotQuest.objects.filter(name__icontains=quest_name)
         if not quests.exists():
-            quests = PlotQuest.objects.filter(
-                language_names__icontains=quest_name
-            ).order_by("-id")
+            quests = PlotQuest.objects.filter(language_names__icontains=quest_name)
         if not quests.exists():
             msg = '找不到任务"{}"，请检查后查询'.format(quest_name)
         else:
-            quest = quests[0]
+            quest = max(quests, key=lambda x: SequenceMatcher(None, str(x), quest_name).ratio())
             if quest.is_main_scenario():
                 quest_img_url = (
                     "https://huiji-public.huijistatic.com/ff14/uploads/4/4a/061432.png"

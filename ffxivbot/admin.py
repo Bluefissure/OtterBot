@@ -11,8 +11,8 @@ class QQGroupAdmin(admin.ModelAdmin):
 
 class CustomReplyAdmin(admin.ModelAdmin):
     list_display = ("group", "key", "value")
-    list_filter = ["group__group_id"]
     search_fields = ["group__group_id", "key", "value"]
+    raw_id_fields = ["group"]
 
 
 class ChatMessageAdmin(admin.ModelAdmin):
