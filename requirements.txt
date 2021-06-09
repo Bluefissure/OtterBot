@@ -1,6 +1,6 @@
 beautifulsoup4==4.6.0
 bs4==0.0.1
-Django==2.2.21
+Django==2.2.22
 mysqlclient==1.4.6
 pytz==2018.3
 requests>=2.20.0
