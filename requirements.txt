@@ -8,7 +8,7 @@ uWSGI>=2.0.17
 channels==2.3.1
 channels-redis>=2.2.1
 websocket-client==0.53.0
-websockets==6.0
+websockets==9.1
 dice==2.3.5
 pika==0.13.1
 requests-cache==0.4.13
