@@ -1,4 +1,5 @@
 import time
+from datetime import timedelta
 import json
 from .models import QQGroup, QQBot, QQUser
 from .api_caller import ApiCaller
@@ -18,11 +19,12 @@ class EventHandler(object):
         already_reply = False
         user_id = receive["user_id"]
         if QQBot.objects.filter(user_id=user_id).exists():
-            print("{} reply from another bot:{}".format(receive["self_id"], user_id))
+            # print("{} reply from another bot:{}".format(receive["self_id"], user_id))
             return
         (user, created) = QQUser.objects.get_or_create(user_id=user_id)
         if 0 < time.time() < user.ban_till:
-            raise Exception("User {} get banned till {}".format(user_id, user.ban_till))
+            delta = timedelta(seconds= user.ban_till - time.time())
+            raise Exception("User {} get banned for {}".format(user_id, delta))
 
         # replace alter commands
         for (alter_command, command) in handlers.alter_commands.items():
@@ -44,6 +46,8 @@ class EventHandler(object):
         # Handle QQGroupCommand_*
         if receive["message_type"] == "group":
             group_id = receive["group_id"]
+            # get sender's user_info
+            user_info = receive.get("sender")
             (group, group_created) = QQGroup.objects.get_or_create(group_id=group_id)
             # self-ban in group
             if int(time.time()) < group.ban_till:
@@ -93,8 +97,6 @@ class EventHandler(object):
                         post_type=receive.get("reply_api_type", "websocket"),
                         channel_id=receive.get("channel_id", ""),
                     )
-                # get sender's user_info
-                user_info = receive.get("sender")
                 if not user_info or ("role" not in user_info):
                     user_info = None
                 if member_list and not user_info:

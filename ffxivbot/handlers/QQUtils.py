@@ -420,6 +420,8 @@ def check_raid(api_url, raid_data, raid_name, wol_name, server_name):
 
 
 def text2img(text):
+    text = text.strip()
+    # print("=====\n{}\n=====".format(text))
     font = ImageFont.truetype(
         os.path.join(
             os.path.dirname(os.path.abspath(__file__)), "resources/font/msyh.ttc",
@@ -427,16 +429,24 @@ def text2img(text):
         20,
     )
     lines = text.split("\n")
+    # while "" in lines:
+    #     lines.remove("")
+    # text = "\n".join(lines)
     img_height = 0
+    last_height = 0
     img_width = 0
+    border = 10
+    _, height = font.getsize(text)
     for line in lines:
-        width, height = font.getsize(line)
+        # print("{}:\t{}".format(img_height + border, line))
+        width, _ = font.getsize(line)
         img_width = max(img_width, width)
         img_height += height
-    border = 10
     img = PILImage.new(
         "RGB", (img_width + 2 * border, img_height + 2 * border), color="white"
     )
+
+    # print((img_width + 2 * border, img_height + 2 * border))
     d = ImageDraw.Draw(img)
     d.text((border, border), text, font=font, fill="#000000")
     output_buffer = io.BytesIO()
@@ -444,6 +454,7 @@ def text2img(text):
     byte_data = output_buffer.getvalue()
     base64_str = base64.b64encode(byte_data).decode("utf-8")
     msg = "[CQ:image,file=base64://{}]\n".format(base64_str)
+    # print("=====\nbase64://{}\n=====".format(base64_str))
     return msg
 
 class TagCompletion(object):

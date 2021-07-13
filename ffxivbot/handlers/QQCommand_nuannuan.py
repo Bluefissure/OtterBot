@@ -63,6 +63,10 @@ def QQCommand_nuannuan(*args, **kwargs):
                 msg = "无法查询到有效数据，请稍后再试"
             else:
                 msg = [{"type": "share", "data": res_data}]
+                if receive.get("message", "").endswith("image"):
+                    res_str = "\n".join([res_data["title"], res_data["content"]])
+                    msg = text2img(res_str)
+                    msg += res_data["url"]
                 # print(msg)
         except Exception as e:
             msg = "Error: {}".format(type(e))
