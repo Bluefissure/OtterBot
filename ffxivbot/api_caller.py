@@ -82,16 +82,16 @@ class ApiCaller(object):
             **kwargs,
         )
 
-    def send_message(self, private_group, uid, message, **kwargs):
-        if private_group == "group":
+    def send_message(self, target_type, uid, message, **kwargs):
+        if target_type == "group":
             self.call_api(
                 "send_group_msg", {"group_id": uid, "message": message}, **kwargs
             )
-        if private_group == "discuss":
+        if target_type == "discuss":
             self.call_api(
                 "send_discuss_msg", {"discuss_id": uid, "message": message}, **kwargs
             )
-        if private_group == "private":
+        if target_type == "private":
             self.call_api(
                 "send_private_msg", {"user_id": uid, "message": message}, **kwargs
             )

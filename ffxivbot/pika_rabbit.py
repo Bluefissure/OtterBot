@@ -181,7 +181,6 @@ class PikaConsumer(object):
             api_caller = ApiCaller(bot)
             event_handler = EventHandler(bot, api_caller)
             config = json.load(open(CONFIG_PATH, encoding="utf-8"))
-            already_reply = False
             if (
                 receive["post_type"] == "meta_event"
                 and receive["meta_event_type"] == "heartbeat"

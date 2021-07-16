@@ -202,20 +202,20 @@ class EventHandler(object):
             )
         # Handle /ping
         if receive["message"].startswith("/ping"):
-            time_from_receive = receive["time"]
-            if time_from_receive > 3000000000:
-                time_from_receive = time_from_receive / 1000
+            time_receive = receive["time"]
+            if time_receive > 3000000000:
+                time_from_receive = time_receive / 1000
             msg = ""
             if "detail" in receive["message"]:
                 msg += "[CQ:at,qq={}]\nclient->server: {:.2f}s\nserver->rabbitmq: {:.2f}s\nhandle init: {:.2f}s".format(
                     receive["user_id"],
-                    receive["consumer_time"] - time_from_receive,
+                    receive["consumer_time"] - time_receive,
                     receive["pika_time"] - receive["consumer_time"],
                     time.time() - receive["pika_time"],
                 )
             else:
                 msg += "[CQ:at,qq={}] {:.2f}s".format(
-                    receive["user_id"], time.time() - time_from_receive
+                    receive["user_id"], time.time() - time_receive
                 )
             msg = msg.strip()
             # print(("{} calling command: {}".format(user_id, "/ping")))
