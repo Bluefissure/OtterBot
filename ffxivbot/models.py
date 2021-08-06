@@ -388,9 +388,9 @@ class Image(models.Model):
             self.path = o.path
             self.url = url
             self.save(update_fields=["domain", "path", "url"])
-        if ".loli.net" in self.domain or ".loli.net" in self.url:
-            self.domain = self.domain.replace(".loli.net", ".loli.io")
-            self.url = self.url.replace(".loli.net", ".loli.io")
+        if "i.loli.io" in self.domain or "i.loli.io" in self.url:
+            self.domain = self.domain.replace("i.loli.io", "i.loli.net")
+            self.url = self.url.replace("i.loli.io", "i.loli.net")
             self.save(update_fields=["domain", "url"])
         return self.url if self.url else (self.domain + self.path)
 
