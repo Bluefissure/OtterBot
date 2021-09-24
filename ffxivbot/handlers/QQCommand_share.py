@@ -66,7 +66,7 @@ def QQCommand_share(*args, **kwargs):
                 content = content.replace("_confirm","",1)
                 content = "✨投稿✨\n"+content
                 if img_url:
-                    cqimg_pattern = r"\[CQ:image,file=([A-F0-9]+.(jpg|png|jpeg|webp|bmp|gif)),url=((\w+:\/\/)[-a-zA-Z0-9:@;?&=\/%\+\.\*!'\(\),\$_\{\}\^~\[\]`#|]+)\]"
+                    cqimg_pattern = r"\[CQ:(?:image),.*(?:url|file)=(https?://.*)\]" 
                     content = re.sub(cqimg_pattern, "", content)
                     data = {
                         "access_token": WEIBO_TOKEN,

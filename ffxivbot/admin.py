@@ -102,8 +102,8 @@ class SorryGIFAdmin(admin.ModelAdmin):
 
 
 class QQUserAdmin(admin.ModelAdmin):
-    list_display = ("user_id", "bot_token")
-    search_fields = ["user_id"]
+    list_display = ("user_id", "nickname", "dbuser")
+    search_fields = ["user_id", "nickname"]
 
 
 class HsoAlterNameAdmin(admin.ModelAdmin):
@@ -161,7 +161,7 @@ class MonsterAdmin(admin.ModelAdmin):
 
 class HuntLogAdmin(admin.ModelAdmin):
     list_display = ["monster", "hunt_group", "server", "log_type", "time"]
-    search_fields = ["monster ", "hunt_group", "log_type"]
+    search_fields = ["monster", "hunt_group", "log_type"]
     list_filter = ["monster", "hunt_group", "server", "log_type"]
     raw_id_fields = ["hunt_group"]
 
