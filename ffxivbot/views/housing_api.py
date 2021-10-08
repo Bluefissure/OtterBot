@@ -1,19 +1,15 @@
-import logging
-import os
+
 import re
-import requests
-from time import strftime
-from asgiref.sync import async_to_sync
-from django.http import HttpResponse, JsonResponse
-from django.views.decorators.csrf import csrf_exempt
-from channels.layers import get_channel_layer
-from ffxivbot.models import *
-from ffxivbot.webapi import github_webhook, webapi
+import json
 import hashlib
+from django.http import HttpResponse
+from django.views.decorators.csrf import csrf_exempt
+from ffxivbot.models import HousingPreset
 
 
 @csrf_exempt
 def housing_api(req):
+    # All http status here are 200 because other status will raise a C# webclient error
     base_api_regex = r"^\/housing\/api\/"
     if req.method == "POST":
         if re.match(base_api_regex + r"index\.php", req.path):
