@@ -3,9 +3,6 @@ from .QQGroupEventHandler import QQGroupEventHandler
 
 commands = {
     "/cat": "云吸猫",
-    "/gakki": "云吸gakki",
-    "/10": "云吸十元",
-    "/bird": "云吸飞鸟",
     "/waifu": "云吸二次元老婆",
     "/image": "獭獭传图",
     "/comment": "给作者留言",
@@ -120,16 +117,13 @@ from .QQCommand_weather import QQCommand_weather
 from .QQCommand_genshin import QQCommand_genshin
 
 # Universal Commands
-from .QQCommand_10 import QQCommand_10
 from .QQCommand_about import QQCommand_about
 from .QQCommand_abv import QQCommand_abv
 from .QQCommand_anime import QQCommand_anime
-from .QQCommand_bird import QQCommand_bird
 from .QQCommand_cat import QQCommand_cat
 from .QQCommand_chp import QQCommand_chp
 from .QQCommand_dice import QQCommand_dice
 from .QQCommand_duilian import QQCommand_duilian
-from .QQCommand_gakki import QQCommand_gakki
 from .QQCommand_gif import QQCommand_gif
 from .QQCommand_hhsh import QQCommand_hhsh  # be sure to come before /hh
 from .QQCommand_hh import QQCommand_hh  # FFXIV Command

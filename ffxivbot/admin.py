@@ -161,7 +161,7 @@ class MonsterAdmin(admin.ModelAdmin):
 
 class HuntLogAdmin(admin.ModelAdmin):
     list_display = ["monster", "hunt_group", "server", "log_type", "time"]
-    search_fields = ["monster", "hunt_group", "log_type"]
+    search_fields = ["hunt_group__group__group_id"]
     list_filter = ["monster", "hunt_group", "server", "log_type"]
     raw_id_fields = ["hunt_group"]
 

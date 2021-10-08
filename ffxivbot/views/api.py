@@ -2,6 +2,7 @@ import logging
 import os
 import re
 import requests
+import redis
 
 from time import strftime
 
@@ -26,7 +27,8 @@ def get_matcha_nm_name(req):
                 fate_id = incoming_data.get("fate")
                 nm_name = nm_id2name(fate_id)
             else:
-                print("Won't handle fate event other than 'start'.")
+                pass
+                # print("Won't handle fate event other than 'start'.")
     except JSONDecodeError:
         pass
     return nm_name
@@ -43,7 +45,8 @@ def get_matcha_fate_name(req):
                 fate_id = incoming_data.get("fate")
                 fate_name = fate_id2name(fate_id)
             else:
-                print("Won't handle fate event other than 'start'.")
+                pass
+                # print("Won't handle fate event other than 'start'.")
     except JSONDecodeError:
         pass
     return fate_name
@@ -53,9 +56,9 @@ def get_matcha_fate_name(req):
 def api(req):
     httpresponse = None
     if req.method == "POST":
-        print("GET:{}".format(req.GET))
+        # print("GET:{}".format(req.GET))
         tracker = req.GET.get("tracker")
-        print("tracker:{}".format(tracker))
+        # print("tracker:{}".format(tracker))
         trackers = tracker.split(",")
         if tracker:
             if "ffxiv-eureka" in trackers:
@@ -87,7 +90,7 @@ def api(req):
                             ws.close()
                             httpresponse = HttpResponse("OK", status=200)
                     else:
-                        print("no nm_name")
+                        # print("no nm_name")
                         return HttpResponse("No NM name provided", status=500)
             if "ffxivsc" in trackers:
                 key = req.GET.get("key")
@@ -356,50 +359,52 @@ def api(req):
                                             monster, server
                                         )
                                     )
-                                    
-                                    with transaction.atomic():
-                                        if HuntLog.objects.filter(
+                                    r = redis.Redis(host="localhost", port=6379, decode_responses=True)
+                                    hunt_log_hash = hashlib.md5(
+                                        "hunt_log|{}|{}|{}|{}".format(
+                                            monster,
+                                            server,
+                                            hunt_group.group.group_id,
+                                            "kill"
+                                        ).encode()).hexdigest()
+                                
+                                    if r.get(hunt_log_hash):
+                                        msg = '{}——"{}" 已在一分钟内记录上报，此次API调用被忽略'.format(
+                                            server,
+                                            monster,
+                                            time.strftime(
+                                                "%Y-%m-%d %H:%M:%S",
+                                                time.localtime(timestamp),
+                                            ),
+                                        )
+                                        success = False
+                                    else:
+                                        r.set(hunt_log_hash, time.time(), ex=60)
+                                        hunt_log = HuntLog(
                                             monster=monster,
-                                            server=server,
                                             hunt_group=hunt_group,
+                                            server=server,
                                             log_type="kill",
-                                            time__gt=timestamp - 60,
-                                        ).exists():
-                                            msg = '{}——"{}" 已在一分钟内记录上报，此次API调用被忽略'.format(
-                                                server,
-                                                monster,
-                                                time.strftime(
-                                                    "%Y-%m-%d %H:%M:%S",
-                                                    time.localtime(timestamp),
-                                                ),
-                                            )
-                                            success = False
-                                        else:
-                                            hunt_log = HuntLog(
-                                                monster=monster,
-                                                hunt_group=hunt_group,
-                                                server=server,
-                                                log_type="kill",
-                                                time=timestamp,
-                                            )
-                                            hunt_log.save()
-                                            msg = '{}——"{}" 击杀时间: {}'.format(
-                                                hunt_log.server,
-                                                monster,
-                                                time.strftime(
-                                                    "%Y-%m-%d %H:%M:%S",
-                                                    time.localtime(timestamp),
-                                                ),
-                                            )
-                                            at_msg = (
-                                                "[CQ:at,qq={}]".format(qquser.user_id)
-                                                if req.GET.get("at", "true") == "true"
-                                                else str(qquser.user_id)
-                                            )
-                                            msg = at_msg + "通过API更新了如下HuntLog:\n{}".format(
-                                                msg
-                                            )
-                                            success = True
+                                            time=timestamp,
+                                        )
+                                        hunt_log.save()
+                                        msg = '{}——"{}" 击杀时间: {}'.format(
+                                            hunt_log.server,
+                                            monster,
+                                            time.strftime(
+                                                "%Y-%m-%d %H:%M:%S",
+                                                time.localtime(timestamp),
+                                            ),
+                                        )
+                                        at_msg = (
+                                            "[CQ:at,qq={}]".format(qquser.user_id)
+                                            if req.GET.get("at", "true") == "true"
+                                            else str(qquser.user_id)
+                                        )
+                                        msg = at_msg + "通过API更新了如下HuntLog:\n{}".format(
+                                            msg
+                                        )
+                                        success = True
                                 else:
                                     at_msg = (
                                         "[CQ:at,qq={}]".format(qquser.user_id)
@@ -469,7 +474,7 @@ def api(req):
             if "webapi" in trackers:
                 qq = req.GET.get("qq")
                 token = req.GET.get("token")
-                print("qq:{}\ntoken:{}".format(qq, token))
+                # print("qq:{}\ntoken:{}".format(qq, token))
                 if qq and token:
                     qquser = None
                     try:
@@ -730,9 +735,9 @@ def handle_hunt_msg(msg):
     if msg.find("hunt") != 0:
         return msg
     new_msg = msg.replace("hunt", "", 1)
-    print(new_msg)
+    # print(new_msg)
     segs = new_msg.split("|")
-    print(segs)
+    # print(segs)
     if len(segs) < 3:
         return msg
     map_name = segs[0].strip()
@@ -744,5 +749,5 @@ def handle_hunt_msg(msg):
         new_msg += "\nMap:https://map.wakingsands.com/#f=mark&x={}&y={}&id={}".format(
             x, y, t.mapid
         )
-    print(new_msg)
+    # print(new_msg)
     return new_msg

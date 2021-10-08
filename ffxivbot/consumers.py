@@ -143,10 +143,8 @@ class WSConsumer(AsyncWebsocketConsumer):
 
     async def disconnect(self, close_code):
         LOGGER.info(
-            "Universal Channel disconnect from {} in channel:{} -- No feedback for {}s".format(
-                self.bot.user_id,
-                self.channel_name,
-                int(time.time()) - int(self.bot.event_time),
+            "Universal Channel disconnect from channel:{}".format(
+                self.channel_name
             )
         )
         self.pub.exit()
