@@ -15,7 +15,7 @@ requests-cache==0.4.13
 tqdm==4.31.1
 cryptography==3.3.2
 feedparser==5.2.1
-opencv-python==4.1.2.30
+opencv-python==4.2.0.32
 numpy==1.16.3
 Pillow>=7.1.0
 python-socketio==4.6.0
