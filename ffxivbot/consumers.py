@@ -152,6 +152,7 @@ class WSConsumer(AsyncWebsocketConsumer):
 
     async def receive(self, text_data):
         receive = json.loads(text_data)
+        print(receive)
 
         if "post_type" in receive.keys():
             self.bot.event_time = int(time.time())
@@ -167,6 +168,18 @@ class WSConsumer(AsyncWebsocketConsumer):
                 self_id = receive["self_id"]
 
                 if "message" in receive.keys():
+                    if isinstance(receive["message"], list):
+                        msg = ""
+                        for block in receive["message"]:
+                            if block["type"] == "text":
+                                msg += block["data"]["text"]
+                            elif block["type"] == "image":
+                                msg += "[CQ:image,file={}]".format(
+                                            block["data"].get("url", block["data"]["file"])
+                                        )
+                            elif block["type"] == "face":
+                                msg += "[CQ:face,id={}]".format(block["data"]["id"])
+                        receive["message"] = msg
                     priority = 1
                     push_to_mq = True
                     if "group_id" in receive:
