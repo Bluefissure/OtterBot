@@ -33,7 +33,7 @@ commands = {
     "/bot": "机器人相关功能",
     "/ifttt": "IFTTT推送系统",
     "/akhr": "罗德岛公开招募",
-    "/share": "发送微博分享",
+    #"/share": "发送微博分享",
     # "/trash":"你是什么垃圾？",
     "/shorten": "微博短链",
     # "/mxh": '梅溪湖cp短打生成器（"/mxh 海德林 佐迪亚克"）',
@@ -137,7 +137,7 @@ from .QQCommand_luck import QQCommand_luck
 # from .QQCommand_mxh import QQCommand_mxh
 from .QQCommand_pixiv import QQCommand_pixiv
 from .QQCommand_random import QQCommand_random
-from .QQCommand_share import QQCommand_share
+#from .QQCommand_share import QQCommand_share
 from .QQCommand_shorten import QQCommand_shorten
 from .QQCommand_tex import QQCommand_tex
 from .QQCommand_trash import QQCommand_trash

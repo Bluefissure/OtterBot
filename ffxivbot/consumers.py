@@ -179,6 +179,8 @@ class WSConsumer(AsyncWebsocketConsumer):
                                         )
                             elif block["type"] == "face":
                                 msg += "[CQ:face,id={}]".format(block["data"]["id"])
+                            elif block["type"] == "at":
+                                msg += "[CQ:at,qq={}]".format(block["data"]["qq"])
                         receive["message"] = msg
                     priority = 1
                     push_to_mq = True

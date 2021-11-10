@@ -1,6 +1,7 @@
 from .QQEventHandler import QQEventHandler
 from .QQUtils import *
 from ffxivbot.models import *
+from difflib import SequenceMatcher
 import logging
 import json
 import random
@@ -56,7 +57,8 @@ def get_item_id(item_name, name_lang=""):
     r = requests.get(url, timeout=3)
     j = r.json()
     if len(j["Results"]) > 0:
-        return j["Results"][0]["Name"], j["Results"][0]["ID"]
+        result = max(j["Results"], key=lambda x: SequenceMatcher(None, x["Name"], item_name).ratio())
+        return result["Name"], result["ID"]
     return "", -1
 
 
