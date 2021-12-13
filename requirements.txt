@@ -23,4 +23,4 @@ PyYAML==5.4
 redis==3.1.0
 jieba==0.39
 wordcloud==1.8.0
-lxml==4.6.3
+lxml==4.6.5
