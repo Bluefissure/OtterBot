@@ -284,7 +284,7 @@ class EventHandler(object):
                     )
 
     def on_request(self, receive, **kwargs):
-        print("on_request:{}".format(json.dumps(receive)))
+        # print("on_request:{}".format(json.dumps(receive)))
         bot = self.bot
         config = kwargs.get("config")
         config_group_id = config["CONFIG_GROUP_ID"]
@@ -293,9 +293,9 @@ class EventHandler(object):
             flag = receive["flag"]
             if bot.auto_accept_friend:
                 reply_data = {"flag": flag, "approve": True}
-                print(
-                    "calling set_friend_add_request:{}".format(json.dumps(reply_data))
-                )
+                # print(
+                #     "calling set_friend_add_request:{}".format(json.dumps(reply_data))
+                # )
                 self.api_caller.call_api(
                     "set_friend_add_request",
                     reply_data,
@@ -310,7 +310,7 @@ class EventHandler(object):
                     "sub_type": "invite",
                     "approve": True,
                 }
-                print("calling set_group_add_request:{}".format(json.dumps(reply_data)))
+                # print("calling set_group_add_request:{}".format(json.dumps(reply_data)))
                 self.api_caller.call_api(
                     "set_group_add_request",
                     reply_data,
@@ -326,7 +326,7 @@ class EventHandler(object):
             qs = QQBot.objects.filter(owner_id=user_id)
             if qs.count() > 0:
                 reply_data = {"flag": flag, "sub_type": "add", "approve": True}
-                print("calling set_group_add_request:{}".format(json.dumps(reply_data)))
+                # print("calling set_group_add_request:{}".format(json.dumps(reply_data)))
                 self.api_caller.call_api(
                     "set_group_add_request",
                     reply_data,
@@ -349,8 +349,10 @@ class EventHandler(object):
     def on_notice(self, receive, **kwargs):
         # print("on_notice:{}".format(json.dumps(receive)))
         bot = self.bot
-        if receive.get("notice_type") == "group_increase" or (
-            receive.get("notice_type") == "group"
+        notice_type = receive.get("notice_type", "")
+        sub_type = receive.get("sub_type", "")
+        if notice_type == "group_increase" or (
+            notice_type == "group"
             and receive.get("sub_type") == "increase"
         ):
             group_id = receive["group_id"]
@@ -373,11 +375,18 @@ class EventHandler(object):
             except Exception as e:
                 traceback.print_exc()
 
-        if receive.get("notice_type") == "group_admin" or (
-            receive.get("notice_type") == "group" and receive.get("sub_type") == "admin"
+        if notice_type == "group_admin" or (
+            notice_type == "group" and sub_type == "admin"
         ):
             self.api_caller.update_group_member_list(
                 receive["group_id"],
                 post_type=receive.get("reply_api_type", "websocket"),
                 channel_id=receive.get("channel_id", ""),
             )
+        if notice_type == "message_reactions_updated":
+            guild_id = receive.get("guild_id", "")
+            channel_id = receive.get("channel_id", "")
+            operator_id = receive.get("operator_id", "")
+            print(f"=== {guild_id}|{channel_id}: {operator_id} ===")
+            print(json.dumps(receive, indent=2))
+

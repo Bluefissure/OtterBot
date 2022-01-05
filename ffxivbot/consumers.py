@@ -152,7 +152,6 @@ class WSConsumer(AsyncWebsocketConsumer):
 
     async def receive(self, text_data):
         receive = json.loads(text_data)
-        print(receive)
 
         if "post_type" in receive.keys():
             self.bot.event_time = int(time.time())

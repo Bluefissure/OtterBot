@@ -47,8 +47,7 @@ def qqpost(req):
             pub = PikaPublisher()
             sig = hmac.new(str(bot.access_token).encode(), req.body, 'sha1').hexdigest()
             received_sig = req.META.get("HTTP_X_SIGNATURE", "NULL")[len('sha1='):]
-            # print(req.META)
-            # print("sig:{}\nreceived_sig:{}".format(sig, received_sig))
+            print("sig:{}\nreceived_sig:{}".format(sig, received_sig))
             if (sig == received_sig):
                 # print("QQBot {}:{} authencation success".format(bot, self_id))
                 if "post_type" in receive.keys():
@@ -103,7 +102,7 @@ def qqpost(req):
                                     return HttpResponse("Request sent to MQ", status=200)
                             return HttpResponse("Request message omitted", status=200)
 
-                        if receive["post_type"] == "request" or receive["post_type"] == "event":
+                        if receive["post_type"] in ["request", "event", "notice"]:
                             priority = 3
                             text_data = json.dumps(receive)
                             pub.send(text_data, priority)
@@ -111,6 +110,7 @@ def qqpost(req):
 
                     except Exception as e:
                         traceback.print_exc()
+                        LOGGER.error(e)
                 else:
                     bot.api_time = int(time.time())
                     bot.save(update_fields=["api_time"])
@@ -164,10 +164,9 @@ def qqpost(req):
                     # bot.save()
             else:
                 print("QQBot {}:{} authencation failed".format(bot, self_id))
-                return HttpResponse("Wrong HTTP_X_SIGNATURE", status=500)
+                return HttpResponse("Wrong HTTP_X_SIGNATURE", status=401)
+        LOGGER.error(f"error_msg:{error_msg}")
         return HttpResponse(error_msg, status=500)
     except Exception as e:
         traceback.print_exc()
-        # print("request body:")
-        # print(req.body.decode())
         return HttpResponse("Server error:{}".format(type(e)), status=500)

@@ -1,4 +1,5 @@
 from django.contrib import admin
+import json
 from .models import *
 
 # Register your models here.
@@ -192,9 +193,10 @@ class TomonBotAdmin(admin.ModelAdmin):
 
 
 class CommandLogAdmin(admin.ModelAdmin):
-    list_display = ["time", "command", "user_id", "bot_id", "group_id"]
+    list_display = ["time", "command", "message_info", "user_id", "bot_id", "group_id"]
     search_fields = ["command", "user_id", "bot_id", "group_id"]
     list_filter = ["command"]
+
 
 class HousingPresetAdmin(admin.ModelAdmin):
     list_display = ["items_hash", "name", "tags",  "uploader"]

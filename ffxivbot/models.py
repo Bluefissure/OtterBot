@@ -498,6 +498,11 @@ class CommandLog(models.Model):
     user_id = models.CharField(max_length=64)
     group_id = models.CharField(max_length=64)
 
+    @property
+    def message_info(self):
+        j = json.loads(self.message)
+        return j.get("params", {}).get("message", "")
+
 
 class HuntGroup(models.Model):
     name = models.CharField(default="", max_length=64)

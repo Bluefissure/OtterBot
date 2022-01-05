@@ -14,7 +14,7 @@ def bfs_quest(quest):
 
     Q = Queue()
     Q.put(quest)
-    now_main_scenario = "拂晓回归主线任务(5.X)"
+    now_main_scenario = "Endwalker主线任务(6.0)"
     # back search
     back_cnt = 0
     visited = set()
@@ -64,9 +64,20 @@ def QQCommand_quest(*args, **kwargs):
         if not quests.exists():
             quests = PlotQuest.objects.filter(language_names__icontains=quest_name)
         if not quests.exists():
+            quests = []
+            all_quests = PlotQuest.objects.all()
+            for q in all_quests:
+                jname = json.loads(q.language_names)
+                for k, v in jname.items():
+                    if quest_name in v:
+                        quests.append(q)
+        else:
+            quests = list(quests)
+        if not quests:
             msg = '找不到任务"{}"，请检查后查询'.format(quest_name)
         else:
             quest = max(quests, key=lambda x: SequenceMatcher(None, str(x), quest_name).ratio())
+            print(quest)
             if quest.is_main_scenario():
                 quest_img_url = (
                     "https://huiji-public.huijistatic.com/ff14/uploads/4/4a/061432.png"
@@ -88,9 +99,10 @@ def QQCommand_quest(*args, **kwargs):
                     "https://huiji-public.huijistatic.com/ff14/uploads/6/61/061431.png"
                 )
                 content = "支线任务"
+            lname = json.loads(quest.language_names)
             url = "https://ff14.huijiwiki.com/wiki/{}".format(
                 urllib.parse.quote("任务:" + str(quest))
-            )
+            ) if "cn" in lname else ("https://www.garlandtools.org/db/#quest/{}".format(quest.id))
             msg = [
                 {
                     "type": "share",

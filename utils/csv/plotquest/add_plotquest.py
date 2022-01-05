@@ -25,6 +25,7 @@ import base64
 import logging
 import csv
 import argparse
+import traceback
 from tqdm import tqdm
 
 
@@ -63,14 +64,15 @@ def import_plotquest_from_csv(csv_file, **kwargs):
             else:
                 quest_id = int(row[key_list.index("#")])
                 quest_name = row[key_list.index("Name")].strip()
-                quest_type = row[key_list.index("EventIconType")]
+                quest_type = int(row[key_list.index("EventIconType")] or 0)
                 if not quest_name:
                     continue
                 (quest, created) = PlotQuest.objects.get_or_create(id=quest_id)
                 new_name = (
                     quest_name.replace("\ue0be", "").replace("\ue0bf", "").strip()
                 )
-                quest.name = new_name
+                if language == "cn" or created:
+                    quest.name = new_name
                 quest.quest_type = quest_type
                 lname = json.loads(quest.language_names)
                 lname.update({language: new_name})
