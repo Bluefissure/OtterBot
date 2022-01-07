@@ -18,7 +18,7 @@ commands = {
     "/duilian": '对联（"/duilian 稻花香里说丰年"）',
     "/tex": '生成tex图片（"/tex e^{\\pi i}+1=0"）',
     "/gate": '挖宝选门（"/gate 3"）',
-    "/treasure": "宝图搜寻",
+    #"/treasure": "宝图搜寻",
     "/search": '查询物品("/search 神龙")',
     "/market": '交易板数据("/market item 2级刚力之幻药")',
     "/weather": '天气信息("/weather 优雷卡恒冰之地")',
@@ -93,7 +93,7 @@ alter_commands = {
     "/坚韧": "/fsx 坚韧",
     "/直击": "/fsx 直击",
     "/天气": "/weather",
-    "/宝图": "/treasure",
+    #"/宝图": "/treasure",
     "/nuannuan": "/nuannuan text",
     "/nn": "/nuannuan",
     "/mitem": "/market item",
@@ -110,7 +110,7 @@ from .QQCommand_ofish import QQCommand_ofish
 from .QQCommand_quest import QQCommand_quest
 from .QQCommand_raid import QQCommand_raid
 from .QQCommand_search import QQCommand_search
-from .QQCommand_treasure import QQCommand_treasure
+#from .QQCommand_treasure import QQCommand_treasure
 from .QQCommand_weather import QQCommand_weather
 
 # Genshin Commands
