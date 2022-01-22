@@ -204,7 +204,7 @@ class EventHandler(object):
         if receive["message"].startswith("/ping"):
             time_receive = receive["time"]
             if time_receive > 3000000000:
-                time_from_receive = time_receive / 1000
+                time_receive = time_receive / 1000
             msg = ""
             if "detail" in receive["message"]:
                 msg += "[CQ:at,qq={}]\nclient->server: {:.2f}s\nserver->rabbitmq: {:.2f}s\nhandle init: {:.2f}s".format(
