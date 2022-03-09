@@ -13,7 +13,7 @@ commands = {
     "/anime": '以图搜番（"/anime 图片"）',
     "/gif": '生成沙雕图（"/gif help"）',
     "/dice": 'DnD掷骰子（"/dice 3d12"）',
-    "/pixiv": 'Pixiv相关功能（"/pixiv help"）',
+    #"/pixiv": 'Pixiv相关功能（"/pixiv help"）',
     # "/music":"网易云音乐搜索（\"/music 届不到的恋\"）",
     "/duilian": '对联（"/duilian 稻花香里说丰年"）',
     "/tex": '生成tex图片（"/tex e^{\\pi i}+1=0"）',
@@ -24,11 +24,12 @@ commands = {
     "/weather": '天气信息("/weather 优雷卡恒冰之地")',
     "/fsx": '副属性计算（"/fsx 直击"）',
     "/dps": 'DPS排名（"/dps 8s 骑士"）',
+    #"/etro": '狒狒套装（"/etro <套装ID>"）',
     "/raid": '零式英雄榜（"/raid 蓝色裂痕 萌芽池"）',
     "/quest": '任务查询("/quest 狂乱前奏")',
     "/nuannuan": "本周金蝶暖暖作业",
-    "/genshin": "原神圣遗物评分",
-    "/hso": "好色哦",
+    #"/genshin": "原神圣遗物评分",
+    #"/hso": "好色哦",
     "/hhsh": "好好说话",
     "/bot": "机器人相关功能",
     "/ifttt": "IFTTT推送系统",
@@ -102,6 +103,7 @@ alter_commands = {
 
 # FFXIV Commands
 from .QQCommand_dps import QQCommand_dps
+from .QQCommand_etro import QQCommand_etro
 from .QQCommand_fsx import QQCommand_fsx
 from .QQCommand_gate import QQCommand_gate
 from .QQCommand_market import QQCommand_market

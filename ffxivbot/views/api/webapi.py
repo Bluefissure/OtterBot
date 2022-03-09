@@ -5,6 +5,7 @@ import requests
 from django.http import HttpResponse, JsonResponse
 from ffxivbot.models import QQUser, Territory, Weather, Boss, Job, Server
 from ffxivbot.handlers.QQUtils import getSpecificWeatherTimes, getFollowingWeathers, crawl_dps, search_item
+from ffxivbot.handlers.QQCommand_quest import search_quest
 
 def handle_webapi(req):
     qq = req.GET.get("qq")
@@ -232,6 +233,21 @@ def webapi(req):
                         "raid": raid_data,
                     },
                 }
+        elif request_type == "quest":  # 104X
+            name = req_data["name"]
+            search_res = search_quest(name)
+            if type(search_res) == str:
+                return {
+                    "response": "error",
+                    "msg": "Quest \"{}\" not found".format(name),
+                    "rcode": "1041",
+                }
+            res_dict = {
+                "response": "success",
+                "msg": "",
+                "rcode": "0",
+                "data": search_res if type(search_res) == str else search_res[0],
+            }
 
     except json.decoder.JSONDecodeError:
         res_dict = {"response": "error", "msg": "JSON decode error", "rcode": "103"}

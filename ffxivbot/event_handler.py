@@ -41,7 +41,11 @@ class EventHandler(object):
         if receive["message"].startswith("\\"):
             receive["message"] = receive["message"].replace("\\", "/", 1)
         if receive["message_type"] == "discuss":
-            discuss_id = receive["discuss_id"]
+            return
+        if receive["message_type"] == "private":
+            return
+
+        bot_commands = json.loads(bot.commands)
 
         # Handle QQGroupCommand_*
         if receive["message_type"] == "group":
@@ -74,6 +78,8 @@ class EventHandler(object):
                     command_enable = True
                     if group and group_commands:
                         command_enable = group_commands.get(k, "enable") == "enable"
+                    if bot_commands:
+                        command_enable = command_enable and bot_commands.get(k, "enable") == "enable"
                     if command_enable:
                         msg += "{}: {}\n".format(k, v)
                 msg = text2img(msg)
@@ -128,6 +134,8 @@ class EventHandler(object):
                 )
                 for command_key in group_command_keys:
                     if receive["message"].startswith(command_key):
+                        if (bot_commands and bot_commands.get(command_key, "enable") == "disable"):
+                            continue
                         if receive["message_type"] == "group" and group_commands:
                             if group_commands.get(command_key, "enable") == "disable":
                                 continue
@@ -184,6 +192,10 @@ class EventHandler(object):
                     command_enable = (
                         group_commands.get(k, "enable") == "enable"
                     )  # hide if disabled in group
+                if bot_commands:
+                    command_enable = command_enable and (
+                        bot_commands.get(k, "enable") == "enable"
+                    )  # hide if disabled in bot
                 if command_enable:
                     msg += "{}: {}\n".format(k, v)
             msg = text2img(msg)
@@ -204,7 +216,7 @@ class EventHandler(object):
         if receive["message"].startswith("/ping"):
             time_receive = receive["time"]
             if time_receive > 3000000000:
-                time_receive = time_receive / 1000
+                time_from_receive = time_receive / 1000
             msg = ""
             if "detail" in receive["message"]:
                 msg += "[CQ:at,qq={}]\nclient->server: {:.2f}s\nserver->rabbitmq: {:.2f}s\nhandle init: {:.2f}s".format(
@@ -230,13 +242,13 @@ class EventHandler(object):
             )
         # Handle QQCommand_*
         command_keys = sorted(handlers.commands.keys(), key=lambda x: -len(x))
+        
         for command_key in command_keys:
             if receive["message"].startswith(command_key):
                 if receive["message_type"] == "group":
-                    if (
-                        group_commands
-                        and group_commands.get(command_key, "enable") == "disable"
-                    ):
+                    if (group_commands and group_commands.get(command_key, "enable") == "disable"):
+                        continue
+                    if (bot_commands and bot_commands.get(command_key, "enable") == "disable"):
                         continue
                     if group_bots and str(receive["self_id"]) not in group_bots:
                         continue
@@ -244,7 +256,12 @@ class EventHandler(object):
                     handlers, "QQCommand_{}".format(command_key.replace("/", "", 1)),
                 )
                 action_list = handle_method(
-                    receive=receive, global_config=config, bot=bot
+                    receive=receive,
+                    global_config=config,
+                    bot=bot,
+                    commands=handlers.commands,
+                    group_commands=handlers.group_commands,
+                    alter_commands=handlers.alter_commands,
                 )
                 for action in action_list:
                     self.api_caller.call_api(

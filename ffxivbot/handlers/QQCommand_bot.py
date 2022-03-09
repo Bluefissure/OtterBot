@@ -1,6 +1,7 @@
 from .QQEventHandler import QQEventHandler
 from .QQUtils import *
 from ffxivbot.models import *
+import copy
 import traceback
 import logging
 import json
@@ -133,8 +134,36 @@ def QQCommand_bot(*args, **kwargs):
                 + "/bot hso: HSO开关\n"
             )
             msg = msg.strip()
+        elif receive_msg.startswith("command"):
+            if int(user_id) != int(bot.owner_id):
+                msg = "仅机器人领养者能修改机器人状态"
+            else:
+                COMMAND = copy.deepcopy(kwargs["commands"])
+                COMMAND.update(kwargs["group_commands"])
+                COMMAND.update(kwargs["alter_commands"])
+                COMMAND.update({"/chat": "聊天功能", "/reply": "自定义回复"})
+                COMMAND = COMMAND.keys()
+                bot_commands = json.loads(bot.commands)
+                args = receive_msg.replace("command", "").strip().split(" ")
+                while "" in args:
+                    args.remove("")
+                if len(args) == 0:
+                    msg = "请输入命令名称 \"enable /$command\" 或 \"disable /$command\" 或 \"list\""
+                elif args[0] == "enable" or args[0] == "disable":
+                    command = args[1]
+                    if command not in COMMAND:
+                        msg = "不存在的命令 \"{}\"".format(command)
+                    else:
+                        bot_commands[command] = args[0]
+                        bot.commands = json.dumps(bot_commands)
+                        bot.save(update_fields=["commands"])
+                        msg = "命令 \"{}\" 已{}".format(command, "启用" if args[0] == "enable" else "禁用")
+                elif args[0] == "list":
+                    msg = "命令列表 (未出现命令默认启用)：\n"
+                    for (k, v) in bot_commands.items():
+                        msg += "{}: {}\n".format(k, v)
         else:
-            msg = '无效的二级命令，二级命令有:"token","update","info","register","text","hso","api"'
+            msg = '无效的二级命令，二级命令有:"token","update","info","register","text","hso","api","command"'
 
         msg = msg.strip()
         if msg:

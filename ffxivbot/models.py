@@ -247,6 +247,7 @@ class QQBot(models.Model):
     command_stat = models.TextField(default="{}")
     share_banned = models.BooleanField(default=False)
     img_banned = models.BooleanField(default=False)
+    commands = models.TextField(default="{}")
 
     def __str__(self):
         return self.name
