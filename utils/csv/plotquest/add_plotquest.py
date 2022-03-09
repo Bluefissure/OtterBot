@@ -64,7 +64,8 @@ def import_plotquest_from_csv(csv_file, **kwargs):
             else:
                 quest_id = int(row[key_list.index("#")])
                 quest_name = row[key_list.index("Name")].strip()
-                quest_type = int(row[key_list.index("EventIconType")] or 0)
+                quest_type_str = row[key_list.index("EventIconType")].replace('EventIconType#', '')
+                quest_type = int(quest_type_str or 0)
                 if not quest_name:
                     continue
                 (quest, created) = PlotQuest.objects.get_or_create(id=quest_id)
