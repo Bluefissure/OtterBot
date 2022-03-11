@@ -5,84 +5,82 @@ import math
 import traceback
 import re
 
+def Critical(Crit):
+    Rate = ((int(200*(Crit-400)/1900)+50)/1000)*100
+    Strength = (int(200*(Crit-400)/1900)+1400)/1000
+    NextCrit,NextRate = Crit,Rate
+    while NextRate == Rate:
+        NextCrit +=1
+        NextRate = (int(200*(NextCrit-400)/1900)+50)/1000
+    return Rate, Strength, NextCrit
+def Direct(DH):
+    Rate = (int(550*(DH-400)/1900)/1000)*100
+    NextDH,NextRate = DH,Rate
+    while NextRate == Rate:
+        NextDH +=1
+        NextRate = int(550*(NextDH-400)/1900)/1000
+    return Rate,NextDH
+def Determination(Det):
+    Damage = (1000+int(140*(Det-390)/1900))/1000
+    NextDet,NextDamage = Det,Damage
+    while NextDamage == Damage:
+        NextDet +=1
+        NextDamage = (1000+int(140*(NextDet-390)/1900))/1000
+    return NextDamage,NextDet
+def Tenacity(Ten):
+    OutDamage = (1000+int(100*(Ten-400)/1900))/1000
+    InDamage = ((1000-int(100*(Ten-400)/1900))/1000)*100
+    NextTen,NextOutDamage = Ten,OutDamage
+    while NextOutDamage == OutDamage:
+        NextTen +=1
+        NextOutDamage = (1000+int(100*(NextTen-400)/1900))/1000
+    return OutDamage,InDamage,NextTen
+def Speed(Spe):
+    GCDList = ['1.5', '2.0', '2.5', '2.8', '3.0', '4.0']
+    result = []
+    for GCD in GCDList:
+        result.append((int(float(GCD)*1000*(1000+math.ceil(130*(400-Spe)/1900))/10000)/100))
+    GCDResult = dict(zip(GCDList,result))
+    GCDResult['DOT'] = (1000+int(130*(Spe-400)/1900))/1000
+    Next25,Next28,Next25speed,Next28speed = GCDResult['2.5'],GCDResult['2.8'],Spe,Spe
+    while Next25 == GCDResult['2.5']:
+        Next25speed +=1
+        Next25 = (int(2.5*1000*(1000+math.ceil(130*(400-Next25speed)/1900))/10000)/100)
+    while Next28 == GCDResult['2.8']:
+        Next28speed +=1
+        Next28 = (int(2.8*1000*(1000+math.ceil(130*(400-Next28speed)/1900))/10000)/100)
+    GCDResult['Next25speed'] = Next25speed
+    GCDResult['Next28speed'] = Next28speed
+    return GCDResult 
 def QQCommand_fsx(*args,**kwargs):
     try:
-        bot = kwargs["bot"]
-        receive = kwargs["receive"]
-        user_id = receive["user_id"]
+        Receive = kwargs["receive"]
         action_list = []
-        s_msg = receive["message"].replace("/fsx","",1).strip()
-        nlv = 3300
-        msg = '版本 5.0 Lv80 等级基数:3300\n'
-        match_list = re.findall(r'\d+',s_msg)
-        number = -1
-        if (match_list):
-            number = int(match_list[0])
-            number = min(number, 99999)
-            number = max(number, 0)
-        if s_msg.find("help")==0 or s_msg=="" or number < 0:
-            msg = '计算副属性,参数有暴击、直击、信念、坚韧、速度\n如：/fsx 暴击 2400'
+        s_msg = Receive["message"].replace("/fsx","",1).strip()
+        Msg = '版本 6.0 Lv90\n'
+        MatchList = re.findall(r'\d+',s_msg)
+        Number = -1
+        if (MatchList):
+            Number = int(MatchList[0])
+            Number = min(Number, 99999)
+            Number = max(Number, 390)
+        if s_msg.find("help")==0 or s_msg=="" or Number < 390:
+            Msg = '计算副属性,参数有暴击、直击、信念、坚韧、速度\n如：/fsx 暴击 2400\n参考地址https://www.akhmorning.com/allagan-studies/stats/'
         elif '暴击' in s_msg:
-            critical = number - 380
-            per = (math.floor(200 * critical/nlv) + 50)/10
-            bonus = (1000 + math.floor(200 * critical/nlv) + 400)/10
-            edmg = 1 + (per/100 * (bonus-100)/100)
-            per_tmp,cri_tmp = per,critical+380
-            while per_tmp == per:
-                cri_tmp += 1
-                per_tmp = (math.floor(200 * (cri_tmp-380)/nlv) + 50)/10
-            msg += '暴击 {} 的计算结果(基数:380)：\n暴击率：   {}%\n暴击伤害：   {}%\n预期收益：   {}\n下个临界点:暴击 {}'.format(critical+380,per,bonus,edmg,cri_tmp)
-          
+            Msg += '暴击 {0} 的计算结果：\n暴击率：{1[0]}%\n暴击伤害：{1[1]}\n下个临界点:暴击 {1[2]}'.format(Number,Critical(Number))
         elif '直击' in s_msg:
-            direct = number - 380
-            per = (math.floor(550 * direct/nlv))/10
-            per_tmp,dir_tmp = per,direct+380
-            while per_tmp == per:
-                dir_tmp += 1
-                per_tmp = (math.floor(550 * (dir_tmp-380)/nlv))/10
-            msg += '直击 {} 的计算结果(基数:380)：\n直击率：    {}%\n直击伤害固定为125%。\n下个临界点:直击 {}'.format(direct+380,per,dir_tmp)
-         
+            Msg += '直击 {0} 的计算结果：\n直击率：{1[0]}%\n直击伤害固定为125%。\n下个临界点:直击 {1[1]}'.format(Number,Direct(Number))
         elif '信念' in s_msg:
-            determination = number - 340
-            mult = (1000 + math.floor(130 * determination/nlv))/1000
-            mult_tmp,det_tmp = mult,determination+340
-            while mult_tmp == mult:
-                det_tmp += 1
-                mult_tmp = (1000 + math.floor(130 * (det_tmp-340)/nlv))/1000
-            msg += '信念 {} 的计算结果(基数:340)：\n伤害增益：{}倍\n下个临界点:信念 {}'.format(determination+340,mult,det_tmp)
-    
+            Msg += '信念 {0} 的计算结果：\n伤害增益：{1[0]}倍\n下个临界点:信念 {1[1]}'.format(Number,Determination(Number))
         elif '坚韧' in s_msg:
-            tenacity = number  - 380
-            mult = (1000 + math.floor(100 * tenacity/nlv))/1000
-            mit = (1000 - math.floor(100 * tenacity/nlv))/10
-            mult_tmp,ten_tmp = mult,tenacity+380
-            while mult_tmp == mult:
-                ten_tmp += 1
-                mult_tmp = (1000 + math.floor(100 * (ten_tmp-380)/nlv))/1000
-            msg += '坚韧 {} 的计算结果(基数:380)：\n伤害增益：{}倍（仅防护职业）\n受击伤害：{}%\n下个临界点:坚韧 {}'.format(tenacity+380,mult,mit,ten_tmp)
-  
+            Msg += '坚韧 {0} 的计算结果：\n伤害增益：{1[0]}倍（仅防护职业）\n受击伤害：{1[1]}%\n下个临界点:坚韧 {1[2]}'.format(Number,Tenacity(Number))
         elif '速' in s_msg:
-            speed = number - 380
-            mult = (1000 + math.floor(130 * speed/nlv))/1000  
-            cd_15 = math.floor(math.floor(100 * 100 * (math.floor(1500 * (1000 - math.floor(130 * speed/nlv))/1000)/1000))/100)/100
-            cd_20 = math.floor(math.floor(100 * 100 * (math.floor(2000 * (1000 - math.floor(130 * speed/nlv))/1000)/1000))/100)/100
-            cd_25 = math.floor(math.floor(100 * 100 * (math.floor(2500 * (1000 - math.floor(130 * speed/nlv))/1000)/1000))/100)/100
-            cd_28 = math.floor(math.floor(100 * 100 * (math.floor(2800 * (1000 - math.floor(130 * speed/nlv))/1000)/1000))/100)/100
-            cd_30 =  math.floor(math.floor(100 * 100 * (math.floor(3000 * (1000 - math.floor(130 * speed/nlv))/1000)/1000))/100)/100
-            cd_80 = math.floor(math.floor(100 * 100 * (math.floor(8000 * (1000 - math.floor(130 * speed/nlv))/1000)/1000))/100)/100
-            cd_25_tmp,cd_28_tmp,speed_tmp1,speed_tmp2 = cd_25,cd_28,speed+380,speed+380
-            while cd_25_tmp == cd_25:
-                speed_tmp1 += 1
-                cd_25_tmp = math.floor(math.floor(100 * 100 * (math.floor(2500 * (1000 - math.floor(130 * (speed_tmp1-380)/nlv))/1000)/1000))/100)/100
-            while cd_28_tmp == cd_28:
-                speed_tmp2 += 1
-                cd_28_tmp = math.floor(math.floor(100 * 100 * (math.floor(2800 * (1000 - math.floor(130 * (speed_tmp2-380)/nlv))/1000)/1000))/100)/100
-            msg += '速度 {} 的计算结果(基数:380)：\nDoT收益:    {}\n复唱:    {}s\n1.5s:    {}s\n2.0s:    {}s\n2.8s:    {}s\n3.0s:    {}s\n复活(8s):    {}s\n下个临界点:\n2.5s: {}\n2.8s: {}'.format(speed+380,mult,cd_25,cd_15,cd_20,cd_28,cd_30,cd_80,speed_tmp1,speed_tmp2)
+            Msg += '速度 {0} 的计算结果：\nDOT收益:{1[DOT]}\n复唱:{1[2.5]}s\n1.5s:{1[1.5]}s\n2.0s:{1[2.0]}s\n2.8s:{1[2.8]}s\n3.0s:{1[3.0]}s\n4.0s:{1[4.0]}s\n下个临界点:\n2.5s: {1[Next25speed]}\n2.8s: {1[Next28speed]}'.format(Number,Speed(Number))
         else:
-            msg = ' 错误参数：{}'.format(s_msg)
-        reply_action = reply_message_action(receive, msg)
+            Msg = ' 错误参数：{}'.format(s_msg)
+        reply_action = reply_message_action(Receive, Msg)
         action_list.append(reply_action)
     except Exception as e:
-        msg = "Error: {}".format(type(e))
-        action_list.append(reply_message_action(receive, msg))
+        Msg = "Error: {}".format(type(e))
+        action_list.append(reply_message_action(Receive, Msg))
     return action_list
