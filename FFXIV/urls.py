@@ -38,6 +38,7 @@ urlpatterns = [
     url(r'^housing/api', housing_api),
     url(r'^oauth/qq/login/$', qq_login, name='qq_login'),
     url(r'^api/qqcallback', qq_check, name='qq_check'),
+    url(r'^dalamud/feedback', dalamud_feedback, name='dalamud_feedback'),
     # url(r'^oauth/qq/check/$', qq_check, name='qq_check'),
     # url(r'^oauth/bind/account/$', bind_account, name='bind_account'),
     url(r'^login/', login),
