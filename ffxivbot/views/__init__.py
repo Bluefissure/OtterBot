@@ -1,6 +1,5 @@
 from .tata import tata
 from .quest import quest
-from .quest_tooltip import quest_tooltip
 from .api import api
 from .housing_api import housing_api
 from .qqpost import qqpost
