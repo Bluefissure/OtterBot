@@ -42,8 +42,8 @@ class EventHandler(object):
             receive["message"] = receive["message"].replace("\\", "/", 1)
         if receive["message_type"] == "discuss":
             return
-        if receive["message_type"] == "private":
-            return
+        # if receive["message_type"] == "private":
+        #     return
 
         bot_commands = json.loads(bot.commands)
 

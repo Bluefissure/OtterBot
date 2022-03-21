@@ -28,7 +28,6 @@ urlpatterns = [
     path('', tata),
     path('tata/', tata),
     path('quest/', quest),
-    path('quest/tooltip/', quest_tooltip),
     path('api/', api),
     path('http/', qqpost),
     path('wechat/message', wechatpost),
