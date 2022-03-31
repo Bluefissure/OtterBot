@@ -39,6 +39,11 @@ def localize_world_name(world_name):
         "HaiMaoChaWu": "海猫茶屋",
         "RouFengHaiWan": "柔风海湾",
         "HuPoYuan": "琥珀原",
+        "ShuiJingTa2": "水晶塔",
+        "YinLeiHu2": "银泪湖",
+        "TaiYangHaiAn2": "太阳海岸",
+        "YiXiuJiaDe2": "伊修加德",
+        "HongChaChuan2": "红茶川",
     }
     for (k, v) in world_dict.items():
         pattern = re.compile(k, re.IGNORECASE)
@@ -152,7 +157,7 @@ Powered by https://universalis.app"""
             msg = "参数错误：\n/market item $name $server: 查询$server服务器的$name物品交易数据"
             return msg
         server_name = command_seg[-1]
-        if server_name == "陆行鸟" or server_name == "莫古力" or server_name == "猫小胖":
+        if server_name in ("陆行鸟", "莫古力", "猫小胖", "豆豆柴"):
             pass
         elif server_name == "鸟":
             server_name = "陆行鸟"
@@ -160,6 +165,8 @@ Powered by https://universalis.app"""
             server_name = "莫古力"
         elif server_name == "猫":
             server_name = "猫小胖"
+        elif server_name == "狗":
+            server_name = "豆豆柴"
         else:
             pass
             # server = Server.objects.filter(name=server_name)

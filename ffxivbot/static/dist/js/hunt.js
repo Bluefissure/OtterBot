@@ -1,7 +1,8 @@
 let server = "myc";
-let allServers = ["hyh", "syzd", "hyqd", "lnxy", "myc", "yzhy", "wxxr", "cxwz", "cft", "sqh", "byx", "bjhx", "lrzq", "fxzj", "lcsd", "zszq", "yx", "jyzy", "mdn", "hmcw", "rfhw", "hpy"];
-let allServersButton = ["#hyh", "#syzd", "#hyqd", "#lnxy", "#myc", "#yzhy", "#wxxr", "#cxwz", "#cft", "#sqh", "#byx", "#bjhx", "#lrzq", "#fxzj", "#lcsd", "#zszq", "#yx", "#jyzy", "#mdn", "#hmcw", "#rfhw", "#hpy"];
-let allServersHiddenTag = [".hyh", ".syzd", ".hyqd", ".lnxy", ".myc", ".yzhy", ".wxxr", ".cxwz", ".cft", ".sqh", ".byx", ".bjhx", ".lrzq", ".fxzj", ".lcsd", ".zszq", ".yx", ".jyzy", ".mdn", ".hmcw", ".rfhw", ".hpy",];
+let allServers = ["hyh", "syzd", "hyqd", "lnxy", "myc", "yzhy", "wxxr", "cxwz", "cft", "sqh", "byx", "bjhx", "lrzq", "fxzj", "lcsd", "zszq", "yx", "jyzy", "mdn", "hmcw", "rfhw", "hpy", "sjt", "ylh", "tyhh", "yxjd", "hcc"];
+let allServersButton = ["#hyh", "#syzd", "#hyqd", "#lnxy", "#myc", "#yzhy", "#wxxr", "#cxwz", "#cft", "#sqh", "#byx", "#bjhx", "#lrzq", "#fxzj", "#lcsd", "#zszq", "#yx", "#jyzy", "#mdn", "#hmcw", "#rfhw", "#hpy", "#sjt", "#ylh", "#tyhh", "#yxjd", "#hcc"];
+let allServersHiddenTag = [".hyh", ".syzd", ".hyqd", ".lnxy", ".myc", ".yzhy", ".wxxr", ".cxwz", ".cft", ".sqh", ".byx", ".bjhx", ".lrzq", ".fxzj", ".lcsd", ".zszq", ".yx", ".jyzy", ".mdn", ".hmcw", ".rfhw", ".hpy", ".sjt", ".ylh", ".tyhh", ".yxjd", ".hcc"];
+
 
 $(document).ready(function () {
     if (typeof Storage !== "undefined") {
@@ -20,12 +21,15 @@ $(document).ready(function () {
         if (localStorage.getItem("shb") === null) {
             localStorage.setItem("shb", true);
         }
+        if (localStorage.getItem("ew") === null) {
+            localStorage.setItem("ew", true);
+        }
         if (localStorage.getItem("cd") === null) {
             localStorage.setItem("cd", false);
         }
         server = localStorage.getItem("server");
     }
-    let buttons = ["arr", "hw", "sb", "shb", "cd"];
+    let buttons = ["arr", "hw", "sb", "shb", "ew", "cd"];
     for (let button_id in buttons) {
         let button = buttons[button_id];
         $("#"+button).on("click", function () {
@@ -45,7 +49,7 @@ $(document).ready(function () {
 });
 
 function updateHidden() {
-    let buttons = ["arr", "hw", "sb", "shb"];
+    let buttons = ["arr", "hw", "sb", "shb", "ew"];
     for (let button_id in buttons) {
         let button = buttons[button_id];
         if (localStorage.getItem(button) === "true") {

@@ -85,6 +85,7 @@ def search_quest(quest_name):
                     quests.append(q)
     else:
         quests = list(quests)
+        quests.reverse()
     if not quests:
         msg = '找不到任务"{}"，请检查后查询'.format(quest_name)
     else:

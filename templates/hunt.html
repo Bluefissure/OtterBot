@@ -47,6 +47,7 @@
                 <button type="button" class="btn btn-primary" id="hw">3.0</button>
                 <button type="button" class="btn btn-primary" id="sb">4.0</button>
                 <button type="button" class="btn btn-primary" id="shb">5.0</button>
+                <button type="button" class="btn btn-primary" id="ew">6.0</button>
                 <button type="button" class="btn btn-primary" id="cd"><i class="fa fa-clock"></i></button>
               </div>
               <p style="margin-bottom: 0px; margin-left: 10px;">陆行鸟区：</p>
@@ -80,6 +81,14 @@
                 <button type="button" class="btn btn-primary" id="rfhw">柔风海湾</button>
                 <button type="button" class="btn btn-primary" id="hpy">琥珀原</button>
               </div>
+              <p style="margin-bottom: 0px; margin-left: 10px;">豆豆柴区：</p>
+              <div class="btn-group" role="group" style="margin-left: 10px" data-toggle="buttons">
+                <button type="button" class="btn btn-primary" id="sjt">水晶塔</button>
+                <button type="button" class="btn btn-primary" id="ylh">银泪湖</button>
+                <button type="button" class="btn btn-primary" id="tyhh">太阳海岸</button>
+                <button type="button" class="btn btn-primary" id="yxjd">伊修加德</button>
+                <button type="button" class="btn btn-primary" id="hcc">红茶川</button>
+              </div>
               <table id="hunt-table" class="table table-hover table-striped dataTable">
                 <thead>
                 <tr>
@@ -104,6 +113,8 @@
                     <tr class="{{ monster_info.server_tag }} sb {{ monster_info.in_cd }}">
                       {% elif monster_info.monster_type == "80S" %}
                     <tr class="{{ monster_info.server_tag }} shb {{ monster_info.in_cd }}">
+                      {% elif monster_info.monster_type == "90S" %}
+                    <tr class="{{ monster_info.server_tag }} ew {{ monster_info.in_cd }}">
                   {% endif %}
                 <td style="text-align: center; vertical-align: middle;">{{ monster_info.monster }}</td>
                 <td style="text-align: center; vertical-align: middle;">{{ monster_info.territory }}</td>
