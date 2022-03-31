@@ -11,7 +11,7 @@ def Critical(Crit):
     NextCrit,NextRate = Crit,Rate
     while NextRate == Rate:
         NextCrit +=1
-        NextRate = (int(200*(NextCrit-400)/1900)+50)/1000
+        NextRate = ((int(200*(NextCrit-400)/1900)+50)/1000)*100
     return Rate, Strength, NextCrit
 def Direct(DH):
     Rate = (int(550*(DH-400)/1900)/1000)*100
