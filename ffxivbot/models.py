@@ -252,7 +252,7 @@ class QQBot(models.Model):
     commands = models.TextField(default="{}")
     sonar = models.BooleanField(default=False)
     sonar_sub_ranks = models.TextField(default="[]", null=True, blank=True)
-    sonar_sub_groupss = models.ManyToManyField(QQGroup, related_name="sonar_sub_by_bots", blank=True)
+    sonar_sub_groups = models.ManyToManyField(QQGroup, related_name="sonar_sub_by_bots", blank=True)
     sonar_sub_servers = models.ManyToManyField(Server, related_name="sonar_sub_by_bots", blank=True)
 
     def __str__(self):
@@ -543,6 +543,7 @@ class Monster(models.Model):
     first_pop_cooldown = models.IntegerField(default=0)
     info = models.CharField(default="", max_length=128)
     status = models.TextField(default="{}")
+    key = models.IntegerField(default=0)
 
     def spawn_cd_hour(self):
         return self.spawn_cooldown // 3600

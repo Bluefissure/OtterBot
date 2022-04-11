@@ -47,6 +47,7 @@ commands = {
 
 group_commands = {
     "/group": "群相关功能控制",
+    "/sonar": "Sonar 推送相关设置",
     "/welcome": "设置欢迎语",
     "/custom_reply": "添加自定义命令",
     "/repeat_ban": "复读姬口球系统",
@@ -155,6 +156,7 @@ from .arknights.QQCommand_akhr import QQCommand_akhr
 
 # Group Commands
 from .QQGroupCommand_group import QQGroupCommand_group
+from .QQGroupCommand_sonar import QQGroupCommand_sonar
 from .QQGroupCommand_welcome import QQGroupCommand_welcome
 from .QQGroupCommand_custom_reply import QQGroupCommand_custom_reply
 from .QQGroupCommand_repeat_ban import QQGroupCommand_repeat_ban

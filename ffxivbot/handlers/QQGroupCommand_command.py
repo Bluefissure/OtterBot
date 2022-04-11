@@ -88,3 +88,4 @@ def QQGroupCommand_command(*args, **kwargs):
         msg = "Error: {}".format(type(e))
         action_list.append(reply_message_action(receive, msg))
         logging.error(e)
+    return []
