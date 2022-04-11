@@ -9,6 +9,7 @@ def ren2res(template: str, req, dict={}, json_res=False):
         qquser = req.user.qquser
         p = re.compile('^[0-9a-zA-Z_]+$')
         dict.update({'user': {
+            "qq": qquser.user_id,
             "nickname": qquser.nickname,
             "avatar": qquser.avatar_url
         }})

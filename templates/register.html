@@ -8,7 +8,7 @@
   <meta http-equiv="x-ua-compatible" content="ie=edge">
 
   <link rel="shortcut icon" href="{% static tata.ico %}" type="image/x-icon" />
-  <title>FFXIV Toolkit CN | Bluefissure</title>
+  <title>OtterBot | FFXIV QQ Bot</title>
 
   <!-- Font Awesome Icons -->
   <link rel="stylesheet" href="{% static "plugins/fontawesome-free/css/all.min.css" %}">
@@ -25,7 +25,7 @@
 <body class="hold-transition login-page">
   <div class="register-box">
     <div class="register-logo">
-      <a href="/"><b>FFXIV</b> Toolkit CN</a>
+      <a href="/"><b>OtterBot </b> </a>
     </div>
     {% if err %}
     <div class="alert alert-warning alert-dismissible">
@@ -75,7 +75,7 @@
           </div>
           {% if verification %}
           <div class="form-group mb-3 input-group">
-            <input type="text" class="form-control" placeholder="獭獭认证" name="Verification Code" id="vcode">
+            <input type="text" class="form-control" placeholder="獭獭认证" name="Verification Code" value="{{ vcode }}">
             <div class="input-group-append">
               <div class="input-group-text">
                 <span class="fas fa-address-card"></span>
@@ -106,6 +106,11 @@
           </button>
         </div>
         <div class="modal-body" id="TOSContent">
+
+### 免责声明
+1. 本站为玩家自主开发，与 最终幻想14 官方无任何关系。
+3. 本站不对任何我们所链接的网站内容负责。本站仅出于为用户提供方便而设置这些链接，并不表示我们赞同这些网站的内容和立场。
+4. 本站会对网站进行定期检查，以确保网站上的性能以及内容优秀，但不承诺不会改变或撤下某些内容。
 ### 隐私
 1. 用户注册时候需要提供QQ邮箱以及密码，并自行保管。QQ与邮箱为用户的唯一凭证。
 2. 本站会加密存储用户密码，尽量保证数据安全，但并不保证这些信息的绝对安全。
@@ -117,8 +122,7 @@
 3. 任何违法使用条款的用户，我们有权在不通知的情况下删除违规账户并没收使用本站服务的权利。
 4. 使用过程中造成的所有后果均由使用者自行承担。
 ### 其它
-1. 本站仅限女装人类及猫注册使用。
-2. TOS更新时用户默认遵守最新TOS。
+1. TOS更新时用户默认遵守最新TOS。
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-primary" data-dismiss="modal">阅读完毕</button>
@@ -147,7 +151,7 @@
     });
     $(document).ready(function() {
       let searchParams = new URLSearchParams(window.location.search);
-      $("#vcode").val(searchParams.get('vcode'));
+      // $("#vcode").val(searchParams.get('vcode'));
       $("#email").val(searchParams.get('email'));
       let converter = new showdown.Converter({ tables: true });
       let text = $("#TOSTitle").html();

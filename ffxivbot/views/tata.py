@@ -1,4 +1,5 @@
 from django.http import HttpResponse, JsonResponse
+from django.contrib.auth.decorators import login_required
 
 from FFXIV import settings
 from ffxivbot.models import *
@@ -307,6 +308,7 @@ def get_bot_version(obj: dict):
     return ver
 
 
+@login_required(login_url='/login/')
 def tata(req):
     if req.is_ajax() and req.method == "POST":
         res_dict = {"response": "No response."}
@@ -333,11 +335,14 @@ def tata(req):
                 return JsonResponse(res_dict)
             bots = QQBot.objects.filter(user_id=botID)
             if not bots.exists():
+                if QQBot.objects.filter(owner_id=ownerID.strip()).exists():
+                    res_dict = {"response": "error", "msg": "每个用户最多领养一个机器人"}
+                    return JsonResponse(res_dict)
                 bot = QQBot(user_id=botID, access_token=accessToken)
                 bot_created = True
             else:
                 if bots[0].access_token != accessToken:
-                    res_dict = {"response": "error", "msg": "Token错误，请确认后重试。"}
+                    res_dict = {"response": "error", "msg": "Token错误，请确认后重试"}
                     return JsonResponse(res_dict)
                 bot = bots[0]
                 bot_created = False
@@ -369,7 +374,7 @@ def tata(req):
             bot = QQBot.objects.get(id=bot_id, access_token=token)
         except Exception as e:
             if "QQBot matching query does not exist" in str(e):
-                res_dict = {"response": "error", "msg": "Token错误，请确认后重试。"}
+                res_dict = {"response": "error", "msg": "Token错误，请确认后重试"}
             else:
                 res_dict = {"response": "error", "msg": str(e)}
             return JsonResponse(res_dict)

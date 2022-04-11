@@ -111,6 +111,8 @@ class QQGroup(models.Model):
     server = models.ForeignKey(
         Server, on_delete=models.DO_NOTHING, blank=True, null=True
     )
+    sonar_sub_servers = models.ManyToManyField(Server, related_name="sonar_sub_by_groups", blank=True)
+    sonar_sub_ranks = models.TextField(default="[]", null=True, blank=True)
 
     def __str__(self):
         return self.group_id
@@ -248,6 +250,10 @@ class QQBot(models.Model):
     share_banned = models.BooleanField(default=False)
     img_banned = models.BooleanField(default=False)
     commands = models.TextField(default="{}")
+    sonar = models.BooleanField(default=False)
+    sonar_sub_ranks = models.TextField(default="[]", null=True, blank=True)
+    sonar_sub_groupss = models.ManyToManyField(QQGroup, related_name="sonar_sub_by_bots", blank=True)
+    sonar_sub_servers = models.ManyToManyField(Server, related_name="sonar_sub_by_bots", blank=True)
 
     def __str__(self):
         return self.name

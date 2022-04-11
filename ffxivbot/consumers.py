@@ -15,10 +15,10 @@ logging.basicConfig(
     format="%(levelname)s:%(asctime)s:%(name)s:%(message)s", level=logging.INFO
 )
 LOGGER = logging.getLogger(__name__)
-FFXIVBOT_ROOT = os.environ.get("FFXIVBOT_ROOT", settings.BASE_DIR)
-CONFIG_PATH = os.environ.get(
-    "FFXIVBOT_CONFIG", os.path.join(FFXIVBOT_ROOT, "ffxivbot/config.json")
-)
+# FFXIVBOT_ROOT = os.environ.get("FFXIVBOT_ROOT", settings.BASE_DIR)
+# CONFIG_PATH = os.environ.get(
+#     "FFXIVBOT_CONFIG", os.path.join(FFXIVBOT_ROOT, "ffxivbot/config.json")
+# )
 
 
 class PikaPublisher:
@@ -156,7 +156,8 @@ class WSConsumer(AsyncWebsocketConsumer):
         if "post_type" in receive.keys():
             self.bot.event_time = int(time.time())
             self.bot.save(update_fields=["event_time"])
-            self.config = json.load(open(CONFIG_PATH, encoding="utf-8"))
+            # with open(CONFIG_PATH, encoding="utf-8") as f:
+            #     self.config = json.load(f)
             try:
                 receive = json.loads(text_data)
                 if (

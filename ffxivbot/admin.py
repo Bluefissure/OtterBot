@@ -95,7 +95,7 @@ class CommentAdmin(admin.ModelAdmin):
 
 
 class ServerAdmin(admin.ModelAdmin):
-    list_display = ("name", "areaId", "groupId", "alter_names")
+    list_display = ("name", "worldId", "areaId", "groupId", "alter_names")
 
 
 class SorryGIFAdmin(admin.ModelAdmin):

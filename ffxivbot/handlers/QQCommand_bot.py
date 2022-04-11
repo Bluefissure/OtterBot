@@ -35,22 +35,13 @@ def QQCommand_bot(*args, **kwargs):
                 qquser.refresh_from_db()
                 msg = "用户 {} 的token已被设定为：{}".format(qquser, qquser.bot_token)
         elif second_command == "register":
-            if receive["message_type"] == "group":
-                msg = "[CQ:at,qq={}] 你确定要在群里面申请注册认证码从而公之于众？".format(receive["user_id"])
-            else:
-                vcode = "".join(
-                    random.choices(string.ascii_uppercase + string.digits, k=16)
-                )
-                (qquser, _) = QQUser.objects.get_or_create(user_id=receive["user_id"])
-                qquser.vcode = vcode
+            (qquser, _) = QQUser.objects.get_or_create(user_id=receive["user_id"])
+            vcode = receive_msg.replace("register", "", 1).strip()
+            if qquser.vcode and qquser.vcode == vcode:
                 qquser.vcode_time = time.time()
-                qquser.save()
-                msg = "用户 {} 的注册认证码为：{}".format(qquser, qquser.vcode)
-                msg += "\n请在五分钟内访问以下地址进行注册认证："
-                msg += os.path.join(
-                    WEB_BASE_URL,
-                    "register/?vcode={}&email={}@qq.com".format(vcode, qquser),
-                )
+            else:
+                qquser.vcode_time = 0
+            qquser.save(update_fields=["vcode_time"])
         elif second_command == "text":
             if int(user_id) != int(bot.owner_id):
                 msg = "仅机器人领养者能修改机器人状态"
@@ -72,6 +63,13 @@ def QQCommand_bot(*args, **kwargs):
                 bot.api = not bot.api
                 bot.save(update_fields=["api"])
                 msg = "API已{}".format("启用" if bot.api else "禁用")
+        # elif second_command == "sonar":
+        #     if int(user_id) != int(bot.owner_id):
+        #         msg = "仅机器人领养者能修改机器人状态"
+        #     else:
+        #         bot.api = not bot.api
+        #         bot.save(update_fields=["api"])
+        #         msg = "API已{}".format("启用" if bot.api else "禁用")
         elif second_command == "info":
             friend_list = json.loads(bot.friend_list)
             friend_list_cnt = len(friend_list) if friend_list else 0
@@ -129,7 +127,7 @@ def QQCommand_bot(*args, **kwargs):
                 "/bot token $token: 申请接收ACT插件消息时认证的token\n"
                 + "/bot update: 更新机器人统计信息\n"
                 + "/bot info: 查看机器人信息\n"
-                + "/bot register: 申请网站注册认证码\n"
+                + "/bot register: 网站注册认证（静默认证）\n"
                 + "/bot text: 更改连接分享模式\n"
                 + "/bot hso: HSO开关\n"
             )
