@@ -32,8 +32,8 @@ def handle_sonar_config(group, parameters):
         return f"推送机器人 {bot_id} 不存在。"
 
     bot_all_groups = bot.sonar_sub_groups.all()
-    if bot_all_groups.exists() and not bot.sonar_sub_groups.filter(group_id=group.group_id).exists():
-        return f"机器人 {bot_id} 已设置可推送的群限制，本群不具备推送资格。"
+    if not bot.sonar_sub_groups.filter(group_id=group.group_id).exists():
+        return f"本群不具备机器人 {bot_id} 的推送资格，请联系领养者设置。"
 
     if len(parameters) == 0 or parameters[0] == "help":  # /sonar (help)
         return """本群的 Sonar 推送配置：
@@ -67,9 +67,11 @@ def handle_sonar_config(group, parameters):
             if rank not in GLOBAL_SONAR_RANKS:
                 continue
             if operation == "rank" and rank in bot_ranks:
-                ranks.append(rank)
+                if rank not in ranks:
+                    ranks.append(rank)
             elif operation == "rank_del":
-                ranks.remove(rank)
+                while rank in ranks:
+                    ranks.remove(rank)
         group.sonar_sub_ranks = json.dumps(ranks)
         group.save(update_fields=['sonar_sub_ranks'])
         if ranks:
