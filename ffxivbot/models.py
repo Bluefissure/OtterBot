@@ -564,20 +564,23 @@ class HuntLog(models.Model):
         null=True,
     )
     hunt_group = models.ForeignKey(
-        HuntGroup, on_delete=models.CASCADE, related_name="hunt_log"
+        HuntGroup, on_delete=models.CASCADE, related_name="hunt_log",
+        null=True, blank=True
     )
     server = models.ForeignKey(
-        Server, on_delete=models.CASCADE, related_name="hunt_log"
+        Server, on_delete=models.CASCADE, related_name="hunt_log",
+        null=True, blank=True
     )
+    instance_id = models.IntegerField(default=0, blank=True, null=True)
     log_type = models.CharField(default="", max_length=16)
     time = models.BigIntegerField(default=0)
 
     def __str__(self):
-        return "{}-{}".format(self.server, self.monster)
+        return "{}_{}_{}".format(self.server, self.monster, self.instance_id)
 
     def get_info(self):
-        return "HuntLog#{}: {}-{} {}".format(
-            self.id, self.server, self.monster, self.log_type
+        return "HuntLog#{}: {}_{}_{} {}".format(
+            self.id, self.server, self.monster, self.instance_id, self.log_type
         )
 
 
