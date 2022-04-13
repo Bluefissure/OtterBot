@@ -33,7 +33,7 @@ def handle_sonar_config(bot, parameters):
 /bot sonar info: 查看当前 Sonar 配置
 /bot sonar rank/rank_del <50S/60S/70S/80S/90S/大象/小电视>: 添加/删除可通过本机器人推送的上报类别
 /bot sonar server/server_del <服务器/大区名称>: 添加/删除可通过本机器人推送的服务器
-/bot sonar group/group_del <群号>: 添加/删除可通过本机器人推送的QQ群号（不设置则任意群均可推送）
+/bot sonar group/group_del <群号>: 添加/删除可通过本机器人推送的QQ群号（不设置则任意群均不可推送）
 """
     operation = parameters[0]
     if operation == "server" or operation == "server_del":  # /bot sonar server(_del) <keyword>
@@ -96,7 +96,7 @@ def handle_sonar_config(bot, parameters):
         sub_groups = bot.sonar_sub_groups.all()
         groups_msg = ", ".join(list(map(lambda x: str(x.group_id), sub_groups)))
         if groups_msg == "":
-            groups_msg = "全部"
+            groups_msg = "无"
         return "{} 的 Sonar 推送限制目前设置为：\n" \
                 "可推送类别：{}\n" \
                 "可推送服务器：{}\n" \
