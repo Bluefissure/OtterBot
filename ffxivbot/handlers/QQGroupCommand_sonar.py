@@ -5,7 +5,10 @@ import logging
 import json
 import random
 
-GLOBAL_SONAR_RANKS = ["50S", "60S", "70S", "80S", "90S", "大象", "小电视"]
+GLOBAL_SONAR_RANKS = [
+    "50S", "60S", "70S", "80S", "90S",
+    "大象", "小电视", "海呱", "地呱", "雷马", "玉藻御前", "夜光花", "长须豹女王", "贝希摩斯", "奥丁"
+]
 
 def get_server_from_keyword(keyword):
     if keyword == "国服" or keyword == '国':
@@ -38,7 +41,7 @@ def handle_sonar_config(group, parameters):
     if len(parameters) == 0 or parameters[0] == "help":  # /sonar (help)
         return """本群的 Sonar 推送配置：
 /sonar info: 查看本群当前 Sonar 配置
-/sonar rank/rank_del <50S/60S/70S/80S/90S/大象/小电视>: 添加/删除推送的上报类别
+/sonar rank/rank_del <50S/60S/70S/80S/90S/大象/小电视/...>: 添加/删除推送的上报类别
 /sonar server/server_del <服务器/大区名称>: 添加/删推送的服务器
 """
 
