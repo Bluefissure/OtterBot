@@ -154,6 +154,24 @@
                 </p>
               </a>
             </li>
+            {% else %}
+            <li class="nav-item">
+              <a href="#" class="nav-link">
+                <i class="nav-icon fas fa-clock"></i>
+                <p>
+                  狩猎时钟
+                  <span class="right fas fa-angle-left"></span>
+                </p>
+              </a>
+              <ul class="nav nav-treeview">
+                <li class="nav-item">
+                  <a href="/hunt/sonar/" class="nav-link">
+                    <i class="fas fa-tasks nav-icon"></i>
+                    <p>Sonar</p>
+                  </a>
+                </li>
+              </ul>
+            </li>
             {% endif %}
             <li class="nav-item has-treeview">
               <a href="#" class="nav-link">

@@ -11,7 +11,6 @@ def QQGroupCommand_group(*args, **kwargs):
         global_config = kwargs["global_config"]
         group = kwargs["group"]
         user_info = kwargs["user_info"]
-        QQ_BASE_URL = global_config["QQ_BASE_URL"]
         action_list = []
         receive = kwargs["receive"]
         user_id = receive["user_id"]
@@ -58,11 +57,14 @@ def QQGroupCommand_group(*args, **kwargs):
             msg = "群内已{}獭のAPI功能".format("开启" if group.api else "禁止")
         elif second_command == "bot":
             bot_id = second_command_msg.split(" ")[1].strip()
-            if bot_id not in group_bots:
-                group_bots.append(bot_id)
-            group.bots = json.dumps(group_bots)
-            group.save(update_fields=["bots"])
-            msg = "群机器人：{}".format(group_bots)
+            if not QQBot.objects.filter(user_id=bot_id).exists():
+                msg = "机器人{}不存在".format(bot_id)
+            else:
+                if bot_id not in group_bots:
+                    group_bots.append(bot_id)
+                group.bots = json.dumps(group_bots)
+                group.save(update_fields=["bots"])
+                msg = "群机器人：{}".format(group_bots)
         elif second_command == "bot_del":
             bot_id = second_command_msg.split(" ")[1].strip()
             if bot_id in group_bots:

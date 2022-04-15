@@ -95,9 +95,9 @@ def hunt(req):
     hunt_list, resource_groups = gen_hunts(req.user.qquser, False)
     return ren2res('hunt.html', req, {"hunt_list": hunt_list, "resources": ", ".join(list(resource_groups))})
 
-@login_required(login_url='/login/')
+#@login_required(login_url='/login/')
 def hunt_sonar(req):
-    hunt_list, resource_groups = gen_hunts(req.user.qquser, True)
+    hunt_list, resource_groups = gen_hunts(None, True)
     return ren2res('hunt.html', req, {"hunt_list": hunt_list, "resources": ", ".join(list(resource_groups))})
 
 # What's the point???
