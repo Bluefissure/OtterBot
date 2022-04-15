@@ -1,7 +1,7 @@
 let server = "myc";
-let allServers = ["hyh", "syzd", "hyqd", "lnxy", "myc", "yzhy", "wxxr", "cxwz", "cft", "sqh", "byx", "bjhx", "lrzq", "fxzj", "lcsd", "zszq", "yx", "jyzy", "mdn", "hmcw", "rfhw", "hpy", "sjt", "ylh", "tyhh", "yxjd", "hcc"];
-let allServersButton = ["#hyh", "#syzd", "#hyqd", "#lnxy", "#myc", "#yzhy", "#wxxr", "#cxwz", "#cft", "#sqh", "#byx", "#bjhx", "#lrzq", "#fxzj", "#lcsd", "#zszq", "#yx", "#jyzy", "#mdn", "#hmcw", "#rfhw", "#hpy", "#sjt", "#ylh", "#tyhh", "#yxjd", "#hcc"];
-let allServersHiddenTag = [".hyh", ".syzd", ".hyqd", ".lnxy", ".myc", ".yzhy", ".wxxr", ".cxwz", ".cft", ".sqh", ".byx", ".bjhx", ".lrzq", ".fxzj", ".lcsd", ".zszq", ".yx", ".jyzy", ".mdn", ".hmcw", ".rfhw", ".hpy", ".sjt", ".ylh", ".tyhh", ".yxjd", ".hcc"];
+let allServers = ["hyh", "syzd", "hyqd", "lnxy", "myc", "yzhy", "wxxr", "cxwz", "cft", "sqh", "byx", "bjhx", "lrzq", "fxzj", "lcsd", "zszq", "yx", "jyzy", "mdn", "hmcw", "rfhw", "hpy", "mybj", "sjt", "ylh", "tyha", "yxjd", "hcc"];
+let allServersButton = ["#hyh", "#syzd", "#hyqd", "#lnxy", "#myc", "#yzhy", "#wxxr", "#cxwz", "#cft", "#sqh", "#byx", "#bjhx", "#lrzq", "#fxzj", "#lcsd", "#zszq", "#yx", "#jyzy", "#mdn", "#hmcw", "#rfhw", "#hpy", "#mybj", "#sjt", "#ylh", "#tyha", "#yxjd", "#hcc"];
+let allServersHiddenTag = [".hyh", ".syzd", ".hyqd", ".lnxy", ".myc", ".yzhy", ".wxxr", ".cxwz", ".cft", ".sqh", ".byx", ".bjhx", ".lrzq", ".fxzj", ".lcsd", ".zszq", ".yx", ".jyzy", ".mdn", ".hmcw", ".rfhw", ".hpy", ".mybj", ".sjt", ".ylh", ".tyha", ".yxjd", ".hcc"];
 
 
 $(document).ready(function () {

@@ -114,7 +114,7 @@
             </li>
             <li class="nav-item">
               <a href="/quest" class="nav-link">
-                <i class="nav-icon fas fa-tasks"></i>
+                <i class="nav-icon fas fa-bars"></i>
                 <p>
                   任务流程
                   <span class="right fas fa-angle-left"></span>
@@ -123,13 +123,27 @@
             </li>
             {% if user %}
             <li class="nav-item">
-              <a href="/hunt" class="nav-link">
+              <a href="#" class="nav-link">
                 <i class="nav-icon fas fa-clock"></i>
                 <p>
                   狩猎时钟
                   <span class="right fas fa-angle-left"></span>
                 </p>
               </a>
+              <ul class="nav nav-treeview">
+                <li class="nav-item">
+                  <a href="/hunt/" class="nav-link">
+                    <i class="fas fa-tasks nav-icon"></i>
+                    <p>群时钟</p>
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a href="/hunt/sonar/" class="nav-link">
+                    <i class="fas fa-tasks nav-icon"></i>
+                    <p>Sonar</p>
+                  </a>
+                </li>
+              </ul>
             </li>
             <li class="nav-item">
               <a href="/image" class="nav-link">

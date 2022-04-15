@@ -68,6 +68,7 @@
                 <button type="button" class="btn btn-primary" id="byx">白银乡</button>
                 <button type="button" class="btn btn-primary" id="bjhx">白金幻象</button>
                 <button type="button" class="btn btn-primary" id="lrzq">旅人栈桥</button>
+                <button type="button" class="btn btn-primary" id="mybj">梦羽宝境</button>
                 <button type="button" class="btn btn-primary" id="fxzj">拂晓之间</button>
                 <button type="button" class="btn btn-primary" id="lcsd">龙巢神殿</button>
               </div>
@@ -85,7 +86,7 @@
               <div class="btn-group" role="group" style="margin-left: 10px" data-toggle="buttons">
                 <button type="button" class="btn btn-primary" id="sjt">水晶塔</button>
                 <button type="button" class="btn btn-primary" id="ylh">银泪湖</button>
-                <button type="button" class="btn btn-primary" id="tyhh">太阳海岸</button>
+                <button type="button" class="btn btn-primary" id="tyha">太阳海岸</button>
                 <button type="button" class="btn btn-primary" id="yxjd">伊修加德</button>
                 <button type="button" class="btn btn-primary" id="hcc">红茶川</button>
               </div>
@@ -105,7 +106,7 @@
                 </thead>
                 <tbody>
                 {% for monster_info in hunt_list %}
-                  {% if monster_info.monster_type == "50S" %}
+                      {% if monster_info.monster_type == "50S" %}
                     <tr class="{{ monster_info.server_tag }} arr {{ monster_info.in_cd }}">
                       {% elif monster_info.monster_type == "60S" %}
                     <tr class="{{ monster_info.server_tag }} hw {{ monster_info.in_cd }}">
