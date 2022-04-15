@@ -55,7 +55,7 @@ def register(req):
                 newinfo.vcode_time = 0
                 newinfo.save(update_fields=["vcode", "vcode_time"])
                 return ren2res("register.html", req, {
-                    "err": f"獭獭认证码为空或不匹配，新的獭獭认证码为\"{new_vcode}\"请于五分钟内在包含獭獭的群内输入以下命令后重试：/bot register {new_vcode}",
+                    "err": f"獭獭认证码为空或不匹配，新的獭獭认证码为\"{new_vcode}\"请于五分钟内使用QQ{qq}在包含獭獭的群内输入以下命令后重试：/bot register {new_vcode}",
                     "verification": verification,
                     "vcode": new_vcode
                 })

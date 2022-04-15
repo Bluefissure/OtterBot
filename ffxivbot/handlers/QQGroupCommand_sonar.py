@@ -5,7 +5,10 @@ import logging
 import json
 import random
 
-GLOBAL_SONAR_RANKS = ["50S", "60S", "70S", "80S", "90S", "大象", "小电视"]
+GLOBAL_SONAR_RANKS = [
+    "50S", "60S", "70S", "80S", "90S",
+    "大象", "小电视", "海呱", "地呱", "雷马", "玉藻御前", "夜光花", "长须豹女王", "贝希摩斯", "奥丁"
+]
 
 def get_server_from_keyword(keyword):
     if keyword == "国服" or keyword == '国':
