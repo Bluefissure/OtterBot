@@ -32,6 +32,20 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
+# CORS_ALLOW_CREDENTIALS = True
+
+# CORS_ORIGIN_ALLOW_ALL = True
+
+# CSRF_TRUSTED_ORIGINS = ['xn--v9x.net', 'localhost']
+
+# CORS_REPLACE_HTTPS_REFERER = True
+
+# CSRF_COOKIE_DOMAIN = 'xn--v9x.net'
+
+# CORS_ORIGIN_WHITELIST = (
+#     'https://xn--v9x.net',
+#     'xn--v9x.net',
+# )
 
 # Application definition
 
