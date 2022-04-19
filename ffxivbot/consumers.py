@@ -108,6 +108,9 @@ class WSConsumer(AsyncWebsocketConsumer):
             elif "OneBot" in user_agent and "Bearer" in ws_access_token:
                 # onebot基于rfc6750往token加入了Bearer
                 ws_access_token = ws_access_token.replace("Bearer", "").strip()
+            else:
+                LOGGER.error(f"Unkown UA: {user_agent}")
+                await self.close()
 
             bot = None
             # with transaction.atomic():
@@ -131,12 +134,12 @@ class WSConsumer(AsyncWebsocketConsumer):
             LOGGER.error(
                 "%s:%s:API:AUTH_FAIL from %s" % (ws_self_id, ws_access_token, true_ip)
             )
-            # await self.close()
+            await self.close()
         except:
             LOGGER.error("Unauthed connection from %s" % (true_ip))
             LOGGER.error(headers)
             # traceback.print_exc()
-            # await self.close()
+            await self.close()
 
     async def redis_disconnect(self, *args):
         LOGGER.info("Redis of channel {} disconnected".format(self.channel_name))
@@ -183,7 +186,7 @@ class WSConsumer(AsyncWebsocketConsumer):
                                 msg += "[CQ:at,qq={}]".format(block["data"]["qq"])
                         receive["message"] = msg
                     priority = 1
-                    push_to_mq = True
+                    push_to_mq = receive["message"].startswith("/") or receive["message"].startswith("\\")
                     if "group_id" in receive:
                         priority += 1
                         group_id = receive["group_id"]
