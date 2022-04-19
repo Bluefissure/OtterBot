@@ -18,4 +18,5 @@ RUN sed -i 's/127.0.0.1/rabbit/' /FFXIVBOT/ffxivbot/consumers.py
 RUN sed -i 's/localhost/rabbit/' /FFXIVBOT/ffxivbot/pika_rabbit.py
 RUN sed -i 's/localhost/redis/' /FFXIVBOT/ffxivbot/handlers/QQGroupChat.py
 RUN sed -i 's/localhost/redis/' /FFXIVBOT/ffxivbot/handlers/QQGroupCommand_wordcloud.py
+RUN sed -i 's/localhost/redis/' /FFXIVBOT/ffxivbot/handlers/QQUtils.py
 EXPOSE 8002
