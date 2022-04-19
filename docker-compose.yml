@@ -21,6 +21,7 @@ services:
       - redis
       - rabbit
     environment:
+      IS_DOCKER: Docker
       FFXIVBOT_ROOT: /FFXIVBOT/
       TULING_API_KEY: 123
       BOT_FATHER: 爸爸
