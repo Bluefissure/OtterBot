@@ -14,26 +14,26 @@ def gen_hunts(user, sonar=False):
     if not sonar:
         latest_kill_logs = HuntLog.objects.filter(
             Q(hunt_group__group__member_list__contains=user.user_id, log_type='kill') | Q(hunt_group__public=True)
-        ).values('server', 'monster', 'hunt_group', 'instance_id').annotate(Max('time'))
+        ).values('server__name', 'monster', 'hunt_group', 'instance_id').annotate(Max('time'))
     else:
         latest_kill_logs = HuntLog.objects.filter(log_type='sonar')\
-            .values('server', 'monster', 'instance_id').annotate(Max('time'))
+            .values('server__name', 'monster', 'instance_id').annotate(Max('time'))
+    maintain_logs = HuntLog.objects.filter(log_type='maintain').values('server__name').annotate(Max('time'))
+    server_maintains = {}
+    for log in maintain_logs:
+        server_maintains[log['server__name']] = log['time__max']
+    monster_dict = {}
+    for monster in Monster.objects.all():
+        monster_dict[monster.id] = monster
     for latest_kill_log in latest_kill_logs:
         try:
             if not sonar:
                 hunt_group = HuntGroup.objects.get(id=latest_kill_log['hunt_group'])
             else:
                 hunt_group = "Sonar"
-            server = Server.objects.get(id=latest_kill_log['server'])
-            monster = Monster.objects.get(id=latest_kill_log['monster'])
-            try:
-                global_maintain_log = HuntLog.objects.filter(
-                                            server=server,
-                                            log_type="maintain"
-                                        ).latest("time")
-                maintain_finish_time = global_maintain_log.time
-            except HuntLog.DoesNotExist:
-                maintain_finish_time = 0
+            server_name = latest_kill_log['server__name']
+            monster = monster_dict.get(latest_kill_log['monster'])
+            maintain_finish_time = server_maintains.get(server_name, 0)
             resource_groups.add(str(hunt_group))
             last_kill_time = latest_kill_log['time__max']
             maintained = (maintain_finish_time > last_kill_time)
@@ -51,7 +51,7 @@ def gen_hunts(user, sonar=False):
                 schedule_diff = "{:.2%}".format(schedule_diff)
             else:
                 schedule_diff = ""
-            server_tag = server2tag(server.name)
+            server_tag = server2tag(server_name)
             if next_spawn_time >= time.time():
                 in_cd = "notcd"
             else:
@@ -67,9 +67,7 @@ def gen_hunts(user, sonar=False):
                 monster_info["monster"] += "2"
             if monster_info["instance"] == 3 and not monster.cn_name.endswith('3'):
                 monster_info["monster"] += "3"
-            monster_info["server"] = server
-            if "伊休妲" == monster.cn_name:
-                print(monster_info)
+            monster_info["server"] = server_name
             monster_info["territory"] = monster.territory
             monster_info["server_tag"] = server_tag
             monster_info["monster_type"] = monster.rank
@@ -100,36 +98,37 @@ def hunt_sonar(req):
     hunt_list, resource_groups = gen_hunts(None, True)
     return ren2res('hunt.html', req, {"hunt_list": hunt_list, "resources": ", ".join(list(resource_groups))})
 
+NAME_TAG = {
+    "红玉海":"hyh",
+    "神意之地":"syzd",
+    "幻影群岛":"hyqd",
+    "拉诺西亚":"lnxy",
+    "萌芽池":"myc",
+    "宇宙和音":"yzhy",
+    "沃仙曦染":"wxxr",
+    "晨曦王座":"cxwz",
+    "潮风亭":"cft",
+    "神拳痕":"sqh",
+    "白银乡":"byx",
+    "白金幻象":"bjhx",
+    "旅人栈桥":"lrzq",
+    "拂晓之间":"fxzj",
+    "龙巢神殿":"lcsd",
+    "紫水栈桥":"zszq",
+    "延夏":"yx",
+    "静语庄园":"jyzy",
+    "摩杜纳":"mdn",
+    "海猫茶屋":"hmcw",
+    "柔风海湾":"rfhw",
+    "琥珀原":"hpy",
+    "梦羽宝境":"mybj",
+    "水晶塔":"sjt",
+    "银泪湖":"ylh",
+    "太阳海岸":"tyha",
+    "伊修加德":"yxjd",
+    "红茶川":"hcc",
+}
+
 # What's the point???
 def server2tag(server_name):
-    name_tag = {
-        "红玉海":"hyh",
-        "神意之地":"syzd",
-        "幻影群岛":"hyqd",
-        "拉诺西亚":"lnxy",
-        "萌芽池":"myc",
-        "宇宙和音":"yzhy",
-        "沃仙曦染":"wxxr",
-        "晨曦王座":"cxwz",
-        "潮风亭":"cft",
-        "神拳痕":"sqh",
-        "白银乡":"byx",
-        "白金幻象":"bjhx",
-        "旅人栈桥":"lrzq",
-        "拂晓之间":"fxzj",
-        "龙巢神殿":"lcsd",
-        "紫水栈桥":"zszq",
-        "延夏":"yx",
-        "静语庄园":"jyzy",
-        "摩杜纳":"mdn",
-        "海猫茶屋":"hmcw",
-        "柔风海湾":"rfhw",
-        "琥珀原":"hpy",
-        "梦羽宝境":"mybj",
-        "水晶塔":"sjt",
-        "银泪湖":"ylh",
-        "太阳海岸":"tyha",
-        "伊修加德":"yxjd",
-        "红茶川":"hcc",
-    }
-    return name_tag.get(server_name, "Unknown")
+    return NAME_TAG.get(server_name, "Unknown")

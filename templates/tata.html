@@ -299,10 +299,34 @@
             <ul class="products-list product-list-in-card">
               <li class="item">
                 <div class="product-img">
+                  <img src="https://vip2.loli.io/2022/04/21/6vRQkScZtGWXnrD.jpg" alt="冰音の鱼塘">
+                </div>
+                <div class="product-info">
+                  <a href="https://tatabot.bingyin.org/" class="product-title" target="_blank">冰音の鱼塘
+                    <span class="badge bg-green float-right">自建</span></a>
+                  <span class="product-description">
+                    Aaaaaughibbrgubugbugrguburgle!
+                  </span>
+                </div>
+              </li>
+              <li class="item">
+                <div class="product-img">
+                  <img src="https://vip2.loli.io/2022/04/21/4N17czdPIOoERDk.jpg" alt="鸟窝">
+                </div>
+                <div class="product-info">
+                  <a href="https://tata.cyanclay.xyz/" class="product-title" target="_blank">鸟窝
+                    <span class="badge bg-green float-right">自建</span></a>
+                  <span class="product-description">
+                    太感谢鸟
+                  </span>
+                </div>
+              </li>
+              <li class="item">
+                <div class="product-img">
                   <img src="https://i.loli.net/2020/01/10/bWPpDq6QL3VmeMo.jpg" alt="猪窝">
                 </div>
                 <div class="product-info">
-                  <a href="https://tata.guomie.club/" class="product-title" target="_blank">猪窝 —— 果咩
+                  <a href="https://tata.guomie.club/" class="product-title" target="_blank">猪窝
                     <span class="badge bg-green float-right">自建</span></a>
                   <span class="product-description">
                     没有鸡
@@ -314,14 +338,14 @@
                   <img src="https://i.loli.net/2019/03/12/5c87267f13817.jpg" alt="风断苍">
                 </div>
                 <div class="product-info">
-                  <a href="http://botapi.dead-war.cn/" class="product-title" target="_blank">风断苍茫 —— 风断苍
+                  <a href="http://botapi.dead-war.cn/" class="product-title" target="_blank">风断苍茫
                     <span class="badge bg-green float-right">自建</span></a>
                   <span class="product-description">
                     还要说啥
                   </span>
                 </div>
               </li>
-              <li class="item">
+              <!-- <li class="item">
                 <div class="product-img">
                   <img src="https://i.loli.net/2019/11/05/JHLMBRicSx8zrTZ.jpg" alt="小猪猫">
                 </div>
@@ -332,14 +356,14 @@
                     獭爹的小迷妹
                   </span>
                 </div>
-              </li>
+              </li> -->
               <li class="item">
                 <div class="product-img">
                   <img src="https://tva4.sinaimg.cn/crop.0.0.198.198.1024/80d4df22gw1ef3t98k9x0j205j05kjrh.jpg"
                     alt="鉛筆">
                 </div>
                 <div class="product-info">
-                  <a href="http://bot.pencilss.top/" class="product-title" target="_blank">肥肥の食材村 —— 铅筆
+                  <a href="http://bot.pencilss.top/" class="product-title" target="_blank">肥肥の食材村
                     <span class="badge bg-green float-right">自建</span></a>
                   <span class="product-description">
                     今晚有肥吃吗<img src="https://i.loli.net/2019/11/07/yGKM5qkoDbJZzl9.gif" height="30">
@@ -382,11 +406,11 @@
 <script src="{% static "dist/js/demo.js" %}"></script>
 <!-- page script -->
 <script>
-  $(document).on("click", ".open-DownloadConf", function() {
+  $(document).on("click", ".open-DownloadConf", function () {
     var botId = $(this).data('id');
     $("#downloadConfBotId").val(botId);
   });
-  $(function() {
+  $(function () {
     $('#example1').DataTable({
       "scrollX": false,
       "autoWidth": true,
@@ -440,7 +464,7 @@
       url: '',
       async: false,
       data: { "optype": "switch_public", "token": token, "id": id, 'csrfmiddlewaretoken': '{{ csrf_token }}' },
-      success: function(data) {
+      success: function (data) {
         if (data.response != "success") {
           if (data.response == "error") {
             alert(data.msg);
@@ -463,7 +487,7 @@
       url: '',
       async: false,
       data: { "optype": "del_bot", "token": token, "id": id, 'csrfmiddlewaretoken': '{{ csrf_token }}' },
-      success: function(data) {
+      success: function (data) {
         if (data.response != "success") {
           if (data.response == "error") {
             alert(data.msg);
@@ -501,7 +525,7 @@
     request.setRequestHeader('X-CSRFToken', '{{ csrf_token }}');
     request.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
     request.responseType = 'blob';
-    request.onload = function(e) {
+    request.onload = function (e) {
       if (this.status === 200) {
         var blob = this.response;
         var clientConfigMap = {
@@ -558,7 +582,7 @@
         "autoInvite": autoInvite,
         'csrfmiddlewaretoken': '{{ csrf_token }}'
       },
-      success: function(data) {
+      success: function (data) {
         if (data.response != "success") {
           if (data.response == "error") {
             alert(data.msg);
