@@ -7,7 +7,7 @@ from .ren2res import ren2res
 
 @login_required(login_url='/login/')
 def image(req):
-    if req.is_ajax() and req.method == "POST":
+    if req.method == "POST":
         res_dict = {"response": "No response."}
         json_req = json.loads(req.body)
         optype = json_req.get("optype")

@@ -1,14 +1,10 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils.html import mark_safe
-from datetime import datetime
-from pytz import timezone
 from urllib.parse import urlparse
-import hashlib
 import requests
 import os
 import json
-import time
 
 # Create your models here.
 

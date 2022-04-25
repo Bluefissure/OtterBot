@@ -4,6 +4,7 @@ from django.contrib.auth.decorators import login_required
 from FFXIV import settings
 from ffxivbot.models import *
 from .ren2res import ren2res
+import time
 import json
 import os
 import re
@@ -312,7 +313,7 @@ def get_bot_version(obj: dict):
 
 @login_required(login_url='/login/')
 def tata(req):
-    if req.is_ajax() and req.method == "POST":
+    if req.method == "POST":
         res_dict = {"response": "No response."}
         optype = req.POST.get("optype")
         if settings.DEBUG:

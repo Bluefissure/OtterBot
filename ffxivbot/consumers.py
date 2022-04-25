@@ -9,6 +9,7 @@ import os
 import json
 from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.layers import get_channel_layer
+from asgiref.sync import sync_to_async
 
 channel_layer = get_channel_layer()
 logging.basicConfig(
@@ -115,7 +116,7 @@ class WSConsumer(AsyncWebsocketConsumer):
             bot = None
             # with transaction.atomic():
             #   bot = QQBot.objects.select_for_update().get(user_id=ws_self_id,access_token=ws_access_token)
-            bot = QQBot.objects.get(user_id=ws_self_id, access_token=ws_access_token)
+            bot = await sync_to_async(QQBot.objects.get, thread_sensitive=True)(user_id=ws_self_id, access_token=ws_access_token)
 
             self.bot = bot
             self.bot_user_id = self.bot.user_id
@@ -126,7 +127,7 @@ class WSConsumer(AsyncWebsocketConsumer):
                 "New Universal Connection: %s of bot %s"
                 % (self.channel_name, self.bot.user_id)
             )
-            self.bot.save(
+            await sync_to_async(self.bot.save, thread_sensitive=True)(
                 update_fields=["event_time", "api_channel_name", "event_channel_name"]
             )
             await self.accept()
@@ -138,7 +139,7 @@ class WSConsumer(AsyncWebsocketConsumer):
         except:
             LOGGER.error("Unauthed connection from %s" % (true_ip))
             LOGGER.error(headers)
-            # traceback.print_exc()
+            traceback.print_exc()
             await self.close()
 
     async def redis_disconnect(self, *args):
@@ -158,7 +159,7 @@ class WSConsumer(AsyncWebsocketConsumer):
 
         if "post_type" in receive.keys():
             self.bot.event_time = int(time.time())
-            self.bot.save(update_fields=["event_time"])
+            await sync_to_async(self.bot.save, thread_sensitive=True)(update_fields=["event_time"])
             # with open(CONFIG_PATH, encoding="utf-8") as f:
             #     self.config = json.load(f)
             try:
@@ -190,7 +191,7 @@ class WSConsumer(AsyncWebsocketConsumer):
                     if "group_id" in receive:
                         priority += 1
                         group_id = receive["group_id"]
-                        (group, group_created) = QQGroup.objects.get_or_create(
+                        (group, group_created) = await sync_to_async(QQGroup.objects.get_or_create)(
                             group_id=group_id
                         )
                         group_bots = json.loads(group.bots)
@@ -217,7 +218,7 @@ class WSConsumer(AsyncWebsocketConsumer):
                 traceback.print_exc()
         else:
             self.bot.api_time = int(time.time())
-            self.bot.save(update_fields=["api_time"])
+            await sync_to_async(self.bot.save, thread_sensitive=True)(update_fields=["api_time"])
             if int(receive["retcode"]) != 0:
                 if int(receive["retcode"]) == 1 and receive["status"] == "async":
                     LOGGER.warning("API waring:" + text_data)
@@ -230,12 +231,12 @@ class WSConsumer(AsyncWebsocketConsumer):
                     group_id = echo.replace("get_group_member_list:", "").strip()
                     try:
                         # group = QQGroup.objects.select_for_update().get(group_id=group_id)
-                        group = QQGroup.objects.get(group_id=group_id)
+                        group = await sync_to_async(QQGroup.objects.get)(group_id=group_id)
                         member_list = (
                             json.dumps(receive["data"]) if receive["data"] else "[]"
                         )
                         group.member_list = member_list
-                        group.save(update_fields=["member_list"])
+                        await sync_to_async(group.save, thread_sensitive=True)(update_fields=["member_list"])
                         # await self.send_message("group", group_id, "群成员信息刷新成功")
                     except QQGroup.DoesNotExist:
                         LOGGER.error("QQGroup.DoesNotExist:{}".format(group_id))
@@ -243,13 +244,13 @@ class WSConsumer(AsyncWebsocketConsumer):
                     LOGGER.debug("group %s member updated" % (group.group_id))
                 if "get_group_list" in echo:
                     self.bot.group_list = json.dumps(receive["data"])
-                    self.bot.save(update_fields=["group_list"])
+                    await sync_to_async(self.bot.save)(update_fields=["group_list"])
                 if "get_friend_list" in echo:
                     self.bot.friend_list = json.dumps(receive["data"])
-                    self.bot.save(update_fields=["friend_list"])
+                    await sync_to_async(self.bot.save)(update_fields=["friend_list"])
                 if "get_version_info" in echo:
                     self.bot.version_info = json.dumps(receive["data"])
-                    self.bot.save(update_fields=["version_info"])
+                    await sync_to_async(self.bot.save)(update_fields=["version_info"])
                 if "get_status" in echo:
                     user_id = echo.split(":")[1]
                     if not receive["data"] or not receive["data"]["good"]:

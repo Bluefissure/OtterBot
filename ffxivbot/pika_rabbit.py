@@ -1,174 +1,181 @@
-import random
-import sys
+# -*- coding: utf-8 -*-
+# pylint: disable=C0111,C0103,R0205
+
 import os
+import sys
+import functools
+import logging
+import time
+import pika
+from pika.exchange_type import ExchangeType
+import django
+from django.db import transaction
+from channels.layers import get_channel_layer
+from channels.exceptions import StopConsumer
+import traceback
+import pika
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 FFXIVBOT_ROOT = os.environ.get("FFXIVBOT_ROOT", BASE_DIR)
 sys.path.append(FFXIVBOT_ROOT)
 os.environ["DJANGO_SETTINGS_MODULE"] = "FFXIV.settings"
-from FFXIV import settings
-import django
-from django.db import transaction
-
 django.setup()
-from channels.layers import get_channel_layer
-from channels.exceptions import StopConsumer
-
-channel_layer = get_channel_layer()
-import traceback
-import pika
-import urllib
-from bs4 import BeautifulSoup
-import logging
-import hmac
-import html
-import codecs
-import base64
-import requests
-import math
-from hashlib import md5
-import time
-import re
-import pytz
-import datetime
-from collections import OrderedDict
-import binascii
-import json
-from asgiref.sync import async_to_sync
-import ffxivbot.handlers as handlers
+from FFXIV import settings
 from ffxivbot.models import *
 from ffxivbot.api_caller import ApiCaller
 from ffxivbot.event_handler import EventHandler
+
+
+channel_layer = get_channel_layer()
 
 
 USE_GRAFANA = getattr(settings, "USE_GRAFANA", False)
 CONFIG_PATH = os.environ.get(
     "FFXIVBOT_CONFIG", os.path.join(FFXIVBOT_ROOT, "ffxivbot/config.json")
 )
-logging.basicConfig(
-    format="%(levelname)s:%(asctime)s:%(name)s:%(message)s", level=logging.INFO
-)
+LOG_FORMAT = "%(levelname)s:%(asctime)s:%(name)s:%(message)s"
 LOGGER = logging.getLogger(__name__)
 
 
 class PikaConsumer(object):
-    """This is based on the example consumer at 
-    https://github.com/pika/pika/blob/master/examples/asynchronous_consumer_example.py
-    """
-
-    EXCHANGE = "message"
-    EXCHANGE_TYPE = "topic"
-    QUEUE = "ffxivbot"
-    ROUTING_KEY = ""
+    EXCHANGE = 'message'
+    EXCHANGE_TYPE = ExchangeType.topic
+    QUEUE = 'ffxivbot'
+    ROUTING_KEY = 'ffxivbot.text'
 
     def __init__(self, amqp_url):
+        self.should_reconnect = False
+        self.was_consuming = False
+
         self._connection = None
         self._channel = None
         self._closing = False
         self._consumer_tag = None
         self._url = amqp_url
+        self._consuming = False
+        self._prefetch_count = 1
 
     def connect(self):
-        LOGGER.info("Connecting to %s", self._url)
-        parameters = pika.URLParameters(self._url)
-
+        LOGGER.info('Connecting to %s', self._url)
         return pika.SelectConnection(
-            parameters, self.on_connection_open, stop_ioloop_on_close=False
-        )
+            parameters=pika.URLParameters(self._url),
+            on_open_callback=self.on_connection_open,
+            on_open_error_callback=self.on_connection_open_error,
+            on_close_callback=self.on_connection_closed)
 
-    def on_connection_open(self, unused_connection):
-        LOGGER.info("Connection opened")
-        self.add_on_connection_close_callback()
+    def close_connection(self):
+        self._consuming = False
+        if self._connection.is_closing or self._connection.is_closed:
+            LOGGER.info('Connection is closing or already closed')
+        else:
+            LOGGER.info('Closing connection')
+            self._connection.close()
+
+    def on_connection_open(self, _unused_connection):
+        LOGGER.info('Connection opened')
         self.open_channel()
 
-    def add_on_connection_close_callback(self):
-        LOGGER.info("Adding connection close callback")
-        self._connection.add_on_close_callback(self.on_connection_closed)
+    def on_connection_open_error(self, _unused_connection, err):
+        LOGGER.error('Connection open failed: %s', err)
+        self.reconnect()
 
-    def on_connection_closed(self, connection, reply_code, reply_text):
+    def on_connection_closed(self, _unused_connection, reason):
         self._channel = None
         if self._closing:
             self._connection.ioloop.stop()
         else:
-            LOGGER.warning(
-                "Connection closed, reopening in 5 seconds: (%s) %s",
-                reply_code,
-                reply_text,
-            )
-            self._connection.add_timeout(5, self.reconnect)
+            LOGGER.warning('Connection closed, reconnect necessary: %s', reason)
+            self.reconnect()
 
     def reconnect(self):
-        self._connection.ioloop.stop()
-        if not self._closing:
-            self._connection = self.connect()
-            self._connection.ioloop.start()
+        self.should_reconnect = True
+        self.stop()
 
     def open_channel(self):
-        LOGGER.info("Creating a new channel")
+        LOGGER.info('Creating a new channel')
         self._connection.channel(on_open_callback=self.on_channel_open)
 
     def on_channel_open(self, channel):
-        LOGGER.info("Channel opened")
+        LOGGER.info('Channel opened')
         self._channel = channel
-        self._channel.basic_qos(prefetch_count=1)
         self.add_on_channel_close_callback()
         self.setup_exchange(self.EXCHANGE)
 
     def add_on_channel_close_callback(self):
-        LOGGER.info("Adding channel close callback")
+        LOGGER.info('Adding channel close callback')
         self._channel.add_on_close_callback(self.on_channel_closed)
 
-    def on_channel_closed(self, channel, reply_code, reply_text):
-        LOGGER.warning(
-            "Channel %i was closed: (%s) %s", channel, reply_code, reply_text
-        )
-        self._connection.close()
+    def on_channel_closed(self, channel, reason):
+        LOGGER.warning('Channel %i was closed: %s', channel, reason)
+        self.close_connection()
 
     def setup_exchange(self, exchange_name):
-        LOGGER.info("Declaring exchange %s", exchange_name)
+        LOGGER.info('Declaring exchange: %s', exchange_name)
+        cb = functools.partial(
+            self.on_exchange_declareok, userdata=exchange_name)
         self._channel.exchange_declare(
-            self.on_exchange_declareok, exchange_name, self.EXCHANGE_TYPE
-        )
+            exchange=exchange_name,
+            exchange_type=self.EXCHANGE_TYPE,
+            callback=cb)
 
-    def on_exchange_declareok(self, unused_frame):
-        LOGGER.info("Exchange declared")
+    def on_exchange_declareok(self, _unused_frame, userdata):
+        LOGGER.info('Exchange declared: %s', userdata)
         self.setup_queue(self.QUEUE)
 
     def setup_queue(self, queue_name):
-        LOGGER.info("Declaring queue %s", queue_name)
+        LOGGER.info('Declaring queue %s', queue_name)
+        cb = functools.partial(self.on_queue_declareok, userdata=queue_name)
         self._channel.queue_declare(
-            self.on_queue_declareok,
-            queue_name,
+            queue=queue_name,
             arguments={"x-max-priority": 20, "x-message-ttl": 60000},
+            callback=cb
         )
 
-    def on_queue_declareok(self, method_frame):
-        LOGGER.info(
-            "Binding %s to %s with %s", self.EXCHANGE, self.QUEUE, self.ROUTING_KEY
-        )
+    def on_queue_declareok(self, _unused_frame, userdata):
+        queue_name = userdata
+        LOGGER.info('Binding %s to %s with %s', self.EXCHANGE, queue_name,
+                    self.ROUTING_KEY)
+        cb = functools.partial(self.on_bindok, userdata=queue_name)
         self._channel.queue_bind(
-            self.on_bindok, self.QUEUE, self.EXCHANGE, self.ROUTING_KEY
-        )
+            queue_name,
+            self.EXCHANGE,
+            routing_key=self.ROUTING_KEY,
+            callback=cb)
 
-    def on_bindok(self, unused_frame):
-        LOGGER.info("Queue bound")
+    def on_bindok(self, _unused_frame, userdata):
+        LOGGER.info('Queue bound: %s', userdata)
+        self.set_qos()
+
+    def set_qos(self):
+        self._channel.basic_qos(
+            prefetch_count=self._prefetch_count, callback=self.on_basic_qos_ok)
+
+    def on_basic_qos_ok(self, _unused_frame):
+        LOGGER.info('QOS set to: %d', self._prefetch_count)
         self.start_consuming()
 
     def start_consuming(self):
-        LOGGER.info("Issuing consumer related RPC commands")
+        LOGGER.info('Issuing consumer related RPC commands')
         self.add_on_cancel_callback()
-        self._consumer_tag = self._channel.basic_consume(self.on_message, self.QUEUE)
+        self._consumer_tag = self._channel.basic_consume(
+            self.QUEUE, self.on_message)
+        self.was_consuming = True
+        self._consuming = True
 
     def add_on_cancel_callback(self):
-        LOGGER.info("Adding consumer cancellation callback")
+        LOGGER.info('Adding consumer cancellation callback')
         self._channel.add_on_cancel_callback(self.on_consumer_cancelled)
 
     def on_consumer_cancelled(self, method_frame):
-        LOGGER.info("Consumer was cancelled remotely, shutting down: %r", method_frame)
+        LOGGER.info('Consumer was cancelled remotely, shutting down: %r',
+                    method_frame)
         if self._channel:
             self._channel.close()
 
-    def on_message(self, unused_channel, basic_deliver, properties, body):
+    def on_message(self, _unused_channel, basic_deliver, properties, body):
+        LOGGER.info('Received message # %s from %s: %s',
+                    basic_deliver.delivery_tag, properties.app_id, body)
+
         try:
             receive = json.loads(body)
             receive["pika_time"] = time.time()
@@ -210,20 +217,35 @@ class PikaConsumer(object):
         self.acknowledge_message(basic_deliver.delivery_tag)
 
     def acknowledge_message(self, delivery_tag):
-        LOGGER.debug("Pid:%s Acknowledging message %s", os.getpid(), delivery_tag)
+        """Acknowledge the message delivery from RabbitMQ by sending a
+        Basic.Ack RPC method for the delivery tag.
+
+        :param int delivery_tag: The delivery tag from the Basic.Deliver frame
+
+        """
+        LOGGER.info('Acknowledging message %s', delivery_tag)
         self._channel.basic_ack(delivery_tag)
 
     def stop_consuming(self):
-        if self._channel:
-            LOGGER.info("Sending a Basic.Cancel RPC command to RabbitMQ")
-            self._channel.basic_cancel(self.on_cancelok, self._consumer_tag)
+        """Tell RabbitMQ that you would like to stop consuming by sending the
+        Basic.Cancel RPC command.
 
-    def on_cancelok(self, unused_frame):
-        LOGGER.info("RabbitMQ acknowledged the cancellation of the consumer")
+        """
+        if self._channel:
+            LOGGER.info('Sending a Basic.Cancel RPC command to RabbitMQ')
+            cb = functools.partial(
+                self.on_cancelok, userdata=self._consumer_tag)
+            self._channel.basic_cancel(self._consumer_tag, cb)
+
+    def on_cancelok(self, _unused_frame, userdata):
+        self._consuming = False
+        LOGGER.info(
+            'RabbitMQ acknowledged the cancellation of the consumer: %s',
+            userdata)
         self.close_channel()
 
     def close_channel(self):
-        LOGGER.info("Closing the channel")
+        LOGGER.info('Closing the channel')
         self._channel.close()
 
     def run(self):
@@ -231,25 +253,61 @@ class PikaConsumer(object):
         self._connection.ioloop.start()
 
     def stop(self):
-        LOGGER.info("Stopping")
-        self._closing = True
-        self.stop_consuming()
-        self._connection.ioloop.start()
-        LOGGER.info("Stopped")
+        if not self._closing:
+            self._closing = True
+            LOGGER.info('Stopping')
+            if self._consuming:
+                self.stop_consuming()
+                self._connection.ioloop.start()
+            else:
+                self._connection.ioloop.stop()
+            LOGGER.info('Stopped')
 
-    def close_connection(self):
-        LOGGER.info("Closing connection")
-        self._connection.close()
+
+class ReconnectingExampleConsumer(object):
+    """This is an example consumer that will reconnect if the nested
+    ExampleConsumer indicates that a reconnect is necessary.
+
+    """
+
+    def __init__(self, amqp_url):
+        self._reconnect_delay = 0
+        self._amqp_url = amqp_url
+        self._consumer = PikaConsumer(self._amqp_url)
+
+    def run(self):
+        while True:
+            try:
+                self._consumer.run()
+            except KeyboardInterrupt:
+                self._consumer.stop()
+                break
+            self._maybe_reconnect()
+
+    def _maybe_reconnect(self):
+        if self._consumer.should_reconnect:
+            self._consumer.stop()
+            reconnect_delay = self._get_reconnect_delay()
+            LOGGER.info('Reconnecting after %d seconds', reconnect_delay)
+            time.sleep(reconnect_delay)
+            self._consumer = PikaConsumer(self._amqp_url)
+
+    def _get_reconnect_delay(self):
+        if self._consumer.was_consuming:
+            self._reconnect_delay = 0
+        else:
+            self._reconnect_delay += 1
+        if self._reconnect_delay > 30:
+            self._reconnect_delay = 30
+        return self._reconnect_delay
 
 
 def main():
-    logging.basicConfig(level=logging.INFO)
-    pikapika = PikaConsumer("amqp://guest:guest@localhost:5672/?heartbeat=600")
-    try:
-        pikapika.run()
-    except KeyboardInterrupt:
-        pikapika.stop()
+    logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
+    amqp_url = 'amqp://guest:guest@localhost:5672/%2F'
+    consumer = ReconnectingExampleConsumer(amqp_url)
+    consumer.run()
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()

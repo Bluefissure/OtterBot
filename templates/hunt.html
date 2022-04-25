@@ -1,5 +1,6 @@
 {% extends 'index.html' %}
 {% load static %}
+{% load tz %}
 
 
 {% block content %}
@@ -155,9 +156,13 @@
                   <td style="text-align: center; vertical-align: middle; width: 5%;"><span
                       class="badge bg-green">{{ monster_info.spawn_percent }}</span></td>
                 {% endif %}
-                <td style="text-align: center; vertical-align: middle;">{{ monster_info.kill_time }}</td>
-                <td style="text-align: center; vertical-align: middle;">{{ monster_info.next_spawn_time }}</td>
-                <td style="text-align: center; vertical-align: middle;">{{ monster_info.next_pop_time }}</td>
+
+                {% localtime on %}
+                <td style="text-align: center; vertical-align: middle;">{{ monster_info.kill_time|date:"m-d H:i:s" }}</td>
+                <td style="text-align: center; vertical-align: middle;">{{ monster_info.next_spawn_time|date:"m-d H:i:s" }}</td>
+                <td style="text-align: center; vertical-align: middle;">{{ monster_info.next_pop_time|date:"m-d H:i:s" }}</td>
+                {% endlocaltime %}
+                
                 <td style="text-align: left; vertical-align: middle; width: 25%;">{{ monster_info.info }}</td>
                 </tr>
                 {% endfor %}

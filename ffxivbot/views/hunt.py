@@ -1,5 +1,6 @@
 import time
-import datetime
+from datetime import datetime
+from django.utils.timezone import make_aware
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q, Max
 from ffxivbot.models import Monster, HuntLog, HuntGroup
@@ -91,9 +92,9 @@ def gen_hunts(user, sonar=False):
             monster_info["spawn_deltaf"] = spawn_deltaf
             monster_info["spawn_delta"] = spawn_delta
             monster_info["in_cd"] = in_cd
-            monster_info["kill_time"] = time.strftime(TIMEFORMAT_MDHMS, time.localtime(kill_time))
-            monster_info["next_spawn_time"] = time.strftime(TIMEFORMAT_MDHMS, time.localtime(next_spawn_time))
-            monster_info["next_pop_time"] = time.strftime(TIMEFORMAT_MDHMS, time.localtime(next_pop_time))
+            monster_info["kill_time"] = make_aware(datetime.fromtimestamp(kill_time))
+            monster_info["next_spawn_time"] = make_aware(datetime.fromtimestamp(next_spawn_time))
+            monster_info["next_pop_time"] = make_aware(datetime.fromtimestamp(next_pop_time))
             monster_info["info"] = monster.info
             monster_info["resource"] = str(hunt_group)
             hunt_list.append(monster_info)

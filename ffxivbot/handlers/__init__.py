@@ -104,7 +104,7 @@ alter_commands = {
 
 # FFXIV Commands
 from .QQCommand_dps import QQCommand_dps
-from .QQCommand_etro import QQCommand_etro
+# from .QQCommand_etro import QQCommand_etro
 from .QQCommand_fsx import QQCommand_fsx
 from .QQCommand_gate import QQCommand_gate
 from .QQCommand_market import QQCommand_market

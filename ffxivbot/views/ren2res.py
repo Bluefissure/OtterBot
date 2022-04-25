@@ -16,7 +16,7 @@ def ren2res(template: str, req, dict={}, json_res=False):
     else:
         dict.update({'user': False})
     if req:
-        if json_res and req.is_ajax() and req.method == 'GET':
+        if json_res and req.method == 'GET':
             return JsonResponse(dict)
         return render(req, template, dict)
     else:
