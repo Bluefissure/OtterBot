@@ -9,7 +9,7 @@ commands = {
     "/about": "关于此项目",
     "/donate": "援助作者",
     "/random": "掷骰子",
-    "/chp": "彩虹屁",
+    # "/chp": "彩虹屁",
     "/anime": '以图搜番（"/anime 图片"）',
     "/gif": '生成沙雕图（"/gif help"）',
     "/dice": 'DnD掷骰子（"/dice 3d12"）',
@@ -30,7 +30,7 @@ commands = {
     "/nuannuan": "本周金蝶暖暖作业",
     #"/genshin": "原神圣遗物评分",
     #"/hso": "好色哦",
-    "/hhsh": "好好说话",
+    # "/hhsh": "好好说话",
     "/bot": "机器人相关功能",
     "/ifttt": "IFTTT推送系统",
     "/akhr": "罗德岛公开招募",
@@ -124,11 +124,11 @@ from .QQCommand_about import QQCommand_about
 from .QQCommand_abv import QQCommand_abv
 from .QQCommand_anime import QQCommand_anime
 from .QQCommand_cat import QQCommand_cat
-from .QQCommand_chp import QQCommand_chp
+# from .QQCommand_chp import QQCommand_chp
 from .QQCommand_dice import QQCommand_dice
 from .QQCommand_duilian import QQCommand_duilian
 from .QQCommand_gif import QQCommand_gif
-from .QQCommand_hhsh import QQCommand_hhsh  # be sure to come before /hh
+# from .QQCommand_hhsh import QQCommand_hhsh  # be sure to come before /hh
 from .QQCommand_hh import QQCommand_hh  # FFXIV Command
 from .QQCommand_hso import QQCommand_hso
 from .QQCommand_ifttt import QQCommand_ifttt

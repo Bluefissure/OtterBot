@@ -147,13 +147,13 @@
                 {% endif %}
                 {% if monster_info.schedulef > 1 %}
                   <td style="text-align: center; vertical-align: middle; width: 5%;"><span
-                      class="badge bg-red">{{ monster_info.schedule }}</span></td>
+                      class="badge bg-red">{{ monster_info.spawn_percent }}</span></td>
                 {% elif monster_info.schedulef < monster_info.cd_schedulef %}
                   <td style="text-align: center; vertical-align: middle; width: 5%;"><span
-                      class="badge bg-gray">{{ monster_info.schedule }}</span></td>
+                      class="badge bg-gray">{{ monster_info.spawn_delta }}</span></td>
                 {% else %}
                   <td style="text-align: center; vertical-align: middle; width: 5%;"><span
-                      class="badge bg-green">{{ monster_info.schedule }}</span></td>
+                      class="badge bg-green">{{ monster_info.spawn_percent }}</span></td>
                 {% endif %}
                 <td style="text-align: center; vertical-align: middle;">{{ monster_info.kill_time }}</td>
                 <td style="text-align: center; vertical-align: middle;">{{ monster_info.next_spawn_time }}</td>

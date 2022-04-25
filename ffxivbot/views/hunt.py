@@ -1,11 +1,16 @@
-import copy
 import time
-import json
+import datetime
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q, Max
-from ffxivbot.models import Monster, Server, HuntLog, HuntGroup
+from ffxivbot.models import Monster, HuntLog, HuntGroup
 from .ren2res import ren2res
 import traceback
+
+def get_hms(seconds):
+    seconds = abs(int(seconds))
+    m, s = divmod(seconds, 60)
+    h, m = divmod(m, 60)
+    return h, m, s
 
 def gen_hunts(user, sonar=False):
     hunt_list = []
@@ -44,8 +49,13 @@ def gen_hunts(user, sonar=False):
             next_pop_time = kill_time + pop_cooldown
             cd_schedulef = spawn_cooldown / pop_cooldown
             schedulef = (time.time() - kill_time) / pop_cooldown
+            spawn_deltaf = (time.time() - next_spawn_time)
+            spawn_percentf = (time.time() - next_spawn_time) / (pop_cooldown - spawn_cooldown)
             cd_schedule = "{:.2%}".format(cd_schedulef)
             schedule = "{:.2%}".format(schedulef)
+            spawn_percent = "{:.2%}".format(spawn_percentf)
+            h, m, s = get_hms(spawn_deltaf)
+            spawn_delta = f'-{h:d}:{m:02d}:{s:02d}'
             if schedulef >= cd_schedulef:
                 schedule_diff = schedulef - cd_schedulef
                 schedule_diff = "{:.2%}".format(schedule_diff)
@@ -74,8 +84,12 @@ def gen_hunts(user, sonar=False):
             monster_info["schedule_diff"] = schedule_diff
             monster_info["cd_schedulef"] = cd_schedulef
             monster_info["cd_schedule"] = cd_schedule
+            monster_info["spawn_percentf"] = spawn_percentf
+            monster_info["spawn_percent"] = spawn_percent
             monster_info["schedulef"] = schedulef
             monster_info["schedule"] = schedule
+            monster_info["spawn_deltaf"] = spawn_deltaf
+            monster_info["spawn_delta"] = spawn_delta
             monster_info["in_cd"] = in_cd
             monster_info["kill_time"] = time.strftime(TIMEFORMAT_MDHMS, time.localtime(kill_time))
             monster_info["next_spawn_time"] = time.strftime(TIMEFORMAT_MDHMS, time.localtime(next_spawn_time))
@@ -132,3 +146,6 @@ NAME_TAG = {
 # What's the point???
 def server2tag(server_name):
     return NAME_TAG.get(server_name, "Unknown")
+
+
+# Helper functions to calculate special conditions
