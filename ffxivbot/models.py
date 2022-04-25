@@ -4,11 +4,25 @@ from django.utils.html import mark_safe
 from datetime import datetime
 from pytz import timezone
 from urllib.parse import urlparse
+from django.db import connections
 import hashlib
 import requests
 import os
 import json
 import time
+
+last_check_time = 0
+
+
+# Fix mysql gone away issue
+def close_old_connections():
+    global last_check_time
+    current_time = time.time()
+    if last_check_time + 30 <= current_time:
+        last_check_time = current_time
+        for conn in connections.all():
+            conn.close_if_unusable_or_obsolete()
+
 
 # Create your models here.
 
@@ -18,6 +32,7 @@ class WeiboUser(models.Model):
     uid = models.CharField(default="", max_length=16)
     containerid = models.CharField(default="", max_length=32)
     last_update_time = models.BigIntegerField(default=0)
+    close_old_connections()
 
     def __str__(self):
         return self.name
@@ -30,6 +45,7 @@ class LiveUser(models.Model):
     info = models.TextField(default="{}")
     status = models.CharField(max_length=32, default="default")
     last_update_time = models.BigIntegerField(default=0)
+    close_old_connections()
 
     def __str__(self):
         return "{}#{}:{}".format(self.platform, self.room_id, self.name)
@@ -78,6 +94,7 @@ class Server(models.Model):
     groupId = models.IntegerField(default=25)
     alter_names = models.TextField(default="[]")
     worldId = models.IntegerField(default=0)
+    close_old_connections()
 
     def __str__(self):
         return self.name
@@ -113,6 +130,7 @@ class QQGroup(models.Model):
     )
     sonar_sub_servers = models.ManyToManyField(Server, related_name="sonar_sub_by_groups", blank=True)
     sonar_sub_ranks = models.TextField(default="[]", null=True, blank=True)
+    close_old_connections()
 
     def __str__(self):
         return self.group_id
@@ -124,6 +142,7 @@ class WeiboTile(models.Model):
     content = models.TextField(default="{}")
     crawled_time = models.BigIntegerField(default=0)
     pushed_group = models.ManyToManyField(QQGroup, related_name="pushed_weibo")
+    close_old_connections()
 
     def __str__(self):
         return self.itemid
@@ -133,6 +152,7 @@ class CustomReply(models.Model):
     group = models.ForeignKey(QQGroup, on_delete=models.CASCADE)
     key = models.CharField(default="", max_length=64, blank=True)
     value = models.TextField(default="", blank=True)
+    close_old_connections()
 
     class Meta:
         indexes = [models.Index(fields=["group", "key"])]
@@ -145,6 +165,7 @@ class ChatMessage(models.Model):
     timestamp = models.BigIntegerField(default=0)
     times = models.IntegerField(default=1)
     repeated = models.BooleanField(default=False)
+    close_old_connections()
 
     class Meta:
         indexes = [models.Index(fields=["group", "message_hash"])]
@@ -156,6 +177,7 @@ class BanMember(models.Model):
     ban_time = models.IntegerField(default=0)
     vote_list = models.TextField(default="{}")
     timestamp = models.BigIntegerField(default=0)
+    close_old_connections()
 
 
 class Revenge(models.Model):
@@ -164,12 +186,14 @@ class Revenge(models.Model):
     vote_list = models.TextField(default="{}")
     timestamp = models.BigIntegerField(default=0)
     ban_time = models.IntegerField(default=0)
+    close_old_connections()
 
 
 class Quest(models.Model):
     quest_id = models.IntegerField(primary_key=True)
     name = models.CharField(default="", max_length=64, blank=True)
     cn_name = models.CharField(default="", max_length=64, blank=True)
+    close_old_connections()
 
     def __str__(self):
         return str(self.name)
@@ -194,6 +218,7 @@ class Boss(models.Model):
     cn_server = models.IntegerField(
         default=5
     )  # 5 for boss after 5.0, 3 for boss before 5.0
+    close_old_connections()
 
     def __str__(self):
         return str(self.name)
@@ -203,6 +228,7 @@ class Job(models.Model):
     name = models.CharField(default="", max_length=64, blank=True)
     cn_name = models.CharField(default="", max_length=64, blank=True)
     nickname = models.TextField(default="{}")
+    close_old_connections()
 
     def __str__(self):
         return str(self.name)
@@ -214,6 +240,7 @@ class Vote(models.Model):
     starttime = models.BigIntegerField(default=0)
     endtime = models.BigIntegerField(default=0)
     vote = models.TextField(default="{}")
+    close_old_connections()
 
     def __str__(self):
         return str(self.name)
@@ -254,6 +281,7 @@ class QQBot(models.Model):
     sonar_sub_ranks = models.TextField(default="[]", null=True, blank=True)
     sonar_sub_groups = models.ManyToManyField(QQGroup, related_name="sonar_sub_by_bots", blank=True)
     sonar_sub_servers = models.ManyToManyField(Server, related_name="sonar_sub_by_bots", blank=True)
+    close_old_connections()
 
     def __str__(self):
         return self.name
@@ -272,6 +300,7 @@ class PlotQuest(models.Model):
     quest_type = models.IntegerField(
         default=0
     )  # 0:nothing 3:main-scenario 8:special 1,10:other
+    close_old_connections()
 
     def __str__(self):
         return self.name
@@ -290,6 +319,7 @@ class Comment(models.Model):
     bot_id = models.CharField(max_length=16, default="")
     content = models.TextField(default="", blank=True)
     reply = models.TextField(default="", blank=True)
+    close_old_connections()
 
     def __str__(self):
         return self.content[:10]
@@ -299,6 +329,7 @@ class SorryGIF(models.Model):
     name = models.CharField(max_length=16)
     api_name = models.CharField(max_length=32)
     example = models.TextField(default="")
+    close_old_connections()
 
     def __str__(self):
         return self.name
@@ -327,6 +358,7 @@ class QQUser(models.Model):
     server = models.ForeignKey(
         Server, on_delete=models.DO_NOTHING, blank=True, null=True
     )
+    close_old_connections()
 
     def __str__(self):
         return str(self.user_id)
@@ -335,6 +367,7 @@ class QQUser(models.Model):
 class HsoAlterName(models.Model):
     name = models.CharField(max_length=32, unique=True, default="")
     key = models.CharField(max_length=64, default="")
+    close_old_connections()
 
     def __str__(self):
         return self.name
@@ -343,6 +376,7 @@ class HsoAlterName(models.Model):
 class Weather(models.Model):
     id = models.IntegerField(primary_key=True)
     name = models.CharField(max_length=32, default="")
+    close_old_connections()
 
     def __str__(self):
         return self.name
@@ -351,6 +385,7 @@ class Weather(models.Model):
 class WeatherRate(models.Model):
     id = models.IntegerField(primary_key=True)
     rate = models.TextField(default="[]")
+    close_old_connections()
 
 
 class Territory(models.Model):
@@ -360,6 +395,7 @@ class Territory(models.Model):
         WeatherRate, blank=True, null=True, on_delete=models.CASCADE
     )
     mapid = models.IntegerField(default=0)
+    close_old_connections()
 
     def __str__(self):
         return self.name
@@ -383,6 +419,7 @@ class Image(models.Model):
         blank=True,
         null=True,
     )
+    close_old_connections()
 
     def __str__(self):
         return self.name
@@ -426,6 +463,7 @@ class Lottery(models.Model):
     public = models.BooleanField(default=False)
     max_participate = models.IntegerField(default=-1)
     mode = models.IntegerField(default=1)  # 0: system random shuffle 1: random.org
+    close_old_connections()
 
     def __str__(self):
         return self.name
@@ -492,6 +530,7 @@ class ContentFinderItem(models.Model):
     name = models.CharField(max_length=64, default="")
     nickname = models.TextField(default="{}")
     guide = models.TextField(default="")
+    close_old_connections()
 
     def __str__(self):
         return self.name
@@ -504,6 +543,7 @@ class CommandLog(models.Model):
     bot_id = models.CharField(max_length=16)
     user_id = models.CharField(max_length=64)
     group_id = models.CharField(max_length=64)
+    close_old_connections()
 
     @property
     def message_info(self):
@@ -525,6 +565,7 @@ class HuntGroup(models.Model):
     servermark = models.CharField(default="", max_length=16, blank=True, null=True)
     remark = models.CharField(default="", max_length=64, blank=True, null=True)
     public = models.BooleanField(default=False)
+    close_old_connections()
 
     def __str__(self):
         return self.name if self.name else "{}-{}".format(self.group, self.server)
@@ -544,6 +585,8 @@ class Monster(models.Model):
     info = models.CharField(default="", max_length=128)
     status = models.TextField(default="{}")
     key = models.IntegerField(default=0)
+    close_old_connections()
+
 
     def spawn_cd_hour(self):
         return self.spawn_cooldown // 3600
@@ -574,6 +617,7 @@ class HuntLog(models.Model):
     instance_id = models.IntegerField(default=0, blank=True, null=True)
     log_type = models.CharField(default="", max_length=16)
     time = models.BigIntegerField(default=0)
+    close_old_connections()
 
     def __str__(self):
         return "{}_{}_{}".format(self.server, self.monster, self.instance_id)
@@ -605,6 +649,7 @@ class IFTTTChannel(models.Model):
     members = models.ManyToManyField(QQUser, blank=True)
     last_push_time = models.BigIntegerField(default=0)
     callback_link = models.CharField(default="", max_length=256, blank=True, null=True)
+    close_old_connections()
 
     def __str__(self):
         return self.name
@@ -618,6 +663,7 @@ class TreasureMap(models.Model):
     rank = models.CharField(max_length=8, default="")
     number = models.IntegerField(default=0)
     uri = models.TextField(default="")
+    close_old_connections()
 
     def __str__(self):
         return "{}#{}".format(self.territory, self.number)
@@ -627,6 +673,7 @@ class Screen(models.Model):
     name = models.CharField(default="", max_length=64, blank=True)
     nickname = models.TextField(default="{}")
     classname = models.CharField(default="", max_length=64, blank=True)
+    close_old_connections()
 
     def __str__(self):
         return str(self.name)
@@ -636,6 +683,7 @@ class LuckData(models.Model):
     number = models.IntegerField(default=0)
     text = models.TextField(default="")
     img_url = models.CharField(max_length=128, default="")
+    close_old_connections()
 
     def __str__(self):
         return str(self.number)
@@ -651,6 +699,7 @@ class TomonBot(models.Model):
     last_heartbeat = models.BigIntegerField(default=0)
     heartbeat_interval = models.BigIntegerField(default=0)
     bot = models.BooleanField(default=False)
+    close_old_connections()
 
     def auth(self, api_base="https://beta.tomon.co/api/v1"):
         if self.bot:
@@ -674,3 +723,4 @@ class HousingPreset(models.Model):
     tags = models.TextField(blank=True)
     uploader = models.CharField(max_length=256)
     user_id = models.CharField(max_length=32)
+    close_old_connections()
