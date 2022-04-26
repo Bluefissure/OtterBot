@@ -72,11 +72,8 @@ class WSConsumer(AsyncWebsocketConsumer):
         headers = {}
         for (k, v) in header_list:
             headers[k.decode()] = v.decode()
-        true_ip = None
-        try:
-            true_ip = headers["x-forwarded-for"]
-        except BaseException:
-            pass
+        true_ip = headers.get("x-forwarded-for", None)
+        true_ip = headers.get("cf-connecting-ip", true_ip)
         try:
             ws_self_id = headers["x-self-id"]
             ws_access_token = (
@@ -88,7 +85,7 @@ class WSConsumer(AsyncWebsocketConsumer):
             user_agent = headers.get("user-agent", "Unknown")
             if client_role != "Universal":
                 LOGGER.error("Unkown client_role: {}".format(client_role))
-                # await self.close()
+                await self.close()
                 return
             if (
                 "CQHttp" not in user_agent
