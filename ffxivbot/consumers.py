@@ -67,7 +67,7 @@ class PikaPublisher:
 
 class WSConsumer(AsyncWebsocketConsumer):
     async def connect(self):
-        self.pub = PikaPublisher()
+        self.pub = None
         header_list = self.scope["headers"]
         headers = {}
         for (k, v) in header_list:
@@ -130,6 +130,7 @@ class WSConsumer(AsyncWebsocketConsumer):
             await sync_to_async(self.bot.save, thread_sensitive=True)(
                 update_fields=["event_time", "api_channel_name", "event_channel_name"]
             )
+            self.pub = PikaPublisher()
             await self.accept()
         except QQBot.DoesNotExist:
             LOGGER.error(
@@ -151,10 +152,16 @@ class WSConsumer(AsyncWebsocketConsumer):
                 self.channel_name
             )
         )
-        self.pub.exit()
+        if self.pub:
+            self.pub.exit()
         gc.collect()
 
     async def receive(self, text_data):
+        if not self.pub:
+            LOGGER.error(
+                "WSConsumer PikaPublisher is not initialized"
+            )
+            return
         receive = json.loads(text_data)
 
         if "post_type" in receive.keys():
