@@ -6,6 +6,7 @@ from django.http import HttpResponseRedirect
 from FFXIV import settings
 from ffxivbot.models import *
 from .ren2res import ren2res
+import time
 import random
 import string
 
