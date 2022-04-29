@@ -2,55 +2,20 @@ from .QQEventHandler import QQEventHandler
 from .QQUtils import *
 from ffxivbot.models import *
 import logging
-import json
-import random
 import requests
-from bs4 import BeautifulSoup
-import urllib
 import logging
 import time
 import traceback
 
-
 def get_xialian(shanglian):
-    url = "https://duilian.msra.cn/app/CoupletsWS_V2.asmx/GetXiaLian"
-    data = {
-        "shanglian": shanglian,
-        "xialianLocker": "0" * len(shanglian),
-        "isUpdate": False,
-    }
-    r = requests.post(
-        url=url,
-        data=json.dumps(data),
-        headers={"Content-Type": "application/json"},
+    r = requests.get(
+        url = f"https://ai-backend.binwang.me/v0.2/couplet/{shanglian}",
         timeout=15,
     )
-    # print(r.text)
-    jres = json.loads(r.text)
-    if "d" in jres.keys():
-        sets = jres["d"]["XialianSystemGeneratedSets"]
-        set_idx = random.randint(0, len(sets) - 1)
-        xialian = sets[set_idx]["XialianCandidates"]
-        xialian = xialian[random.randint(0, len(xialian) - 1)]
-        return xialian
-
-
-def get_hengpi(shanglian, xialian):
-    url = "https://duilian.msra.cn/app/CoupletsWS_V2.asmx/GetHengPi"
-    data = {"shanglian": shanglian, "xialian": xialian}
-    r = requests.post(
-        url=url,
-        data=json.dumps(data),
-        headers={"Content-Type": "application/json"},
-        timeout=15,
-    )
-    # print(r.text)
-    jres = json.loads(r.text)
-    if "d" in jres.keys():
-        sets = jres["d"]
-        hengpi = sets[random.randint(0, len(sets) - 1)]
-        return hengpi
-
+    r = r.json()
+    if len(r["output"]) == 0:
+        return ""
+    return r["output"][0]
 
 def QQCommand_duilian(*args, **kwargs):
     try:
@@ -70,15 +35,12 @@ def QQCommand_duilian(*args, **kwargs):
             if message_content.find("help") == 0 or message_content == "":
                 msg = (
                     "/duilian $shanglian : 生成$shanglian的下联\n"
-                    + "Powered by https://duilian.msra.cn"
+                    + "Powered by https://ai.binwang.me/couplet/"
                 )
             else:
                 shanglian = message_content
                 xialian = get_xialian(shanglian)
-                hengpi = ""
-                if shanglian and xialian:
-                    hengpi = get_hengpi(shanglian, xialian)
-                msg = "{}\n{}\n{}".format(shanglian, xialian, hengpi)
+                msg = f"上联：{shanglian}\n下联：{xialian}"
 
         if type(msg) == str:
             msg = msg.strip()
