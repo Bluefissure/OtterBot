@@ -4,6 +4,7 @@ from ffxivbot.models import *
 import logging
 import requests
 import logging
+import random
 import time
 import traceback
 
@@ -15,7 +16,7 @@ def get_xialian(shanglian):
     r = r.json()
     if len(r["output"]) == 0:
         return ""
-    return r["output"][0]
+    return random.choice([i for i in r["output"] if i != ""])
 
 def QQCommand_duilian(*args, **kwargs):
     try:
