@@ -10,6 +10,7 @@ import json
 from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.layers import get_channel_layer
 from asgiref.sync import sync_to_async
+from asyncio.exceptions import CancelledError
 
 channel_layer = get_channel_layer()
 logging.basicConfig(
@@ -113,20 +114,25 @@ class WSConsumer(AsyncWebsocketConsumer):
             bot = None
             # with transaction.atomic():
             #   bot = QQBot.objects.select_for_update().get(user_id=ws_self_id,access_token=ws_access_token)
-            bot = await sync_to_async(QQBot.objects.get, thread_sensitive=True)(user_id=ws_self_id, access_token=ws_access_token)
+            try:
+                bot = await sync_to_async(QQBot.objects.get, thread_sensitive=True)(user_id=ws_self_id, access_token=ws_access_token)
+                self.bot = bot
+                self.bot_user_id = self.bot.user_id
+                self.bot.event_time = int(time.time())
+                self.bot.api_channel_name = self.channel_name
+                self.bot.event_channel_name = self.channel_name
+                LOGGER.info(
+                    "New Universal Connection: %s of bot %s"
+                    % (self.channel_name, self.bot.user_id)
+                )
+                await sync_to_async(self.bot.save, thread_sensitive=True)(
+                    update_fields=["event_time", "api_channel_name", "event_channel_name"]
+                )
+            except CancelledError as e:
+                LOGGER.error(
+                    f"Bot {bot} update failed: {e}", exc_info=True, stack_info=True
+                )
 
-            self.bot = bot
-            self.bot_user_id = self.bot.user_id
-            self.bot.event_time = int(time.time())
-            self.bot.api_channel_name = self.channel_name
-            self.bot.event_channel_name = self.channel_name
-            LOGGER.info(
-                "New Universal Connection: %s of bot %s"
-                % (self.channel_name, self.bot.user_id)
-            )
-            await sync_to_async(self.bot.save, thread_sensitive=True)(
-                update_fields=["event_time", "api_channel_name", "event_channel_name"]
-            )
             self.pub = PikaPublisher()
             await self.accept()
         except QQBot.DoesNotExist:
