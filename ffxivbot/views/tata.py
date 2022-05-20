@@ -9,12 +9,14 @@ import json
 import os
 import re
 import yaml
+import redis
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 FFXIVBOT_ROOT = os.environ.get("FFXIVBOT_ROOT", BASE_DIR)
 CONFIG_PATH = os.environ.get(
     "FFXIVBOT_CONFIG", os.path.join(FFXIVBOT_ROOT, "ffxivbot/config.json")
 )
+REDIST_URL = "localhost" if os.environ.get('IS_DOCKER', '') != 'Docker' else 'redis'
 
 
 def generate_web_base(web_base_url: str) -> dict:
@@ -398,10 +400,13 @@ def tata(req):
             response.write(bot_conf)
             return response
         return JsonResponse(res_dict)
-
+    REDIS_CLIENT = redis.Redis(host=REDIST_URL, port=6379, decode_responses=True)
     bots = QQBot.objects.all()
     bot_list = []
     for bot in bots:
+        bot_event_time = int(REDIS_CLIENT.get(f"bot_event_time:{bot.user_id}") or 0)
+        if not bot_event_time:
+            bot_event_time = bot.event_time
         bb = {}
         version_info = json.loads(bot.version_info)
         coolq_edition = get_bot_version(version_info)
@@ -424,7 +429,7 @@ def tata(req):
         bb["group_num"] = group_num
         bb["friend_num"] = friend_num
         bb["coolq_edition"] = coolq_edition
-        bb["online"] = time.time() - bot.event_time < 300
+        bb["online"] = time.time() - bot_event_time < 300
         bb["id"] = bot.id
         bb["public"] = bot.public
         bb["autoinvite"] = bot.auto_accept_invite

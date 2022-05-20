@@ -7,6 +7,7 @@ from ffxivbot.models import *
 import time
 import os
 import json
+import redis
 from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.layers import get_channel_layer
 from asgiref.sync import sync_to_async
@@ -17,6 +18,7 @@ logging.basicConfig(
     format="%(levelname)s:%(asctime)s:%(name)s:%(message)s", level=logging.INFO
 )
 LOGGER = logging.getLogger(__name__)
+REDIST_URL = "localhost" if os.environ.get('IS_DOCKER', '') != 'Docker' else 'redis'
 # FFXIVBOT_ROOT = os.environ.get("FFXIVBOT_ROOT", settings.BASE_DIR)
 # CONFIG_PATH = os.environ.get(
 #     "FFXIVBOT_CONFIG", os.path.join(FFXIVBOT_ROOT, "ffxivbot/config.json")
@@ -68,7 +70,9 @@ class PikaPublisher:
 
 class WSConsumer(AsyncWebsocketConsumer):
     async def connect(self):
+        self.redis = None
         self.pub = None
+        self.bot = None
         header_list = self.scope["headers"]
         headers = {}
         for (k, v) in header_list:
@@ -111,11 +115,18 @@ class WSConsumer(AsyncWebsocketConsumer):
                 LOGGER.error(f"Unkown UA: {user_agent}")
                 await self.close()
 
+            self.redis = redis.Redis(host=REDIST_URL, port=6379, decode_responses=True)
+            if self.redis:
+                bot_hash = f"bot_channel_name:{ws_self_id}"
+                self.redis.set(bot_hash, self.channel_name, ex=3600)
+
             bot = None
             # with transaction.atomic():
             #   bot = QQBot.objects.select_for_update().get(user_id=ws_self_id,access_token=ws_access_token)
             try:
                 bot = await sync_to_async(QQBot.objects.get, thread_sensitive=True)(user_id=ws_self_id, access_token=ws_access_token)
+                if not bot:
+                    return
                 self.bot = bot
                 self.bot_user_id = self.bot.user_id
                 self.bot.event_time = int(time.time())
@@ -130,7 +141,7 @@ class WSConsumer(AsyncWebsocketConsumer):
                 )
             except CancelledError as e:
                 LOGGER.error(
-                    f"Bot {bot} update failed: {e}", exc_info=True, stack_info=True
+                    f"Bot {bot} update failed: {e}"
                 )
 
             self.pub = PikaPublisher()
@@ -151,8 +162,9 @@ class WSConsumer(AsyncWebsocketConsumer):
 
     async def disconnect(self, close_code):
         LOGGER.info(
-            "Universal Channel disconnect from channel:{}".format(
-                self.channel_name
+            "Universal Channel disconnect from channel:{} bot:{}".format(
+                self.channel_name,
+                self.bot.user_id if self.bot else None,
             )
         )
         if self.pub:
@@ -160,16 +172,35 @@ class WSConsumer(AsyncWebsocketConsumer):
         gc.collect()
 
     async def receive(self, text_data):
+        if not self.bot:
+            LOGGER.error(
+                "Bot of this connection is not set"
+            )
+            await self.close()
+            return
         if not self.pub:
             LOGGER.error(
                 "WSConsumer PikaPublisher is not initialized"
             )
+            await self.close()
             return
+        if self.redis:
+            bot_hash = f"bot_channel_name:{self.bot.user_id}"
+            redis_channel_name = self.redis.get(bot_hash)
+            if redis_channel_name != self.channel_name:
+                LOGGER.error(
+                    f"Channel name mismatch \"{redis_channel_name}\" --- \"{self.channel_name}\""
+                )
+                await self.close()
+                return
         receive = json.loads(text_data)
 
         if "post_type" in receive.keys():
-            self.bot.event_time = int(time.time())
-            await sync_to_async(self.bot.save, thread_sensitive=True)(update_fields=["event_time"])
+            if self.redis:
+                bot_hash = f"bot_event_time:{self.bot.user_id}"
+                self.redis.set(bot_hash, str(int(time.time())), ex=3600)
+            # self.bot.event_time = int(time.time())
+            # await sync_to_async(self.bot.save, thread_sensitive=True)(update_fields=["event_time"])
             # with open(CONFIG_PATH, encoding="utf-8") as f:
             #     self.config = json.load(f)
             try:
@@ -227,8 +258,8 @@ class WSConsumer(AsyncWebsocketConsumer):
                 )
                 traceback.print_exc()
         else:
-            self.bot.api_time = int(time.time())
-            await sync_to_async(self.bot.save, thread_sensitive=True)(update_fields=["api_time"])
+            # self.bot.api_time = int(time.time())
+            # await sync_to_async(self.bot.save, thread_sensitive=True)(update_fields=["api_time"])
             if int(receive["retcode"]) != 0:
                 if int(receive["retcode"]) == 1 and receive["status"] == "async":
                     LOGGER.warning("API waring:" + text_data)
