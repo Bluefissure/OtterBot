@@ -34,7 +34,7 @@ mysqlclient==2.1.0
 numpy==1.22.3
 packaging==21.3
 pika==1.2.0
-Pillow==9.1.0
+Pillow==9.1.1
 pyasn1==0.4.8
 pyasn1-modules==0.2.8
 pycparser==2.21
