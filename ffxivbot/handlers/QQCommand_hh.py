@@ -41,33 +41,27 @@ def search_id(glamour_id):
             r = r["array"][0]
             result["flag"] = 200
             result["sc"] = (
-                "主手：{0:{6}<25}\t副手：{1}-{2}\n\n\n头部：{3:{6}<25}\t耳环：{4}-{5}\n\n\n".format(
-                    r["glamourWeaponry"] + "-" + r["glamourWeaponryColor"],
-                    r["glamourSecond"],
-                    r["glamourSecondColor"],
-                    r["glamourHeadgear"] + "-" + r["glamourHeadgearColor"],
-                    r["glamourEarringsgear"],
-                    r["glamourEarringsgearColor"],
+                "主手：{0:{4}<25}\t副手：{1}\n\n\n头部：{2:{4}<25}\t耳环：{3}\n\n\n".format(
+                    str(r.get("glamourWeaponry") or "") + "-" + str(r.get("glamourWeaponryColor") or ""),
+                    str(r.get("glamourSecond") or "") + "-" + str(r.get("glamourSecondColor") or ""),
+                    str(r.get("glamourHeadgear") or "") + "-" + str(r.get("glamourHeadgearColor") or ""),
+                    str(r.get("glamourEarringsgear") or "") + "-" +  str(r.get("glamourEarringsgearColor") or ""),
                     chr(12288),
                     end="",
                 )
-                + "上衣：{0:{6}<25}\t项链：{1}-{2}\n\n\n手套：{3:{6}<25}\t手镯：{4}-{5}\n\n\n".format(
-                    r["glamourBodygear"] + "-" + r["glamourBodygearColor"],
-                    r["glamourNecklacegear"],
-                    r["glamourNecklacegearColor"],
-                    r["glamourHandgear"] + "-" + r["glamourHandgearColor"],
-                    r["glamourArmillaegear"],
-                    r["glamourArmillaegearColor"],
+                + "上衣：{0:{4}<25}\t项链：{1}\n\n\n手套：{2:{4}<25}\t手镯：{3}\n\n\n".format(
+                    str(r.get("glamourBodygear") or "") + "-" + str(r.get("glamourBodygearColor") or ""),
+                    str(r.get("glamourNecklacegear") or "") + "-" + str(r.get("glamourNecklacegearColor") or ""),
+                    str(r.get("glamourHandgear") or "") + "-" + str(r.get("glamourHandgearColor") or ""),
+                    str(r.get("glamourArmillaegear") or "") + "-" + str(r.get("glamourArmillaegearColor") or ""),
                     chr(12288),
                     end="",
                 )
-                + "腿部：{0:{6}<25}\t戒指：{1}-{2}\n\n\n脚部：{3:{6}<25}\t戒指：{4}-{5}".format(
-                    r["glamourLeggear"] + "-" + r["glamourLeggearColor"],
-                    r["glamourRingLgear"],
-                    r["glamourRingLgearColor"],
-                    r["glamourFootgear"] + "-" + r["glamourFootgearColor"],
-                    r["glamourRingRgear"],
-                    r["glamourRingRgearColor"],
+                + "腿部：{0:{4}<25}\t戒指：{1}\n\n\n脚部：{2:{4}<25}\t戒指：{3}".format(
+                    str(r.get("glamourLeggear") or "") + "-" + str(r.get("glamourLeggearColor") or ""),
+                    str(r.get("glamourRingLgear") or "") + "-" + str(r.get("glamourRingLgearColor") or ""),
+                    str(r.get("glamourFootgear") or "") + "-" + str(r.get("glamourFootgearColor") or ""),
+                    str(r.get("glamourRingRgear") or "") + "-" + str(r.get("glamourRingRgearColor") or ""),
                     chr(12288),
                     end="",
                 )
