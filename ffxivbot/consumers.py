@@ -118,7 +118,7 @@ class WSConsumer(AsyncWebsocketConsumer):
             self.redis = redis.Redis(host=REDIST_URL, port=6379, decode_responses=True)
             if self.redis:
                 bot_hash = f"bot_channel_name:{ws_self_id}"
-                self.redis.set(bot_hash, self.channel_name, ex=3600)
+                self.redis.set(bot_hash, self.channel_name, ex=3600*12)
 
             bot = None
             # with transaction.atomic():
