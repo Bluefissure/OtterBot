@@ -93,10 +93,8 @@ def get_route_desc(route: str):
 
 # Data from https://ffxiv.pf-n.co/ocean-fishing/
 def QQCommand_ofish(*args, **kwargs):
+    action_list = []
     try:
-        global_config = kwargs["global_config"]
-        QQ_BASE_URL = global_config["QQ_BASE_URL"]
-        action_list = []
         receive = kwargs["receive"]
         command = receive["message"].replace("/ofish", "").strip()
         if (not command) or command.isdigit():

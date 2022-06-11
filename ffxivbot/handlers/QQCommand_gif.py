@@ -11,7 +11,6 @@ from bs4 import BeautifulSoup
 def QQCommand_gif(*args, **kwargs):
     try:
         global_config = kwargs["global_config"]
-        QQ_BASE_URL = global_config["QQ_BASE_URL"]
         SORRY_BASE_URL = global_config["SORRY_BASE_URL"]
         action_list = []
         receive = kwargs["receive"]

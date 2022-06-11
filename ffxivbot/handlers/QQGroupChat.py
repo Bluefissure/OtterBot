@@ -20,7 +20,6 @@ def QQGroupChat(*args, **kwargs):
         global_config = kwargs.get("global_config", None)
         group = kwargs.get("group", None)
         user_info = kwargs.get("user_info", None)
-        QQ_BASE_URL = global_config.get("QQ_BASE_URL", None)
         TULING_API_URL = global_config.get("TULING_API_URL", None)
         TULING_API_KEY = global_config.get("TULING_API_KEY", None)
         ADMIN_ID = global_config.get("ADMIN_ID", "")

@@ -72,7 +72,6 @@ def whatanime(receive, WHATANIME_API_URL):
 def QQCommand_anime(*args, **kwargs):
     try:
         global_config = kwargs["global_config"]
-        QQ_BASE_URL = global_config["QQ_BASE_URL"]
         WHATANIME_TOKEN = global_config["WHATANIME_TOKEN"]
         WHATANIME_API_URL = global_config["WHATANIME_API_URL"].format(WHATANIME_TOKEN)
         action_list = []

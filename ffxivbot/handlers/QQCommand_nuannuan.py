@@ -44,7 +44,6 @@ def QQCommand_nuannuan(*args, **kwargs):
     action_list = []
     bot = kwargs["bot"]
     try:
-        QQ_BASE_URL = kwargs["global_config"]["QQ_BASE_URL"]
         receive = kwargs["receive"]
         try:
             # 获取视频av号(aid)

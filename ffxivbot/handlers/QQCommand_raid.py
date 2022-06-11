@@ -6,10 +6,7 @@ import logging
 def QQCommand_raid(*args, **kwargs):
     action_list = []
     try:
-        QQ_BASE_URL = kwargs["global_config"]["QQ_BASE_URL"]
-
         receive = kwargs["receive"]
-
         msg = "default message"
         receive_msg = receive["message"]
         receive_msg = receive_msg.replace("/raid", "", 1).strip()

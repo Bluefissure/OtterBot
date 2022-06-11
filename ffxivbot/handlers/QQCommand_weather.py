@@ -11,7 +11,6 @@ import time
 def QQCommand_weather(*args, **kwargs):
     try:
         global_config = kwargs["global_config"]
-        QQ_BASE_URL = global_config["QQ_BASE_URL"]
         TIMEFORMAT_MDHMS = global_config["TIMEFORMAT_MDHMS"]
         action_list = []
         receive = kwargs["receive"]

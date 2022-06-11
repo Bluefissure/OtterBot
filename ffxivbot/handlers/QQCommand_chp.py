@@ -6,7 +6,6 @@ import requests
 
 def QQCommand_chp(*args, **kwargs):
     action_list = []
-    QQ_BASE_URL = kwargs["global_config"]["QQ_BASE_URL"]
     receive = kwargs["receive"]
     try:
         url = "https://api.shadiao.app/chp"

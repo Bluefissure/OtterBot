@@ -174,9 +174,7 @@ def search_jr(job, race, sex, sort, time, bot_version, item_name, item_flag=Fals
 
 def QQCommand_hh(*args, **kwargs):
     try:
-        global_config = kwargs["global_config"]
         bot = kwargs["bot"]
-        QQ_BASE_URL = global_config["QQ_BASE_URL"]
         action_list = []
         receive = kwargs["receive"]
         sort = "0"  # sort = "all"

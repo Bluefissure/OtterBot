@@ -196,7 +196,6 @@ Powered by https://universalis.app"""
 
 def QQCommand_market(*args, **kwargs):
     try:
-        QQ_BASE_URL = kwargs["global_config"]["QQ_BASE_URL"]
         action_list = []
         receive = kwargs["receive"]
         bot = kwargs["bot"]

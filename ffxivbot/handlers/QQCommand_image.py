@@ -39,7 +39,6 @@ def QQCommand_image(*args, **kwargs):
     action_list = []
     try:
         global_config = kwargs["global_config"]
-        QQ_BASE_URL = global_config["QQ_BASE_URL"]
         SMMS_TOKEN = global_config.get("SMMS_TOKEN", "")
         receive = kwargs["receive"]
         bot = kwargs["bot"]

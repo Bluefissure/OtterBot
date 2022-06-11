@@ -1,4 +1,3 @@
-from .QQEventHandler import QQEventHandler
 from .QQUtils import *
 from ffxivbot.models import *
 import logging
@@ -20,10 +19,6 @@ def get_xialian(shanglian):
 
 def QQCommand_duilian(*args, **kwargs):
     try:
-        global_config = kwargs["global_config"]
-        QQ_BASE_URL = global_config["QQ_BASE_URL"]
-        FF14WIKI_API_URL = global_config["FF14WIKI_API_URL"]
-        FF14WIKI_BASE_URL = global_config["FF14WIKI_BASE_URL"]
         action_list = []
         receive = kwargs["receive"]
 
