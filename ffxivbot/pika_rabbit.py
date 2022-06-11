@@ -173,13 +173,14 @@ class PikaConsumer(object):
             self._channel.close()
 
     def on_message(self, _unused_channel, basic_deliver, properties, body):
-        LOGGER.info('Received message # %s from %s: %s',
-                    basic_deliver.delivery_tag, properties.app_id, body)
+        LOGGER.debug('Received message # %s: %s',
+                    basic_deliver.delivery_tag, body)
 
         try:
             receive = json.loads(body)
             receive["pika_time"] = time.time()
             self_id = receive["self_id"]
+            LOGGER.info('Received message # %s from %s', basic_deliver.delivery_tag, self_id)
             try:
                 bot = QQBot.objects.get(user_id=self_id)
             except QQBot.DoesNotExist as e:

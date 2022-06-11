@@ -1,9 +1,10 @@
 import time
 from datetime import datetime
+from zoneinfo import ZoneInfo
 from django.utils.timezone import make_aware
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q, Max
-from ffxivbot.models import Monster, HuntLog, HuntGroup
+from ffxivbot.models import Monster, HuntLog, HuntGroup, Server
 from .ren2res import ren2res
 import traceback
 
@@ -16,14 +17,16 @@ def get_hms(seconds):
 def gen_hunts(user, sonar=False):
     hunt_list = []
     resource_groups = set()
-    TIMEFORMAT_MDHMS = "%m-%d %H:%M:%S"
+    # TIMEFORMAT_MDHMS = "%m-%d %H:%M:%S"
     if not sonar:
         latest_kill_logs = HuntLog.objects.filter(
             Q(hunt_group__group__member_list__contains=user.user_id, log_type='kill') | Q(hunt_group__public=True)
         ).values('server__name', 'monster', 'hunt_group', 'instance_id').annotate(Max('time'))
     else:
-        latest_kill_logs = HuntLog.objects.filter(log_type='sonar')\
+        latest_kill_logs = HuntLog.objects.filter(log_type='sonar', time__gt=time.time()-3600*24*7*2)\
             .values('server__name', 'monster', 'instance_id').annotate(Max('time'))
+
+    print(f"#latest_kill_logs:{latest_kill_logs.count()}")
     maintain_logs = HuntLog.objects.filter(log_type='maintain').values('server__name').annotate(Max('time'))
     server_maintains = {}
     for log in maintain_logs:
@@ -92,9 +95,9 @@ def gen_hunts(user, sonar=False):
             monster_info["spawn_deltaf"] = spawn_deltaf
             monster_info["spawn_delta"] = spawn_delta
             monster_info["in_cd"] = in_cd
-            monster_info["kill_time"] = make_aware(datetime.fromtimestamp(kill_time))
-            monster_info["next_spawn_time"] = make_aware(datetime.fromtimestamp(next_spawn_time))
-            monster_info["next_pop_time"] = make_aware(datetime.fromtimestamp(next_pop_time))
+            monster_info["kill_timestamp"] = kill_time
+            monster_info["next_spawn_timestamp"] = next_spawn_time
+            monster_info["next_pop_timestamp"] = next_pop_time
             monster_info["info"] = monster.info
             monster_info["resource"] = str(hunt_group)
             hunt_list.append(monster_info)
@@ -111,7 +114,14 @@ def hunt(req):
 #@login_required(login_url='/login/')
 def hunt_sonar(req):
     hunt_list, resource_groups = gen_hunts(None, True)
-    return ren2res('hunt.html', req, {"hunt_list": hunt_list, "resources": ", ".join(list(resource_groups))})
+    monster_list = sorted([x['cn_name'] for x in Monster.objects.all().values('cn_name')])
+    server_list = [x['name'] for x in Server.objects.all().values('name')]
+    return ren2res('hunt.html', req, {
+        "hunt_list": hunt_list,
+        "monster_list": monster_list,
+        "server_list": server_list,
+        "resources": ", ".join(list(resource_groups)),
+    })
 
 NAME_TAG = {
     "红玉海":"hyh",

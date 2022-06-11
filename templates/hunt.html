@@ -2,6 +2,9 @@
 {% load static %}
 {% load tz %}
 
+{% block head %}
+  <link rel="stylesheet" href="{% static "plugins/tempusdominus-bootstrap-4/css/tempusdominus-bootstrap-4.min.css" %}">
+{% endblock %}
 
 {% block content %}
 
@@ -38,6 +41,11 @@
               <h3 class="card-title">数据来源：{{resources}}</h3>
               {% else %}
               <h3 class="card-title">数据来源：无</h3>
+              {% endif %}
+              {% if user %}
+              <h3 class="card-title" style="float: right">
+                <button class="btn btn-primary" data-toggle="modal" data-target="#ManualUploadModal">手动上传</button>
+              </h3>
               {% endif %}
             </div>
             <!-- /.card-header -->
@@ -102,12 +110,11 @@
                   <th style="text-align: center; vertical-align: center;">触发开始</th>
                   <th style="text-align: center; vertical-align: center;">必定触发</th>
                   <th style="text-align: center; vertical-align: center;">触发条件</th>
-                  <!-- <th><center>配置</center></th> -->
                 </tr>
                 </thead>
                 <tbody>
                 {% for monster_info in hunt_list %}
-                      {% if monster_info.monster_type == "50S" %}
+                  {% if monster_info.monster_type == "50S" %}
                     <tr class="{{ monster_info.server_tag }} arr {{ monster_info.in_cd }}">
                       {% elif monster_info.monster_type == "60S" %}
                     <tr class="{{ monster_info.server_tag }} hw {{ monster_info.in_cd }}">
@@ -118,8 +125,11 @@
                       {% elif monster_info.monster_type == "90S" %}
                     <tr class="{{ monster_info.server_tag }} ew {{ monster_info.in_cd }}">
                   {% endif %}
+                <!-- 名称 -->
                 <td style="text-align: center; vertical-align: middle;">{{ monster_info.monster }}</td>
+                <!-- 地区 -->
                 <td style="text-align: center; vertical-align: middle;">{{ monster_info.territory }}</td>
+                <!-- 进度 -->
                 {% if monster_info.schedulef < 1 %}
                   <td style="text-align: center; vertical-align: middle; width: 10%;">
                     <div class="progress progress-sm" style="width: auto" title="{{monster_info.resource}}">
@@ -158,9 +168,12 @@
                 {% endif %}
 
                 {% localtime on %}
-                <td style="text-align: center; vertical-align: middle;">{{ monster_info.kill_time|date:"m-d H:i:s" }}</td>
-                <td style="text-align: center; vertical-align: middle;">{{ monster_info.next_spawn_time|date:"m-d H:i:s" }}</td>
-                <td style="text-align: center; vertical-align: middle;">{{ monster_info.next_pop_time|date:"m-d H:i:s" }}</td>
+                <!-- 上次击杀 -->
+                <td class="django-template-timestamp" style="text-align: center; vertical-align: middle;">{{ monster_info.kill_timestamp }}</td>
+                <!-- 触发开始 -->
+                <td class="django-template-timestamp" style="text-align: center; vertical-align: middle;">{{ monster_info.next_spawn_timestamp }}</td>
+                <!-- 必定触发 -->
+                <td class="django-template-timestamp" style="text-align: center; vertical-align: middle;">{{ monster_info.next_pop_timestamp }}</td>
                 {% endlocaltime %}
                 
                 <td style="text-align: left; vertical-align: middle; width: 25%;">{{ monster_info.info }}</td>
@@ -179,6 +192,51 @@
       <!-- /.row -->
     </div>
   </section>
+  
+  <div class="modal fade" id="ManualUploadModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h4 class="modal-title" id="ManualUploadTitle">手动上传狩猎信息</h4>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">x</span>
+          </button>
+        </div>
+        <div class="modal-body" id="ManualUploadContent">
+          <div class="form-group">
+            <label>狩猎怪</label>
+            <select class="form-control" name="monster">
+              {% for monster in monster_list %}
+                <option>{{monster}}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="form-group">
+            <label>服务器</label>
+            <select class="form-control" name="server">
+              {% for server in server_list %}
+                <option>{{server}}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="form-group">
+            <label>记录时间</label>
+            <div class="form-group">
+                <div class="input-group date" id="datetimepicker" data-target-input="nearest">
+                    <input type="text" class="form-control datetimepicker-input" data-target="#datetimepicker"/>
+                    <div class="input-group-append" data-target="#datetimepicker" data-toggle="datetimepicker">
+                        <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+                    </div>
+                </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" data-dismiss="modal" onClick="submit()">提交</button>
+        </div>
+      </div><!-- /.modal-content -->
+    </div><!-- /.modal -->
+  </div>
 
 
 {% endblock %}
@@ -192,6 +250,10 @@
   <!-- DataTables -->
   <script src="{% static "plugins/datatables/jquery.dataTables.min.js" %}"></script>
   <script src="{% static "plugins/datatables-bs4/js/dataTables.bootstrap4.min.js" %}"></script>
+  <!-- Moment -->
+  <script src="{% static "plugins/moment/moment.min.js" %}"></script>
+  <!-- Datetime Picker -->
+  <script src="{% static "plugins/tempusdominus-bootstrap-4/js/tempusdominus-bootstrap-4.min.js" %}"></script>
   <!-- FastClick -->
   <script src="{% static "plugins/fastclick/fastclick.js" %}"></script>
   <!-- AdminLTE App -->
@@ -200,17 +262,43 @@
   <script src="{% static "dist/js/demo.js" %}"></script>
   <script src="{% static "dist/js/hunt.js" %}"></script>
   <!-- page script -->
-  <script>
-      $(function () {
-          $('#hunt-table').DataTable({
-              'paging': false,
-              'lengthChange': false,
-              'searching': false,
-              'ordering': true,
-              'info': false,
-              'autoWidth': false
-          });
-      })
+  <script type="text/javascript">
+    function submit() {
+      alert("后端在写了，别骂了别骂了。");
+    }
+    $(function () {
+      $('#datetimepicker').datetimepicker({
+        icons: { time: 'far fa-clock' },
+        format: 'YYYY-MM-DD HH:mm:ss'
+      });
+    });
+    $(function () {
+        $('.django-template-timestamp').each((index, elem) => {
+            const timestamp = $(elem).text();
+            const date = new Date(timestamp * 1000);
+            $(elem).text(date.toLocaleString(
+              undefined, 
+              {
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                hour12: false,
+                minute:'2-digit',
+                second:'2-digit',
+              },
+            ));
+        })
+    })
+    $(function () {
+        $('#hunt-table').DataTable({
+            'paging': false,
+            'lengthChange': false,
+            'searching': false,
+            'ordering': true,
+            'info': false,
+            'autoWidth': false
+        });
+    })
   </script>
 {% endblock %}
 
