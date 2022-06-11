@@ -1,5 +1,8 @@
 {
   "WEB_BASE_URL": "https://xn--v9x.net/",
+  "QQ_APP_ID": "",
+  "QQ_KEY": "",
+  "QQ_RECALL_URL": "https://xn--v9x.net/api/qqcallback",
   "ACCESS_TOKEN": "",
   "SECRET_KEY": "pinkpink",
   "RANDOMORG_TOKEN": "",
