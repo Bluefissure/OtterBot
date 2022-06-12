@@ -122,9 +122,28 @@ def check_manual_upload(qquser) -> bool:
     if len(char_list) == 0:
         return False
     return True
+
+def handle_hunt_revoke(req):
+    qquser = req.user.qquser
+    try:
+        latest_log = qquser.upload_hunt_log.latest('id')
+        latest_log.delete()
+        time_str = datetime.fromtimestamp(latest_log.time).strftime("%Y-%m-%d %H:%M:%S") + '(北京时间)'
+        succ_msg = f"记录 {latest_log.monster.cn_name} {latest_log.server.name} {time_str} 已撤回。"
+    except HuntLog.DoesNotExist:
+        return JsonResponse({
+            "response": "error",
+            "message": "没有可撤回的记录。",
+        })
+    return JsonResponse({
+        "response": "success",
+        "message": succ_msg,
+    })
     
 def handle_hunt_post(req):
     json_req = json.loads(req.body)
+    if json_req.get('optype') == 'revoke_manual_upload':
+        return handle_hunt_revoke(req)
     if json_req.get('optype') != 'manual_upload_hunt':
         return JsonResponse({'response': 'error', 'message': 'API optype error'})
     if not (json_req["monster_name"] and json_req["server_name"] and json_req["time"]):

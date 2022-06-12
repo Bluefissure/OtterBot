@@ -224,7 +224,8 @@
             </div>
           </div>
         </div>
-        <div class="modal-footer">
+        <div class="modal-footer justify-content-between">
+          <button type="button" class="btn btn-primary" onClick="revoke()">撤回最近提交</button>
           <button type="button" class="btn btn-primary" data-dismiss="modal" onClick="submit()">提交</button>
         </div>
       </div><!-- /.modal-content -->
@@ -260,6 +261,32 @@
   <script src="{% static "dist/js/hunt.js" %}"></script>
   <!-- page script -->
   <script type="text/javascript">
+    function revoke() {
+      $.ajax({
+        type: 'POST',
+        url: '',
+        async: true,
+        contentType: 'application/json',
+        headers: { "X-CSRFToken": '{{csrf_token}}' },
+        data: JSON.stringify({
+          "optype": "revoke_manual_upload",
+        }),
+        dataType: 'json',
+        success: function(data) {
+          if (data.response != "success") {
+            if (data.response == "error") {
+              toastr.error(data.message);
+            } else if (data.response == "warning") {
+              toastr.warning(data.message);
+            } else if (data.response == "info") {
+              toastr.info(data.message);
+            }
+          } else {
+            toastr.success(data.message);
+          }
+        },
+      });
+    }
     function submit() {
       const monsterName = $('#monster-name').val();
       const serverName = $('#server-name').val();
