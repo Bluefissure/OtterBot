@@ -1,12 +1,23 @@
+import os
 import time
+import json
 from datetime import datetime
 from zoneinfo import ZoneInfo
+from django.http import JsonResponse
 from django.utils.timezone import make_aware
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q, Max
-from ffxivbot.models import Monster, HuntLog, HuntGroup, Server
+from ffxivbot.models import BannedCharacter, Monster, HuntLog, HuntGroup, Server
+from authlib.integrations.requests_client import OAuth2Session
 from .ren2res import ren2res
 import traceback
+
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+FFXIVBOT_ROOT = os.environ.get("FFXIVBOT_ROOT", BASE_DIR)
+CONFIG_PATH = os.environ.get(
+    "FFXIVBOT_CONFIG", os.path.join(FFXIVBOT_ROOT, "ffxivbot/config.json")
+)
+XIVID_API_BASE = "https://api.xivid.cc/v1"
 
 def get_hms(seconds):
     seconds = abs(int(seconds))
@@ -17,16 +28,15 @@ def get_hms(seconds):
 def gen_hunts(user, sonar=False):
     hunt_list = []
     resource_groups = set()
-    # TIMEFORMAT_MDHMS = "%m-%d %H:%M:%S"
     if not sonar:
         latest_kill_logs = HuntLog.objects.filter(
-            Q(hunt_group__group__member_list__contains=user.user_id, log_type='kill') | Q(hunt_group__public=True)
+            Q(hunt_group__group__member_list__contains=user.user_id, log_type='kill') | Q(hunt_group__public=True) | Q(log_type="manual")
         ).values('server__name', 'monster', 'hunt_group', 'instance_id').annotate(Max('time'))
     else:
-        latest_kill_logs = HuntLog.objects.filter(log_type='sonar', time__gt=time.time()-3600*24*7*2)\
+        latest_kill_logs = HuntLog.objects.filter(Q(log_type='sonar') | Q(log_type='manual'), time__gt=time.time()-3600*24*7*2)\
             .values('server__name', 'monster', 'instance_id').annotate(Max('time'))
 
-    print(f"#latest_kill_logs:{latest_kill_logs.count()}")
+    # print(f"#latest_kill_logs:{latest_kill_logs.count()}")
     maintain_logs = HuntLog.objects.filter(log_type='maintain').values('server__name').annotate(Max('time'))
     server_maintains = {}
     for log in maintain_logs:
@@ -105,23 +115,131 @@ def gen_hunts(user, sonar=False):
             traceback.print_exc()
     return hunt_list, resource_groups
 
+def check_manual_upload(qquser) -> bool:
+    if not qquser.can_manual_upload_hunt:
+        return False
+    char_list = json.loads(qquser.xivid_character).get("data", [])
+    if len(char_list) == 0:
+        return False
+    return True
+    
+def handle_hunt_post(req):
+    json_req = json.loads(req.body)
+    if json_req.get('optype') != 'manual_upload_hunt':
+        return JsonResponse({'response': 'error', 'message': 'API optype error'})
+    if not (json_req["monster_name"] and json_req["server_name"] and json_req["time"]):
+        return JsonResponse({'response': 'error', 'message': 'API parameter error'})
+    monster = Monster.objects.get(cn_name=json_req["monster_name"])
+    server = Server.objects.get(name=json_req["server_name"])
+    timestamp = int(json_req["time"])
+    if timestamp > time.time():
+        return JsonResponse({'response': 'error', 'message': '时间不能大于当前时间（请按照本地时间填写）。'})
+
+    if not req.user.qquser.can_manual_upload_hunt:
+        return JsonResponse({
+            "response": "error",
+            "message": "No privilege to upload hunt log.",
+        })
+    with open(CONFIG_PATH, "r") as f:
+        config = json.load(f)
+        XIVID_CLIENT_ID = os.environ.get("XIVID_CLIENT_ID", config.get("XIVID_CLIENT_ID"))
+        XIVID_KEY = os.environ.get("XIVID_KEY", config.get("XIVID_KEY"))
+    token = json.loads(req.user.qquser.xivid_token)
+    token_endpoint = XIVID_API_BASE + "/oauth/token"
+    client = OAuth2Session(XIVID_CLIENT_ID, XIVID_KEY, token=token, token_endpoint=token_endpoint)
+    res = client.get(XIVID_API_BASE + "/character")
+    res_json = res.json()
+    if res_json["code"] != 200:
+        return JsonResponse({
+            "response": "error",
+            "message": f"Xivid API error: {res_json['message']}",
+        })
+    char_list = res_json["data"]
+    if len(char_list) == 0:
+        return JsonResponse({
+            "response": "error",
+            "message": "No character found.",
+        })
+    req.user.qquser.xivid_character = json.dumps({"data": char_list})
+    req.user.qquser.xivid_token = json.dumps(client.token)
+    req.user.qquser.save()
+    character_list = []
+    banned = False
+    for char in char_list:
+        if BannedCharacter.objects.filter(xivid_id=int(char["id"])).exists():
+            banned = True
+            break
+        character_list.append(f"{char['id']}:{char['name']}({char['worldId']})")
+    if banned:
+        return JsonResponse({
+            "response": "error",
+            "message": "Character is banned.",
+        })
+    character_list_str = ', '.join(character_list)
+    hunt_log = HuntLog(
+        monster=monster,
+        server=server,
+        log_type="manual",
+        time=timestamp,
+        uploader=req.user.qquser,
+        uploader_char=character_list_str,
+    )
+    if json_req["monster_name"].endswith('1'):
+        hunt_log.instance_id = 1
+    elif json_req["monster_name"].endswith('2'):
+        hunt_log.instance_id = 2
+    elif json_req["monster_name"].endswith('3'):
+        hunt_log.instance_id = 3
+    # from django.core import serializers
+    # serialized_obj = serializers.serialize('json', [ hunt_log, ])
+    # print(serialized_obj)
+    hunt_log.save()
+    time_str = datetime.fromtimestamp(timestamp).strftime("%Y-%m-%d %H:%M:%S") + '(北京时间)'
+    succ_msg = f"{hunt_log.monster.cn_name} {hunt_log.server.name} {time_str} 已记录。"
+    return JsonResponse({
+        "response": "success",
+        "message": succ_msg,
+    })
 
 @login_required(login_url='/login/')
 def hunt(req):
-    hunt_list, resource_groups = gen_hunts(req.user.qquser, False)
-    return ren2res('hunt.html', req, {"hunt_list": hunt_list, "resources": ", ".join(list(resource_groups))})
+    if req.method == 'GET':
+        hunt_list, resource_groups = gen_hunts(req.user.qquser, False)
+        monster_list = sorted([x['cn_name'] for x in Monster.objects.all().values('cn_name')])
+        server_list = [x['name'] for x in Server.objects.all().values('name')]
+        can_manual_upload = check_manual_upload(req.user.qquser)
+        return ren2res('hunt.html', req, {
+            "hunt_list": hunt_list,
+            "monster_list": monster_list,
+            "server_list": server_list,
+            "can_manual_upload": can_manual_upload,
+            "resources": ", ".join(list(resource_groups)),
+        })
+    try:
+        response = handle_hunt_post(req)
+    except:
+        return JsonResponse({
+            "response": "error",
+            "message": "Server error, please contact admin.",
+        })
+    return response
 
 #@login_required(login_url='/login/')
 def hunt_sonar(req):
-    hunt_list, resource_groups = gen_hunts(None, True)
-    monster_list = sorted([x['cn_name'] for x in Monster.objects.all().values('cn_name')])
-    server_list = [x['name'] for x in Server.objects.all().values('name')]
-    return ren2res('hunt.html', req, {
-        "hunt_list": hunt_list,
-        "monster_list": monster_list,
-        "server_list": server_list,
-        "resources": ", ".join(list(resource_groups)),
-    })
+    if req.method == 'GET':
+        hunt_list, resource_groups = gen_hunts(None, True)
+        monster_list = sorted([x['cn_name'] for x in Monster.objects.all().values('cn_name')])
+        server_list = [x['name'] for x in Server.objects.all().values('name')]
+        can_manual_upload = check_manual_upload(req.user.qquser)
+        return ren2res('hunt.html', req, {
+            "hunt_list": hunt_list,
+            "monster_list": monster_list,
+            "server_list": server_list,
+            "can_manual_upload": can_manual_upload,
+            "resources": ", ".join(list(resource_groups)),
+        })
+    response = handle_hunt_post(req)
+    return response
 
 NAME_TAG = {
     "红玉海":"hyh",

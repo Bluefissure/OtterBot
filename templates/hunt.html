@@ -4,6 +4,7 @@
 
 {% block head %}
   <link rel="stylesheet" href="{% static "plugins/tempusdominus-bootstrap-4/css/tempusdominus-bootstrap-4.min.css" %}">
+  <link rel="stylesheet" href="{% static "plugins/bootstrap-select/css/bootstrap-select.min.css" %}">
 {% endblock %}
 
 {% block content %}
@@ -38,12 +39,12 @@
           <div class="card">
             <div class="card-header">
               {% if resources %}
-              <h3 class="card-title">数据来源：{{resources}}</h3>
+              <h3 class="card-title float-left">数据来源：{{resources}}</h3>
               {% else %}
-              <h3 class="card-title">数据来源：无</h3>
+              <h3 class="card-title float-left">数据来源：无</h3>
               {% endif %}
-              {% if user %}
-              <h3 class="card-title" style="float: right">
+              {% if user and can_manual_upload %}
+              <h3 class="card-title float-right">
                 <button class="btn btn-primary" data-toggle="modal" data-target="#ManualUploadModal">手动上传</button>
               </h3>
               {% endif %}
@@ -125,11 +126,8 @@
                       {% elif monster_info.monster_type == "90S" %}
                     <tr class="{{ monster_info.server_tag }} ew {{ monster_info.in_cd }}">
                   {% endif %}
-                <!-- 名称 -->
                 <td style="text-align: center; vertical-align: middle;">{{ monster_info.monster }}</td>
-                <!-- 地区 -->
                 <td style="text-align: center; vertical-align: middle;">{{ monster_info.territory }}</td>
-                <!-- 进度 -->
                 {% if monster_info.schedulef < 1 %}
                   <td style="text-align: center; vertical-align: middle; width: 10%;">
                     <div class="progress progress-sm" style="width: auto" title="{{monster_info.resource}}">
@@ -166,16 +164,11 @@
                   <td style="text-align: center; vertical-align: middle; width: 5%;"><span
                       class="badge bg-green">{{ monster_info.spawn_percent }}</span></td>
                 {% endif %}
-
                 {% localtime on %}
-                <!-- 上次击杀 -->
                 <td class="django-template-timestamp" style="text-align: center; vertical-align: middle;">{{ monster_info.kill_timestamp }}</td>
-                <!-- 触发开始 -->
                 <td class="django-template-timestamp" style="text-align: center; vertical-align: middle;">{{ monster_info.next_spawn_timestamp }}</td>
-                <!-- 必定触发 -->
                 <td class="django-template-timestamp" style="text-align: center; vertical-align: middle;">{{ monster_info.next_pop_timestamp }}</td>
                 {% endlocaltime %}
-                
                 <td style="text-align: left; vertical-align: middle; width: 25%;">{{ monster_info.info }}</td>
                 </tr>
                 {% endfor %}
@@ -205,7 +198,7 @@
         <div class="modal-body" id="ManualUploadContent">
           <div class="form-group">
             <label>狩猎怪</label>
-            <select class="form-control" name="monster">
+            <select class="form-control selectpicker" name="monster" id="monster-name" data-live-search="true">
               {% for monster in monster_list %}
                 <option>{{monster}}</option>
               {% endfor %}
@@ -213,17 +206,17 @@
           </div>
           <div class="form-group">
             <label>服务器</label>
-            <select class="form-control" name="server">
+            <select class="form-control selectpicker" name="server" id="server-name" data-live-search="true">
               {% for server in server_list %}
                 <option>{{server}}</option>
               {% endfor %}
             </select>
           </div>
           <div class="form-group">
-            <label>记录时间</label>
+            <label>记录时间（本地时区）</label>
             <div class="form-group">
                 <div class="input-group date" id="datetimepicker" data-target-input="nearest">
-                    <input type="text" class="form-control datetimepicker-input" data-target="#datetimepicker"/>
+                    <input type="text" class="form-control datetimepicker-input" data-target="#datetimepicker" id="datetimepicker-input"/>
                     <div class="input-group-append" data-target="#datetimepicker" data-toggle="datetimepicker">
                         <div class="input-group-text"><i class="fa fa-calendar"></i></div>
                     </div>
@@ -245,7 +238,9 @@
 {% block script %}
   <!-- jQuery 3 -->
   <script src="{% static "plugins/jquery/jquery.min.js" %}"></script>
-  <!-- Bootstrap 3.3.7 -->
+  <!-- Popper -->
+  <script src="{% static "plugins/popperjs/popper.min.js" %}"></script>
+  <!-- Bootstrap 4.3.1 -->
   <script src="{% static "plugins/bootstrap/js/bootstrap.min.js" %}"></script>
   <!-- DataTables -->
   <script src="{% static "plugins/datatables/jquery.dataTables.min.js" %}"></script>
@@ -254,6 +249,8 @@
   <script src="{% static "plugins/moment/moment.min.js" %}"></script>
   <!-- Datetime Picker -->
   <script src="{% static "plugins/tempusdominus-bootstrap-4/js/tempusdominus-bootstrap-4.min.js" %}"></script>
+  <!-- Bootstrap select -->
+  <script src="{% static "plugins/bootstrap-select/js/bootstrap-select.min.js" %}"></script>
   <!-- FastClick -->
   <script src="{% static "plugins/fastclick/fastclick.js" %}"></script>
   <!-- AdminLTE App -->
@@ -264,7 +261,46 @@
   <!-- page script -->
   <script type="text/javascript">
     function submit() {
-      alert("后端在写了，别骂了别骂了。");
+      const monsterName = $('#monster-name').val();
+      const serverName = $('#server-name').val();
+      const datetime = $('#datetimepicker-input').val();
+      const date = new Date(datetime);
+      if (isNaN(date)) {
+        toastr.error('时间格式错误');
+        return;
+      }
+      const timestamp = date.getTime() / 1000;
+      $.ajax({
+        type: 'POST',
+        url: '',
+        async: true,
+        contentType: 'application/json',
+        headers: { "X-CSRFToken": '{{csrf_token}}' },
+        data: JSON.stringify({
+          "optype": "manual_upload_hunt",
+          "monster_name": monsterName,
+          "server_name": serverName,
+          "time": timestamp,
+        }),
+        dataType: 'json',
+        success: function(data) {
+          if (data.response != "success") {
+            if (data.response == "error") {
+              toastr.error(data.message);
+            } else if (data.response == "warning") {
+              toastr.warning(data.message);
+            } else if (data.response == "info") {
+              toastr.info(data.message);
+            }
+          } else {
+            toastr.success(data.message);
+            if (data.message.indexOf(datetime.slice(0, 14)) == -1) {
+              console.log(data.message);
+              toastr.info('经检测到本地时间与北京时间不一致，请注意按照本地时间上传。');
+            }
+          }
+        },
+      });
     }
     $(function () {
       $('#datetimepicker').datetimepicker({

@@ -165,8 +165,12 @@ class HuntLogAdmin(admin.ModelAdmin):
     list_display = ["monster", "hunt_group", "server", "instance_id", "log_type", "time"]
     search_fields = ["hunt_group__group__group_id"]
     list_filter = ["monster", "server", "instance_id", "hunt_group", "log_type"]
-    raw_id_fields = ["hunt_group"]
+    raw_id_fields = ["hunt_group", "uploader"]
 
+class BannedCharacterAdmin(admin.ModelAdmin):
+    list_display = ["xivid_id", "name", "world_id"]
+    search_fields = ["xivid_id", "name"]
+    list_filter = ["world_id"]
 
 class IFTTTChannelAdmin(admin.ModelAdmin):
     list_display = ["name", "group", "last_push_time"]
@@ -231,6 +235,7 @@ admin.site.register(LiveUser, LiveUserAdmin)
 admin.site.register(HuntGroup, HuntGroupAdmin)
 admin.site.register(Monster, MonsterAdmin)
 admin.site.register(HuntLog, HuntLogAdmin)
+admin.site.register(BannedCharacter, BannedCharacterAdmin)
 admin.site.register(IFTTTChannel, IFTTTChannelAdmin)
 admin.site.register(TreasureMap, TreasureMapAdmin)
 admin.site.register(Screen, ScreenAdmin)

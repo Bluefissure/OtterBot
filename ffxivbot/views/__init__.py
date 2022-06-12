@@ -9,6 +9,8 @@ from .hunt import hunt
 from .hunt import hunt_sonar
 from .qq_login import qq_login
 from .qq_check import qq_check
+from .xivid_auth import xivid_auth
+from .xivid_callback import xivid_callback
 from .login import login
 from .register import register
 from .logout import logout
