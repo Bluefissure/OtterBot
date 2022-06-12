@@ -230,7 +230,7 @@ def hunt_sonar(req):
         hunt_list, resource_groups = gen_hunts(None, True)
         monster_list = sorted([x['cn_name'] for x in Monster.objects.all().values('cn_name')])
         server_list = [x['name'] for x in Server.objects.all().values('name')]
-        can_manual_upload = check_manual_upload(req.user.qquser)
+        can_manual_upload = check_manual_upload(req.user.qquser) if not req.user.is_anonymous else False
         return ren2res('hunt.html', req, {
             "hunt_list": hunt_list,
             "monster_list": monster_list,
