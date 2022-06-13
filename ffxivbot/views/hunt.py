@@ -209,6 +209,10 @@ def handle_hunt_post(req):
         hunt_log.instance_id = 2
     elif json_req["monster_name"].endswith('3'):
         hunt_log.instance_id = 3
+    else:
+        monster_name2 = json_req["monster_name"] + '2'
+        if Monster.objects.filter(cn_name=monster_name2).exists():
+            hunt_log.instance_id = 1
     # from django.core import serializers
     # serialized_obj = serializers.serialize('json', [ hunt_log, ])
     # print(serialized_obj)
