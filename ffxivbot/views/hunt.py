@@ -1,9 +1,12 @@
+from ast import operator
 import os
 import time
 import json
+import functools
+import operator
 from datetime import datetime
 from zoneinfo import ZoneInfo
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponseRedirect
 from django.utils.timezone import make_aware
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q, Max
@@ -25,15 +28,24 @@ def get_hms(seconds):
     h, m = divmod(m, 60)
     return h, m, s
 
-def gen_hunts(user, sonar=False):
+def gen_hunts(user, sonar=False, bird=False):
     hunt_list = []
     resource_groups = set()
-    if not sonar:
+    is_relay = sonar or bird
+    sources = []
+    if not is_relay:
         latest_kill_logs = HuntLog.objects.filter(
             Q(hunt_group__group__member_list__contains=user.user_id, log_type='kill') | Q(hunt_group__public=True) | Q(log_type="manual")
         ).values('server__name', 'monster', 'hunt_group', 'instance_id').annotate(Max('time'))
     else:
-        latest_kill_logs = HuntLog.objects.filter(Q(log_type='sonar') | Q(log_type='manual'), time__gt=time.time()-3600*24*7*2)\
+        conditions = [Q(log_type='manual')]
+        if sonar:
+            conditions.append(Q(log_type='sonar'))
+            sources.append('Sonar')
+        if bird:
+            conditions.append(Q(log_type='bird'))
+            sources.append('银山雀')
+        latest_kill_logs = HuntLog.objects.filter(functools.reduce(operator.__or__, conditions), time__gt=time.time()-3600*24*7*2)\
             .values('server__name', 'monster', 'instance_id').annotate(Max('time'))
 
     # print(f"#latest_kill_logs:{latest_kill_logs.count()}")
@@ -46,10 +58,10 @@ def gen_hunts(user, sonar=False):
         monster_dict[monster.id] = monster
     for latest_kill_log in latest_kill_logs:
         try:
-            if not sonar:
+            if not is_relay:
                 hunt_group = HuntGroup.objects.get(id=latest_kill_log['hunt_group'])
             else:
-                hunt_group = "Sonar"
+                hunt_group = ', '.join(sources)
             server_name = latest_kill_log['server__name']
             monster = monster_dict.get(latest_kill_log['monster'])
             maintain_finish_time = server_maintains.get(server_name, 0)
@@ -248,9 +260,9 @@ def hunt(req):
     return response
 
 #@login_required(login_url='/login/')
-def hunt_sonar(req):
+def hunt_relay(req, sonar=True, bird=True):
     if req.method == 'GET':
-        hunt_list, resource_groups = gen_hunts(None, True)
+        hunt_list, resource_groups = gen_hunts(None, sonar=sonar, bird=bird)
         monster_list = sorted([x['cn_name'] for x in Monster.objects.all().values('cn_name')])
         server_list = [x['name'] for x in Server.objects.all().values('name')]
         can_manual_upload = check_manual_upload(req.user.qquser) if not req.user.is_anonymous else False
@@ -263,6 +275,12 @@ def hunt_sonar(req):
         })
     response = handle_hunt_post(req)
     return response
+
+def hunt_sonar(req):
+    return hunt_relay(req, sonar=True, bird=False)
+
+def hunt_bird(req):
+    return hunt_relay(req, sonar=False, bird=True)
 
 NAME_TAG = {
     "红玉海":"hyh",

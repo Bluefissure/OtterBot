@@ -70,6 +70,7 @@ class LiveUser(models.Model):
 
 class Server(models.Model):
     name = models.CharField(max_length=16)
+    csv_name = models.CharField(max_length=16, default="", null=True)
     areaId = models.IntegerField(default=1)
     groupId = models.IntegerField(default=25)
     alter_names = models.TextField(default="[]")

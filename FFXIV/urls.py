@@ -34,6 +34,8 @@ urlpatterns = [
     # path('hunt/', cache_page(60 * 2)()),
     path('hunt/', hunt),
     path('hunt/sonar/', hunt_sonar),
+    path('hunt/bird/', hunt_bird),
+    path('hunt/relay/', hunt_relay),
     path('housing/api', housing_api),
     re_path(r'^oauth/qq/login/$', qq_login, name='qq_login'),
     re_path(r'^api/qqcallback', qq_check, name='qq_check'),
