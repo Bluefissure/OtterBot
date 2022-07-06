@@ -28,7 +28,7 @@ idna==3.3
 incremental==21.3.0
 jieba==0.42.1
 kiwisolver==1.4.2
-lxml==4.8.0
+lxml==4.9.1
 matplotlib==3.5.1
 msgpack==1.0.3
 mysqlclient==2.1.0
