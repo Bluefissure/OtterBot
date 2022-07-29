@@ -7,8 +7,9 @@ venv/
 __pycache__/
 ffxivbot/migrations/
 .vscode/
+.DS_Store
 
-#production files
+# Production files
 FFXIV/settings.py
 ffxivbot/config.json
 tooltip.png
