@@ -102,20 +102,23 @@ def import_plotquest_from_csv(csv_file, **kwargs):
                 quest_type_str = row[key_list.index("EventIconType")].replace('EventIconType#', '')
                 quest_type = int(quest_type_str or 0)
                 #Read bool for if is deprecated
-                isDeprecated = row[key_list.index("SortKey") + 1] == "True"
+                is_deprecated = row[key_list.index("SortKey") + 1] == "True"
                 if not quest_name:
                     continue
-                if isDeprecated:
-                    print(f"Deleting deprecated quest {quest_name} (id {quest_id})")
-                    (quest, created) = PlotQuest.objects.get_or_create(id=quest_id)
+                if is_deprecated:
+                    # print(f"Deleting deprecated quest {quest_name} (id {quest_id})")
+                    # (quest, created) = PlotQuest.objects.get_or_create(id=quest_id)
                     deprecated_quests.append(quest_id)
-                    PlotQuest.delete(quest)
-                    continue
+                    # PlotQuest.delete(quest)
+                    # continue
 
                 (quest, created) = PlotQuest.objects.get_or_create(id=quest_id)
                 new_name = (
                     quest_name.replace("\ue0be", "").replace("\ue0bf", "").strip()
                 )
+                if is_deprecated:
+                    new_name = f"deprecated-{new_name}-deprecated"
+
                 if language == "cn" or created:
                     quest.name = new_name
                 quest.quest_type = quest_type
@@ -160,6 +163,7 @@ def import_plotquest_from_csv(csv_file, **kwargs):
                 quest.save()
                 add_cnt += 1
         print("Imported {} quests".format(add_cnt))
+        print("{} quests are deprecated".format(len(deprecated_quests)))
 
 
 if __name__ == "__main__":
