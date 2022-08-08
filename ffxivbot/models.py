@@ -381,7 +381,7 @@ class Image(models.Model):
     )
     add_by_bot = models.ForeignKey(
         QQBot,
-        on_delete=models.DO_NOTHING,
+        on_delete=models.SET_NULL,
         related_name="upload_images",
         blank=True,
         null=True,
