@@ -88,7 +88,7 @@ class WeiboTileAdmin(admin.ModelAdmin):
 class PlotQuestAdmin(admin.ModelAdmin):
     list_display = ["id", "name", "quest_type", "endpoint", "endpoint_desc"]
     search_fields = ["id", "name"]
-    list_filter = ["quest_type"]
+    list_filter = ["quest_type", "is_deprecated"]
 
 
 class CommentAdmin(admin.ModelAdmin):

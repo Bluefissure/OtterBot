@@ -116,12 +116,11 @@ def import_plotquest_from_csv(csv_file, **kwargs):
                 new_name = (
                     quest_name.replace("\ue0be", "").replace("\ue0bf", "").strip()
                 )
-                if is_deprecated:
-                    new_name = f"deprecated-{new_name}-deprecated"
 
                 if language == "cn" or created:
                     quest.name = new_name
                 quest.quest_type = quest_type
+                quest.is_deprecated = is_deprecated
                 lname = json.loads(quest.language_names)
                 lname.update({language: new_name})
                 quest.language_names = json.dumps(lname)
@@ -151,12 +150,7 @@ def import_plotquest_from_csv(csv_file, **kwargs):
                         try:
                             pre_quest = PlotQuest.objects.get(id=pre_quest_id)
                         except PlotQuest.DoesNotExist:
-                            if pre_quest_id not in deprecated_quests:
-                                print(
-                                    "Quest id:{} not found, please import again".format(
-                                        pre_quest_id
-                                    )
-                                )
+                            print(f"Quest id:{pre_quest_id} not found, please import again")
                         else:
                             quest.pre_quests.add(pre_quest)
 

@@ -313,7 +313,7 @@ def get_bot_version(obj: dict):
     return ver
 
 
-@login_required(login_url='/login/')
+#@login_required(login_url='/login/')
 def tata(req):
     if req.method == "POST":
         res_dict = {"response": "No response."}
@@ -340,8 +340,8 @@ def tata(req):
                 return JsonResponse(res_dict)
             bots = QQBot.objects.filter(user_id=botID)
             if not bots.exists():
-                if QQBot.objects.filter(owner_id=ownerID.strip()).exists():
-                    res_dict = {"response": "error", "msg": "每个用户最多领养一个机器人"}
+                if QQBot.objects.filter(owner_id=ownerID.strip()).count() >= 2:
+                    res_dict = {"response": "error", "msg": "每个用户最多领养2个机器人"}
                     return JsonResponse(res_dict)
                 bot = QQBot(user_id=botID, access_token=accessToken)
                 bot_created = True

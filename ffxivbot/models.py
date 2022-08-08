@@ -266,6 +266,7 @@ class PlotQuest(models.Model):
     language_names = models.TextField(default="{}", blank=True)
     endpoint = models.BooleanField(default=False)
     endpoint_desc = models.CharField(max_length=64, default="", blank=True)
+    is_deprecated = models.BooleanField(default=False)
     quest_type = models.IntegerField(
         default=0
     )  # 0:nothing 3:main-scenario 8:special 1,10:other
