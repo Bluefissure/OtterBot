@@ -128,11 +128,11 @@ DATABASES = {
         'HOST': '127.0.0.1',
         'PORT': '3306',
         'OPTIONS': {'charset': 'utf8mb4'},
+        'CONN_HEALTH_CHECKS': True,
     }
 }
 
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
-CONN_HEALTH_CHECKS = True
 
 # Password validation
 # https://docs.djangoproject.com/en/2.0/ref/settings/#auth-password-validators
