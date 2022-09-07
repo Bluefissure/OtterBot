@@ -59,7 +59,7 @@ def get_item_id(item_name, name_lang=""):
         url = (
             "https://cafemaker.wakingsands.com/search?indexes=Item&string=" + item_name
         )
-    r = requests.get(url, timeout=3)
+    r = requests.get(url, timeout=60)
     j = r.json()
     if len(j["Results"]) > 0:
         result = max(j["Results"], key=lambda x: SequenceMatcher(None, x["Name"], item_name).ratio())
@@ -82,7 +82,7 @@ def get_market_data(server_name, item_name, hq=False):
             return '所查询物品"{}"不存在'.format(item_name)
     url = "https://universalis.app/api/{}/{}".format(server_name, item_id)
     print("market url:{}".format(url))
-    r = requests.get(url, timeout=3)
+    r = requests.get(url, timeout=10)
     if r.status_code != 200:
         if r.status_code == 404:
             msg = "请确认所查询物品可交易且不可在NPC处购买"
