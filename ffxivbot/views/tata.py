@@ -312,6 +312,9 @@ def get_bot_version(obj: dict):
             ver = "Mirai\n(Native)"
     return ver
 
+def mask_id(user_id):
+    mid = len(user_id) // 2
+    return user_id[: mid - 2] + "*" * 4 + user_id[mid + 2 :]
 
 #@login_required(login_url='/login/')
 def tata(req):
@@ -411,7 +414,7 @@ def tata(req):
         version_info = json.loads(bot.version_info)
         coolq_edition = get_bot_version(version_info)
         friend_list = json.loads(bot.friend_list)
-        friend_num = len(friend_list) if friend_list else "-1"
+        friend_num = len(friend_list) if friend_list else -1
         group_list = json.loads(bot.group_list)
         group_num = len(group_list) if group_list else -1
         bb["name"] = bot.name
@@ -419,11 +422,6 @@ def tata(req):
             bb["user_id"] = bot.user_id
             bb["owner_id"] = bot.owner_id
         else:
-
-            def mask_id(user_id):
-                mid = len(user_id) // 2
-                return user_id[: mid - 2] + "*" * 4 + user_id[mid + 2 :]
-
             bb["user_id"] = mask_id(bot.user_id)
             bb["owner_id"] = mask_id(bot.owner_id)
         bb["group_num"] = group_num

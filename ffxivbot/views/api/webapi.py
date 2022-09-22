@@ -1,11 +1,16 @@
+import os
 import json
 import time
 import math
 import requests
+import redis
 from django.http import HttpResponse, JsonResponse
-from ffxivbot.models import QQUser, Territory, Weather, Boss, Job, Server
+from ffxivbot.models import QQUser, Territory, Weather, Boss, Job, Server, QQBot
 from ffxivbot.handlers.QQUtils import getSpecificWeatherTimes, getFollowingWeathers, crawl_dps, search_item
 from ffxivbot.handlers.QQCommand_quest import search_quest
+from ffxivbot.views.tata import get_bot_version, mask_id
+
+REDIST_URL = "localhost" if os.environ.get('IS_DOCKER', '') != 'Docker' else 'redis'
 
 def handle_webapi(req):
     qq = req.GET.get("qq")
@@ -249,6 +254,38 @@ def webapi(req):
                 "data": search_res if type(search_res) == str else search_res[0],
             }
 
+        elif request_type == "botlist":  # 105X
+            REDIS_CLIENT = redis.Redis(host=REDIST_URL, port=6379, decode_responses=True)
+            bots = QQBot.objects.all()
+            res_data = []
+            for bot in bots:
+                bot_event_time = int(REDIS_CLIENT.get(f"bot_event_time:{bot.user_id}") or 0)
+                if not bot_event_time:
+                    bot_event_time = bot.event_time
+                version_info = json.loads(bot.version_info)
+                coolq_edition = get_bot_version(version_info)
+                friend_list = json.loads(bot.friend_list)
+                friend_num = len(friend_list) if friend_list else -1
+                group_list = json.loads(bot.group_list)
+                group_num = len(group_list) if group_list else -1
+                res_data.append({
+                    "name": bot.name,
+                    "user_id": mask_id(bot.user_id) if bot.public else bot.user_id,
+                    "owner_id": mask_id(bot.owner_id) if bot.public else bot.owner_id,
+                    "group_num": group_num,
+                    "friend_num": friend_num,
+                    "coolq_edition": coolq_edition,
+                    "online": time.time() - bot_event_time < 300,
+                    "public": bot.public,
+                    "autoinvite": bot.auto_accept_invite,
+                    "autofriend": bot.auto_accept_friend,
+                })
+            res_dict = {
+                "response": "success",
+                "msg": "",
+                "rcode": "0",
+                "data": res_data,
+            }
     except json.decoder.JSONDecodeError:
         res_dict = {"response": "error", "msg": "JSON decode error", "rcode": "103"}
     except KeyError:
