@@ -50,6 +50,7 @@ def QQCommand_nuannuan(*args, **kwargs):
     bot = kwargs["bot"]
     try:
         receive = kwargs["receive"]
+        return [reply_message_action(receive, "请参考：\n游玩C攻略站：https://www.youwanc.com/\n时尚品鉴：https://space.bilibili.com/15503317/video/")]
         try:
             rsshub = RsshubUtil()
             feed = rsshub.biliuservedio(15503317)
