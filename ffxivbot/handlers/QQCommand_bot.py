@@ -168,6 +168,28 @@ def QQCommand_bot(*args, **kwargs):
                 while "" in parameters:
                     parameters.remove("")
                 msg = handle_sonar_config(bot, parameters)
+        elif second_command == "novelai":
+            if int(user_id) != int(bot.owner_id):
+                msg = "仅机器人领养者能修改机器人状态"
+            else:
+                parameters = second_msg.split(" ")
+                while "" in parameters:
+                    parameters.remove("")
+                if parameters[0] == "api":
+                    bot.novelai_url = parameters[1]
+                    bot.save(update_fields=["novelai_url"])
+                    msg = f"{bot} 的 novelai api 已被设定为：{parameters[1]}"
+                elif parameters[0] == "group":
+                    group_ids = parameters[1].split(',')
+                    bot.novelai_groups.clear()
+                    for group_id in group_ids:
+                        try:
+                            group = QQGroup.objects.get(group_id=group_id)
+                        except QQGroup.DoesNotExist:
+                            continue
+                        bot.novelai_groups.add(group)
+                    group_str = ", ".join(list(map(lambda x: str(x.group_id), bot.novelai_groups.all())))
+                    msg = f"{bot} 的 novelai group 已被设定为：{group_str}"
         elif second_command == "info":
             friend_list = json.loads(bot.friend_list)
             friend_list_cnt = len(friend_list) if friend_list else 0

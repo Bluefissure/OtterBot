@@ -62,6 +62,13 @@ def get_CQ_image(CQ_text):
 
 def reply_message_action(receive, msg):
     action = {"action": "", "params": {}, "echo": ""}
+    if type(msg) == list:
+        msg.append({
+            "type": "reply",
+            "data": {"id": receive["message_id"]}
+        })
+    else:
+        msg += f"[CQ:reply,id={receive['message_id']}]"
     if receive["message_type"] == "group":
         action.update(
             {

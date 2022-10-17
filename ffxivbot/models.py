@@ -251,6 +251,8 @@ class QQBot(models.Model):
     sonar_sub_ranks = models.TextField(default="[]", null=True, blank=True)
     sonar_sub_groups = models.ManyToManyField(QQGroup, related_name="sonar_sub_by_bots", blank=True)
     sonar_sub_servers = models.ManyToManyField(Server, related_name="sonar_sub_by_bots", blank=True)
+    novelai_url = models.CharField(max_length=128, default="", blank=True)
+    novelai_groups = models.ManyToManyField(QQGroup, related_name="novelai_groups", blank=True)
 
     def __str__(self):
         return self.name
