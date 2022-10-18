@@ -27,7 +27,7 @@ NSFW_TAGS = [
     "suspension", "spreader_bar", "wooden_horse", "anal_beads", "dildo", "cock_ring", "egg_vibrator", "artificial_vagina", "hitachi_magic_wand", "dildo", "double_dildo", 
     "vibrator", "vibrator_in_thighhighs", "nyotaimori", "vore", "amputee", "transformation", "mind_control", "censored", "uncensored", "asian", "faceless_male", "blood", 
     "all_fours", "undressing", "skirt_lift", "shirt_lift", "nsfw", "porn", "lewd", "winnie the pooh", "hentai", "ahegao", "no pants", "no clothes", "sweating", "butthole",
-    "gay", "r18", "micro bikini", "mini bikini", "tiny bikini", "bikini", "naked", "nude", "nudity", "nakedness", "nake", "futa"
+    "gay", "r18", "micro bikini", "mini bikini", "tiny bikini", "bikini", "naked", "nude", "nudity", "nakedness", "nake", "futa", "naked female"
 ]
 PROMPT_TAGS = ['masterpiece', 'best quality']
 UC_TAGS = ["nsfw", "lowres", "bad anatomy", "bad hands", "text", "error", "missing fingers", "extra digit", "fewer digits", "cropped", "worst quality", "low quality", 
@@ -42,7 +42,7 @@ def filter_nsfw(tags):
         for nsfw_tag in NSFW_TAGS:
             score1 = SequenceMatcher(None, tag.lower(), nsfw_tag.lower()).ratio()
             score2 = SequenceMatcher(None, tag.lower(), nsfw_tag.replace('_', ' ').lower()).ratio()
-            if score1 >= 0.9 or score2 >= 0.9:
+            if score1 >= 0.9 or score2 >= 0.9 or nsfw_tag in tag:
                 is_nsfw = True
                 break
         if not is_nsfw:

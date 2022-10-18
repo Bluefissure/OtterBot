@@ -180,16 +180,19 @@ def QQCommand_bot(*args, **kwargs):
                     bot.save(update_fields=["novelai_url"])
                     msg = f"{bot} 的 novelai api 已被设定为：{parameters[1]}"
                 elif parameters[0] == "group":
-                    group_ids = parameters[1].split(',')
-                    bot.novelai_groups.clear()
-                    for group_id in group_ids:
-                        try:
-                            group = QQGroup.objects.get(group_id=group_id)
-                        except QQGroup.DoesNotExist:
-                            continue
-                        bot.novelai_groups.add(group)
-                    group_str = ", ".join(list(map(lambda x: str(x.group_id), bot.novelai_groups.all())))
-                    msg = f"{bot} 的 novelai group 已被设定为：{group_str}"
+                    if parameters[1] == "clear":
+                        bot.novelai_groups.clear()
+                        msg = f"{bot} 的 novelai group 已被清空"
+                    else:
+                        group_ids = parameters[1].split(',')
+                        for group_id in group_ids:
+                            try:
+                                group = QQGroup.objects.get(group_id=group_id)
+                            except QQGroup.DoesNotExist:
+                                continue
+                            bot.novelai_groups.add(group)
+                        group_str = ", ".join(list(map(lambda x: str(x.group_id), bot.novelai_groups.all())))
+                        msg = f"{bot} 的 novelai group 已被设定为：{group_str}"
         elif second_command == "info":
             friend_list = json.loads(bot.friend_list)
             friend_list_cnt = len(friend_list) if friend_list else 0
