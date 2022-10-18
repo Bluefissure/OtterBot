@@ -18,6 +18,7 @@
   "TULING_API_URL": "http://openapi.tuling123.com/openapi/api/v2",
   "TULING_API_KEY": "",
   "SAUCENAO_API_KEY": "",
+  "NOVELAI_BEARER": "",
   "OCR_TYPE": "baidu",
   "BAIDU_OCR_ACCESSTOKEN": "",
   "TENCENT_OCR_SECRETID": "",
@@ -29,8 +30,7 @@
   "TIMEFORMAT": "%Y-%m-%d %H:%M:%S",
   "TIMEFORMAT_MDHMS": "%m-%d %H:%M:%S",
   "GLOBAL_EVENT_HANDLE": true,
-  "BOT_FATHER":"",
-  "BOT_MOTHER":"",
-  "USER_NICKNAME":""
+  "BOT_FATHER": "",
+  "BOT_MOTHER": "",
+  "USER_NICKNAME": ""
 }
-

@@ -103,6 +103,8 @@ alter_commands = {
     "/海钓": "/ofish",
     "/novelai cast": "/novelai generate",
     "/ncast": "/novelai generate",
+    "/novelai official_cast": "/novelai official_generate",
+    "/nocast": "/novelai official_generate",
 }
 
 # FFXIV Commands

@@ -32,6 +32,8 @@ NSFW_TAGS = [
 PROMPT_TAGS = ['masterpiece', 'best quality']
 UC_TAGS = ["nsfw", "lowres", "bad anatomy", "bad hands", "text", "error", "missing fingers", "extra digit", "fewer digits", "cropped", "worst quality", "low quality", 
 "normal quality", "jpeg artifacts", "signature", "watermark", "username", "blurry", "bad feet"]
+SIZES = [64, 128, 256, 512, 640, 768, 1024, 1280, 1792]
+
 
 def filter_nsfw(tags):
     filtered_tags = []
@@ -122,10 +124,74 @@ def generate(bot, group, msg_list):
     return '[CQ:image,file=base64://' + image_data + ']'
 
 
+
+def official_generate(bot, group, msg_list, bearer):
+    if not bearer.startswith('Bearer '):
+        bearer = 'Bearer ' + bearer
+    url = "https://api.novelai.net/ai/generate-image"
+    if not bot.novelai_groups.filter(group_id=group.group_id).exists():
+        return f"{bot} 未在本群开启 NovelAI 功能"
+    img_url = get_CQ_image(msg_list[-1])
+    if img_url:
+        return "Official NovelAI 不支持 image 参数"
+    try:
+        prompt_text = re.sub(r'\[CQ:.*\]', '', msg_list[1])
+        prompt_tags = list(map(lambda x: x.strip(), re.split('[,，]', prompt_text)))
+        prompt_tags = filter_nsfw(prompt_tags)
+        for tag in PROMPT_TAGS:
+            if tag not in prompt_tags:
+                prompt_tags.append(tag)
+    except IndexError:
+        return "请念咒语 (prompt 参数)"
+    try:
+        if '[CQ' in msg_list[2]:
+            uc_tags = UC_TAGS
+        else:
+            uc_tags = list(map(lambda x: x.strip(), re.split('[,，]', msg_list[2])))
+        for tag in UC_TAGS:
+            if tag not in uc_tags:
+                uc_tags.append(tag)
+    except IndexError:
+        uc_tags = UC_TAGS
+    try:
+        seed = int(msg_list[3])
+    except:
+        seed = random.randint(1, 2**32 - 1)
+    payload = {
+        "input": ", ".join(prompt_tags),
+        "model":"safe-diffusion",
+        "parameters": {
+            "width": 512,
+            "height": 768,
+            "scale": 11,
+            "sampler": "k_euler_ancestral",
+            "steps": 28,
+            "seed": seed,
+            "n_samples": 1,
+            "ucPreset": 0,
+            "qualityToggle": True,
+            "uc": ", ".join(uc_tags),
+        },
+    }
+    print(json.dumps(payload, indent=2))
+    api_url = url
+    headers = {"Content-Type": "application/json", "Authorization": bearer}
+    r = requests.post(api_url, json=payload, timeout=60, headers=headers)
+    if r.status_code != 200 and r.status_code != 201:
+        return f"Official NovelAI 返回了错误的状态码 {r.status_code}"
+    response = r.text
+    try:
+        image_data = response.split('\n')[2]
+        image_data = image_data.replace('data:', '')
+    except IndexError:
+        return "Official NovelAI 返回了错误的响应内容"
+    return '[CQ:image,file=base64://' + image_data + ']'
+
 def QQGroupCommand_novelai(*args, **kwargs):
     action_list = []
     try:
         receive = kwargs["receive"]
+        global_config = kwargs["global_config"]
         bot = kwargs["bot"]
         group = kwargs["group"]
         (qquser, created) = QQUser.objects.get_or_create(
@@ -151,6 +217,11 @@ NovelAI 图片生成:
             if len(msg_list) == 1:
                 msg_list = receive_msg.replace("generate", "generate\n").split('\n')
             msg = generate(bot, group, msg_list)
+        elif second_command.startswith("official_generate"):
+            bearer = global_config.get("NOVELAI_BEARER", "")
+            if len(msg_list) == 1:
+                msg_list = receive_msg.replace("official_generate", "official_generate\n").split('\n')
+            msg = official_generate(bot, group, msg_list, bearer)
         else:
             msg = f"{bot} 看不懂这个命令捏"
         msg = msg.strip()
