@@ -101,6 +101,8 @@ alter_commands = {
     "/nn": "/nuannuan",
     "/mitem": "/market item",
     "/海钓": "/ofish",
+    "/novelai cast": "/novelai generate",
+    "/ncast": "/novelai generate",
 }
 
 # FFXIV Commands

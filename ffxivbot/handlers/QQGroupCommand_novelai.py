@@ -27,7 +27,7 @@ NSFW_TAGS = [
     "suspension", "spreader_bar", "wooden_horse", "anal_beads", "dildo", "cock_ring", "egg_vibrator", "artificial_vagina", "hitachi_magic_wand", "dildo", "double_dildo", 
     "vibrator", "vibrator_in_thighhighs", "nyotaimori", "vore", "amputee", "transformation", "mind_control", "censored", "uncensored", "asian", "faceless_male", "blood", 
     "all_fours", "undressing", "skirt_lift", "shirt_lift", "nsfw", "porn", "lewd", "winnie the pooh", "hentai", "ahegao", "no pants", "no clothes", "sweating", "butthole",
-    "gay"
+    "gay", "r18", "micro bikini", "mini bikini", "tiny bikini", "bikini", "naked", "nude", "nudity", "nakedness", "nake", "futa"
 ]
 PROMPT_TAGS = ['masterpiece', 'best quality']
 UC_TAGS = ["nsfw", "lowres", "bad anatomy", "bad hands", "text", "error", "missing fingers", "extra digit", "fewer digits", "cropped", "worst quality", "low quality", 
@@ -54,8 +54,11 @@ def generate(bot, group, msg_list):
     url = bot.novelai_url
     if url.endswith('generate-stream'):
         url = url[:-len('generate-stream')]
-    r = requests.get(url, timeout=20)
-    if r.status_code != 200:
+    try:
+        r = requests.get(url, timeout=20)
+        if r.status_code != 200:
+            return f"{bot} 的 novelai_url 无法访问"
+    except:
         return f"{bot} 的 novelai_url 无法访问"
     if not bot.novelai_url:
         return f"{bot} 未配置 novelai_url"
