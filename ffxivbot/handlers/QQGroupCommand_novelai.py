@@ -26,7 +26,8 @@ NSFW_TAGS = [
     "reverse_cowgirl", "virgin", "slave", "shibari", "bondage", "bdsm", "pillory", "stocks", "rope", "bound_arms", "bound_wrists", "crotch_rope", "hogtie", "frogtie", 
     "suspension", "spreader_bar", "wooden_horse", "anal_beads", "dildo", "cock_ring", "egg_vibrator", "artificial_vagina", "hitachi_magic_wand", "dildo", "double_dildo", 
     "vibrator", "vibrator_in_thighhighs", "nyotaimori", "vore", "amputee", "transformation", "mind_control", "censored", "uncensored", "asian", "faceless_male", "blood", 
-    "all_fours", "undressing", "skirt_lift", "shirt_lift", "nsfw", "porn", "lewd"
+    "all_fours", "undressing", "skirt_lift", "shirt_lift", "nsfw", "porn", "lewd", "winnie the pooh", "hentai", "ahegao", "no pants", "no clothes", "sweating", "butthole",
+    "gay"
 ]
 PROMPT_TAGS = ['masterpiece', 'best quality']
 UC_TAGS = ["nsfw", "lowres", "bad anatomy", "bad hands", "text", "error", "missing fingers", "extra digit", "fewer digits", "cropped", "worst quality", "low quality", 
@@ -134,11 +135,13 @@ NovelAI 图片生成:
 - 生成图片：
   /novelai generate
   <prompt>
-  <*uc>
+  <*negative>
   <*seed>
   <*image>
 按行分割，含有*的行为可选项，<>内为参数说明， image需要发送图片。"""
-        elif second_command == "generate":
+        elif second_command.startswith("generate"):
+            if len(msg_list) == 1:
+                msg_list = receive_msg.replace("generate", "generate\n").split('\n')
             msg = generate(bot, group, msg_list)
         else:
             msg = f"{bot} 看不懂这个命令捏"
