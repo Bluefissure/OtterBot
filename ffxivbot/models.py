@@ -332,6 +332,7 @@ class QQUser(models.Model):
     xivid_token = models.TextField(default="{}", blank=True)
     xivid_character = models.TextField(default="{}", blank=True)
     can_manual_upload_hunt = models.BooleanField(default=True)
+    can_use_novelai = models.BooleanField(default=True)
 
     def __str__(self):
         return str(self.user_id)

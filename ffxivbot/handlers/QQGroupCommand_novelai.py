@@ -125,6 +125,11 @@ def QQGroupCommand_novelai(*args, **kwargs):
         receive = kwargs["receive"]
         bot = kwargs["bot"]
         group = kwargs["group"]
+        (qquser, created) = QQUser.objects.get_or_create(
+            user_id=receive["user_id"]
+        )
+        if not qquser.can_use_novelai:
+            return [reply_message_action(receive, "你没有使用 NovelAI 的权限")]
 
         receive_msg = receive["message"].replace("/novelai", "", 1).strip()
         msg_list = receive_msg.split('\n')
