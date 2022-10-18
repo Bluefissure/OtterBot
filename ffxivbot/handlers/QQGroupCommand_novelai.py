@@ -69,7 +69,9 @@ def generate(bot, group, msg_list):
     img_url = get_CQ_image(msg_list[-1])
     img_base64 = None if not img_url else base64.b64encode(requests.get(img_url, timeout=10).content)
     try:
-        prompt_text = re.sub(r'\[CQ:.*\]', '', msg_list[1])
+        prompt_text = re.sub(r'\[CQ:.*\]', '', msg_list[1]).strip()
+        if not prompt_text:
+            return "请念咒语 (prompt 参数)"
         prompt_tags = list(map(lambda x: x.strip(), re.split('[,，]', prompt_text)))
         prompt_tags = filter_nsfw(prompt_tags)
         for tag in PROMPT_TAGS:
@@ -135,7 +137,9 @@ def official_generate(bot, group, msg_list, bearer):
     if img_url:
         return "Official NovelAI 不支持 image 参数"
     try:
-        prompt_text = re.sub(r'\[CQ:.*\]', '', msg_list[1])
+        prompt_text = re.sub(r'\[CQ:.*\]', '', msg_list[1]).strip()
+        if not prompt_text:
+            return "请念咒语 (prompt 参数)"
         prompt_tags = list(map(lambda x: x.strip(), re.split('[,，]', prompt_text)))
         prompt_tags = filter_nsfw(prompt_tags)
         for tag in PROMPT_TAGS:
