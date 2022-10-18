@@ -216,14 +216,15 @@ NovelAI 图片生成:
   <*negative>
   <*seed>
   <*image>
-按行分割，含有*的行为可选项，<>内为参数说明， image需要发送图片。"""
+按行分割，含有*的行为可选项，<>内为参数说明， image需要发送图片。
+将 generate 替换为 official_generate 可使用官方 NovelAI 生成图片，不支持image参数。"""
         elif second_command.startswith("generate"):
-            if len(msg_list) == 1:
+            if second_command.replace("generate", "").strip():
                 msg_list = receive_msg.replace("generate", "generate\n").split('\n')
             msg = generate(bot, group, msg_list)
         elif second_command.startswith("official_generate"):
             bearer = global_config.get("NOVELAI_BEARER", "")
-            if len(msg_list) == 1:
+            if second_command.replace("official_generate", "").strip():
                 msg_list = receive_msg.replace("official_generate", "official_generate\n").split('\n')
             msg = official_generate(bot, group, msg_list, bearer)
         else:
