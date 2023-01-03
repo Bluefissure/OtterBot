@@ -27,7 +27,7 @@ def QQCommand_raid(*args, **kwargs):
                 msg = ""
                 data = {
                     "method": "queryhreodata",
-                    "stage": 5,
+                    "stage": 6,
                     "name": wol_name,
                     "areaId": server.areaId,
                     "groupId": server.groupId,
@@ -35,7 +35,7 @@ def QQCommand_raid(*args, **kwargs):
                 msg += check_raid(
                     api_url="https://actff1.web.sdo.com/20180525HeroList/Server/HeroList190128.ashx",
                     raid_data=data,
-                    raid_name="万魔殿边境之狱",
+                    raid_name="万魔殿炼净之狱",
                     wol_name=wol_name,
                     server_name=server.name,
                 )
