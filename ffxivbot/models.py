@@ -1,14 +1,10 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils.html import mark_safe
-from datetime import datetime
-from pytz import timezone
 from urllib.parse import urlparse
-import hashlib
 import requests
 import os
 import json
-import time
 
 # Create your models here.
 
@@ -74,6 +70,7 @@ class LiveUser(models.Model):
 
 class Server(models.Model):
     name = models.CharField(max_length=16)
+    csv_name = models.CharField(max_length=16, default="", null=True)
     areaId = models.IntegerField(default=1)
     groupId = models.IntegerField(default=25)
     alter_names = models.TextField(default="[]")
@@ -111,6 +108,8 @@ class QQGroup(models.Model):
     server = models.ForeignKey(
         Server, on_delete=models.DO_NOTHING, blank=True, null=True
     )
+    sonar_sub_servers = models.ManyToManyField(Server, related_name="sonar_sub_by_groups", blank=True)
+    sonar_sub_ranks = models.TextField(default="[]", null=True, blank=True)
 
     def __str__(self):
         return self.group_id
@@ -248,6 +247,12 @@ class QQBot(models.Model):
     share_banned = models.BooleanField(default=False)
     img_banned = models.BooleanField(default=False)
     commands = models.TextField(default="{}")
+    sonar = models.BooleanField(default=False)
+    sonar_sub_ranks = models.TextField(default="[]", null=True, blank=True)
+    sonar_sub_groups = models.ManyToManyField(QQGroup, related_name="sonar_sub_by_bots", blank=True)
+    sonar_sub_servers = models.ManyToManyField(Server, related_name="sonar_sub_by_bots", blank=True)
+    novelai_url = models.CharField(max_length=128, default="", blank=True)
+    novelai_groups = models.ManyToManyField(QQGroup, related_name="novelai_groups", blank=True)
 
     def __str__(self):
         return self.name
@@ -263,6 +268,7 @@ class PlotQuest(models.Model):
     language_names = models.TextField(default="{}", blank=True)
     endpoint = models.BooleanField(default=False)
     endpoint_desc = models.CharField(max_length=64, default="", blank=True)
+    is_deprecated = models.BooleanField(default=False)
     quest_type = models.IntegerField(
         default=0
     )  # 0:nothing 3:main-scenario 8:special 1,10:other
@@ -321,6 +327,12 @@ class QQUser(models.Model):
     server = models.ForeignKey(
         Server, on_delete=models.DO_NOTHING, blank=True, null=True
     )
+    xivid_id = models.IntegerField(default=-1, blank=True)
+    xivid_state = models.CharField(default="", max_length=64, blank=True)
+    xivid_token = models.TextField(default="{}", blank=True)
+    xivid_character = models.TextField(default="{}", blank=True)
+    can_manual_upload_hunt = models.BooleanField(default=True)
+    can_use_novelai = models.BooleanField(default=True)
 
     def __str__(self):
         return str(self.user_id)
@@ -372,7 +384,7 @@ class Image(models.Model):
     )
     add_by_bot = models.ForeignKey(
         QQBot,
-        on_delete=models.DO_NOTHING,
+        on_delete=models.SET_NULL,
         related_name="upload_images",
         blank=True,
         null=True,
@@ -537,6 +549,7 @@ class Monster(models.Model):
     first_pop_cooldown = models.IntegerField(default=0)
     info = models.CharField(default="", max_length=128)
     status = models.TextField(default="{}")
+    key = models.IntegerField(default=0)
 
     def spawn_cd_hour(self):
         return self.spawn_cooldown // 3600
@@ -557,22 +570,34 @@ class HuntLog(models.Model):
         null=True,
     )
     hunt_group = models.ForeignKey(
-        HuntGroup, on_delete=models.CASCADE, related_name="hunt_log"
+        HuntGroup, on_delete=models.CASCADE, related_name="hunt_log",
+        null=True, blank=True
     )
     server = models.ForeignKey(
-        Server, on_delete=models.CASCADE, related_name="hunt_log"
+        Server, on_delete=models.CASCADE, related_name="hunt_log",
+        null=True, blank=True
     )
+    instance_id = models.IntegerField(default=0, blank=True, null=True)
     log_type = models.CharField(default="", max_length=16)
     time = models.BigIntegerField(default=0)
+    uploader = models.ForeignKey(
+        QQUser, on_delete=models.CASCADE, related_name="upload_hunt_log",
+        null=True, blank=True
+    )
+    uploader_char = models.CharField(default="", max_length=256, blank=True, null=True)
 
     def __str__(self):
-        return "{}-{}".format(self.server, self.monster)
+        return "{}_{}_{}".format(self.server, self.monster, self.instance_id)
 
     def get_info(self):
-        return "HuntLog#{}: {}-{} {}".format(
-            self.id, self.server, self.monster, self.log_type
+        return "HuntLog#{}: {}_{}_{} {}".format(
+            self.id, self.server, self.monster, self.instance_id, self.log_type
         )
 
+class BannedCharacter(models.Model):
+    name = models.CharField(default="", max_length=32, blank=True, null=True)
+    world_id = models.IntegerField(default=0, blank=True, null=True)
+    xivid_id = models.IntegerField(default=-1, blank=True, null=True)
 
 ## class TelegramChannel(models.Model):
 ##     name = models.CharField(default="", max_length=64)

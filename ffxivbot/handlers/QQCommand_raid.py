@@ -2,18 +2,11 @@ from .QQEventHandler import QQEventHandler
 from .QQUtils import *
 from ffxivbot.models import *
 import logging
-import json
-import random
-import requests
-
 
 def QQCommand_raid(*args, **kwargs):
     action_list = []
     try:
-        QQ_BASE_URL = kwargs["global_config"]["QQ_BASE_URL"]
-
         receive = kwargs["receive"]
-
         msg = "default message"
         receive_msg = receive["message"]
         receive_msg = receive_msg.replace("/raid", "", 1).strip()
@@ -34,7 +27,7 @@ def QQCommand_raid(*args, **kwargs):
                 msg = ""
                 data = {
                     "method": "queryhreodata",
-                    "stage": 2,
+                    "stage": 5,
                     "name": wol_name,
                     "areaId": server.areaId,
                     "groupId": server.groupId,
@@ -42,26 +35,26 @@ def QQCommand_raid(*args, **kwargs):
                 msg += check_raid(
                     api_url="https://actff1.web.sdo.com/20180525HeroList/Server/HeroList190128.ashx",
                     raid_data=data,
-                    raid_name="觉醒之章",
+                    raid_name="万魔殿边境之狱",
                     wol_name=wol_name,
                     server_name=server.name,
                 )
-                data["stage"] = 3
-                msg += check_raid(
-                    api_url="https://actff1.web.sdo.com/20180525HeroList/Server/HeroList190128.ashx",
-                    raid_data=data,
-                    raid_name="共鸣之章",
-                    wol_name=wol_name,
-                    server_name=server.name,
-                )
-                data["stage"] = 4
-                msg += check_raid(
-                    api_url="https://actff1.web.sdo.com/20180525HeroList/Server/HeroList190128.ashx",
-                    raid_data=data,
-                    raid_name="再生之章",
-                    wol_name=wol_name,
-                    server_name=server.name,
-                )
+                # data["stage"] = 3
+                # msg += check_raid(
+                #     api_url="https://actff1.web.sdo.com/20180525HeroList/Server/HeroList190128.ashx",
+                #     raid_data=data,
+                #     raid_name="共鸣之章",
+                #     wol_name=wol_name,
+                #     server_name=server.name,
+                # )
+                # data["stage"] = 4
+                # msg += check_raid(
+                #     api_url="https://actff1.web.sdo.com/20180525HeroList/Server/HeroList190128.ashx",
+                #     raid_data=data,
+                #     raid_name="再生之章",
+                #     wol_name=wol_name,
+                #     server_name=server.name,
+                # )
                 msg = msg.strip()
 
         reply_action = reply_message_action(receive, msg)

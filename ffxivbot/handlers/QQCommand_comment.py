@@ -12,7 +12,6 @@ from asgiref.sync import async_to_sync
 def QQCommand_comment(*args, **kwargs):
     try:
         global_config = kwargs["global_config"]
-        QQ_BASE_URL = global_config.get("QQ_BASE_URL")
         ADMIN_ID = global_config.get("ADMIN_ID")
         ADMIN_BOT = global_config.get("ADMIN_BOT")
         action_list = []

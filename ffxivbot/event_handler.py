@@ -375,7 +375,7 @@ class EventHandler(object):
             group_id = receive["group_id"]
             user_id = receive["user_id"]
             try:
-                group = QQGroup.objects.get(group_id=group_id)
+                (group, __) = QQGroup.objects.get_or_create(group_id=group_id)
                 welcome_msg = group.welcome_msg.strip()
                 if welcome_msg:
                     msg = "[CQ:at,qq=%s]" % (user_id) + welcome_msg

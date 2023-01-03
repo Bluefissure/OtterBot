@@ -1,7 +1,7 @@
 version: '3'
 services:
   db:
-    image: mysql:5.6
+    image: mysql:5.7
     container_name : otterbot-db
     restart: always
     environment:
@@ -21,6 +21,7 @@ services:
       - redis
       - rabbit
     environment:
+      IS_DOCKER: Docker
       FFXIVBOT_ROOT: /FFXIVBOT/
       TULING_API_KEY: 123
       BOT_FATHER: 爸爸

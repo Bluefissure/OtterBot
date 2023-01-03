@@ -10,7 +10,6 @@ def QQGroupCommand_vote(*args, **kwargs):
         global_config = kwargs["global_config"]
         group = kwargs["group"]
         user_info = kwargs["user_info"]
-        QQ_BASE_URL = global_config["QQ_BASE_URL"]
         TIMEFORMAT = global_config["TIMEFORMAT"]
         action_list = []
         receive = kwargs["receive"]

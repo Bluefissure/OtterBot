@@ -1,22 +1,14 @@
-from .QQEventHandler import QQEventHandler
 from .QQUtils import *
 from ffxivbot.models import *
 import logging
-import json
-import random
 import traceback
 import requests
-import time
-from bs4 import BeautifulSoup
 
 
 def QQCommand_hhsh(*args, **kwargs):
     try:
-        QQ_BASE_URL = kwargs["global_config"]["QQ_BASE_URL"]
         action_list = []
         receive = kwargs["receive"]
-        bot = kwargs["bot"]
-        user = QQUser.objects.get(user_id=receive["user_id"])
         content = receive["message"].replace("/hhsh", "", 1).strip()
         api_url = "https://lab.magiconch.com/api/nbnhhsh/"
         r = requests.post(api_url + "guess", data={"text": content}, timeout=3)

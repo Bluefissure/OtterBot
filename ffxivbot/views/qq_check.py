@@ -1,16 +1,28 @@
+import os
 import time
+import json
 
 from django.contrib import auth
 from django.http import HttpResponseRedirect
 
-from FFXIV import settings
 from ffxivbot.models import QQUser
 from ffxivbot.oauth_client import OAuthQQ
 
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+FFXIVBOT_ROOT = os.environ.get("FFXIVBOT_ROOT", BASE_DIR)
+CONFIG_PATH = os.environ.get(
+    "FFXIVBOT_CONFIG", os.path.join(FFXIVBOT_ROOT, "ffxivbot/config.json")
+)
 
 def qq_check(req):
     code = req.GET.get('code', None)
-    authqq = OAuthQQ(settings.QQ_APP_ID, settings.QQ_KEY, settings.QQ_RECALL_URL)
+    with open(CONFIG_PATH, "r") as f:
+        config = json.load(f)
+        QQ_APP_ID = os.environ.get("QQ_APP_ID", config.get("QQ_APP_ID"))
+        QQ_KEY = os.environ.get("QQ_KEY", config.get("QQ_KEY"))
+        WEB_BASE_URL = os.environ.get("WEB_BASE_URL", config.get("WEB_BASE_URL"))
+        QQ_RECALL_URL = os.path.join(WEB_BASE_URL, "api/qqcallback")
+    authqq = OAuthQQ(QQ_APP_ID, QQ_KEY, QQ_RECALL_URL)
     access_token = authqq.get_access_token(code)
     time.sleep(0.05)
     qq_openid = authqq.get_open_id()

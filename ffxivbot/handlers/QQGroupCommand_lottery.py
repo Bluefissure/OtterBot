@@ -19,7 +19,6 @@ def QQGroupCommand_lottery(*args, **kwargs):
     action_list = []
     try:
         global_config = kwargs["global_config"]
-        QQ_BASE_URL = global_config["QQ_BASE_URL"]
         RANDOMORG_TOKEN = global_config.get("RANDOMORG_TOKEN", None)
         TIMEFORMAT = global_config["TIMEFORMAT"]
         action_list = []

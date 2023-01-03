@@ -17,7 +17,6 @@ from bs4 import BeautifulSoup
 
 def QQCommand_hso(*args, **kwargs):
     try:
-        QQ_BASE_URL = kwargs["global_config"]["QQ_BASE_URL"]
         action_list = []
         receive = kwargs["receive"]
         bot = kwargs["bot"]

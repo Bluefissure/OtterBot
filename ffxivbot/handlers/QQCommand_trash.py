@@ -34,7 +34,6 @@ def QQCommand_trash(*args, **kwargs):
     action_list = []
     try:
         global_config = kwargs["global_config"]
-        QQ_BASE_URL = global_config["QQ_BASE_URL"]
         FF14WIKI_API_URL = global_config["FF14WIKI_API_URL"]
         FF14WIKI_BASE_URL = global_config["FF14WIKI_BASE_URL"]
         receive = kwargs["receive"]

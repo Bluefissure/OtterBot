@@ -28,10 +28,28 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = 'SECRET_KEY'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = True # set to False in production
+
+if os.environ.get('DJANGO_DEBUG'):
+    print("Debug is enabled.")
+    DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
+# CORS_ALLOW_CREDENTIALS = True
+
+# CORS_ORIGIN_ALLOW_ALL = True
+
+# CSRF_TRUSTED_ORIGINS = ['xn--v9x.net', 'localhost']
+
+# CORS_REPLACE_HTTPS_REFERER = True
+
+# CSRF_COOKIE_DOMAIN = 'xn--v9x.net'
+
+# CORS_ORIGIN_WHITELIST = (
+#     'https://xn--v9x.net',
+#     'xn--v9x.net',
+# )
 
 # Application definition
 
@@ -110,9 +128,11 @@ DATABASES = {
         'HOST': '127.0.0.1',
         'PORT': '3306',
         'OPTIONS': {'charset': 'utf8mb4'},
+        'CONN_HEALTH_CHECKS': True,
     }
 }
 
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
 # Password validation
 # https://docs.djangoproject.com/en/2.0/ref/settings/#auth-password-validators

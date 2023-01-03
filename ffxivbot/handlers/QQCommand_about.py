@@ -1,15 +1,10 @@
-from .QQEventHandler import QQEventHandler
 from .QQUtils import *
 from ffxivbot.models import *
 import logging
-import json
-import random
 
 
 def QQCommand_about(*args, **kwargs):
     try:
-        global_config = kwargs["global_config"]
-        QQ_BASE_URL = global_config["QQ_BASE_URL"]
         action_list = []
         receive = kwargs["receive"]
 

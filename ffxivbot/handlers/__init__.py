@@ -9,7 +9,7 @@ commands = {
     "/about": "关于此项目",
     "/donate": "援助作者",
     "/random": "掷骰子",
-    "/chp": "彩虹屁",
+    # "/chp": "彩虹屁",
     "/anime": '以图搜番（"/anime 图片"）',
     "/gif": '生成沙雕图（"/gif help"）',
     "/dice": 'DnD掷骰子（"/dice 3d12"）',
@@ -30,7 +30,7 @@ commands = {
     "/nuannuan": "本周金蝶暖暖作业",
     #"/genshin": "原神圣遗物评分",
     #"/hso": "好色哦",
-    "/hhsh": "好好说话",
+    # "/hhsh": "好好说话",
     "/bot": "机器人相关功能",
     "/ifttt": "IFTTT推送系统",
     "/akhr": "罗德岛公开招募",
@@ -47,6 +47,7 @@ commands = {
 
 group_commands = {
     "/group": "群相关功能控制",
+    "/sonar": "Sonar 推送相关设置",
     "/welcome": "设置欢迎语",
     "/custom_reply": "添加自定义命令",
     "/repeat_ban": "复读姬口球系统",
@@ -61,6 +62,7 @@ group_commands = {
     "/lottery": "抽奖",
     "/hunt": "狩猎",
     "/wordcloud": "聊天词云",
+    "/novelai": "AI 作图",
 }
 
 alter_commands = {
@@ -99,11 +101,15 @@ alter_commands = {
     "/nn": "/nuannuan",
     "/mitem": "/market item",
     "/海钓": "/ofish",
+    "/novelai cast": "/novelai generate",
+    "/ncast": "/novelai generate",
+    "/novelai official_cast": "/novelai official_generate",
+    "/nocast": "/novelai official_generate",
 }
 
 # FFXIV Commands
 from .QQCommand_dps import QQCommand_dps
-from .QQCommand_etro import QQCommand_etro
+# from .QQCommand_etro import QQCommand_etro
 from .QQCommand_fsx import QQCommand_fsx
 from .QQCommand_gate import QQCommand_gate
 from .QQCommand_market import QQCommand_market
@@ -123,11 +129,11 @@ from .QQCommand_about import QQCommand_about
 from .QQCommand_abv import QQCommand_abv
 from .QQCommand_anime import QQCommand_anime
 from .QQCommand_cat import QQCommand_cat
-from .QQCommand_chp import QQCommand_chp
+# from .QQCommand_chp import QQCommand_chp
 from .QQCommand_dice import QQCommand_dice
 from .QQCommand_duilian import QQCommand_duilian
 from .QQCommand_gif import QQCommand_gif
-from .QQCommand_hhsh import QQCommand_hhsh  # be sure to come before /hh
+# from .QQCommand_hhsh import QQCommand_hhsh  # be sure to come before /hh
 from .QQCommand_hh import QQCommand_hh  # FFXIV Command
 from .QQCommand_hso import QQCommand_hso
 from .QQCommand_ifttt import QQCommand_ifttt
@@ -155,6 +161,7 @@ from .arknights.QQCommand_akhr import QQCommand_akhr
 
 # Group Commands
 from .QQGroupCommand_group import QQGroupCommand_group
+from .QQGroupCommand_sonar import QQGroupCommand_sonar
 from .QQGroupCommand_welcome import QQGroupCommand_welcome
 from .QQGroupCommand_custom_reply import QQGroupCommand_custom_reply
 from .QQGroupCommand_repeat_ban import QQGroupCommand_repeat_ban
@@ -169,5 +176,6 @@ from .QQGroupCommand_lottery import QQGroupCommand_lottery
 from .QQGroupCommand_command import QQGroupCommand_command
 from .QQGroupCommand_hunt import QQGroupCommand_hunt
 from .QQGroupCommand_wordcloud import QQGroupCommand_wordcloud
+from .QQGroupCommand_novelai import QQGroupCommand_novelai
 
 from .QQGroupChat import QQGroupChat

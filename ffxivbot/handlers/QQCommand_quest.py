@@ -7,11 +7,10 @@ import json
 import random
 import traceback
 import urllib
+from queue import Queue
 
 
 def bfs_quest(quest):
-    from queue import Queue
-
     Q = Queue()
     Q.put(quest)
     now_main_scenario = "Endwalker主线任务(6.0)"
@@ -42,7 +41,7 @@ def bfs_quest(quest):
         if q.endpoint:
             now_main_scenario = q.endpoint_desc
             break
-        for pre_q in q.suf_quests.all():
+        for pre_q in q.suf_quests.filter(is_deprecated=False):
             if pre_q.is_main_scenario():
                 Q.put(pre_q)
     back_cnt -= 1
@@ -72,9 +71,9 @@ def get_banner(quest_id):
 
 def search_quest(quest_name):
     msg = ""
-    quests = PlotQuest.objects.filter(name__icontains=quest_name)
+    quests = PlotQuest.objects.filter(name__icontains=quest_name, is_deprecated=False)
     if not quests.exists():
-        quests = PlotQuest.objects.filter(language_names__icontains=quest_name)
+        quests = PlotQuest.objects.filter(language_names__icontains=quest_name, is_deprecated=False)
     if not quests.exists():
         quests = []
         all_quests = PlotQuest.objects.all()

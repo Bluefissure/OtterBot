@@ -26,7 +26,6 @@ def QQCommand_ifttt(*args, **kwargs):
     receive = kwargs["receive"]
     try:
         global_config = kwargs["global_config"]
-        QQ_BASE_URL = global_config["QQ_BASE_URL"]
         TIMEFORMAT_YMDHMS = global_config["TIMEFORMAT"]
         bot = kwargs["bot"]
         user_id = receive["user_id"]

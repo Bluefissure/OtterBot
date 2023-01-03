@@ -13,7 +13,6 @@ import traceback
 def QQCommand_dps(*args, **kwargs):
     try:
         global_config = kwargs["global_config"]
-        QQ_BASE_URL = global_config["QQ_BASE_URL"]
         action_list = []
         receive = kwargs["receive"]
 

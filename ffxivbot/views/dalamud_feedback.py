@@ -38,9 +38,7 @@ def dalamud_feedback(req):
             bot.api_channel_name,
             {"type": "send.event", "text": json.dumps(jdata)},
         )
-        print("====== dalamud_feedback POST ======")
-        print(msg)
-        print("====== dalamud_feedback END  ======")
+        return HttpResponse("OK", status=200)
     elif req.method == "GET":
         return HttpResponse("Method not allowed", status=405)
     return HttpResponse("Default API Error, contact dev please.", status=500)

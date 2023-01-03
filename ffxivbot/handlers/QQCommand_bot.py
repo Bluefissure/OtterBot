@@ -11,6 +11,103 @@ import math
 import string
 import os
 
+GLOBAL_SONAR_RANKS = [
+    "50S", "60S", "70S", "80S", "90S",
+    "大象", "小电视", "海呱", "地呱", "雷马", "玉藻御前", "夜光花", "长须豹女王", "贝希摩斯", "奥丁"
+]
+
+def get_server_from_keyword(keyword):
+    if keyword == "国服" or keyword == '国':
+        return Server.objects.all()
+    elif keyword == "陆行鸟" or keyword == '鸟':
+        return Server.objects.filter(areaId=1)
+    elif keyword == "莫古力" or keyword == '猪':
+        return Server.objects.filter(areaId=6)
+    elif keyword == "猫小胖" or keyword == '猫':
+        return Server.objects.filter(areaId=7)
+    elif keyword == "豆豆柴" or keyword == '狗':
+        return Server.objects.filter(areaId=8)
+    return Server.objects.filter(name=keyword)
+
+
+def handle_sonar_config(bot, parameters):
+    if len(parameters) == 0 or parameters[0] == "help":  # /bot sonar (help)
+        return """机器人的 Sonar 推送配置：
+/bot sonar info: 查看当前 Sonar 配置
+/bot sonar rank/rank_del <50S/60S/70S/80S/90S/大象/小电视/...>: 添加/删除可通过本机器人推送的上报类别
+/bot sonar server/server_del <服务器/大区名称>: 添加/删除可通过本机器人推送的服务器
+/bot sonar group/group_del <群号>: 添加/删除可通过本机器人推送的QQ群号（不设置则任意群均不可推送）
+"""
+    operation = parameters[0]
+    if operation == "server" or operation == "server_del":  # /bot sonar server(_del) <keyword>
+        for keyword in parameters[1:]:
+            servers = get_server_from_keyword(keyword)
+            if servers.exists():
+                for server in servers:
+                    if operation == "server":
+                        bot.sonar_sub_servers.add(server)
+                    elif operation == "server_del":
+                        bot.sonar_sub_servers.remove(server)
+        sub_servers = bot.sonar_sub_servers.all()
+        if sub_servers.exists():
+            servers_msg = "可推送服务器被设置为：\n"
+            for server in sub_servers:
+                servers_msg += f"{server.name} "
+        else:
+            servers_msg = "可推送服务器已清空"
+        return servers_msg
+    if operation == "group" or operation == "group_del":  # /bot sonar group(_del) <group_id>
+        for group_id in parameters[1:]:
+            groups = QQGroup.objects.filter(group_id=group_id)
+            if groups.exists():
+                for group in groups:
+                    if operation == "group":
+                        bot.sonar_sub_groups.add(group)
+                    elif operation == "group_del":
+                        bot.sonar_sub_groups.remove(group)
+        sub_groups = bot.sonar_sub_groups.all()
+        if sub_groups.exists():
+            groups_msg = "可推送群被设置为：\n"
+            for group in sub_groups:
+                groups_msg += f"{group} "
+        else:
+            groups_msg = "可推送群限制已清空"
+        return groups_msg
+    if operation == "rank" or operation == "rank_del":  # /bot sonar rank(_del) <group_id>
+        ranks = json.loads(bot.sonar_sub_ranks)
+        for rank in parameters[1:]:
+            if rank not in GLOBAL_SONAR_RANKS:
+                continue
+            if operation == "rank":
+                ranks.append(rank)
+            elif operation == "rank_del":
+                ranks.remove(rank)
+        bot.sonar_sub_ranks = json.dumps(ranks)
+        bot.save(update_fields=['sonar_sub_ranks'])
+        if ranks:
+            rank_msg = "可推送类别被设置为：\n"
+            for rank in ranks:
+                rank_msg += f"{rank} "
+        else:
+            rank_msg = "可推送类别已清空"
+        return rank_msg
+    if operation == "info":  # /bot sonar info
+        sub_ranks = json.loads(bot.sonar_sub_ranks)
+        ranks_msg = ", ".join(list(map(lambda x: str(x), sub_ranks)))
+        sub_servers = bot.sonar_sub_servers.all()
+        servers_msg = ", ".join(list(map(lambda x: str(x.name), sub_servers)))
+        sub_groups = bot.sonar_sub_groups.all()
+        groups_msg = ", ".join(list(map(lambda x: str(x.group_id), sub_groups)))
+        if groups_msg == "":
+            groups_msg = "无"
+        return "{} 的 Sonar 推送限制目前设置为：\n" \
+                "可推送类别：{}\n" \
+                "可推送服务器：{}\n" \
+                "可推送群组：{}".format(bot, ranks_msg, servers_msg, groups_msg)
+    return "无效命令"
+        
+
+
 
 def QQCommand_bot(*args, **kwargs):
     action_list = []
@@ -35,22 +132,13 @@ def QQCommand_bot(*args, **kwargs):
                 qquser.refresh_from_db()
                 msg = "用户 {} 的token已被设定为：{}".format(qquser, qquser.bot_token)
         elif second_command == "register":
-            if receive["message_type"] == "group":
-                msg = "[CQ:at,qq={}] 你确定要在群里面申请注册认证码从而公之于众？".format(receive["user_id"])
-            else:
-                vcode = "".join(
-                    random.choices(string.ascii_uppercase + string.digits, k=16)
-                )
-                (qquser, _) = QQUser.objects.get_or_create(user_id=receive["user_id"])
-                qquser.vcode = vcode
+            (qquser, _) = QQUser.objects.get_or_create(user_id=receive["user_id"])
+            vcode = receive_msg.replace("register", "", 1).strip()
+            if qquser.vcode and qquser.vcode == vcode:
                 qquser.vcode_time = time.time()
-                qquser.save()
-                msg = "用户 {} 的注册认证码为：{}".format(qquser, qquser.vcode)
-                msg += "\n请在五分钟内访问以下地址进行注册认证："
-                msg += os.path.join(
-                    WEB_BASE_URL,
-                    "register/?vcode={}&email={}@qq.com".format(vcode, qquser),
-                )
+            else:
+                qquser.vcode_time = 0
+            qquser.save(update_fields=["vcode_time"])
         elif second_command == "text":
             if int(user_id) != int(bot.owner_id):
                 msg = "仅机器人领养者能修改机器人状态"
@@ -72,6 +160,39 @@ def QQCommand_bot(*args, **kwargs):
                 bot.api = not bot.api
                 bot.save(update_fields=["api"])
                 msg = "API已{}".format("启用" if bot.api else "禁用")
+        elif second_command == "sonar":
+            if int(user_id) != int(bot.owner_id):
+                msg = "仅机器人领养者能修改机器人状态"
+            else:
+                parameters = second_msg.split(" ")
+                while "" in parameters:
+                    parameters.remove("")
+                msg = handle_sonar_config(bot, parameters)
+        elif second_command == "novelai":
+            if int(user_id) != int(bot.owner_id):
+                msg = "仅机器人领养者能修改机器人状态"
+            else:
+                parameters = second_msg.split(" ")
+                while "" in parameters:
+                    parameters.remove("")
+                if parameters[0] == "api":
+                    bot.novelai_url = parameters[1]
+                    bot.save(update_fields=["novelai_url"])
+                    msg = f"{bot} 的 novelai api 已被设定为：{parameters[1]}"
+                elif parameters[0] == "group":
+                    if parameters[1] == "clear":
+                        bot.novelai_groups.clear()
+                        msg = f"{bot} 的 novelai group 已被清空"
+                    else:
+                        group_ids = parameters[1].split(',')
+                        for group_id in group_ids:
+                            try:
+                                group = QQGroup.objects.get(group_id=group_id)
+                            except QQGroup.DoesNotExist:
+                                continue
+                            bot.novelai_groups.add(group)
+                        group_str = ", ".join(list(map(lambda x: str(x.group_id), bot.novelai_groups.all())))
+                        msg = f"{bot} 的 novelai group 已被设定为：{group_str}"
         elif second_command == "info":
             friend_list = json.loads(bot.friend_list)
             friend_list_cnt = len(friend_list) if friend_list else 0
@@ -129,7 +250,7 @@ def QQCommand_bot(*args, **kwargs):
                 "/bot token $token: 申请接收ACT插件消息时认证的token\n"
                 + "/bot update: 更新机器人统计信息\n"
                 + "/bot info: 查看机器人信息\n"
-                + "/bot register: 申请网站注册认证码\n"
+                + "/bot register: 网站注册认证（静默认证）\n"
                 + "/bot text: 更改连接分享模式\n"
                 + "/bot hso: HSO开关\n"
             )

@@ -7,7 +7,7 @@
   <meta http-equiv="x-ua-compatible" content="ie=edge">
 
   <link rel="shortcut icon" href="{% static "tata.ico" %}" type="image/x-icon"/>
-  <title>FFXIV Toolkit CN | Bluefissure</title>
+  <title>OtterBot | FFXIV QQ Bot</title>
 
   <!-- Font Awesome Icons -->
   <link rel="stylesheet" href="{% static "plugins/fontawesome-free/css/all.min.css" %}">
@@ -15,6 +15,8 @@
   <link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
   <!-- DataTables -->
   <link rel="stylesheet" href="{% static "plugins/datatables-bs4/css/dataTables.bootstrap4.css" %}">
+  <!-- Toastr -->
+  <link rel="stylesheet" href="{% static "plugins/toastr/css/toastr.min.css" %}">
   <!-- icheck bootstrap -->
   <link rel="stylesheet" href="{% static "plugins/icheck-bootstrap/icheck-bootstrap.min.css" %}">
   <!-- Theme style -->
@@ -42,12 +44,49 @@
 
   <!-- Google Font: Source Sans Pro -->
   <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700" rel="stylesheet">
+  {% block head %}
+  {% endblock %}
 </head>
 <body class="hold-transition sidebar-mini">
 {% block main %}
 {% endblock %}
 
 
+<!-- jQuery 3 -->
+<script src="{% static "plugins/jquery/jquery.min.js" %}"></script>
+<!-- Toastr -->
+<script src="{% static "plugins/toastr/js/toastr.min.js" %}"></script>
+<script>
+  const getQueryStringParams = query => {
+      return query
+          ? (/^[?#]/.test(query) ? query.slice(1) : query)
+              .split('&')
+              .reduce((params, param) => {
+                      let [key, value] = param.split('=');
+                      params[key] = value ? decodeURIComponent(value.replace(/\+/g, ' ')) : '';
+                      return params;
+                  }, {}
+              )
+          : {}
+  };
+
+  $(function() {
+    const params = getQueryStringParams(window.location.search);
+    if (Object.keys(params).length > 0) {
+      console.log(params);
+      if(params['error_msg']) {
+        toastr.error(params['error_msg']);
+      }
+      if(params['success_msg']) {
+        toastr.success(params['success_msg']);
+      }
+      if(params['warning_msg']) {
+        toastr.warning(params['warning_msg']);
+      }
+      window.history.pushState({}, document.title, window.location.pathname );
+    }
+  })
+</script>
 {% block script %}
 {% endblock %}
 </body>

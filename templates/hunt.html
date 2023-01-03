@@ -1,6 +1,11 @@
 {% extends 'index.html' %}
 {% load static %}
+{% load tz %}
 
+{% block head %}
+  <link rel="stylesheet" href="{% static "plugins/tempusdominus-bootstrap-4/css/tempusdominus-bootstrap-4.min.css" %}">
+  <link rel="stylesheet" href="{% static "plugins/bootstrap-select/css/bootstrap-select.min.css" %}">
+{% endblock %}
 
 {% block content %}
 
@@ -34,9 +39,14 @@
           <div class="card">
             <div class="card-header">
               {% if resources %}
-              <h3 class="card-title">数据来源：{{resources}}</h3>
+              <h3 class="card-title float-left">数据来源：{{resources}}</h3>
               {% else %}
-              <h3 class="card-title">数据来源：无</h3>
+              <h3 class="card-title float-left">数据来源：无</h3>
+              {% endif %}
+              {% if user and can_manual_upload %}
+              <h3 class="card-title float-right">
+                <button class="btn btn-primary" data-toggle="modal" data-target="#ManualUploadModal">手动上传</button>
+              </h3>
               {% endif %}
             </div>
             <!-- /.card-header -->
@@ -68,6 +78,7 @@
                 <button type="button" class="btn btn-primary" id="byx">白银乡</button>
                 <button type="button" class="btn btn-primary" id="bjhx">白金幻象</button>
                 <button type="button" class="btn btn-primary" id="lrzq">旅人栈桥</button>
+                <button type="button" class="btn btn-primary" id="mybj">梦羽宝境</button>
                 <button type="button" class="btn btn-primary" id="fxzj">拂晓之间</button>
                 <button type="button" class="btn btn-primary" id="lcsd">龙巢神殿</button>
               </div>
@@ -85,7 +96,7 @@
               <div class="btn-group" role="group" style="margin-left: 10px" data-toggle="buttons">
                 <button type="button" class="btn btn-primary" id="sjt">水晶塔</button>
                 <button type="button" class="btn btn-primary" id="ylh">银泪湖</button>
-                <button type="button" class="btn btn-primary" id="tyhh">太阳海岸</button>
+                <button type="button" class="btn btn-primary" id="tyha">太阳海岸</button>
                 <button type="button" class="btn btn-primary" id="yxjd">伊修加德</button>
                 <button type="button" class="btn btn-primary" id="hcc">红茶川</button>
               </div>
@@ -100,7 +111,6 @@
                   <th style="text-align: center; vertical-align: center;">触发开始</th>
                   <th style="text-align: center; vertical-align: center;">必定触发</th>
                   <th style="text-align: center; vertical-align: center;">触发条件</th>
-                  <!-- <th><center>配置</center></th> -->
                 </tr>
                 </thead>
                 <tbody>
@@ -146,17 +156,19 @@
                 {% endif %}
                 {% if monster_info.schedulef > 1 %}
                   <td style="text-align: center; vertical-align: middle; width: 5%;"><span
-                      class="badge bg-red">{{ monster_info.schedule }}</span></td>
+                      class="badge bg-red">{{ monster_info.spawn_percent }}</span></td>
                 {% elif monster_info.schedulef < monster_info.cd_schedulef %}
                   <td style="text-align: center; vertical-align: middle; width: 5%;"><span
-                      class="badge bg-gray">{{ monster_info.schedule }}</span></td>
+                      class="badge bg-gray">{{ monster_info.spawn_delta }}</span></td>
                 {% else %}
                   <td style="text-align: center; vertical-align: middle; width: 5%;"><span
-                      class="badge bg-green">{{ monster_info.schedule }}</span></td>
+                      class="badge bg-green">{{ monster_info.spawn_percent }}</span></td>
                 {% endif %}
-                <td style="text-align: center; vertical-align: middle;">{{ monster_info.kill_time }}</td>
-                <td style="text-align: center; vertical-align: middle;">{{ monster_info.next_spawn_time }}</td>
-                <td style="text-align: center; vertical-align: middle;">{{ monster_info.next_pop_time }}</td>
+                {% localtime on %}
+                <td class="django-template-timestamp" style="text-align: center; vertical-align: middle;">{{ monster_info.kill_timestamp }}</td>
+                <td class="django-template-timestamp" style="text-align: center; vertical-align: middle;">{{ monster_info.next_spawn_timestamp }}</td>
+                <td class="django-template-timestamp" style="text-align: center; vertical-align: middle;">{{ monster_info.next_pop_timestamp }}</td>
+                {% endlocaltime %}
                 <td style="text-align: left; vertical-align: middle; width: 25%;">{{ monster_info.info }}</td>
                 </tr>
                 {% endfor %}
@@ -173,6 +185,52 @@
       <!-- /.row -->
     </div>
   </section>
+  
+  <div class="modal fade" id="ManualUploadModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h4 class="modal-title" id="ManualUploadTitle">手动上传狩猎信息</h4>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">x</span>
+          </button>
+        </div>
+        <div class="modal-body" id="ManualUploadContent">
+          <div class="form-group">
+            <label>狩猎怪</label>
+            <select class="form-control selectpicker" name="monster" id="monster-name" data-live-search="true">
+              {% for monster in monster_list %}
+                <option>{{monster}}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="form-group">
+            <label>服务器</label>
+            <select class="form-control selectpicker" name="server" id="server-name" data-live-search="true">
+              {% for server in server_list %}
+                <option>{{server}}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="form-group">
+            <label>记录时间（本地时区）</label>
+            <div class="form-group">
+                <div class="input-group date" id="datetimepicker" data-target-input="nearest">
+                    <input type="text" class="form-control datetimepicker-input" data-target="#datetimepicker" id="datetimepicker-input"/>
+                    <div class="input-group-append" data-target="#datetimepicker" data-toggle="datetimepicker">
+                        <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+                    </div>
+                </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer justify-content-between">
+          <button type="button" class="btn btn-primary" onClick="revoke()">撤回最近提交</button>
+          <button type="button" class="btn btn-primary" data-dismiss="modal" onClick="submit()">提交</button>
+        </div>
+      </div><!-- /.modal-content -->
+    </div><!-- /.modal -->
+  </div>
 
 
 {% endblock %}
@@ -181,11 +239,19 @@
 {% block script %}
   <!-- jQuery 3 -->
   <script src="{% static "plugins/jquery/jquery.min.js" %}"></script>
-  <!-- Bootstrap 3.3.7 -->
+  <!-- Popper -->
+  <script src="{% static "plugins/popperjs/popper.min.js" %}"></script>
+  <!-- Bootstrap 4.3.1 -->
   <script src="{% static "plugins/bootstrap/js/bootstrap.min.js" %}"></script>
   <!-- DataTables -->
   <script src="{% static "plugins/datatables/jquery.dataTables.min.js" %}"></script>
   <script src="{% static "plugins/datatables-bs4/js/dataTables.bootstrap4.min.js" %}"></script>
+  <!-- Moment -->
+  <script src="{% static "plugins/moment/moment.min.js" %}"></script>
+  <!-- Datetime Picker -->
+  <script src="{% static "plugins/tempusdominus-bootstrap-4/js/tempusdominus-bootstrap-4.min.js" %}"></script>
+  <!-- Bootstrap select -->
+  <script src="{% static "plugins/bootstrap-select/js/bootstrap-select.min.js" %}"></script>
   <!-- FastClick -->
   <script src="{% static "plugins/fastclick/fastclick.js" %}"></script>
   <!-- AdminLTE App -->
@@ -194,17 +260,108 @@
   <script src="{% static "dist/js/demo.js" %}"></script>
   <script src="{% static "dist/js/hunt.js" %}"></script>
   <!-- page script -->
-  <script>
-      $(function () {
-          $('#hunt-table').DataTable({
-              'paging': false,
-              'lengthChange': false,
-              'searching': false,
-              'ordering': true,
-              'info': false,
-              'autoWidth': false
-          });
-      })
+  <script type="text/javascript">
+    function revoke() {
+      $.ajax({
+        type: 'POST',
+        url: '',
+        async: true,
+        contentType: 'application/json',
+        headers: { "X-CSRFToken": '{{csrf_token}}' },
+        data: JSON.stringify({
+          "optype": "revoke_manual_upload",
+        }),
+        dataType: 'json',
+        success: function(data) {
+          if (data.response != "success") {
+            if (data.response == "error") {
+              toastr.error(data.message);
+            } else if (data.response == "warning") {
+              toastr.warning(data.message);
+            } else if (data.response == "info") {
+              toastr.info(data.message);
+            }
+          } else {
+            toastr.success(data.message);
+          }
+        },
+      });
+    }
+    function submit() {
+      const monsterName = $('#monster-name').val();
+      const serverName = $('#server-name').val();
+      const datetime = $('#datetimepicker-input').val();
+      const date = new Date(datetime);
+      if (isNaN(date)) {
+        toastr.error('时间格式错误');
+        return;
+      }
+      const timestamp = date.getTime() / 1000;
+      $.ajax({
+        type: 'POST',
+        url: '',
+        async: true,
+        contentType: 'application/json',
+        headers: { "X-CSRFToken": '{{csrf_token}}' },
+        data: JSON.stringify({
+          "optype": "manual_upload_hunt",
+          "monster_name": monsterName,
+          "server_name": serverName,
+          "time": timestamp,
+        }),
+        dataType: 'json',
+        success: function(data) {
+          if (data.response != "success") {
+            if (data.response == "error") {
+              toastr.error(data.message);
+            } else if (data.response == "warning") {
+              toastr.warning(data.message);
+            } else if (data.response == "info") {
+              toastr.info(data.message);
+            }
+          } else {
+            toastr.success(data.message);
+            if (data.message.indexOf(datetime.slice(0, 14)) == -1) {
+              console.log(data.message);
+              toastr.info('经检测到本地时间与北京时间不一致，请注意按照本地时间上传。');
+            }
+          }
+        },
+      });
+    }
+    $(function () {
+      $('#datetimepicker').datetimepicker({
+        icons: { time: 'far fa-clock' },
+        format: 'MM/DD/YYYY HH:mm:ss'
+      });
+    });
+    $(function () {
+        $('.django-template-timestamp').each((index, elem) => {
+            const timestamp = $(elem).text();
+            const date = new Date(timestamp * 1000);
+            $(elem).text(date.toLocaleString(
+              undefined, 
+              {
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                hour12: false,
+                minute:'2-digit',
+                second:'2-digit',
+              },
+            ));
+        })
+    })
+    $(function () {
+        $('#hunt-table').DataTable({
+            'paging': false,
+            'lengthChange': false,
+            'searching': false,
+            'ordering': true,
+            'info': false,
+            'autoWidth': false
+        });
+    })
   </script>
 {% endblock %}
 

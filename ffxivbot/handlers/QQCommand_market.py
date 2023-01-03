@@ -59,7 +59,7 @@ def get_item_id(item_name, name_lang=""):
         url = (
             "https://cafemaker.wakingsands.com/search?indexes=Item&string=" + item_name
         )
-    r = requests.get(url, timeout=3)
+    r = requests.get(url, timeout=60)
     j = r.json()
     if len(j["Results"]) > 0:
         result = max(j["Results"], key=lambda x: SequenceMatcher(None, x["Name"], item_name).ratio())
@@ -79,15 +79,15 @@ def get_market_data(server_name, item_name, hq=False):
                 break
         new_item_name, item_id = get_item_id(item_name, name_lang)
         if item_id < 0:
-            msg = '所查询物品"{}"不存在'.format(item_name)
-            return msg
+            return '所查询物品"{}"不存在'.format(item_name)
     url = "https://universalis.app/api/{}/{}".format(server_name, item_id)
     print("market url:{}".format(url))
-    r = requests.get(url, timeout=3)
+    r = requests.get(url, timeout=10)
     if r.status_code != 200:
         if r.status_code == 404:
-            msg = "请确认所查询物品可交易且不可在NPC处购买\n"
-        msg += "Error of HTTP request (code {}):\n{}".format(r.status_code, r.text)
+            msg = "请确认所查询物品可交易且不可在NPC处购买"
+        else:
+            msg = "Error of HTTP request (code {}):\n{}".format(r.status_code, r.text)
         return msg
     j = r.json()
     msg = "{} 的 {}{} 数据如下：\n".format(server_name, new_item_name, "(HQ)" if hq else "")
@@ -196,7 +196,6 @@ Powered by https://universalis.app"""
 
 def QQCommand_market(*args, **kwargs):
     try:
-        QQ_BASE_URL = kwargs["global_config"]["QQ_BASE_URL"]
         action_list = []
         receive = kwargs["receive"]
         bot = kwargs["bot"]

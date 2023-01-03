@@ -12,7 +12,6 @@ def QQGroupCommand_ban(*args, **kwargs):
         user_info = kwargs["user_info"]
         member_list = kwargs["member_list"]
         bot = kwargs["bot"]
-        QQ_BASE_URL = global_config["QQ_BASE_URL"]
         action_list = []
         receive = kwargs["receive"]
         user_id = receive["user_id"]

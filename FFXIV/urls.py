@@ -14,8 +14,7 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
-from django.conf.urls import url, include
+from django.urls import path, re_path
 from django.conf.urls.static import static
 from django.conf import settings
 from django.views.decorators.cache import cache_page
@@ -34,15 +33,20 @@ urlpatterns = [
     path('image/', image),
     # path('hunt/', cache_page(60 * 2)()),
     path('hunt/', hunt),
-    url(r'^housing/api', housing_api),
-    url(r'^oauth/qq/login/$', qq_login, name='qq_login'),
-    url(r'^api/qqcallback', qq_check, name='qq_check'),
-    url(r'^dalamud/feedback', dalamud_feedback, name='dalamud_feedback'),
+    path('hunt/sonar/', hunt_sonar),
+    path('hunt/bird/', hunt_bird),
+    path('hunt/relay/', hunt_relay),
+    path('housing/api', housing_api),
+    re_path(r'^oauth/qq/login/$', qq_login, name='qq_login'),
+    re_path(r'^api/qqcallback', qq_check, name='qq_check'),
+    re_path(r'^oauth/xivid/login/$', xivid_auth, name='xivid_auth'),
+    re_path(r'^oauth/xivid/$', xivid_callback, name='xivid_callback'),
+    re_path(r'^dalamud/feedback', dalamud_feedback, name='dalamud_feedback'),
     # url(r'^oauth/qq/check/$', qq_check, name='qq_check'),
     # url(r'^oauth/bind/account/$', bind_account, name='bind_account'),
-    url(r'^login/', login),
-    url(r'^register/', register),
-    url(r'^logout/', logout),
+    re_path(r'^login/', login),
+    re_path(r'^register/', register),
+    re_path(r'^logout/', logout),
 ]
 if settings.DEBUG:
     urlpatterns += staticfiles_urlpatterns()

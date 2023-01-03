@@ -11,7 +11,6 @@ def QQGroupCommand_command(*args, **kwargs):
         global_config = kwargs["global_config"]
         group = kwargs["group"]
         user_info = kwargs["user_info"]
-        QQ_BASE_URL = global_config["QQ_BASE_URL"]
         action_list = []
         receive = kwargs["receive"]
         user_id = receive["user_id"]
@@ -88,3 +87,4 @@ def QQGroupCommand_command(*args, **kwargs):
         msg = "Error: {}".format(type(e))
         action_list.append(reply_message_action(receive, msg))
         logging.error(e)
+    return []

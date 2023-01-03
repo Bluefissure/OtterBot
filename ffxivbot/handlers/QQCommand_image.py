@@ -20,7 +20,7 @@ def upload_image(img_url, token=""):
     original_image = requests.get(url=img_url, timeout=5)
     sm_req = requests.post(
         headers=headers,
-        url="https://sm.ms/api/v2/upload",
+        url="https://smms.app/api/v2/upload",
         files={"smfile": original_image.content},
         timeout=30,
     )
@@ -30,7 +30,7 @@ def upload_image(img_url, token=""):
 
 def delete_image(img_hash):
     sm_req = requests.post(
-        url="https://sm.ms/api/v2/delete/{}".format(img_hash), timeout=5
+        url="https://smms.app/api/v2/delete/{}".format(img_hash), timeout=5
     )
     return sm_req.status_code
 
@@ -39,7 +39,6 @@ def QQCommand_image(*args, **kwargs):
     action_list = []
     try:
         global_config = kwargs["global_config"]
-        QQ_BASE_URL = global_config["QQ_BASE_URL"]
         SMMS_TOKEN = global_config.get("SMMS_TOKEN", "")
         receive = kwargs["receive"]
         bot = kwargs["bot"]

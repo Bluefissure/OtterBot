@@ -7,18 +7,22 @@ from ffxivbot.models import *
 import time
 import os
 import json
+import redis
 from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.layers import get_channel_layer
+from asgiref.sync import sync_to_async
+from asyncio.exceptions import CancelledError
 
 channel_layer = get_channel_layer()
 logging.basicConfig(
     format="%(levelname)s:%(asctime)s:%(name)s:%(message)s", level=logging.INFO
 )
 LOGGER = logging.getLogger(__name__)
-FFXIVBOT_ROOT = os.environ.get("FFXIVBOT_ROOT", settings.BASE_DIR)
-CONFIG_PATH = os.environ.get(
-    "FFXIVBOT_CONFIG", os.path.join(FFXIVBOT_ROOT, "ffxivbot/config.json")
-)
+REDIST_URL = "localhost" if os.environ.get('IS_DOCKER', '') != 'Docker' else 'redis'
+# FFXIVBOT_ROOT = os.environ.get("FFXIVBOT_ROOT", settings.BASE_DIR)
+# CONFIG_PATH = os.environ.get(
+#     "FFXIVBOT_CONFIG", os.path.join(FFXIVBOT_ROOT, "ffxivbot/config.json")
+# )
 
 
 class PikaPublisher:
@@ -66,16 +70,15 @@ class PikaPublisher:
 
 class WSConsumer(AsyncWebsocketConsumer):
     async def connect(self):
-        self.pub = PikaPublisher()
+        self.redis = None
+        self.pub = None
+        self.bot = None
         header_list = self.scope["headers"]
         headers = {}
         for (k, v) in header_list:
             headers[k.decode()] = v.decode()
-        true_ip = None
-        try:
-            true_ip = headers["x-forwarded-for"]
-        except BaseException:
-            pass
+        true_ip = headers.get("x-forwarded-for", None)
+        true_ip = headers.get("cf-connecting-ip", true_ip)
         try:
             ws_self_id = headers["x-self-id"]
             ws_access_token = (
@@ -87,7 +90,7 @@ class WSConsumer(AsyncWebsocketConsumer):
             user_agent = headers.get("user-agent", "Unknown")
             if client_role != "Universal":
                 LOGGER.error("Unkown client_role: {}".format(client_role))
-                # await self.close()
+                await self.close()
                 return
             if (
                 "CQHttp" not in user_agent
@@ -108,55 +111,98 @@ class WSConsumer(AsyncWebsocketConsumer):
             elif "OneBot" in user_agent and "Bearer" in ws_access_token:
                 # onebot基于rfc6750往token加入了Bearer
                 ws_access_token = ws_access_token.replace("Bearer", "").strip()
+            else:
+                LOGGER.error(f"Unkown UA: {user_agent}")
+                await self.close()
+
+            self.redis = redis.Redis(host=REDIST_URL, port=6379, decode_responses=True)
+            if self.redis:
+                bot_hash = f"bot_channel_name:{ws_self_id}"
+                self.redis.set(bot_hash, self.channel_name, ex=3600*12)
 
             bot = None
             # with transaction.atomic():
             #   bot = QQBot.objects.select_for_update().get(user_id=ws_self_id,access_token=ws_access_token)
-            bot = QQBot.objects.get(user_id=ws_self_id, access_token=ws_access_token)
+            try:
+                bot = await sync_to_async(QQBot.objects.get, thread_sensitive=True)(user_id=ws_self_id, access_token=ws_access_token)
+                if not bot:
+                    return
+                self.bot = bot
+                self.bot_user_id = self.bot.user_id
+                self.bot.event_time = int(time.time())
+                self.bot.api_channel_name = self.channel_name
+                self.bot.event_channel_name = self.channel_name
+                LOGGER.info(
+                    "New Universal Connection: %s of bot %s"
+                    % (self.channel_name, self.bot.user_id)
+                )
+                await sync_to_async(self.bot.save, thread_sensitive=True)(
+                    update_fields=["event_time", "api_channel_name", "event_channel_name"]
+                )
+            except CancelledError as e:
+                LOGGER.error(
+                    f"Bot {bot} update failed: {e}"
+                )
 
-            self.bot = bot
-            self.bot_user_id = self.bot.user_id
-            self.bot.event_time = int(time.time())
-            self.bot.api_channel_name = self.channel_name
-            self.bot.event_channel_name = self.channel_name
-            LOGGER.info(
-                "New Universal Connection: %s of bot %s"
-                % (self.channel_name, self.bot.user_id)
-            )
-            self.bot.save(
-                update_fields=["event_time", "api_channel_name", "event_channel_name"]
-            )
+            self.pub = PikaPublisher()
             await self.accept()
         except QQBot.DoesNotExist:
             LOGGER.error(
                 "%s:%s:API:AUTH_FAIL from %s" % (ws_self_id, ws_access_token, true_ip)
             )
-            # await self.close()
+            await self.close()
         except:
             LOGGER.error("Unauthed connection from %s" % (true_ip))
             LOGGER.error(headers)
-            # traceback.print_exc()
-            # await self.close()
+            traceback.print_exc()
+            await self.close()
 
     async def redis_disconnect(self, *args):
         LOGGER.info("Redis of channel {} disconnected".format(self.channel_name))
 
     async def disconnect(self, close_code):
         LOGGER.info(
-            "Universal Channel disconnect from channel:{}".format(
-                self.channel_name
+            "Universal Channel disconnect from channel:{} bot:{}".format(
+                self.channel_name,
+                self.bot.user_id if self.bot else None,
             )
         )
-        self.pub.exit()
+        if self.pub:
+            self.pub.exit()
         gc.collect()
 
     async def receive(self, text_data):
+        if not self.bot:
+            LOGGER.error(
+                "Bot of this connection is not set"
+            )
+            await self.close()
+            return
+        if not self.pub:
+            LOGGER.error(
+                "WSConsumer PikaPublisher is not initialized"
+            )
+            await self.close()
+            return
+        if self.redis:
+            bot_hash = f"bot_channel_name:{self.bot.user_id}"
+            redis_channel_name = self.redis.get(bot_hash)
+            if redis_channel_name != self.channel_name:
+                LOGGER.error(
+                    f"Channel name mismatch \"{redis_channel_name}\" --- \"{self.channel_name}\""
+                )
+                await self.close()
+                return
         receive = json.loads(text_data)
 
         if "post_type" in receive.keys():
-            self.bot.event_time = int(time.time())
-            self.bot.save(update_fields=["event_time"])
-            self.config = json.load(open(CONFIG_PATH, encoding="utf-8"))
+            if self.redis:
+                bot_hash = f"bot_event_time:{self.bot.user_id}"
+                self.redis.set(bot_hash, str(int(time.time())), ex=3600)
+            # self.bot.event_time = int(time.time())
+            # await sync_to_async(self.bot.save, thread_sensitive=True)(update_fields=["event_time"])
+            # with open(CONFIG_PATH, encoding="utf-8") as f:
+            #     self.config = json.load(f)
             try:
                 receive = json.loads(text_data)
                 if (
@@ -182,11 +228,11 @@ class WSConsumer(AsyncWebsocketConsumer):
                                 msg += "[CQ:at,qq={}]".format(block["data"]["qq"])
                         receive["message"] = msg
                     priority = 1
-                    push_to_mq = True
+                    push_to_mq = receive["message"].startswith("/") or receive["message"].startswith("\\")
                     if "group_id" in receive:
                         priority += 1
                         group_id = receive["group_id"]
-                        (group, group_created) = QQGroup.objects.get_or_create(
+                        (group, group_created) = await sync_to_async(QQGroup.objects.get_or_create)(
                             group_id=group_id
                         )
                         group_bots = json.loads(group.bots)
@@ -212,8 +258,8 @@ class WSConsumer(AsyncWebsocketConsumer):
                 )
                 traceback.print_exc()
         else:
-            self.bot.api_time = int(time.time())
-            self.bot.save(update_fields=["api_time"])
+            # self.bot.api_time = int(time.time())
+            # await sync_to_async(self.bot.save, thread_sensitive=True)(update_fields=["api_time"])
             if int(receive["retcode"]) != 0:
                 if int(receive["retcode"]) == 1 and receive["status"] == "async":
                     LOGGER.warning("API waring:" + text_data)
@@ -226,12 +272,12 @@ class WSConsumer(AsyncWebsocketConsumer):
                     group_id = echo.replace("get_group_member_list:", "").strip()
                     try:
                         # group = QQGroup.objects.select_for_update().get(group_id=group_id)
-                        group = QQGroup.objects.get(group_id=group_id)
+                        group = await sync_to_async(QQGroup.objects.get)(group_id=group_id)
                         member_list = (
                             json.dumps(receive["data"]) if receive["data"] else "[]"
                         )
                         group.member_list = member_list
-                        group.save(update_fields=["member_list"])
+                        await sync_to_async(group.save, thread_sensitive=True)(update_fields=["member_list"])
                         # await self.send_message("group", group_id, "群成员信息刷新成功")
                     except QQGroup.DoesNotExist:
                         LOGGER.error("QQGroup.DoesNotExist:{}".format(group_id))
@@ -239,13 +285,13 @@ class WSConsumer(AsyncWebsocketConsumer):
                     LOGGER.debug("group %s member updated" % (group.group_id))
                 if "get_group_list" in echo:
                     self.bot.group_list = json.dumps(receive["data"])
-                    self.bot.save(update_fields=["group_list"])
+                    await sync_to_async(self.bot.save)(update_fields=["group_list"])
                 if "get_friend_list" in echo:
                     self.bot.friend_list = json.dumps(receive["data"])
-                    self.bot.save(update_fields=["friend_list"])
+                    await sync_to_async(self.bot.save)(update_fields=["friend_list"])
                 if "get_version_info" in echo:
                     self.bot.version_info = json.dumps(receive["data"])
-                    self.bot.save(update_fields=["version_info"])
+                    await sync_to_async(self.bot.save)(update_fields=["version_info"])
                 if "get_status" in echo:
                     user_id = echo.split(":")[1]
                     if not receive["data"] or not receive["data"]["good"]:

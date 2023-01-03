@@ -1,18 +1,22 @@
 from django.http import HttpResponse, JsonResponse
+from django.contrib.auth.decorators import login_required
 
 from FFXIV import settings
 from ffxivbot.models import *
 from .ren2res import ren2res
+import time
 import json
 import os
 import re
 import yaml
+import redis
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 FFXIVBOT_ROOT = os.environ.get("FFXIVBOT_ROOT", BASE_DIR)
 CONFIG_PATH = os.environ.get(
     "FFXIVBOT_CONFIG", os.path.join(FFXIVBOT_ROOT, "ffxivbot/config.json")
 )
+REDIST_URL = "localhost" if os.environ.get('IS_DOCKER', '') != 'Docker' else 'redis'
 
 
 def generate_web_base(web_base_url: str) -> dict:
@@ -294,6 +298,8 @@ def get_bot_version(obj: dict):
             ver = "Mirai"
         elif name.find("cqhttp-mirai") != -1:
             ver = "Mirai\n(Low)"
+        elif name.find("oicq") != -1:
+            ver = "OICQ"
     elif obj.get("name"):
         name = obj.get("name")
         if name.find("oicq") != -1:
@@ -306,9 +312,13 @@ def get_bot_version(obj: dict):
             ver = "Mirai\n(Native)"
     return ver
 
+def mask_id(user_id):
+    mid = len(user_id) // 2
+    return user_id[: mid - 2] + "*" * 4 + user_id[mid + 2 :]
 
+#@login_required(login_url='/login/')
 def tata(req):
-    if req.is_ajax() and req.method == "POST":
+    if req.method == "POST":
         res_dict = {"response": "No response."}
         optype = req.POST.get("optype")
         if settings.DEBUG:
@@ -333,11 +343,14 @@ def tata(req):
                 return JsonResponse(res_dict)
             bots = QQBot.objects.filter(user_id=botID)
             if not bots.exists():
+                if QQBot.objects.filter(owner_id=ownerID.strip()).count() >= 2:
+                    res_dict = {"response": "error", "msg": "每个用户最多领养2个机器人"}
+                    return JsonResponse(res_dict)
                 bot = QQBot(user_id=botID, access_token=accessToken)
                 bot_created = True
             else:
                 if bots[0].access_token != accessToken:
-                    res_dict = {"response": "error", "msg": "Token错误，请确认后重试。"}
+                    res_dict = {"response": "error", "msg": "Token错误，请确认后重试"}
                     return JsonResponse(res_dict)
                 bot = bots[0]
                 bot_created = False
@@ -348,7 +361,7 @@ def tata(req):
                 bot.api_post_url = api_post_url
                 bot.auto_accept_friend = autoFriend and "true" in autoFriend
                 bot.auto_accept_invite = autoInvite and "true" in autoInvite
-                if len(QQBot.objects.all()) >= 300 and bot_created:
+                if len(QQBot.objects.all()) >= 350 and bot_created:
                     res_dict = {"response": "error", "msg": "机器人总数过多，请稍后再试"}
                     return JsonResponse(res_dict)
                 bot.save()
@@ -369,7 +382,7 @@ def tata(req):
             bot = QQBot.objects.get(id=bot_id, access_token=token)
         except Exception as e:
             if "QQBot matching query does not exist" in str(e):
-                res_dict = {"response": "error", "msg": "Token错误，请确认后重试。"}
+                res_dict = {"response": "error", "msg": "Token错误，请确认后重试"}
             else:
                 res_dict = {"response": "error", "msg": str(e)}
             return JsonResponse(res_dict)
@@ -390,15 +403,18 @@ def tata(req):
             response.write(bot_conf)
             return response
         return JsonResponse(res_dict)
-
+    REDIS_CLIENT = redis.Redis(host=REDIST_URL, port=6379, decode_responses=True)
     bots = QQBot.objects.all()
     bot_list = []
     for bot in bots:
+        bot_event_time = int(REDIS_CLIENT.get(f"bot_event_time:{bot.user_id}") or 0)
+        if not bot_event_time:
+            bot_event_time = bot.event_time
         bb = {}
         version_info = json.loads(bot.version_info)
         coolq_edition = get_bot_version(version_info)
         friend_list = json.loads(bot.friend_list)
-        friend_num = len(friend_list) if friend_list else "-1"
+        friend_num = len(friend_list) if friend_list else -1
         group_list = json.loads(bot.group_list)
         group_num = len(group_list) if group_list else -1
         bb["name"] = bot.name
@@ -406,17 +422,12 @@ def tata(req):
             bb["user_id"] = bot.user_id
             bb["owner_id"] = bot.owner_id
         else:
-
-            def mask_id(user_id):
-                mid = len(user_id) // 2
-                return user_id[: mid - 2] + "*" * 4 + user_id[mid + 2 :]
-
             bb["user_id"] = mask_id(bot.user_id)
             bb["owner_id"] = mask_id(bot.owner_id)
         bb["group_num"] = group_num
         bb["friend_num"] = friend_num
         bb["coolq_edition"] = coolq_edition
-        bb["online"] = time.time() - bot.event_time < 300
+        bb["online"] = time.time() - bot_event_time < 300
         bb["id"] = bot.id
         bb["public"] = bot.public
         bb["autoinvite"] = bot.auto_accept_invite

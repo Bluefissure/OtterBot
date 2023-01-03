@@ -6,12 +6,11 @@ import requests
 
 def QQCommand_chp(*args, **kwargs):
     action_list = []
-    QQ_BASE_URL = kwargs["global_config"]["QQ_BASE_URL"]
     receive = kwargs["receive"]
     try:
-        url = "https://api.muxiaoguo.cn/api/caihongpi"
+        url = "https://api.shadiao.app/chp"
         r = requests.get(url=url, timeout=5)
-        msg = r.json()["data"]["comment"]
+        msg = r.json()["data"]["text"]
     except Exception as e:
         msg = "Error: {}".format(type(e))
     reply_action = reply_message_action(receive, msg)

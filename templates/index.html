@@ -18,23 +18,40 @@
       {% if user %}
         <li class="nav-item dropdown user user-menu">
           <a class="nav-link" data-toggle="dropdown" href="#">
+            {% if user.avatar %}
             <img src="{{ user.avatar }}"
                  class="user-image" alt="User Image">
             <span class="hidden-xs">{{ user.nickname }}</span>
+            {% else %}
+            <img src="//q1.qlogo.cn/g?b=qq&nk={{ user.qq }}&s=640"
+                 class="user-image" alt="User Image">
+            <span class="hidden-xs">{{ user.nickname }}</span>
+            {% endif %}
           </a>
           <ul class="dropdown-menu dropdown-menu-right">
             <!-- User image -->
             <li class="user-header bg-gray">
+              {% if user.avatar %}
               <img src="{{ user.avatar }}"
                    alt="User Avatar" class="img-circle align-items-center" style="width: 128px;height: auto;">
               <p class="text-center">
                 {{ user.nickname }}
               </p>
+              {% else %}
+              <img src="//q1.qlogo.cn/g?b=qq&nk={{ user.qq }}&s=640"
+                   alt="User Avatar" class="img-circle align-items-center" style="width: 128px;height: auto;">
+              <p class="text-center">
+                {{ user.nickname }}
+              </p>
+              {% endif %}
             </li>
             <!-- Menu Footer-->
             <li class="user-footer">
               <div class="float-left">
                 <a href="/oauth/qq/login" class="btn btn-default btn-flat">QQ绑定</a>
+              </div>
+              <div class="float-left">
+                <a href="/oauth/xivid/login" class="btn btn-default btn-flat">xivID绑定</a>
               </div>
               <div class="float-right">
                 <a href="/logout" class="btn btn-default btn-flat">登出</a>
@@ -82,7 +99,7 @@
              style="opacity: .8" -->
         <img src="{% static "dist/img/logo-1.png" %}" class="brand-image"
              style="margin-right: 0; vertical-align: middle">
-        <span class="brand-text logo-xl" style="vertical-align: middle"><b>FFXIVの</b>Toolkit</span>
+        <span class="brand-text logo-xl" style="vertical-align: middle"><b>FFXIVの</b>OtterBot</span>
       </a>
 
       <!-- Sidebar -->
@@ -90,7 +107,7 @@
         <!-- Sidebar user panel (optional) -->
         <div class="user-panel mt-3 pb-3 mb-3 d-flex">
           <div class="image">
-            <img src="{% if user %}{{ user.avatar }}{% else %}{% static "dist/img/tata.jpg" %}{% endif %}"
+            <img src="{% if user %}{% if user.avatar %}{{ user.avatar }}{% else %}//q1.qlogo.cn/g?b=qq&nk={{ user.qq }}&s=640{% endif %}{% else %}{% static "dist/img/tata.jpg" %}{% endif %}"
                  class="img-circle" alt="User Image">
           </div>
           <div class="info">
@@ -114,7 +131,7 @@
             </li>
             <li class="nav-item">
               <a href="/quest" class="nav-link">
-                <i class="nav-icon fas fa-tasks"></i>
+                <i class="nav-icon fas fa-bars"></i>
                 <p>
                   任务流程
                   <span class="right fas fa-angle-left"></span>
@@ -123,13 +140,39 @@
             </li>
             {% if user %}
             <li class="nav-item">
-              <a href="/hunt" class="nav-link">
+              <a href="#" class="nav-link">
                 <i class="nav-icon fas fa-clock"></i>
                 <p>
                   狩猎时钟
                   <span class="right fas fa-angle-left"></span>
                 </p>
               </a>
+              <ul class="nav nav-treeview">
+                <li class="nav-item">
+                  <a href="/hunt/" class="nav-link">
+                    <i class="fas fa-tasks nav-icon"></i>
+                    <p>群时钟</p>
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a href="/hunt/sonar/" class="nav-link">
+                    <i class="fas fa-tasks nav-icon"></i>
+                    <p>Sonar</p>
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a href="/hunt/bird/" class="nav-link">
+                    <i class="fas fa-tasks nav-icon"></i>
+                    <p>银山雀</p>
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a href="/hunt/relay/" class="nav-link">
+                    <i class="fas fa-tasks nav-icon"></i>
+                    <p>Sonar与银山雀</p>
+                  </a>
+                </li>
+              </ul>
             </li>
             <li class="nav-item">
               <a href="/image" class="nav-link">
@@ -139,6 +182,24 @@
                   <span class="right fas fa-angle-left"></span>
                 </p>
               </a>
+            </li>
+            {% else %}
+            <li class="nav-item">
+              <a href="#" class="nav-link">
+                <i class="nav-icon fas fa-clock"></i>
+                <p>
+                  狩猎时钟
+                  <span class="right fas fa-angle-left"></span>
+                </p>
+              </a>
+              <ul class="nav nav-treeview">
+                <li class="nav-item">
+                  <a href="/hunt/sonar/" class="nav-link">
+                    <i class="fas fa-tasks nav-icon"></i>
+                    <p>Sonar</p>
+                  </a>
+                </li>
+              </ul>
             </li>
             {% endif %}
             <li class="nav-item has-treeview">
@@ -198,10 +259,9 @@
     <!-- /.content-wrapper -->
     <footer class="main-footer">
       <div class="float-right d-none d-sm-inline">
-        <b>Version</b> 0.1.0
+        <b>Version</b> 0.2.0
       </div>
-      <strong>Copyright &copy; 2017-2022 <a href="https://bluefissure.com">Bluefissure</a>.</strong> All rights
-      reserved.
+      <strong>Copyright &copy; 2017-2022 <b>Bluefissure</b>.</strong> All rights reserved.
     </footer>
 
     <!-- Control Sidebar -->

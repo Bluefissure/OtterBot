@@ -5,7 +5,7 @@ from .ren2res import ren2res
 
 
 def quest(req):
-    if req.is_ajax() and req.method == "POST":
+    if req.method == "POST":
         res_dict = {"response": "No response."}
         optype = req.POST.get("optype")
         if optype == "search_quest":
@@ -21,9 +21,9 @@ def quest(req):
             end_quest = PlotQuest.objects.filter(name=end_quest)
             end_quest = end_quest[0] if end_quest else None
             max_iter = req.POST.get("max_iter")
-            print("main_quest:{}".format(main_quest))
-            print("sub_quest:{}".format(sub_quest))
-            print("start_quest:{}".format(start_quest))
+            # print("main_quest:{}".format(main_quest))
+            # print("sub_quest:{}".format(sub_quest))
+            # print("start_quest:{}".format(start_quest))
             quest_dict = {}
             tmp_edge_list = []
             edge_list = []

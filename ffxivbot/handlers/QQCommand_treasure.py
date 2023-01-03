@@ -63,7 +63,6 @@ def QQCommand_treasure(*args, **kwargs):
     try:
         # print("begin treasure ==============")
         global_config = kwargs["global_config"]
-        QQ_BASE_URL = global_config["QQ_BASE_URL"]
         receive = kwargs["receive"]
 
         # if int(receive["user_id"])!=306401806:

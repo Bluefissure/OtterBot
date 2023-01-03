@@ -1,22 +1,15 @@
-from .QQEventHandler import QQEventHandler
 from .QQUtils import *
 from ffxivbot.models import *
 import logging
-import json
-import random
 import requests
-import math
 import urllib
 import base64
 
 
 def QQCommand_tex(*args, **kwargs):
     try:
-        global_config = kwargs["global_config"]
-        QQ_BASE_URL = global_config["QQ_BASE_URL"]
         action_list = []
         receive = kwargs["receive"]
-        bot = kwargs["bot"]
 
         msg = ""
         receive_msg = receive["message"].replace("/tex", "", 1).strip()
