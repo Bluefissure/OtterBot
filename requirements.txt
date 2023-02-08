@@ -13,7 +13,7 @@ channels==3.0.4
 channels-redis==3.4.0
 charset-normalizer==2.0.12
 constantly==15.1.0
-cryptography==36.0.2
+cryptography==39.0.1
 cycler==0.11.0
 daphne==3.0.2
 Deprecated==1.2.13
