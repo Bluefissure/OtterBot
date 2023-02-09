@@ -29,7 +29,7 @@ commands = {
     "/quest": '任务查询("/quest 狂乱前奏")',
     "/nuannuan": "本周金蝶暖暖作业",
     #"/genshin": "原神圣遗物评分",
-    #"/hso": "好色哦",
+    "/hso": "好色哦",
     # "/hhsh": "好好说话",
     "/bot": "机器人相关功能",
     "/ifttt": "IFTTT推送系统",

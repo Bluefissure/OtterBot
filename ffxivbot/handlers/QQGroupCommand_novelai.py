@@ -27,7 +27,7 @@ NSFW_TAGS = [
     "suspension", "spreader_bar", "wooden_horse", "anal_beads", "dildo", "cock_ring", "egg_vibrator", "artificial_vagina", "hitachi_magic_wand", "dildo", "double_dildo", 
     "vibrator", "vibrator_in_thighhighs", "nyotaimori", "vore", "amputee", "transformation", "mind_control", "censored", "uncensored", "asian", "faceless_male", "blood", 
     "all_fours", "undressing", "skirt_lift", "shirt_lift", "nsfw", "porn", "lewd", "winnie the pooh", "hentai", "ahegao", "no pants", "no clothes", "sweating", "butthole",
-    "gay", "r18", "micro bikini", "mini bikini", "tiny bikini", "bikini", "naked", "nude", "nudity", "nakedness", "nake", "futa", "naked female"
+    "gay", "r18", "micro bikini", "mini bikini", "tiny bikini", "bikini", "naked", "nude", "nudity", "nakedness", "nake", "futa", "naked female", "dick", "cock"
 ]
 PROMPT_TAGS = ['masterpiece', 'best quality']
 UC_TAGS = ["nsfw", "lowres", "bad anatomy", "bad hands", "text", "error", "missing fingers", "extra digit", "fewer digits", "cropped", "worst quality", "low quality", 
@@ -133,6 +133,8 @@ def official_generate(bot, group, msg_list, bearer):
     url = "https://api.novelai.net/ai/generate-image"
     if not bot.novelai_groups.filter(group_id=group.group_id).exists():
         return f"{bot} 未在本群开启 NovelAI 功能"
+    if re.search(r'[\u4e00-\u9fff]+','\n'.join(msg_list)):
+        return '请不要在咒语中使用中文'
     img_url = get_CQ_image(msg_list[-1])
     if img_url:
         return "Official NovelAI 不支持 image 参数"
@@ -182,13 +184,13 @@ def official_generate(bot, group, msg_list, bearer):
     headers = {"Content-Type": "application/json", "Authorization": bearer}
     r = requests.post(api_url, json=payload, timeout=60, headers=headers)
     if r.status_code != 200 and r.status_code != 201:
-        return f"Official NovelAI 返回了错误的状态码 {r.status_code}"
+        return f"NovelAI Official 返回了错误的状态码 {r.status_code}"
     response = r.text
     try:
         image_data = response.split('\n')[2]
         image_data = image_data.replace('data:', '')
     except IndexError:
-        return "Official NovelAI 返回了错误的响应内容"
+        return "NovelAI Official 返回了错误的响应内容"
     return '[CQ:image,file=base64://' + image_data + ']'
 
 def QQGroupCommand_novelai(*args, **kwargs):
@@ -203,6 +205,10 @@ def QQGroupCommand_novelai(*args, **kwargs):
         )
         if not qquser.can_use_novelai:
             return [reply_message_action(receive, "你没有使用 NovelAI 的权限")]
+        
+        if time.time() < qquser.last_api_time + 60:
+            left_sec = int(qquser.last_api_time + 60 - time.time())
+            return [reply_message_action(receive, f"画图冷却中，请{left_sec}s后再试。")]
 
         receive_msg = receive["message"].replace("/novelai", "", 1).strip()
         msg_list = receive_msg.split('\n')
@@ -222,13 +228,17 @@ NovelAI 图片生成:
             if second_command.replace("generate", "").strip():
                 msg_list = receive_msg.replace("generate", "generate\n").split('\n')
             msg = generate(bot, group, msg_list)
+            # qquser.last_api_time = time.time()
+            # qquser.save(update_fields=["last_api_time"])
         elif second_command.startswith("official_generate"):
             bearer = global_config.get("NOVELAI_BEARER", "")
             if second_command.replace("official_generate", "").strip():
                 msg_list = receive_msg.replace("official_generate", "official_generate\n").split('\n')
             msg = official_generate(bot, group, msg_list, bearer)
+            qquser.last_api_time = time.time()
+            qquser.save(update_fields=["last_api_time"])
         else:
-            msg = f"{bot} 看不懂这个命令捏"
+            msg = f"{bot}看不懂这个命令捏"
         msg = msg.strip()
         reply_action = reply_message_action(receive, msg)
         action_list.append(reply_action)

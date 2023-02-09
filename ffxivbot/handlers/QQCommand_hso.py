@@ -87,14 +87,13 @@ def QQCommand_hso(*args, **kwargs):
                 api_url = "https://konachan.com/post.json?{}".format(params)
                 # print(api_url + "\n===============================================")
                 r = requests.get(api_url, timeout=(5, 60))
-                img_json = r.json()
+                full_img_json = r.json()
 
-                if receive["message_type"] == "group":
-                    tmp_list = []
-                    for item in img_json:
-                        if item["rating"] == "s":
-                            tmp_list.append(item)
-                    img_json = tmp_list
+                is_safe = receive.get("message_type", "group") == "group" or True
+                if is_safe:
+                    img_json = list(filter(lambda x: x.get("rating", "e") == "s", full_img_json))
+                else:
+                    img_json = full_img_json
 
                 if not img_json:
                     msg = "未能找到所需图片"

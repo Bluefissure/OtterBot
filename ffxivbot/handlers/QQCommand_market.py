@@ -198,6 +198,7 @@ def QQCommand_market(*args, **kwargs):
     try:
         action_list = []
         receive = kwargs["receive"]
+        # return [reply_message_action(receive, "Universalis 服务已宕机")]
         bot = kwargs["bot"]
         user = QQUser.objects.get(user_id=receive["user_id"])
         group = kwargs.get("group")

@@ -2,12 +2,13 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.utils.html import mark_safe
 from urllib.parse import urlparse
+from FFXIV import settings
 import requests
 import os
 import json
+import hashlib
 
 # Create your models here.
-
 
 class WeiboUser(models.Model):
     name = models.CharField(default="", blank=True, max_length=16, unique=True)
@@ -689,3 +690,41 @@ class HousingPreset(models.Model):
     tags = models.TextField(blank=True)
     uploader = models.CharField(max_length=256)
     user_id = models.CharField(max_length=32)
+
+
+# class NovelAiImage(models.Model):
+#     prompt = models.TextField(blank=True)
+#     uc = models.TextField(blank=True)
+#     sampler = models.CharField(max_length=64)
+#     width = models.IntegerField(default=0)
+#     height = models.IntegerField(default=0)
+#     scale = models.IntegerField(default=0)
+#     steps = models.IntegerField(default=0)
+#     seed = models.IntegerField(default=0)
+#     generated_by = models.ForeignKey(QQUser, null=True, on_delete=models.SET_NULL)
+#     generated_in = models.ForeignKey(QQGroup, null=True, on_delete=models.SET_NULL)
+#     generated_bot = models.ForeignKey(QQBot, null=True, on_delete=models.SET_NULL)
+#     generated_at = models.DateTimeField(auto_now_add=True)
+
+#     def get_hash(self):
+#         return hashlib.sha1(
+#             "{}|{}|{}|{}|{}|{}|{}|{}".format(
+#                 self.prompt, self.uc, self.sampler, self.width, self.height, self.scale, self.steps, self.seed
+#             ).encode("utf-8")
+#         ).hexdigest()
+
+#     def image_tag(self):
+#         filename = self.get_hash() + ".png"
+#         storage_dir = getattr(settings, "NOVELAI_STORAGE", "")
+#         if not storage_dir:
+#             return ""
+#         filepath = os.path.join(storage_dir, filename)
+#         return mark_safe(
+#             '<img src="%s" style="max-width: 300px; max-height: 150px; resize: both;overflow: scroll;"/>'
+#             % (self.get_url())
+#         )
+
+#     def short_prompt(self):
+#         if len(self.prompt) > 20:
+#             return self.prompt[:20] + "..."
+#         return self.prompt[:20]
