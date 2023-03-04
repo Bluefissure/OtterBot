@@ -1,3 +1,4 @@
+import re
 import traceback
 import pika
 import gc
@@ -211,7 +212,8 @@ class WSConsumer(AsyncWebsocketConsumer):
                 ):
                     self.pub.ping()
                 self_id = receive["self_id"]
-
+                at_self_pattern = "\[CQ:at,qq={}(,text=.*)?\]".format(self_id)
+                chatting = re.search(at_self_pattern, receive.get("message", "")) is not None
                 if "message" in receive.keys():
                     if isinstance(receive["message"], list):
                         msg = ""
@@ -228,7 +230,7 @@ class WSConsumer(AsyncWebsocketConsumer):
                                 msg += "[CQ:at,qq={}]".format(block["data"]["qq"])
                         receive["message"] = msg
                     priority = 1
-                    push_to_mq = receive["message"].startswith("/") or receive["message"].startswith("\\")
+                    push_to_mq = receive["message"].startswith("/") or receive["message"].startswith("\\") or chatting
                     if "group_id" in receive:
                         priority += 1
                         group_id = receive["group_id"]

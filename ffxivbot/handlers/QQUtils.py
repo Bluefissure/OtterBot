@@ -894,3 +894,14 @@ def update_konachan_tags():
     json.dump(reserved_tags,
               open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "resources", "konachan_tags.json"), 'w',
                    encoding='utf-8'))
+
+
+def check_command_enabled(
+    command: str,
+    bot_commands: dict,
+    group_commands: dict = {}):
+    if group_commands.get(command, "enable") == "disable":
+        return False
+    if bot_commands.get(command, "enable") == "disable":
+        return False
+    return True

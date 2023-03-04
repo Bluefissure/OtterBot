@@ -20,9 +20,14 @@ def QQCommand_hso(*args, **kwargs):
         action_list = []
         receive = kwargs["receive"]
         bot = kwargs["bot"]
+        group = kwargs.get("group", None)
         user = QQUser.objects.get(user_id=receive["user_id"])
+        bot_commands = json.loads(bot.commands)
+        group_commands = json.loads(group.commands) if group else {}
         if time.time() < user.last_api_time + 15:
             msg = "[CQ:at,qq={}] 技能冷却中".format(user)
+        elif group and not check_command_enabled('/hso', bot_commands, group_commands):
+            pass
         else:
             msg = "好色哦"
             second_command_msg = receive["message"].replace("/hso", "", 1).strip()

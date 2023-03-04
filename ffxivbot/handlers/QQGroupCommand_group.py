@@ -72,8 +72,13 @@ def QQGroupCommand_group(*args, **kwargs):
             group.bots = json.dumps(group_bots)
             group.save(update_fields=["bots"])
             msg = "群机器人：{}".format(group_bots)
+        elif second_command == "chat_model":
+            model = second_command_msg.split(" ")[1].strip()
+            group.chat_model = model
+            group.save(update_fields=["chat_model"])
+            msg = "群聊天模型：{}".format(model)
         else:
-            msg = '错误的命令，二级命令有:"register", "info", "api", "bot"'
+            msg = '错误的命令，二级命令有:"register", "info", "api", "bot", "bot_del", "chat_model"'
         reply_action = reply_message_action(receive, msg)
         action_list.append(reply_action)
         return action_list
