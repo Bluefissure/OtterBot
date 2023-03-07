@@ -153,7 +153,7 @@ def QQGroupChat(*args, **kwargs):
                 )
 
         # jieba tokenize and wordcloud
-        url_pattern = r"(?:http|https):\/\/((?:[\w-]+)(?:\.[\w-]+)+)(?:[\w.,@?^=%&amp;:\/~+#-]*[\w@?^=%&amp;\/~+#-])?"
+        url_pattern = r"((?:http|https):\/\/)?((?:[\w-]+)(?:\.[\w-]+)+)(?:[\w.,@?^=%&amp;:\/~+#-]*[\w@?^=%&amp;\/~+#-])?"
         word_pattern = r"^([\u4e00-\u9fff\w]+)$"
         group_id_hash = hashlib.md5(
             ("{}|{}".format(group.group_id, settings.SECRET_KEY)).encode()
