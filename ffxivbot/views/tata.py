@@ -209,7 +209,9 @@ servers:
   # HTTP 通信设置
   - http:
       # 服务端监听地址
-      host: {}
+      address: {}
+      # OneBot协议版本，支持11/12
+      version: 11
       # 服务端监听端口
       port: 5700
       # 反向HTTP超时时间, 单位秒
@@ -292,9 +294,7 @@ def get_bot_version(obj: dict):
         ver = "Go"
     elif obj.get("app_name"):
         name = obj.get("app_name")
-        if name.find("YaYa") != -1:
-            ver = "XQ"
-        elif name.find("onebot-mirai") != -1:
+        if name.find("onebot-mirai") != -1:
             ver = "Mirai"
         elif name.find("cqhttp-mirai") != -1:
             ver = "Mirai\n(Low)"
