@@ -109,7 +109,7 @@ def generate_bot_conf(
                 "accessToken"
             ] = bot.access_token
         bot_conf = yaml.dump(bot_conf).encode()
-    elif client == "Go-cqhttp":
+    elif client == "go-cqhttp":
         ws_reverse_url = '{}'.format(ws_url)
         servers = ""
         if bot.api_post_url:
