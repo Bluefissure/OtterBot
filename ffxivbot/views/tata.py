@@ -143,6 +143,17 @@ def generate_bot_conf(
   # 是否使用服务器下发的新地址进行重连
   # 注意, 此设置可能导致在海外服务器上连接情况更差
   use-sso-address: true
+  # 是否允许发送临时会话消息
+  allow-temp-session: false
+
+  # 数据包的签名服务器
+  # 兼容 https://github.com/fuqiuluo/unidbg-fetch-qsign
+  # 如果遇到 登录 45 错误, 或者发送信息风控的话需要填入一个服务器
+  # 示例:
+  # sign-server: 'http://127.0.0.1:8080' # 本地签名服务器
+  # sign-server: 'https://signserver.example.com' # 线上签名服务器
+  # 服务器可使用docker在本地搭建或者使用他人开放的服务
+  sign-server: 'https://qqsign.xn--v9x.net'
 
 heartbeat:
   # 心跳频率, 单位秒
@@ -169,10 +180,22 @@ message:
   remove-reply-at: false
   # 为Reply附加更多信息
   extra-reply-data: false
+  # 跳过 Mime 扫描, 忽略错误数据
+  skip-mime-scan: false
+  # 是否自动转换 WebP 图片
+  convert-webp-image: false
+  # http超时时间
+  http-timeout: 0
 
 output:
   # 日志等级 trace,debug,info,warn,error
   log-level: warn
+  # 日志时效 单位天. 超过这个时间之前的日志将会被自动删除. 设置为 0 表示永久保留.
+  log-aging: 15
+  # 是否在每次启动时强制创建全新的文件储存日志. 为 false 的情况下将会在上次启动时创建的日志文件续写
+  log-force-new: true
+  # 是否启用日志颜色
+  log-colorful: true
   # 是否启用 DEBUG
   debug: false # 开启调试模式
 
@@ -198,6 +221,12 @@ database: # 数据库相关设置
     # 启用将会增加10-20MB的内存占用和一定的磁盘空间
     # 关闭将无法使用 撤回 回复 get_msg 等上下文相关功能
     enable: true
+  sqlite3:
+    # 是否启用内置sqlite3数据库
+    # 启用将会增加一定的内存占用和一定的磁盘空间
+    # 关闭将无法使用 撤回 回复 get_msg 等上下文相关功能
+    enable: false
+    cachettl: 3600000000000 # 1h
 
 # 连接服务列表
 servers:
@@ -291,7 +320,7 @@ module.exports = {{
 def get_bot_version(obj: dict):
     ver = ""
     if obj.get("go-cqhttp"):
-        ver = "Go"
+        ver = "GoCqhttp"
     elif obj.get("app_name"):
         name = obj.get("app_name")
         if name.find("onebot-mirai") != -1:

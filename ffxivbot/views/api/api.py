@@ -13,9 +13,7 @@ def api(req):
     httpresponse = None
     if req.method == "POST":
         tracker = req.GET.get("tracker")
-        print(tracker)
         trackers = tracker.split(",")
-        print(trackers)
         if tracker:
             try:
                 if "ffxiv-eureka" in trackers:
