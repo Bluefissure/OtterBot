@@ -122,7 +122,7 @@
           <div class="modal-body">
             <div class="alert alert-warning" style="display: none;" id="GoCqhttpAlert">
               <h5><i class="icon fas fa-exclamation-triangle"></i> 注意！</h5>
-              Go-cqhttp 需要下载配置文件后手动将机器人登录密码填入 password 字段中，密码为空时使用扫码登录。
+              go-cqhttp 需要下载配置文件后手动将机器人登录密码填入 password 字段中，密码为空时使用扫码登录。
             </div>
             <div style="display: none;">
               <label for="botId">Bot Id</label>
@@ -135,10 +135,10 @@
             <div class="form-group">
               <label>客户端</label>
               <select class="form-control" id="downloadConfClient" onchange="clientChanged()">
+                <option>go-cqhttp</option>
                 <option>Mirai</option>
                 <option>OICQ</option>
                 <option>YaYa</option>
-                <option>Go-cqhttp</option>
               </select>
             </div>
           </div>
@@ -462,7 +462,7 @@
 
   function clientChanged() {
     var client = $("#downloadConfClient").val();
-    if (client == "Go-cqhttp") {
+    if (client == "go-cqhttp") {
       $("#GoCqhttpAlert").css("display", "");
     } else {
       $("#GoCqhttpAlert").css("display", "none");
@@ -521,7 +521,7 @@
       "Mirai": "https://github.com/Bluefissure/OtterBot/wiki/Mirai",
       "OICQ": "https://github.com/Bluefissure/OtterBot/wiki/OICQ",
       "YaYa": "https://github.com/Bluefissure/OtterBot/wiki/%E5%85%88%E9%A9%B1%E7%8D%AD",
-      "Go-cqhttp": "https://github.com/Bluefissure/OtterBot/wiki/Go-cqhttp",
+      "go-cqhttp": "https://github.com/Bluefissure/OtterBot/wiki/go-cqhttp",
     };
     window.open(clientGuideMap[client], '_blank');
   }
@@ -544,7 +544,7 @@
           "Mirai": "settings.yml",
           "OICQ": "config.js",
           "YaYa": "config.yml",
-          "Go-cqhttp": "config.yml",
+          "go-cqhttp": "config.yml",
         };
         var fileName = clientConfigMap[client];
         // console.log(blob);

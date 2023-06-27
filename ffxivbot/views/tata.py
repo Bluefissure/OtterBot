@@ -131,8 +131,8 @@ def generate_bot_conf(
     post:
       {} # 地址
       {} # 密钥
-      max-retries: 3         # 最大重试，0 时禁用
-      retries-interval: 1500 # 重试时间，单位毫秒，0 时立即
+        max-retries: 3         # 最大重试，0 时禁用
+        retries-interval: 1500 # 重试时间，单位毫秒，0 时立即
     """.format(post_url, secret)
         else:
             servers = """# 反向WS设置
@@ -314,7 +314,7 @@ module.exports = {{
 def get_bot_version(obj: dict):
     ver = ""
     if obj.get("go-cqhttp"):
-        ver = "GoCqhttp"
+        ver = "go-cqhttp"
     elif obj.get("app_name"):
         name = obj.get("app_name")
         if name.find("onebot-mirai") != -1:
