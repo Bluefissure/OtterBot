@@ -111,24 +111,47 @@ def generate_bot_conf(
         bot_conf = yaml.dump(bot_conf).encode()
     elif client == "Go-cqhttp":
         ws_reverse_url = '{}'.format(ws_url)
+        servers = ""
         if bot.api_post_url:
-            use_http = "0.0.0.0"
             post_url = "  - url: '{}'".format(http_url)
             secret   = "    secret: '{}'".format(bot.access_token)
-            disable_ws_reverse = "true"
+            servers = """# HTTP 通信设置
+  - http:
+    # 服务端监听地址
+    address: 0.0.0.0
+    # OneBot协议版本，支持11/12
+    version: 11
+    # 服务端监听端口
+    port: 5700
+    # 反向HTTP超时时间, 单位秒
+    # 最小值为5，小于5将会忽略本项设置
+    timeout: 5
+    middlewares:
+      <<: *default # 引用默认中间件
+    # 反向HTTP POST地址列表
+    post:
+    {} # 地址
+    {} # 密钥""".format(post_url, secret)
         else:
-            use_http = "127.0.0.1"
-            post_url = "#  - url: ''"
-            secret   = "#    secret: ''"
-            disable_ws_reverse = "false"
+            servers = """# 反向WS设置
+  - ws-reverse:
+    # 是否禁用当前反向WS服务
+    disabled: false
+    # 反向WS Universal 地址
+    # 注意 设置了此项地址后下面两项将会被忽略
+    universal: {}
+    # 反向WS API 地址
+    api: 
+    # 反向WS Event 地址
+    event: 
+    # 重连间隔 单位毫秒
+    reconnect-interval: 3000
+    middlewares:
+      <<: *default # 引用默认中间件""".format(ws_reverse_url)
         conf = (
             bot.user_id,
             bot.access_token,
-            use_http,
-            post_url,
-            secret,
-            disable_ws_reverse,
-            ws_reverse_url,
+            servers
         )
         bot_conf = """account: # 账号相关
   uin: {} # QQ账号
@@ -235,38 +258,7 @@ servers:
   #- ws:   # 正向 Websocket
   #- ws-reverse: # 反向 Websocket
   #- pprof: #性能分析服务器
-  # HTTP 通信设置
-  - http:
-      # 服务端监听地址
-      address: {}
-      # OneBot协议版本，支持11/12
-      version: 11
-      # 服务端监听端口
-      port: 5700
-      # 反向HTTP超时时间, 单位秒
-      # 最小值为5，小于5将会忽略本项设置
-      timeout: 5
-      middlewares:
-        <<: *default # 引用默认中间件
-      # 反向HTTP POST地址列表
-      post:
-      {} # 地址
-      {} # 密钥
-  # 反向WS设置
-  - ws-reverse:
-      # 是否禁用当前反向WS服务
-      disabled: {}
-      # 反向WS Universal 地址
-      # 注意 设置了此项地址后下面两项将会被忽略
-      universal: {}
-      # 反向WS API 地址
-      api: 
-      # 反向WS Event 地址
-      event: 
-      # 重连间隔 单位毫秒
-      reconnect-interval: 3000
-      middlewares:
-        <<: *default # 引用默认中间件
+  {}
 """.format(
             *conf
     )
