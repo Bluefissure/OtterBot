@@ -113,25 +113,27 @@ def generate_bot_conf(
         ws_reverse_url = '{}'.format(ws_url)
         servers = ""
         if bot.api_post_url:
-            post_url = "  - url: '{}'".format(http_url)
-            secret   = "    secret: '{}'".format(bot.access_token)
+            post_url = "- url: '{}'".format(http_url)
+            secret   = "  secret: '{}'".format(bot.access_token)
             servers = """# HTTP 通信设置
   - http:
     # 服务端监听地址
-    address: 0.0.0.0
+    address: 0.0.0.0:5700
     # OneBot协议版本，支持11/12
     version: 11
-    # 服务端监听端口
-    port: 5700
-    # 反向HTTP超时时间, 单位秒
-    # 最小值为5，小于5将会忽略本项设置
-    timeout: 5
+    timeout: 5      # 反向 HTTP 超时时间, 单位秒，<5 时将被忽略
+    long-polling:   # 长轮询拓展
+      enabled: false       # 是否开启
+      max-queue-size: 2000 # 消息队列大小，0 表示不限制队列大小，谨慎使用
     middlewares:
       <<: *default # 引用默认中间件
     # 反向HTTP POST地址列表
     post:
-    {} # 地址
-    {} # 密钥""".format(post_url, secret)
+      {} # 地址
+      {} # 密钥
+      max-retries: 3         # 最大重试，0 时禁用
+      retries-interval: 1500 # 重试时间，单位毫秒，0 时立即
+    """.format(post_url, secret)
         else:
             servers = """# 反向WS设置
   - ws-reverse:
