@@ -337,7 +337,7 @@ def mask_id(user_id):
     mid = len(user_id) // 2
     return user_id[: mid - 2] + "*" * 4 + user_id[mid + 2 :]
 
-#@login_required(login_url='/login/')
+@login_required(login_url='/login/')
 def tata(req):
     if req.method == "POST":
         res_dict = {"response": "No response."}
