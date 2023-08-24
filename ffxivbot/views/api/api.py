@@ -13,6 +13,8 @@ def api(req):
     httpresponse = None
     if req.method == "POST":
         tracker = req.GET.get("tracker")
+        if not tracker:
+            return HttpResponse("Default API Error, contact dev please", status=500)
         trackers = tracker.split(",")
         if tracker:
             try:

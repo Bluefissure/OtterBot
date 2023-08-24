@@ -371,7 +371,7 @@
               </li> -->
               <li class="item">
                 <div class="product-img">
-                  <img src="https://tva4.sinaimg.cn/crop.0.0.198.198.1024/80d4df22gw1ef3t98k9x0j205j05kjrh.jpg"
+                  <img src="https://vip2.loli.io/2023/08/25/7sOiJjedHq6Prhg.jpg"
                     alt="鉛筆">
                 </div>
                 <div class="product-info">
@@ -564,6 +564,8 @@
           downloadLink.click();
           document.body.removeChild(downloadLink);
         }
+      } else if (this.status === 401) {
+        alert('认证失败，请检查 Access Token。')
       }
     };
     request.send("optype=download_conf&token=" + token + "&id=" + id + "&client=" + client + '&csrfmiddlewaretoken=' + '{{ csrf_token }}');

@@ -337,7 +337,7 @@ def mask_id(user_id):
     mid = len(user_id) // 2
     return user_id[: mid - 2] + "*" * 4 + user_id[mid + 2 :]
 
-@login_required(login_url='/login/')
+#@login_required(login_url='/login/')
 def tata(req):
     if req.method == "POST":
         res_dict = {"response": "No response."}
@@ -372,7 +372,7 @@ def tata(req):
             else:
                 if bots[0].access_token != accessToken:
                     res_dict = {"response": "error", "msg": "Token错误，请确认后重试"}
-                    return JsonResponse(res_dict)
+                    return JsonResponse(res_dict, status=401)
                 bot = bots[0]
                 bot_created = False
             if bot:
@@ -406,7 +406,7 @@ def tata(req):
                 res_dict = {"response": "error", "msg": "Token错误，请确认后重试"}
             else:
                 res_dict = {"response": "error", "msg": str(e)}
-            return JsonResponse(res_dict)
+            return JsonResponse(res_dict, status=401)
         if optype == "switch_public":
             bot.public = not bot.public
             bot.save()
