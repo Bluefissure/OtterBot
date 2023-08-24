@@ -9,6 +9,7 @@ import requests
 import traceback
 import time
 import copy
+import redis
 from urllib.parse import urlparse
 from bs4 import BeautifulSoup
 
@@ -18,13 +19,15 @@ def upload_image(img_url, token=""):
     if token:
         headers = {"Authorization": token}
     original_image = requests.get(url=img_url, timeout=5)
-    sm_req = requests.post(
-        headers=headers,
-        url="https://smms.app/api/v2/upload",
-        files={"smfile": original_image.content},
-        timeout=30,
-    )
-    # print(sm_req.headers)
+    r = redis.Redis(host="localhost", port=6379, decode_responses=True)
+    img_url_hash = hash(img_url)
+    with r.lock(f"image-upload-{img_url_hash}"):
+        sm_req = requests.post(
+            headers=headers,
+            url="https://smms.app/api/v2/upload",
+            files={"smfile": original_image.content},
+            timeout=30,
+        )
     return json.loads(sm_req.text)
 
 
