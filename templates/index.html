@@ -1,267 +1,321 @@
 {% extends 'base.html' %}
 {% load static %}
 {% block main %}
-  <div class="wrapper">
+<div class="wrapper">
 
     <!-- Navbar -->
     <nav class="main-header navbar navbar-expand navbar-white navbar-light">
-      <!-- Left navbar links -->
-      <ul class="navbar-nav">
-        <li class="nav-item">
-          <a class="nav-link" data-widget="pushmenu" href="#"><i class="fas fa-bars"></i></a>
-        </li>
-      </ul>
+        <!-- Left navbar links -->
+        <ul class="navbar-nav">
+            <li class="nav-item">
+                <a class="nav-link" data-widget="pushmenu" href="#"><i class="fas fa-bars"></i></a>
+            </li>
+        </ul>
 
-      <!-- Right navbar links -->
-      <ul class="navbar-nav ml-auto">
-        <!-- User Account: style can be found in dropdown.less -->
-      {% if user %}
-        <li class="nav-item dropdown user user-menu">
-          <a class="nav-link" data-toggle="dropdown" href="#">
-            {% if user.avatar %}
-            <img src="{{ user.avatar }}"
-                 class="user-image" alt="User Image">
-            <span class="hidden-xs">{{ user.nickname }}</span>
+        <!-- Right navbar links -->
+        <ul class="navbar-nav ml-auto">
+            <!-- User Account: style can be found in dropdown.less -->
+            {% if user %}
+            <li class="nav-item dropdown user user-menu">
+                <a class="nav-link" data-toggle="dropdown" href="#">
+                    {% if user.avatar %}
+                    <img src="{{ user.avatar }}" class="user-image" alt="User Image">
+                    <span class="hidden-xs">{{ user.nickname }}</span>
+                    {% else %}
+                    <img src="//q1.qlogo.cn/g?b=qq&nk={{ user.qq }}&s=640" class="user-image" alt="User Image">
+                    <span class="hidden-xs">{{ user.nickname }}</span>
+                    {% endif %}
+                </a>
+                <ul class="dropdown-menu dropdown-menu-right">
+                    <!-- User image -->
+                    <li class="user-header bg-gray">
+                        {% if user.avatar %}
+                        <img src="{{ user.avatar }}" alt="User Avatar" class="img-circle align-items-center"
+                            style="width: 128px;height: auto;">
+                        <p class="text-center">
+                            {{ user.nickname }}
+                        </p>
+                        {% else %}
+                        <img src="//q1.qlogo.cn/g?b=qq&nk={{ user.qq }}&s=640" alt="User Avatar"
+                            class="img-circle align-items-center" style="width: 128px;height: auto;">
+                        <p class="text-center">
+                            {{ user.nickname }}
+                        </p>
+                        {% endif %}
+                    </li>
+                    <!-- Menu Footer-->
+                    <li class="user-footer">
+                        <div class="float-left">
+                            <a href="/oauth/qq/login" class="btn btn-default btn-flat">QQ绑定</a>
+                        </div>
+                        <div class="float-left">
+                            <a href="#szjConf" class="btn btn-default btn-flat" data-toggle="modal"
+                                data-target="#SzjConf">石之家绑定</a>
+                        </div>
+                        <div class="float-right">
+                            <a href="/logout" class="btn btn-default btn-flat">登出</a>
+                        </div>
+                    </li>
+                </ul>
+            </li>
             {% else %}
-            <img src="//q1.qlogo.cn/g?b=qq&nk={{ user.qq }}&s=640"
-                 class="user-image" alt="User Image">
-            <span class="hidden-xs">{{ user.nickname }}</span>
+            <li class="nav-item dropdown user user-menu">
+                <a class="nav-link" data-toggle="dropdown" href="#">
+                    <img src="{% static " dist/img/tata.jpg" %}" class="user-image" alt="User Image">
+                    <span class="hidden-xs">光之呆呆</span>
+                </a>
+                <ul class="dropdown-menu dropdown-menu-right">
+                    <!-- User image -->
+                    <li class="user-header bg-gray">
+                        <img src="{% static " dist/img/tata.jpg" %}" alt="User Avatar"
+                            class="img-circle align-items-center" style="width: 128px;height: auto;">
+                        <p class="text-center">
+                            光之呆呆
+                        </p>
+                    </li>
+                    <!-- Menu Footer-->
+                    <li class="user-footer">
+                        <div class="float-left">
+                            <a href="/register" class="btn btn-default bg-blue">注册</a>
+                        </div>
+                        <div class="float-right">
+                            <a href="/login" class="btn btn-default bg-blue">登录</a>
+                        </div>
+                    </li>
+                </ul>
+            </li>
             {% endif %}
-          </a>
-          <ul class="dropdown-menu dropdown-menu-right">
-            <!-- User image -->
-            <li class="user-header bg-gray">
-              {% if user.avatar %}
-              <img src="{{ user.avatar }}"
-                   alt="User Avatar" class="img-circle align-items-center" style="width: 128px;height: auto;">
-              <p class="text-center">
-                {{ user.nickname }}
-              </p>
-              {% else %}
-              <img src="//q1.qlogo.cn/g?b=qq&nk={{ user.qq }}&s=640"
-                   alt="User Avatar" class="img-circle align-items-center" style="width: 128px;height: auto;">
-              <p class="text-center">
-                {{ user.nickname }}
-              </p>
-              {% endif %}
-            </li>
-            <!-- Menu Footer-->
-            <li class="user-footer">
-              <div class="float-left">
-                <a href="/oauth/qq/login" class="btn btn-default btn-flat">QQ绑定</a>
-              </div>
-              <div class="float-left">
-                <a href="/oauth/xivid/login" class="btn btn-default btn-flat">xivID绑定</a>
-              </div>
-              <div class="float-right">
-                <a href="/logout" class="btn btn-default btn-flat">登出</a>
-              </div>
-            </li>
-          </ul>
-        </li>
-      {% else %}
-        <li class="nav-item dropdown user user-menu">
-          <a class="nav-link" data-toggle="dropdown" href="#">
-            <img src="{% static "dist/img/tata.jpg" %}"
-                 class="user-image" alt="User Image">
-            <span class="hidden-xs">光之呆呆</span>
-          </a>
-          <ul class="dropdown-menu dropdown-menu-right">
-            <!-- User image -->
-            <li class="user-header bg-gray">
-              <img src="{% static "dist/img/tata.jpg" %}"
-                   alt="User Avatar" class="img-circle align-items-center" style="width: 128px;height: auto;">
-              <p class="text-center">
-                光之呆呆
-              </p>
-            </li>
-            <!-- Menu Footer-->
-            <li class="user-footer">
-              <div class="float-left">
-                <a href="/register" class="btn btn-default bg-blue">注册</a>
-              </div>
-              <div class="float-right">
-                <a href="/login" class="btn btn-default bg-blue">登录</a>
-              </div>
-            </li>
-          </ul>
-        </li>
-      {% endif %}
-      </ul>
+        </ul>
     </nav>
     <!-- /.navbar -->
 
+    <!-- modal -->
+    <div class="modal fade" id="SzjConf" tabindex="-1" role="dialog" aria-labelledby="SZJModalLabel">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title" id="ConfTitle">石之家绑定</h4>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">x</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-warning" id="CookieAlert">
+                        <h5><i class="icon fas fa-exclamation-triangle"></i> 注意！</h5>
+                        请将访问 isLogin 接口的 Cookie 复制粘贴（敏感操作，可提交空白信息覆盖）。
+                    </div>
+                    <div>
+                        <label for="userId">UID</label>
+                        <input type="number" class="form-control" id="szjConfUid">
+                    </div>
+                    <div>
+                        <label for="cookie">Cookie</label>
+                        <input type="text" class="form-control" id="szjConfCookie" placeholder="">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" onclick="upload_szj()">确认</button>
+                </div>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal -->
+    </div>
+    <script>
+        function upload_szj() {
+            var uid = $("#szjConfUid").val();
+            var cookie = $("#szjConfCookie").val();
+            $.ajax({
+                type: 'POST',
+                url: '/auth/szj',
+                async: false,
+                data: { "optype": "upload_uid_cookie", "uid": uid, "cookie": cookie, 'csrfmiddlewaretoken': '{{ csrf_token }}' },
+                success: function (data) {
+                    if (data.response != "success") {
+                        if (data.response == "error") {
+                            alert(data.msg);
+                        } else {
+                            alert(data.response);
+                            console.log(data);
+                        }
+                    } else {
+                        alert("操作成功！");
+                    }
+                },
+            });
+        }
+    </script>
+
     <!-- Main Sidebar Container -->
     <aside class="main-sidebar sidebar-dark-primary elevation-4">
-      <!-- Brand Logo -->
-      <a href="/tata" class="brand-link logo-switch">
-        <!-- img src="dist/img/AdminLTELogo.png" alt="AdminLTE Logo" class="brand-image img-circle elevation-3"
+        <!-- Brand Logo -->
+        <a href="/tata" class="brand-link logo-switch">
+            <!-- img src="dist/img/AdminLTELogo.png" alt="AdminLTE Logo" class="brand-image img-circle elevation-3"
              style="opacity: .8" -->
-        <img src="{% static "dist/img/logo-1.png" %}" class="brand-image"
-             style="margin-right: 0; vertical-align: middle">
-        <span class="brand-text logo-xl" style="vertical-align: middle"><b>FFXIVの</b>OtterBot</span>
-      </a>
+            <img src="{% static " dist/img/logo-1.png" %}" class="brand-image"
+                style="margin-right: 0; vertical-align: middle">
+            <span class="brand-text logo-xl" style="vertical-align: middle"><b>FFXIVの</b>OtterBot</span>
+        </a>
 
-      <!-- Sidebar -->
-      <div class="sidebar">
-        <!-- Sidebar user panel (optional) -->
-        <div class="user-panel mt-3 pb-3 mb-3 d-flex">
-          <div class="image">
-            <img src="{% if user %}{% if user.avatar %}{{ user.avatar }}{% else %}//q1.qlogo.cn/g?b=qq&nk={{ user.qq }}&s=640{% endif %}{% else %}{% static "dist/img/tata.jpg" %}{% endif %}"
-                 class="img-circle" alt="User Image">
-          </div>
-          <div class="info">
-            <a href="#" class="d-block">{% if user %}{{ user.nickname }}{% else %}光之呆呆{% endif %}</a>
-          </div>
-        </div>
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <!-- Sidebar user panel (optional) -->
+            <div class="user-panel mt-3 pb-3 mb-3 d-flex">
+                <div class="image">
+                    <img src="{% if user %}{% if user.avatar %}{{ user.avatar }}{% else %}//q1.qlogo.cn/g?b=qq&nk={{ user.qq }}&s=640{% endif %}{% else %}{% static "
+                        dist/img/tata.jpg" %}{% endif %}" class="img-circle" alt="User Image">
+                </div>
+                <div class="info">
+                    <a href="#" class="d-block">{% if user %}{{ user.nickname }}{% else %}光之呆呆{% endif %}</a>
+                </div>
+            </div>
 
-        <!-- Sidebar Menu -->
-        <nav class="mt-2">
-          <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
-            <!-- Add icons to the links using the .nav-icon class
+            <!-- Sidebar Menu -->
+            <nav class="mt-2">
+                <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu"
+                    data-accordion="false">
+                    <!-- Add icons to the links using the .nav-icon class
                  with font-awesome or any other icon font library -->
-            <li class="nav-item">
-              <a href="/tata" class="nav-link">
-                <i class="nav-icon fas fa-table"></i>
-                <p>
-                  獭獭列表
-                  <span class="right fas fa-angle-left"></span>
-                </p>
-              </a>
-            </li>
-            <li class="nav-item">
-              <a href="/quest" class="nav-link">
-                <i class="nav-icon fas fa-bars"></i>
-                <p>
-                  任务流程
-                  <span class="right fas fa-angle-left"></span>
-                </p>
-              </a>
-            </li>
-            {% if user %}
-            <li class="nav-item">
-              <a href="#" class="nav-link">
-                <i class="nav-icon fas fa-clock"></i>
-                <p>
-                  狩猎时钟
-                  <span class="right fas fa-angle-left"></span>
-                </p>
-              </a>
-              <ul class="nav nav-treeview">
-                <li class="nav-item">
-                  <a href="/hunt/" class="nav-link">
-                    <i class="fas fa-tasks nav-icon"></i>
-                    <p>群时钟</p>
-                  </a>
-                </li>
-                <li class="nav-item">
-                  <a href="/hunt/sonar/" class="nav-link">
-                    <i class="fas fa-tasks nav-icon"></i>
-                    <p>Sonar</p>
-                  </a>
-                </li>
-                <li class="nav-item">
-                  <a href="/hunt/bird/" class="nav-link">
-                    <i class="fas fa-tasks nav-icon"></i>
-                    <p>银山雀</p>
-                  </a>
-                </li>
-                <li class="nav-item">
-                  <a href="/hunt/relay/" class="nav-link">
-                    <i class="fas fa-tasks nav-icon"></i>
-                    <p>Sonar与银山雀</p>
-                  </a>
-                </li>
-              </ul>
-            </li>
-            <li class="nav-item">
-              <a href="/image" class="nav-link">
-                <i class="nav-icon fas fa-image"></i>
-                <p>
-                  獭の图库
-                  <span class="right fas fa-angle-left"></span>
-                </p>
-              </a>
-            </li>
-            {% else %}
-            <li class="nav-item">
-              <a href="#" class="nav-link">
-                <i class="nav-icon fas fa-clock"></i>
-                <p>
-                  狩猎时钟
-                  <span class="right fas fa-angle-left"></span>
-                </p>
-              </a>
-              <ul class="nav nav-treeview">
-                <li class="nav-item">
-                  <a href="/hunt/sonar/" class="nav-link">
-                    <i class="fas fa-tasks nav-icon"></i>
-                    <p>Sonar</p>
-                  </a>
-                </li>
-              </ul>
-            </li>
-            {% endif %}
-            <li class="nav-item has-treeview">
-              <a href="#" class="nav-link">
-                <i class="nav-icon fas fa-heart"></i>
-                <p>
-                  友情链接
-                  <i class="right fas fa-angle-left"></i>
-                </p>
-              </a>
-              <ul class="nav nav-treeview">
-                <li class="nav-item">
-                  <a href="https://ff14.huijiwiki.com/wiki/%E9%A6%96%E9%A1%B5" class="nav-link">
-                    <i class="fab fa-wikipedia-w nav-icon"></i>
-                    <p>灰机Wiki</p>
-                  </a>
-                </li>
-                <li class="nav-item">
-                  <a href="https://bbs.nga.cn/thread.php?fid=-362960" class="nav-link">
-                    <i class="fas fa-coffee nav-icon"></i>
-                    <p>NGA</p>
-                  </a>
-                </li>
-                <li class="nav-item">
-                  <a href="https://www.ffxiv.cn/" class="nav-link">
-                    <i class="fa fa-hamburger nav-icon"></i>
-                    <p>素素</p>
-                  </a>
-                </li>
-                <li class="nav-item">
-                  <a href="https://ffcafe.org/" class="nav-link">
-                    <i class="fa fa-home nav-icon"></i>
-                    <p>肥肥咖啡</p>
-                  </a>
-                </li>
-                <li class="nav-item">
-                  <a href="https://www.ffxiv.co/" class="nav-link">
-                    <i class="fa fa-home nav-icon"></i>
-                    <p>飞艇坪</p>
-                  </a>
-                </li>
-              </ul>
-            </li>
-          </ul>
-        </nav>
-        <!-- /.sidebar-menu -->
-      </div>
-      <!-- /.sidebar -->
+                    <li class="nav-item">
+                        <a href="/tata" class="nav-link">
+                            <i class="nav-icon fas fa-table"></i>
+                            <p>
+                                獭獭列表
+                                <span class="right fas fa-angle-left"></span>
+                            </p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/quest" class="nav-link">
+                            <i class="nav-icon fas fa-bars"></i>
+                            <p>
+                                任务流程
+                                <span class="right fas fa-angle-left"></span>
+                            </p>
+                        </a>
+                    </li>
+                    {% if user %}
+                    <li class="nav-item">
+                        <a href="#" class="nav-link">
+                            <i class="nav-icon fas fa-clock"></i>
+                            <p>
+                                狩猎时钟
+                                <span class="right fas fa-angle-left"></span>
+                            </p>
+                        </a>
+                        <ul class="nav nav-treeview">
+                            <li class="nav-item">
+                                <a href="/hunt/" class="nav-link">
+                                    <i class="fas fa-tasks nav-icon"></i>
+                                    <p>群时钟</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="/hunt/sonar/" class="nav-link">
+                                    <i class="fas fa-tasks nav-icon"></i>
+                                    <p>Sonar</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="/hunt/bird/" class="nav-link">
+                                    <i class="fas fa-tasks nav-icon"></i>
+                                    <p>银山雀</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="/hunt/relay/" class="nav-link">
+                                    <i class="fas fa-tasks nav-icon"></i>
+                                    <p>Sonar与银山雀</p>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/image" class="nav-link">
+                            <i class="nav-icon fas fa-image"></i>
+                            <p>
+                                獭の图库
+                                <span class="right fas fa-angle-left"></span>
+                            </p>
+                        </a>
+                    </li>
+                    {% else %}
+                    <li class="nav-item">
+                        <a href="#" class="nav-link">
+                            <i class="nav-icon fas fa-clock"></i>
+                            <p>
+                                狩猎时钟
+                                <span class="right fas fa-angle-left"></span>
+                            </p>
+                        </a>
+                        <ul class="nav nav-treeview">
+                            <li class="nav-item">
+                                <a href="/hunt/sonar/" class="nav-link">
+                                    <i class="fas fa-tasks nav-icon"></i>
+                                    <p>Sonar</p>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                    {% endif %}
+                    <li class="nav-item has-treeview">
+                        <a href="#" class="nav-link">
+                            <i class="nav-icon fas fa-heart"></i>
+                            <p>
+                                友情链接
+                                <i class="right fas fa-angle-left"></i>
+                            </p>
+                        </a>
+                        <ul class="nav nav-treeview">
+                            <li class="nav-item">
+                                <a href="https://ff14.huijiwiki.com/wiki/%E9%A6%96%E9%A1%B5" class="nav-link">
+                                    <i class="fab fa-wikipedia-w nav-icon"></i>
+                                    <p>灰机Wiki</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="https://bbs.nga.cn/thread.php?fid=-362960" class="nav-link">
+                                    <i class="fas fa-coffee nav-icon"></i>
+                                    <p>NGA</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="https://www.ffxiv.cn/" class="nav-link">
+                                    <i class="fa fa-hamburger nav-icon"></i>
+                                    <p>素素</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="https://ffcafe.org/" class="nav-link">
+                                    <i class="fa fa-home nav-icon"></i>
+                                    <p>肥肥咖啡</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="https://www.ffxiv.co/" class="nav-link">
+                                    <i class="fa fa-home nav-icon"></i>
+                                    <p>飞艇坪</p>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </nav>
+            <!-- /.sidebar-menu -->
+        </div>
+        <!-- /.sidebar -->
     </aside>
 
     <!-- Content Wrapper. Contains page content -->
     <div class="content-wrapper">
-      {% block content %}
+        {% block content %}
 
-      {% endblock %}
+        {% endblock %}
     </div>
     <!-- /.content-wrapper -->
     <footer class="main-footer">
-      <div class="float-right d-none d-sm-inline">
-        <b>Version</b> 0.2.0
-      </div>
-      <strong>Copyright &copy; 2017-2022 <b>Bluefissure</b>.</strong> All rights reserved.
+        <div class="float-right d-none d-sm-inline">
+            <b>Version</b> 0.2.0
+        </div>
+        <strong>Copyright &copy; 2017-2022 <b>Bluefissure</b>.</strong> All rights reserved.
     </footer>
 
     <!-- Control Sidebar -->
@@ -270,18 +324,23 @@
     <!-- Add the sidebar's background. This div must be placed
          immediately after the control sidebar -->
     <div class="sidebar-overlay"></div>
-  </div>
+</div>
 {% endblock %}
 <!-- ./wrapper -->
+
+
+
 {% block script %}
-  <!-- jQuery -->
-  <script src="{% static "plugins/jquery/jquery.min.js" %}"></script>
-  <!-- Bootstrap 4 -->
-  <script src="{% static "plugins/bootstrap/js/bootstrap.bundle.min.js" %}"></script>
-  <!-- AdminLTE App -->
-  <script src="{% static "dist/js/adminlte.min.js" %}"></script>
-  <!-- page script -->
+<!-- jQuery -->
+<script src="{% static " plugins/jquery/jquery.min.js" %}"></script>
+<!-- Bootstrap 4 -->
+<script src="{% static " plugins/bootstrap/js/bootstrap.bundle.min.js" %}"></script>
+<!-- AdminLTE App -->
+<script src="{% static " dist/js/adminlte.min.js" %}"></script>
+<!-- page script -->
 {% endblock %}
 
+
 </body>
+
 </html>

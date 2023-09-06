@@ -56,3 +56,4 @@ websockets==10.3
 wordcloud==1.8.1
 wrapt==1.14.0
 zope.interface==5.4.0
+selenium==4.12.0

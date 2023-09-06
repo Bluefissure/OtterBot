@@ -47,6 +47,7 @@ urlpatterns = [
     re_path(r'^login/', login),
     re_path(r'^register/', register),
     re_path(r'^logout/', logout),
+    re_path(r'^auth/szj', szj_auth, name='szj_auth'),
 ]
 if settings.DEBUG:
     urlpatterns += staticfiles_urlpatterns()

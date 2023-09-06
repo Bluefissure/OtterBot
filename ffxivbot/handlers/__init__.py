@@ -42,6 +42,7 @@ commands = {
     "/hh": '光之收藏家幻化推荐("/hh help")',
     "/ofish": "获取最近海钓航班",
     "/luck": "浅草寺求签",
+    "/shizhijia": "石之家资料卡",
     #"/abv": "Bilibili av/BV号互转",
 }
 
@@ -105,6 +106,8 @@ alter_commands = {
     "/ncast": "/novelai generate",
     "/novelai official_cast": "/novelai official_generate",
     "/nocast": "/novelai official_generate",
+    "/szj": "/shizhijia",
+    "/sjz": "/shizhijia",
 }
 
 # FFXIV Commands
@@ -120,6 +123,7 @@ from .QQCommand_raid import QQCommand_raid
 from .QQCommand_search import QQCommand_search
 #from .QQCommand_treasure import QQCommand_treasure
 from .QQCommand_weather import QQCommand_weather
+from .QQCommand_shizhijia import QQCommand_shizhijia
 
 # Genshin Commands
 from .QQCommand_genshin import QQCommand_genshin

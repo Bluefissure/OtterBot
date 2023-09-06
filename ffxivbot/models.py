@@ -339,6 +339,12 @@ class QQUser(models.Model):
     def __str__(self):
         return str(self.user_id)
 
+class ShizhijiaUser(models.Model):
+    qquser = models.OneToOneField(
+        QQUser, on_delete=models.CASCADE, blank=True, null=True, related_name="szj_user"
+    )
+    user_id = models.CharField(db_index=True, max_length=64, unique=True)
+    cookie = models.TextField(default="")
 
 class HsoAlterName(models.Model):
     name = models.CharField(max_length=32, unique=True, default="")
