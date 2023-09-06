@@ -61,13 +61,13 @@
             {% else %}
             <li class="nav-item dropdown user user-menu">
                 <a class="nav-link" data-toggle="dropdown" href="#">
-                    <img src="{% static " dist/img/tata.jpg" %}" class="user-image" alt="User Image">
+                    <img src="{% static "dist/img/tata.jpg" %}" class="user-image" alt="User Image">
                     <span class="hidden-xs">光之呆呆</span>
                 </a>
                 <ul class="dropdown-menu dropdown-menu-right">
                     <!-- User image -->
                     <li class="user-header bg-gray">
-                        <img src="{% static " dist/img/tata.jpg" %}" alt="User Avatar"
+                        <img src="{% static "dist/img/tata.jpg" %}" alt="User Avatar"
                             class="img-circle align-items-center" style="width: 128px;height: auto;">
                         <p class="text-center">
                             光之呆呆
@@ -150,7 +150,7 @@
         <a href="/tata" class="brand-link logo-switch">
             <!-- img src="dist/img/AdminLTELogo.png" alt="AdminLTE Logo" class="brand-image img-circle elevation-3"
              style="opacity: .8" -->
-            <img src="{% static " dist/img/logo-1.png" %}" class="brand-image"
+            <img src="{% static "dist/img/logo-1.png" %}" class="brand-image"
                 style="margin-right: 0; vertical-align: middle">
             <span class="brand-text logo-xl" style="vertical-align: middle"><b>FFXIVの</b>OtterBot</span>
         </a>
@@ -160,8 +160,8 @@
             <!-- Sidebar user panel (optional) -->
             <div class="user-panel mt-3 pb-3 mb-3 d-flex">
                 <div class="image">
-                    <img src="{% if user %}{% if user.avatar %}{{ user.avatar }}{% else %}//q1.qlogo.cn/g?b=qq&nk={{ user.qq }}&s=640{% endif %}{% else %}{% static "
-                        dist/img/tata.jpg" %}{% endif %}" class="img-circle" alt="User Image">
+                    <img src="{% if user %}{% if user.avatar %}{{ user.avatar }}{% else %}//q1.qlogo.cn/g?b=qq&nk={{ user.qq }}&s=640{% endif %}{% else %}
+                        {% static "dist/img/tata.jpg" %}{% endif %}" class="img-circle" alt="User Image">
                 </div>
                 <div class="info">
                     <a href="#" class="d-block">{% if user %}{{ user.nickname }}{% else %}光之呆呆{% endif %}</a>
@@ -332,11 +332,11 @@
 
 {% block script %}
 <!-- jQuery -->
-<script src="{% static " plugins/jquery/jquery.min.js" %}"></script>
+<script src="{% static "plugins/jquery/jquery.min.js" %}"></script>
 <!-- Bootstrap 4 -->
-<script src="{% static " plugins/bootstrap/js/bootstrap.bundle.min.js" %}"></script>
+<script src="{% static "plugins/bootstrap/js/bootstrap.bundle.min.js" %}"></script>
 <!-- AdminLTE App -->
-<script src="{% static " dist/js/adminlte.min.js" %}"></script>
+<script src="{% static "dist/js/adminlte.min.js" %}"></script>
 <!-- page script -->
 {% endblock %}
 
