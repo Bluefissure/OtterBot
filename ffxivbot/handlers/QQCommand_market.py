@@ -123,18 +123,26 @@ def handle_item_name_abbr(item_name):
         item_name = item_name.replace("(", "（").replace(")", "）")
     if item_name.startswith("第二期重建用的") and not item_name.endswith("（检）"):
         item_name = item_name + "（检）"
-    if item_name.upper() == "G12":
-        item_name = "陈旧的缠尾蛟革地图"
-    if item_name.upper() == "G11":
-        item_name = "陈旧的绿飘龙革地图"
-    if item_name.upper() == "G10":
-        item_name = "陈旧的瞪羚革地图"
-    if item_name.upper() == "G9":
-        item_name = "陈旧的迦迦纳怪鸟革地图"
-    if item_name.upper() == "G8":
-        item_name = "陈旧的巨龙革地图图"
-    if item_name.upper() == "G7":
-        item_name = "陈旧的飞龙革地图"
+    map_dict = {
+        "G15": "陈旧的蛇牛革地图",
+        "G14": "陈旧的金毗罗鳄革地图",
+        "G13": "陈旧的赛加羚羊革地图",
+        "G12": "陈旧的缠尾蛟革地图",
+        "G11": "陈旧的绿飘龙革地图",
+        "G10": "陈旧的瞪羚革地图",
+        "G9": "陈旧的迦迦纳怪鸟革地图",
+        "G8": "陈旧的巨龙革地图",
+        "G7": "陈旧的飞龙革地图",
+        "G6": "陈旧的古鸟革地图",
+        "G5": "陈旧的毒蜥蜴革地图",
+        "G4": "陈旧的野猪革地图",
+        "G3": "陈旧的巨蟾蜍革地图",
+        "G2": "陈旧的山羊革地图",
+        "G1": "陈旧的鞣革地图",
+        "绿图": "鞣革制的隐藏地图",
+    }
+    if item_name.upper() in map_dict:
+        item_name = map_dict[item_name.upper()]
     return item_name
 
 
