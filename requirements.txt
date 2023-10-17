@@ -41,7 +41,7 @@ pyparsing==3.0.8
 python-dateutil==2.8.2
 PyYAML==6.0
 redis==4.4.4
-requests==2.27.1
+requests==2.31.0
 service-identity==21.1.0
 sgmllib3k==1.0.0
 six==1.16.0
