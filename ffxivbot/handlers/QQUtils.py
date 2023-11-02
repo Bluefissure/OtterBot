@@ -21,7 +21,7 @@ from ffxivbot.models import *
 # garlandtools.cn locates in China
 # ffxiv.cyanclay.xyz locates in German, boosted by cloudflare
 # choose your better server here!
-GARLAND = "https://ffxiv.cyanclay.xyz"
+GARLAND = "https://garlandtools.cn"
 
 CAFEMAKER = "https://cafemaker.wakingsands.com"
 XIVAPI = "https://xivapi.com"

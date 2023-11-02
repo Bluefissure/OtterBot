@@ -42,8 +42,8 @@ commands = {
     "/hh": '光之收藏家幻化推荐("/hh help")',
     "/ofish": "获取最近海钓航班",
     "/luck": "浅草寺求签",
-    "/shizhijia": "石之家资料卡",
-    #"/abv": "Bilibili av/BV号互转",
+    # "/shizhijia": "石之家资料卡",
+    # "/abv": "Bilibili av/BV号互转",
 }
 
 group_commands = {
