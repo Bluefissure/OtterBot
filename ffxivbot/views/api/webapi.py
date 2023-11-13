@@ -8,6 +8,7 @@ from django.http import HttpResponse, JsonResponse
 from ffxivbot.models import QQUser, Territory, Weather, Boss, Job, Server, QQBot
 from ffxivbot.handlers.QQUtils import getSpecificWeatherTimes, getFollowingWeathers, crawl_dps, search_item
 from ffxivbot.handlers.QQCommand_quest import search_quest
+from ffxivbot.handlers.QQCommand_market import get_market_data, handle_item_name_abbr, handle_server_name_abbr
 from ffxivbot.views.tata import get_bot_version, mask_id
 
 REDIST_URL = "localhost" if os.environ.get('IS_DOCKER', '') != 'Docker' else 'redis'
@@ -179,7 +180,6 @@ def webapi(req):
                                 "dps": atk_res,
                             },
                         }
-
         elif request_type == "search":  # 102X
             name = req_data["name"]
             search_res = search_item(
@@ -253,7 +253,6 @@ def webapi(req):
                 "rcode": "0",
                 "data": search_res if type(search_res) == str else search_res[0],
             }
-
         elif request_type == "botlist":  # 105X
             REDIS_CLIENT = redis.Redis(host=REDIST_URL, port=6379, decode_responses=True)
             bots = QQBot.objects.all()
@@ -286,6 +285,27 @@ def webapi(req):
                 "rcode": "0",
                 "data": res_data,
             }
+        elif request_type == "market":  # 106X
+            server_name = req_data["server_name"]
+            server_name = handle_server_name_abbr(server_name)
+            item_name = req_data["item_name"]
+            item_name = handle_item_name_abbr(item_name)
+            hq = req_data.get('hq', False)
+            try:
+                result_msg = get_market_data(server_name, item_name, hq)
+                res_dict = {
+                    "response": "success",
+                    "msg": "",
+                    "rcode": "0",
+                    "data": result_msg,
+                }
+            except:
+                res_dict = {
+                    "response": "error",
+                    "rcode": "1060",
+                    "msg": "Exception thrown, please check api server.",
+                }
+    
     except json.decoder.JSONDecodeError:
         res_dict = {"response": "error", "msg": "JSON decode error", "rcode": "103"}
     except KeyError:
