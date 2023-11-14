@@ -90,6 +90,7 @@ class QQBot(object):
             if self.session_id != session_id:
                 self._log.debug('%s session id changed.', self)
                 break
+            self._refresh_token()
             await self.ws.send(json.dumps({
                 "op": 1,
                 "d": self.s if not first_hearbeat else None
@@ -209,6 +210,14 @@ class QQBot(object):
 
 
     def on_at_message_create(self, func: callable):
+        def wrap(*args, **kwargs):
+            func_meta = inspect.getfullargspec(func)
+            if "qqbot" in func_meta.args:
+                kwargs['qqbot'] = self
+            func(*args, **kwargs)
+        return wrap
+
+    def on_group_at_message_create(self, func: callable):
         def wrap(*args, **kwargs):
             func_meta = inspect.getfullargspec(func)
             if "qqbot" in func_meta.args:

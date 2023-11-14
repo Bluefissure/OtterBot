@@ -3,6 +3,7 @@ import re
 import requests
 import urllib.parse
 import os
+import logging
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -10,10 +11,9 @@ load_dotenv()
 API_BASE = os.environ.get('API_BASE', '')
 RED_BASE = os.environ.get('RED_BASE', '')  # TODO
 
-_log = None
+_log = logging.getLogger("QQBot Guilds")
 
 def handle_quest(quest_name):
-    global _log
     post_data = {
         "request": "quest",
         "data": {
@@ -36,7 +36,6 @@ def handle_quest(quest_name):
 
 
 def handle_search(item_name):
-    global _log
     post_data = {
         "request": "search",
         "data": {
@@ -62,7 +61,6 @@ def handle_search(item_name):
     }
 
 def handle_market(command_seg):
-    global _log
     help_msg = """/market item $name $server: 查询$server服务器的$name物品交易数据
 /market upload: 如何上报数据
 Powered by universalis"""
@@ -105,16 +103,16 @@ Powered by universalis"""
     return { "message": msg }
 
 def on_at_message_create(message, qqbot):
-    global _log
-    _log = qqbot.log
     _log.info(json.dumps(message, indent=2, ensure_ascii=False))
     data = message['d']
     channel_id = data['channel_id']
     content = re.sub(r"<@!.*>", "", data['content']).strip()
+    msg = None
     image = None
     if content.startswith("/ping"):
         qqbot.log.info(f"Get pinged from channel:{channel_id}")
         qqbot.reply_channel_message(message, content=f"Pong! ({channel_id})")
+        return
     if content.startswith("/quest"):
         quest_name = content.replace("/quest", "").strip()
         msg_object = handle_quest(quest_name)
