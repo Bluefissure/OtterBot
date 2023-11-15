@@ -829,10 +829,10 @@ def text2img(text):
     last_height = 0
     img_width = 0
     border = 10
-    _, height = font.getsize(text)
+    _, _, _, height = font.getbbox(text)
     for line in lines:
         # print("{}:\t{}".format(img_height + border, line))
-        width, _ = font.getsize(line)
+        _, _, width, _ = font.getbbox(line)
         img_width = max(img_width, width)
         img_height += height
     img = PILImage.new(
