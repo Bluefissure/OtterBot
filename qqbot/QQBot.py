@@ -13,6 +13,7 @@ class QQBot(object):
         self.token = None
         self.expiration = 0
         self.config = config
+        self.app_id = str(config['app_id'])
         self.ws = ws
         self._s = 0
         self.username = 'Unknown QQBot'
@@ -60,15 +61,11 @@ class QQBot(object):
 
     @property
     def base_url(self) -> str:
-        return 'https://api.sgroup.qq.com/v2'
-
-    @property
-    def base_url_channel(self) -> str:
         return 'https://api.sgroup.qq.com'
 
     @property
     def headers(self) -> dict:
-        return {'Authorization': f'QQBot {self.token}', 'X-Union-Appid': "102048867"}
+        return {'Authorization': f'QQBot {self.token}', 'X-Union-Appid': self.app_id}
 
     @property
     def s(self) -> int:
@@ -131,19 +128,28 @@ class QQBot(object):
                 "shard": [0, 1],
             }}))
 
-    def send_group_message(self, group_id: str, content: str):
+    def send_group_message(self, group_id: str, content: str, reply_msg_id: str = "", image: str = None):
         self._log.debug('Sending message %s to group %s...', content, group_id)
+        post_data = {
+            "content": content,
+            "msg_type": 0,
+        }
+        # if reply_msg_id:
+        #     post_data['msg_id'] = reply_msg_id
+        self._log.debug('Post data: %s', json.dumps(post_data, indent=2))
         response = requests.post(
-            f'{self.base_url}/groups/{group_id}/messages',
+            f'{self.base_url}/v2/groups/{group_id}/messages',
             headers=self.headers,
-            json={
-                "content": content,
-                "msg_type": 0,
-                "timestamp": int(time.time()),
-            },
+            json=post_data,
             timeout=5,
         )
         self._log.debug('HTTP response: %s', response.text)
+
+    def reply_group_message(self, message:dict, content: str, image: str = None):
+        data = message['d']
+        group_id = data['group_openid']
+        reply_msg_id = data['id']
+        self.send_group_message(group_id, content, reply_msg_id)
     
     def send_channel_message(self, channel_id: str, content: str, reply_msg_id=-1, image: str = None):
         self._log.debug('Sending message %s to channel %s...', content, channel_id)
@@ -155,7 +161,7 @@ class QQBot(object):
         if image:
             post_data['image'] = image
         response = requests.post(
-            f'{self.base_url_channel}/channels/{channel_id}/messages',
+            f'{self.base_url}/channels/{channel_id}/messages',
             headers=self.headers,
             json=post_data,
             timeout=5,
