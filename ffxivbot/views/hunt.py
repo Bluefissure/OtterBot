@@ -9,7 +9,7 @@ from zoneinfo import ZoneInfo
 from django.http import JsonResponse, HttpResponseRedirect
 from django.utils.timezone import make_aware
 from django.contrib.auth.decorators import login_required
-from django.db.models import Q, Max
+from django.db.models import Q, Max, F, Case, Value, When
 from ffxivbot.models import BannedCharacter, Monster, HuntLog, HuntGroup, Server
 from authlib.integrations.requests_client import OAuth2Session
 from .ren2res import ren2res
@@ -46,7 +46,11 @@ def gen_hunts(user, sonar=False, bird=False):
             conditions.append(Q(log_type='bird'))
             sources.append('银山雀')
         latest_kill_logs = HuntLog.objects.filter(functools.reduce(operator.__or__, conditions), time__gt=time.time()-3600*24*7*2)\
-            .values('server__name', 'monster', 'instance_id').annotate(Max('time'))
+            .annotate(instanced_id=Case(
+                When(instance_id=0, then=Value(1)),
+                default=F('instance_id'),
+                ))\
+            .values('server__name', 'monster', 'instanced_id').annotate(Max('time'))
 
     # print(f"#latest_kill_logs:{latest_kill_logs.count()}")
     maintain_logs = HuntLog.objects.filter(log_type='maintain').values('server__name').annotate(Max('time'))
@@ -62,6 +66,7 @@ def gen_hunts(user, sonar=False, bird=False):
                 hunt_group = HuntGroup.objects.get(id=latest_kill_log['hunt_group'])
             else:
                 hunt_group = ', '.join(sources)
+            latest_kill_log['instance_id'] = latest_kill_log.get('instance_id', latest_kill_log.get('instanced_id', 0))
             server_name = latest_kill_log['server__name']
             monster = monster_dict.get(latest_kill_log['monster'])
             maintain_finish_time = server_maintains.get(server_name, 0)

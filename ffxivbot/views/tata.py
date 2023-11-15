@@ -109,26 +109,49 @@ def generate_bot_conf(
                 "accessToken"
             ] = bot.access_token
         bot_conf = yaml.dump(bot_conf).encode()
-    elif client == "Go-cqhttp":
+    elif client == "go-cqhttp":
         ws_reverse_url = '{}'.format(ws_url)
+        servers = ""
         if bot.api_post_url:
-            use_http = "0.0.0.0"
-            post_url = "  - url: '{}'".format(http_url)
-            secret   = "    secret: '{}'".format(bot.access_token)
-            disable_ws_reverse = "true"
+            servers = """# HTTP 通信设置
+  - http:
+      # 服务端监听地址
+      address: 0.0.0.0:5700
+      # OneBot协议版本，支持11/12
+      version: 11
+      timeout: 5      # 反向 HTTP 超时时间, 单位秒，<5 时将被忽略
+      long-polling:   # 长轮询拓展
+        enabled: false       # 是否开启
+        max-queue-size: 2000 # 消息队列大小，0 表示不限制队列大小，谨慎使用
+      middlewares:
+        <<: *default # 引用默认中间件
+      # 反向HTTP POST地址列表
+      post:
+        - url: '{}' # 地址
+          secret: '{}' # 密钥
+          max-retries: 3         # 最大重试，0 时禁用
+          retries-interval: 1500 # 重试时间，单位毫秒，0 时立即
+    """.format(http_url, bot.access_token)
         else:
-            use_http = "127.0.0.1"
-            post_url = "#  - url: ''"
-            secret   = "#    secret: ''"
-            disable_ws_reverse = "false"
+            servers = """# 反向WS设置
+  - ws-reverse:
+      # 是否禁用当前反向WS服务
+      disabled: false
+      # 反向WS Universal 地址
+      # 注意 设置了此项地址后下面两项将会被忽略
+      universal: {}
+      # 反向WS API 地址
+      api: 
+      # 反向WS Event 地址
+      event: 
+      # 重连间隔 单位毫秒
+      reconnect-interval: 3000
+      middlewares:
+        <<: *default # 引用默认中间件""".format(ws_reverse_url)
         conf = (
             bot.user_id,
             bot.access_token,
-            use_http,
-            post_url,
-            secret,
-            disable_ws_reverse,
-            ws_reverse_url,
+            servers
         )
         bot_conf = """account: # 账号相关
   uin: {} # QQ账号
@@ -143,6 +166,41 @@ def generate_bot_conf(
   # 是否使用服务器下发的新地址进行重连
   # 注意, 此设置可能导致在海外服务器上连接情况更差
   use-sso-address: true
+  # 是否允许发送临时会话消息
+  allow-temp-session: false
+
+  sign-servers: 
+    - url: 'https://qqsign.xn--v9x.net'  # 主签名服务器地址， 必填
+      key: '114514'  # 签名服务器所需要的apikey, 如果签名服务器的版本在1.1.0及以下则此项无效
+      authorization: '-'   # authorization 内容, 依服务端设置，如 'Bearer xxxx'
+
+  # 判断签名服务不可用（需要切换）的额外规则
+  # 0: 不设置 （此时仅在请求无法返回结果时判定为不可用）
+  # 1: 在获取到的 sign 为空 （若选此建议关闭 auto-register，一般为实例未注册但是请求签名的情况）
+  # 2: 在获取到的 sign 或 token 为空（若选此建议关闭 auto-refresh-token ）
+  rule-change-sign-server: 1
+
+  # 连续寻找可用签名服务器最大尝试次数
+  # 为 0 时会在连续 3 次没有找到可用签名服务器后保持使用主签名服务器，不再尝试进行切换备用
+  # 否则会在达到指定次数后 **退出** 主程序
+  max-check-count: 0
+  # 签名服务请求超时时间(s)
+  sign-server-timeout: 60
+  # 如果签名服务器的版本在1.1.0及以下, 请将下面的参数改成true
+  # 建议使用 1.1.6 以上版本，低版本普遍半个月冻结一次
+  is-below-110: false
+  # 在实例可能丢失（获取到的签名为空）时是否尝试重新注册
+  # 为 true 时，在签名服务不可用时可能每次发消息都会尝试重新注册并签名。
+  # 为 false 时，将不会自动注册实例，在签名服务器重启或实例被销毁后需要重启 go-cqhttp 以获取实例
+  # 否则后续消息将不会正常签名。关闭此项后可以考虑开启签名服务器端 auto_register 避免需要重启
+  # 由于实现问题，当前建议关闭此项，推荐开启签名服务器的自动注册实例
+  auto-register: true
+  # 是否在 token 过期后立即自动刷新签名 token（在需要签名时才会检测到，主要防止 token 意外丢失）
+  # 独立于定时刷新
+  auto-refresh-token: true
+  # 定时刷新 token 间隔时间，单位为分钟, 建议 30~40 分钟, 不可超过 60 分钟
+  # 目前丢失token也不会有太大影响，可设置为 0 以关闭，推荐开启
+  refresh-interval: 40
 
 heartbeat:
   # 心跳频率, 单位秒
@@ -169,17 +227,29 @@ message:
   remove-reply-at: false
   # 为Reply附加更多信息
   extra-reply-data: false
+  # 跳过 Mime 扫描, 忽略错误数据
+  skip-mime-scan: false
+  # 是否自动转换 WebP 图片
+  convert-webp-image: false
+  # download 超时时间(s)
+  http-timeout: 15
 
 output:
   # 日志等级 trace,debug,info,warn,error
   log-level: warn
+  # 日志时效 单位天. 超过这个时间之前的日志将会被自动删除. 设置为 0 表示永久保留.
+  log-aging: 15
+  # 是否在每次启动时强制创建全新的文件储存日志. 为 false 的情况下将会在上次启动时创建的日志文件续写
+  log-force-new: true
+  # 是否启用日志颜色
+  log-colorful: true
   # 是否启用 DEBUG
   debug: false # 开启调试模式
 
 # 默认中间件锚点
 default-middlewares: &default
   # 访问密钥, 强烈推荐在公网的服务器设置
-  access-token: {}
+  access-token: '{}'
   # 事件过滤器文件目录
   filter: ''
   # API限速设置
@@ -198,6 +268,12 @@ database: # 数据库相关设置
     # 启用将会增加10-20MB的内存占用和一定的磁盘空间
     # 关闭将无法使用 撤回 回复 get_msg 等上下文相关功能
     enable: true
+  sqlite3:
+    # 是否启用内置sqlite3数据库
+    # 启用将会增加一定的内存占用和一定的磁盘空间
+    # 关闭将无法使用 撤回 回复 get_msg 等上下文相关功能
+    enable: false
+    cachettl: 3600000000000 # 1h
 
 # 连接服务列表
 servers:
@@ -206,36 +282,7 @@ servers:
   #- ws:   # 正向 Websocket
   #- ws-reverse: # 反向 Websocket
   #- pprof: #性能分析服务器
-  # HTTP 通信设置
-  - http:
-      # 服务端监听地址
-      host: {}
-      # 服务端监听端口
-      port: 5700
-      # 反向HTTP超时时间, 单位秒
-      # 最小值为5，小于5将会忽略本项设置
-      timeout: 5
-      middlewares:
-        <<: *default # 引用默认中间件
-      # 反向HTTP POST地址列表
-      post:
-      {} # 地址
-      {} # 密钥
-  # 反向WS设置
-  - ws-reverse:
-      # 是否禁用当前反向WS服务
-      disabled: {}
-      # 反向WS Universal 地址
-      # 注意 设置了此项地址后下面两项将会被忽略
-      universal: {}
-      # 反向WS API 地址
-      api: 
-      # 反向WS Event 地址
-      event: 
-      # 重连间隔 单位毫秒
-      reconnect-interval: 3000
-      middlewares:
-        <<: *default # 引用默认中间件
+  {}
 """.format(
             *conf
     )
@@ -289,12 +336,10 @@ module.exports = {{
 def get_bot_version(obj: dict):
     ver = ""
     if obj.get("go-cqhttp"):
-        ver = "Go"
+        ver = "go-cqhttp"
     elif obj.get("app_name"):
         name = obj.get("app_name")
-        if name.find("YaYa") != -1:
-            ver = "XQ"
-        elif name.find("onebot-mirai") != -1:
+        if name.find("onebot-mirai") != -1:
             ver = "Mirai"
         elif name.find("cqhttp-mirai") != -1:
             ver = "Mirai\n(Low)"
@@ -351,7 +396,7 @@ def tata(req):
             else:
                 if bots[0].access_token != accessToken:
                     res_dict = {"response": "error", "msg": "Token错误，请确认后重试"}
-                    return JsonResponse(res_dict)
+                    return JsonResponse(res_dict, status=401)
                 bot = bots[0]
                 bot_created = False
             if bot:
@@ -385,7 +430,7 @@ def tata(req):
                 res_dict = {"response": "error", "msg": "Token错误，请确认后重试"}
             else:
                 res_dict = {"response": "error", "msg": str(e)}
-            return JsonResponse(res_dict)
+            return JsonResponse(res_dict, status=401)
         if optype == "switch_public":
             bot.public = not bot.public
             bot.save()

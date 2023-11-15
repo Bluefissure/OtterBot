@@ -13,9 +13,9 @@ def api(req):
     httpresponse = None
     if req.method == "POST":
         tracker = req.GET.get("tracker")
-        print(tracker)
+        if not tracker:
+            return HttpResponse("Default API Error, contact dev please", status=500)
         trackers = tracker.split(",")
-        print(trackers)
         if tracker:
             try:
                 if "ffxiv-eureka" in trackers:

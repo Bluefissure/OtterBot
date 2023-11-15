@@ -62,6 +62,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'ffxivbot',
     'channels',
+    'rest_framework',
 ]
 
 MIDDLEWARE = [

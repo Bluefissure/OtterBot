@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils.html import mark_safe
+from django.core.exceptions import ValidationError
 from urllib.parse import urlparse
 from FFXIV import settings
 import requests
@@ -339,6 +340,12 @@ class QQUser(models.Model):
     def __str__(self):
         return str(self.user_id)
 
+class ShizhijiaUser(models.Model):
+    qquser = models.OneToOneField(
+        QQUser, on_delete=models.CASCADE, blank=True, null=True, related_name="szj_user"
+    )
+    user_id = models.CharField(db_index=True, max_length=64, unique=True)
+    cookie = models.TextField(default="")
 
 class HsoAlterName(models.Model):
     name = models.CharField(max_length=32, unique=True, default="")
@@ -729,3 +736,71 @@ class HousingPreset(models.Model):
 #         if len(self.prompt) > 20:
 #             return self.prompt[:20] + "..."
 #         return self.prompt[:20]
+
+# Fashion Report
+GEAR_SLOTS = [
+    (1, 'MainHand'),
+    (2, 'OffHand'),
+    (3, 'Head'),
+    (4, 'Body'),
+    (5, 'Gloves'),
+    (6, 'Legs'),
+    (7, 'Feet'),
+    (8, 'Ears'),
+    (9, 'Neck'),
+    (10, 'Wrists'),
+    (11, 'FingerL'),
+    (12, 'FingerR'),
+]
+
+
+class FashionReportSeries(models.Model):
+    """
+    A series of items that share the same name and pattern.
+    Ex. 座狼御敌/制敌/游击/治愈/强袭/精准/咏咒头盔
+    It should match the regular expression stored in pattern.
+    """
+    name = models.CharField(max_length=64, default="")
+    gear_slot = models.SmallIntegerField(verbose_name="Gear Slot", choices=GEAR_SLOTS)
+    items = models.JSONField(default=list)
+    pattern = models.CharField(max_length=64, default="")
+    name_short = models.CharField(max_length=64, default="")
+    source = models.TextField(default="")
+
+    def __str__(self):
+        return self.name
+
+
+class FashionReportOutfit(models.Model):
+    """
+    An outfit combined by multiple or single item series.
+    """
+    name = models.CharField(max_length=64, default="")
+    gear_slot = models.SmallIntegerField(verbose_name="Gear Slot", choices=GEAR_SLOTS)
+    series = models.ManyToManyField(FashionReportSeries, related_name="outfits")
+    description = models.TextField(default="")
+    short_description = models.TextField(default="")
+
+    def __str__(self):
+        return self.name
+
+
+class FashionReport(models.Model):
+    id = models.IntegerField(primary_key=True)
+    name = models.CharField(max_length=64, default="")
+    date = models.BigIntegerField(default=0)
+    head = models.ForeignKey(FashionReportOutfit, on_delete=models.SET_NULL, related_name="head_fashion_report", null=True)
+    body = models.ForeignKey(FashionReportOutfit, on_delete=models.SET_NULL, related_name="body_fashion_report", null=True)
+    gloves = models.ForeignKey(FashionReportOutfit, on_delete=models.SET_NULL, related_name="gloves_fashion_report", null=True)
+    legs = models.ForeignKey(FashionReportOutfit, on_delete=models.SET_NULL, related_name="legs_fashion_report", null=True)
+    feet = models.ForeignKey(FashionReportOutfit, on_delete=models.SET_NULL, related_name="feet_fashion_report", null=True)
+    ears = models.ForeignKey(FashionReportOutfit, on_delete=models.SET_NULL, related_name="ears_fashion_report", null=True)
+    neck = models.ForeignKey(FashionReportOutfit, on_delete=models.SET_NULL, related_name="neck_fashion_report", null=True)
+    wrists = models.ForeignKey(FashionReportOutfit, on_delete=models.SET_NULL, related_name="wrists_fashion_report", null=True)
+    finger_l = models.ForeignKey(FashionReportOutfit, on_delete=models.SET_NULL, related_name="finger_l_fashion_report", null=True)
+    finger_r = models.ForeignKey(FashionReportOutfit, on_delete=models.SET_NULL, related_name="finger_r_fashion_report", null=True)
+    dye = models.TextField(default="")
+    image = models.CharField(max_length=128, default="")
+
+    def __str__(self):
+        return f"#{self.id}: {self.name}"

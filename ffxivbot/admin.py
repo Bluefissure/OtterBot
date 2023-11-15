@@ -108,6 +108,12 @@ class QQUserAdmin(admin.ModelAdmin):
     search_fields = ["user_id", "nickname"]
 
 
+class ShizhijiaUserAdmin(admin.ModelAdmin):
+    list_display = ("user_id", "qquser")
+    search_fields = ["qquser"]
+    raw_id_fields = ["qquser"]
+
+
 class HsoAlterNameAdmin(admin.ModelAdmin):
     list_display = ("name", "key")
 
@@ -243,3 +249,4 @@ admin.site.register(LuckData, LuckDataAdmin)
 admin.site.register(TomonBot, TomonBotAdmin)
 admin.site.register(CommandLog, CommandLogAdmin)
 admin.site.register(HousingPreset, HousingPresetAdmin)
+admin.site.register(ShizhijiaUser, ShizhijiaUserAdmin)

@@ -14,13 +14,19 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path, re_path
+from django.urls import path, re_path, include
 from django.conf.urls.static import static
 from django.conf import settings
 from django.views.decorators.cache import cache_page
 
 from ffxivbot.views import *
+from ffxivbot.views.rest import FanshionReportViewSet
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
+
+from rest_framework import routers
+
+router = routers.DefaultRouter()
+router.register(r'fashion_report', FanshionReportViewSet, basename='fashion_report')
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -29,7 +35,7 @@ urlpatterns = [
     path('quest/', quest),
     path('api/', api),
     path('http/', qqpost),
-    path('wechat/message', wechatpost),
+    # path('wechat/message', wechatpost),
     path('image/', image),
     # path('hunt/', cache_page(60 * 2)()),
     path('hunt/', hunt),
@@ -47,6 +53,8 @@ urlpatterns = [
     re_path(r'^login/', login),
     re_path(r'^register/', register),
     re_path(r'^logout/', logout),
+    re_path(r'^auth/szj', szj_auth, name='szj_auth'),
+    path('rest/', include(router.urls)),
 ]
 if settings.DEBUG:
     urlpatterns += staticfiles_urlpatterns()
