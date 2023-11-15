@@ -134,8 +134,8 @@ class QQBot(object):
             "content": content,
             "msg_type": 0,
         }
-        # if reply_msg_id:
-        #     post_data['msg_id'] = reply_msg_id
+        if reply_msg_id:
+            post_data['msg_id'] = reply_msg_id
         self._log.debug('Post data: %s', json.dumps(post_data, indent=2))
         response = requests.post(
             f'{self.base_url}/v2/groups/{group_id}/messages',
