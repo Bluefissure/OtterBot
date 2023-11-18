@@ -788,7 +788,6 @@ class FashionReportOutfit(models.Model):
 class FashionReport(models.Model):
     id = models.IntegerField(primary_key=True)
     name = models.CharField(max_length=64, default="")
-    date = models.BigIntegerField(default=0)
     head = models.ForeignKey(FashionReportOutfit, on_delete=models.SET_NULL, related_name="head_fashion_report", null=True)
     body = models.ForeignKey(FashionReportOutfit, on_delete=models.SET_NULL, related_name="body_fashion_report", null=True)
     gloves = models.ForeignKey(FashionReportOutfit, on_delete=models.SET_NULL, related_name="gloves_fashion_report", null=True)

@@ -77,59 +77,54 @@ def search_id(glamour_id):
         return "Error: {},未能找到id信息".format(type(e))
 
 
-def result_to_img(result, glamour_id, bot_version):
+def result_to_img(result, glamour_id):
     try:
-        if bot_version == "air" and False:
-            msg = "此机器人版本为Air无法发送图片,请前往原地址查看\nhttps://www.ffxivsc.cn/page/glamour.html?glamourId={}".format(
-                glamour_id
+        text = u"{}".format(result["sc"])
+        tittle = u"{}".format(result["tittle"])
+        itd = u"{}".format(result["introduction"])
+        tmp = list(itd)
+        t = 50
+        while t < len(tmp):
+            tmp.insert(t, "\n")
+            t += 50
+        itd = "".join(tmp)
+        race = u"{}".format(result["race"])
+        img = urllib.request.urlopen(result["img"])
+        file = io.BytesIO(img.read())
+        pic_foo = Image.open(file)
+        pic_foo = pic_foo.resize((521, 1000), Image.ANTIALIAS)
+        logo = Image.open(
+            os.path.join(
+                os.path.dirname(os.path.abspath(__file__)),
+                "resources/image/logoBlack.jpg",
             )
-        else:
-            text = u"{}".format(result["sc"])
-            tittle = u"{}".format(result["tittle"])
-            itd = u"{}".format(result["introduction"])
-            tmp = list(itd)
-            t = 50
-            while t < len(tmp):
-                tmp.insert(t, "\n")
-                t += 50
-            itd = "".join(tmp)
-            race = u"{}".format(result["race"])
-            img = urllib.request.urlopen(result["img"])
-            file = io.BytesIO(img.read())
-            pic_foo = Image.open(file)
-            pic_foo = pic_foo.resize((521, 1000), Image.ANTIALIAS)
-            logo = Image.open(
-                os.path.join(
-                    os.path.dirname(os.path.abspath(__file__)),
-                    "resources/image/logoBlack.jpg",
-                )
-            )
-            im = Image.new("RGB", (2000, 1000), (255, 255, 255))
-            im.paste(pic_foo)
-            im.paste(logo, (1825, 925))
-            dr = ImageDraw.Draw(im)
-            font = ImageFont.truetype(
-                os.path.join(
-                    os.path.dirname(os.path.abspath(__file__)),
-                    "resources/font/msyh.ttc",
-                ),
-                28,
-            )
-            dr.text(
-                (600, 50),
-                tittle + "\n\n" + itd + "\n\n" + race + "\n\n" + text,
-                font=font,
-                fill="#000000",
-            )
-            t = (
-                time.strftime("%Y-%m-%d_%H:%M:%S", time.localtime())
-                + str(time.time() - int(time.time()))[2:4]
-            )
-            output_buffer = io.BytesIO()
-            im.save(output_buffer, format="JPEG")
-            byte_data = output_buffer.getvalue()
-            base64_str = base64.b64encode(byte_data).decode("utf-8")
-            msg = "[CQ:image,file=base64://{}]\n".format(base64_str)
+        )
+        im = Image.new("RGB", (2000, 1000), (255, 255, 255))
+        im.paste(pic_foo)
+        im.paste(logo, (1825, 925))
+        dr = ImageDraw.Draw(im)
+        font = ImageFont.truetype(
+            os.path.join(
+                os.path.dirname(os.path.abspath(__file__)),
+                "resources/font/msyh.ttc",
+            ),
+            28,
+        )
+        dr.text(
+            (600, 50),
+            tittle + "\n\n" + itd + "\n\n" + race + "\n\n" + text,
+            font=font,
+            fill="#000000",
+        )
+        t = (
+            time.strftime("%Y-%m-%d_%H:%M:%S", time.localtime())
+            + str(time.time() - int(time.time()))[2:4]
+        )
+        output_buffer = io.BytesIO()
+        im.save(output_buffer, format="JPEG")
+        byte_data = output_buffer.getvalue()
+        base64_str = base64.b64encode(byte_data).decode("utf-8")
+        msg = "[CQ:image,file=base64://{}]\n".format(base64_str)
         return msg
     except Exception as e:
         return "Error: {},封面图丢失,请前往原地址查看\nhttps://www.ffxivsc.cn/page/glamour.html?glamourId={}".format(
@@ -137,7 +132,7 @@ def result_to_img(result, glamour_id, bot_version):
         )
 
 
-def search_jr(job, race, sex, sort, time, bot_version, item_name, item_flag=False):
+def search_jr(job, race, sex, sort, time, item_name, item_flag=False):
     try:
         headers = {
             "Host": "api.ffxivsc.cn",
@@ -161,9 +156,9 @@ def search_jr(job, race, sex, sort, time, bot_version, item_name, item_flag=Fals
             i = random.randint(0, len(r["array"]) - 1)
             glamour_id = r["array"][i]["glamourId"]
             result = search_id(glamour_id)
-            img = result_to_img(result, glamour_id, bot_version)
+            img = result_to_img(result, glamour_id)
         else:
-            print(r)
+            # print(r)
             img = "未能筛选到结果，请尝试更改筛选信息，\n职业：{}\n种族：{}\n性别：{}\n装备名称：{}".format(
                 job, race, sex, item_name
             )
@@ -183,11 +178,6 @@ def QQCommand_hh(*args, **kwargs):
         item_name = ""
         item_flag = False
         receive_msg = receive["message"].replace("/hh", "", 1).strip()
-        bot_version = (
-            json.loads(bot.version_info)["coolq_edition"]
-            if bot.version_info != "{}"
-            else "air"
-        )
         if receive_msg.find("help") == 0 or receive_msg == "":
             msg = (
                 "/hh [职业] [种族] [性别] : 随机返回至少一个参数的幻化\n"
@@ -270,7 +260,7 @@ def QQCommand_hh(*args, **kwargs):
             if not sex:
                 sex = "0"  # sex = "all"
             msg = search_jr(
-                job, race, sex, sort, time, bot_version, item_name, item_flag
+                job, race, sex, sort, time, item_name, item_flag
             )
         msg = msg.strip()
         if msg:

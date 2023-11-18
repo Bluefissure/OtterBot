@@ -36,7 +36,7 @@ def qqpost(req):
         error_msg = "Request not handled"
         try:
             bot = QQBot.objects.get(user_id=self_id)
-            assert bot.api_post_url
+            assert bot.api_post_url, f"{bot} does not provide api url"
         except QQBot.DoesNotExist:
             # print("bot {} does not exist".format(self_id))
             error_msg = "Bot {} does not exist".format(self_id)
@@ -47,7 +47,7 @@ def qqpost(req):
             pub = PikaPublisher()
             sig = hmac.new(str(bot.access_token).encode(), req.body, 'sha1').hexdigest()
             received_sig = req.META.get("HTTP_X_SIGNATURE", "NULL")[len('sha1='):]
-            print("sig:{}\nreceived_sig:{}".format(sig, received_sig))
+            # print("sig:{}\nreceived_sig:{}".format(sig, received_sig))
             if (sig == received_sig):
                 # print("QQBot {}:{} authencation success".format(bot, self_id))
                 if "post_type" in receive.keys():
@@ -107,7 +107,8 @@ def qqpost(req):
                             text_data = json.dumps(receive)
                             pub.send(text_data, priority)
                             return HttpResponse("Request sent to MQ", status=200)
-
+                        if receive["post_type"] == "meta_event" and receive["meta_event_type"] == "heartbeat":
+                            return HttpResponse("Heartbeat OK", status=200)
                     except Exception as e:
                         traceback.print_exc()
                         LOGGER.error(e)
@@ -163,7 +164,7 @@ def qqpost(req):
                                 )
                     # bot.save()
             else:
-                print("QQBot {}:{} authencation failed".format(bot, self_id))
+                LOGGER.error("QQBot {}:{} authencation failed".format(bot, self_id))
                 return HttpResponse("Wrong HTTP_X_SIGNATURE", status=401)
         LOGGER.error(f"error_msg:{error_msg}")
         return HttpResponse(error_msg, status=500)

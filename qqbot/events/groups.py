@@ -35,6 +35,7 @@ def on_group_at_message_create(message, qqbot: QQBot):
             ark = msg_object["ark"]
         else:
             msg = msg_object["message"]
+            msg = re.sub(r"https://garlandtools.cn/db/#item/\d+", "", msg)
     if content.startswith("/market") or content.startswith("/mitem"):
         args_str = content.replace("/mitem", "/market item").replace("/market", "").strip()
         args = args_str.split(" ")

@@ -10,7 +10,7 @@ import events
 from QQBot import QQBot
 
 _log = logging.getLogger()
-_log.setLevel(logging.INFO)
+_log.setLevel(logging.DEBUG)
 
 ch = logging.StreamHandler()
 formatter = logging.Formatter('%(asctime)s -%(levelname)s- %(message)s')

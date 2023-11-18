@@ -4,10 +4,13 @@ import time
 import os
 import re
 import requests
+import logging
 from channels.layers import get_channel_layer
 from channels.exceptions import StopConsumer
 from asgiref.sync import async_to_sync
 from .models import QQGroup, QQBot, QQUser
+
+LOGGER = logging.getLogger(__name__)
 
 
 class ApiCaller(object):
@@ -41,8 +44,16 @@ class ApiCaller(object):
 
     def call_api(self, action, params, echo=None, **kwargs):
         bot = self.bot
+        try:
+            version_info = json.loads(bot.version_info)
+        except json.decoder.JSONDecodeError:
+            version_info = {}
+        user_agent = version_info.get("user_agent", "")
         if "async" not in action and not echo:
             action = action + "_async"
+        # Shamrock doesn't support async actions
+        if "Shamrock" in user_agent:
+            action = action.replace("_async", "")
         if "send_" in action and "_msg" in action:
             params["message"] = self.handle_message(params["message"])
         jdata = {"action": action, "params": params}

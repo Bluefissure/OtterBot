@@ -93,16 +93,13 @@ class WSConsumer(AsyncWebsocketConsumer):
                 LOGGER.error("Unkown client_role: {}".format(client_role))
                 await self.close()
                 return
-            if (
-                "CQHttp" not in user_agent
-                and "MiraiHttp" not in user_agent
-                and "OneBot" not in user_agent
-            ):
+            allowed_user_agent = ["CQHttp", "MiraiHttp", "OneBot", "Shamrock"]
+            if not any([ua in user_agent for ua in allowed_user_agent]):
                 LOGGER.error(
                     "Unknown user_agent: {} for {}".format(user_agent, ws_self_id)
                 )
                 return
-            elif "CQHttp" in user_agent:
+            if "CQHttp" in user_agent:
                 version = user_agent.replace("CQHttp/", "").split(".")
                 if version < "4.14.1".split("."):
                     LOGGER.error(
@@ -112,6 +109,8 @@ class WSConsumer(AsyncWebsocketConsumer):
             elif "OneBot" in user_agent and "Bearer" in ws_access_token:
                 # onebot基于rfc6750往token加入了Bearer
                 ws_access_token = ws_access_token.replace("Bearer", "").strip()
+            elif "Shamrock" in user_agent:
+                ws_access_token = ws_access_token.replace("Bearer", "").replace("bearer", "").strip()
             else:
                 LOGGER.error(f"Unkown UA: {user_agent}")
                 await self.close()
@@ -133,12 +132,13 @@ class WSConsumer(AsyncWebsocketConsumer):
                 self.bot.event_time = int(time.time())
                 self.bot.api_channel_name = self.channel_name
                 self.bot.event_channel_name = self.channel_name
+                self.bot.version_info = json.dumps({"user_agent": user_agent})
                 LOGGER.info(
                     "New Universal Connection: %s of bot %s"
                     % (self.channel_name, self.bot.user_id)
                 )
                 await sync_to_async(self.bot.save, thread_sensitive=True)(
-                    update_fields=["event_time", "api_channel_name", "event_channel_name"]
+                    update_fields=["event_time", "api_channel_name", "event_channel_name", "version_info"]
                 )
             except CancelledError as e:
                 LOGGER.error(
@@ -292,7 +292,12 @@ class WSConsumer(AsyncWebsocketConsumer):
                     self.bot.friend_list = json.dumps(receive["data"])
                     await sync_to_async(self.bot.save)(update_fields=["friend_list"])
                 if "get_version_info" in echo:
-                    self.bot.version_info = json.dumps(receive["data"])
+                    try:
+                        version_data = json.loads(self.bot.version_info)
+                    except json.decoder.JSONDecodeError:
+                        version_data = {}
+                    version_data.update(receive["data"])
+                    self.bot.version_info = json.dumps(version_data)
                     await sync_to_async(self.bot.save)(update_fields=["version_info"])
                 if "get_status" in echo:
                     user_id = echo.split(":")[1]
