@@ -333,29 +333,31 @@ module.exports = {{
     return bot_conf
 
 
-def get_bot_version(obj: dict):
-    ver = ""
-    if obj.get("go-cqhttp"):
-        ver = "go-cqhttp"
-    elif obj.get("app_name"):
-        name = obj.get("app_name")
-        if name.find("onebot-mirai") != -1:
-            ver = "Mirai"
-        elif name.find("cqhttp-mirai") != -1:
-            ver = "Mirai\n(Low)"
-        elif name.find("oicq") != -1:
-            ver = "OICQ"
-    elif obj.get("name"):
-        name = obj.get("name")
-        if name.find("oicq") != -1:
-            ver = "OICQ"
-    elif obj.get("coolq_directory"):
-        dire = obj.get("coolq_directory")
-        if dire.find("CQHTTPMirai") != -1:
-            ver = "Mirai\n(Low)"
-        if dire.find("jre\\bin") != -1:
-            ver = "Mirai\n(Native)"
-    return ver
+def get_bot_version(version_info: dict):
+    ua = version_info.get("user_agent", "").lower()
+    if "shamrock" in ua:
+        return "Shamrock"
+    if version_info.get("go-cqhttp"):
+        return "go-cqhttp"
+    if version_info.get("app_name"):
+        name = version_info.get("app_name").lower()
+        if "onebot-mirai" in name:
+            return "Mirai"
+        if "cqhttp-mirai" in name:
+            return "Mirai\n(Low)"
+        if "oicq" in name:
+            return "OICQ"
+    if version_info.get("name"):
+        name = version_info.get("name").lower()
+        if "oicq" in name:
+            return "OICQ"
+    if version_info.get("coolq_directory"):
+        coolq_dir = version_info.get("coolq_directory")
+        if "CQHTTPMirai" in coolq_dir:
+            return "Mirai\n(Low)"
+        if "jre\\bin" in coolq_dir:
+            return "Mirai\n(Native)"
+    return ""
 
 def mask_id(user_id):
     mid = len(user_id) // 2

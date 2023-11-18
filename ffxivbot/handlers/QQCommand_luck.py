@@ -20,10 +20,7 @@ def QQCommand_luck(*args, **kwargs):
         luck_data = LuckData.objects.filter(number=random_num)
         if luck_data.exists():
             luck_data = luck_data.first()
-            bot_version = (json.loads(bot.version_info).get("coolq_edition", "pro").lower()
-                           if bot.version_info != '{}'
-                           else "pro")
-            if bot_version == "pro" and "text" not in receive["message"]:
+            if "text" not in receive["message"]:
                 img = luck_data.img_url
                 msg = "[CQ:at,qq=%s]\n" % user_id + "[CQ:image,file={}]".format(img)
             else:

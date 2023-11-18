@@ -146,7 +146,12 @@ def qqpost(req):
                             bot.friend_list = json.dumps(receive["data"])
                             bot.save(update_fields=["friend_list"])
                         if echo.find("get_version_info") == 0:
-                            bot.version_info = json.dumps(receive["data"])
+                            try:
+                                version_data = json.loads(receive["data"])
+                            except json.decoder.JSONDecodeError:
+                                version_data = {}
+                            version_data.udpate(receive["data"])
+                            bot.version_info = json.dumps(version_data)
                             bot.save(update_fields=["version_info"])
                         if echo.find("get_status") == 0:
                             user_id = echo.split(":")[1]
