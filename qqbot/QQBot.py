@@ -35,6 +35,8 @@ class QQBot(object):
         if time.time() >= self.expiration:
             self._log.info('Refreshing token...')
             self._get_token()
+        else:
+            self._log.debug('Token still valid, expires in %s seconds', int(self.expiration - time.time()))
 
     def _get_token(self):
         token_url = "https://bots.qq.com/app/getAppAccessToken"
@@ -45,7 +47,7 @@ class QQBot(object):
         self._log.info(response.json())
         self.token = response.json()['access_token']
         self.expiration = time.time() + int(response.json()['expires_in'])
-        self._log.info('Token refreshed, expires in %s',
+        self._log.info('Token refreshed, expires in %s seconds',
                        response.json()['expires_in'])
 
     @property
@@ -120,12 +122,23 @@ class QQBot(object):
         self._spawn_heartbeat()
 
     async def try_login(self):
+        self._log.info('Try logging in...')
         await self.ws.send(json.dumps({
             "op": 2,
             "d": {
                 "token": f"QQBot {self.token}",
                 "intents": self.intents,
                 "shard": [0, 1],
+            }}))
+
+    async def reconnect(self):
+        self._log.info('Try reconnecting...')
+        await self.ws.send(json.dumps({
+            "op": 6,
+            "d": {
+                "token": f"QQBot {self.token}",
+                "session_id": self.session_id,
+                "seq": self.s,
             }}))
 
     def send_group_message(self, group_id: str, content: str, reply_msg_id: str = "", image: str = None):
@@ -176,18 +189,24 @@ class QQBot(object):
 
     async def handle(self, message: dict):
         op = message['op']
+        s = message.get('s', -1)
+        if s > -1:
+            self.s = s
         if op == 10:
             self._log.debug('QQ says hello.')
             if not self.logged_in:
-                self._log.info('Try logging in...')
                 await self.try_login()
+        elif op == 7:
+            self._log.debug('QQ requires reconnect.')
+            await self.reconnect()
         elif op == 0:
             t = message['t']
-            self.s = message['s']
             if t == 'READY':
                 if not self.logged_in:
                     self._logged_in(message['d'])
                     self._log.info('%s logged in.', self)
+            elif t == "RESUMED":
+                self._log.info('%s resumed.', self)
             elif t in self._subscriptions:
                 for func in self._subscriptions[t]:
                     func(message)
