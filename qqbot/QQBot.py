@@ -4,32 +4,50 @@ import asyncio
 import threading
 import time
 import requests
+import websockets
 import inspect
 from collections import defaultdict
-from consts import EVENT_INTENT
+from consts import EVENT_INTENT, ClientState
 
 class QQBot(object):
-    def __init__(self, config, ws) -> None:
+    def __init__(self, config) -> None:
         self.token = None
         self.expiration = 0
         self.config = config
         self.app_id = str(config['app_id'])
-        self.ws = ws
+        self.ws = None
         self._s = 0
         self.username = 'Unknown QQBot'
         self.bot = True
         self.version = None
         self.session_id = None
         self.id = None
-        self.logged_in = False
         self._log = logging.getLogger('QQBot')
         self.http = requests.Session()
         self._heartbeat_thread = None
         self._subscriptions = defaultdict(list)
+        self._state = ClientState.INIT
         self._refresh_token()
 
     def __str__(self) -> str:
         return f'QQBot {self.username}'
+
+    async def run(self):
+        reconnect_count = 0
+        while reconnect_count < 50:
+            try:
+                self._log.info('Connecting to QQ...')
+                async with websockets.connect("wss://api.sgroup.qq.com/websocket/") as websocket:
+                    self.ws = websocket
+                    async for message in websocket:
+                        jdata = json.loads(message)
+                        await self.handle(jdata)
+            except websockets.exceptions.ConnectionClosedError:
+                self._log.info('Connection closed, try reconnecting...')
+                reconnect_count += 1
+            except Exception as e:
+                raise e
+
 
     def _refresh_token(self):
         if time.time() >= self.expiration:
@@ -73,22 +91,17 @@ class QQBot(object):
     def s(self) -> int:
         return self._s
 
-    @property
-    def log(self):
-        return self._log
-
     @s.setter
     def s(self, value: int):
         self._s = value
 
+    @property
+    def log(self):
+        return self._log
 
     async def _heartbeat(self):
         first_hearbeat = True
-        session_id = self.session_id
         while True:
-            if self.session_id != session_id:
-                self._log.debug('%s session id changed.', self)
-                break
             self._refresh_token()
             await self.ws.send(json.dumps({
                 "op": 1,
@@ -116,8 +129,8 @@ class QQBot(object):
         self.bot = user['bot']
         self.username = user['username']
 
-    def _logged_in(self, ready_data: dict):
-        self.logged_in = True
+    def _on_ready(self, ready_data: dict):
+        self._state = ClientState.READY
         self._update_info(ready_data)
         self._spawn_heartbeat()
 
@@ -190,22 +203,24 @@ class QQBot(object):
     async def handle(self, message: dict):
         op = message['op']
         s = message.get('s', -1)
-        if s > -1:
+        if self._state == ClientState.READY and s > -1:
             self.s = s
         if op == 10:
             self._log.debug('QQ says hello.')
-            if not self.logged_in:
+            if self._state == ClientState.INIT:
                 await self.try_login()
+            elif self._state == ClientState.RECONNECT:
+                await self.reconnect()
         elif op == 7:
             self._log.debug('QQ requires reconnect.')
-            await self.reconnect()
+            self._state = ClientState.RECONNECT
         elif op == 0:
             t = message['t']
             if t == 'READY':
-                if not self.logged_in:
-                    self._logged_in(message['d'])
-                    self._log.info('%s logged in.', self)
+                self._on_ready(message['d'])
+                self._log.info('%s is ready.', self)
             elif t == "RESUMED":
+                self._state = ClientState.READY
                 self._log.info('%s resumed.', self)
             elif t in self._subscriptions:
                 for func in self._subscriptions[t]:

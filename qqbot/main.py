@@ -22,20 +22,13 @@ BOT_CONFIG = None
 with open("config.yaml", "r", encoding='utf-8') as f:
     BOT_CONFIG = yaml.load(f, Loader=yaml.FullLoader)
 
-async def handler(websocket):
-    Q = QQBot(BOT_CONFIG, websocket)
-    Q.subscribe(events)
-    async for message in websocket:
-        jdata = json.loads(message)
-        await Q.handle(jdata)
-
-
 async def main():
     while True:
         try:
             _log.info("=== OtterBot QQ Bot v0.0.0.1 ===")
-            async with websockets.connect("wss://api.sgroup.qq.com/websocket/") as ws:
-                await handler(ws)
+            Q = QQBot(BOT_CONFIG)
+            Q.subscribe(events)
+            await Q.run()
         except Exception as e:
             _log.error(e)
             traceback.print_exc()

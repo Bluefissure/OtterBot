@@ -52,3 +52,7 @@ for k, v in INTENT_EVENT.items():
     for vv in v:
         EVENT_INTENT[vv] = k
 
+class ClientState(Enum):
+    INIT = 0
+    READY = 1
+    RECONNECT = 2
