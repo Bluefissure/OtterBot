@@ -1,11 +1,8 @@
 import json
 import re
-import requests
-import urllib.parse
-import os
 import logging
 from QQBot import QQBot
-from .guilds import handle_quest, handle_search, handle_market
+from .guilds import handle_quest, handle_search, handle_market, handle_luck
 
 _log = logging.getLogger("QQBot Groups")
 
@@ -13,6 +10,7 @@ def on_group_at_message_create(message, qqbot: QQBot):
     _log.info(json.dumps(message, indent=2, ensure_ascii=False))
     data = message['d']
     group_id = data['group_openid']
+    user_id = data['author']['member_openid']
     content = re.sub(r"<@!.*>", "", data['content']).strip()
     msg = None
     image = None
@@ -42,6 +40,13 @@ def on_group_at_message_create(message, qqbot: QQBot):
         while '' in args:
             args.remove('')
         msg_object = handle_market(args)
+        msg = msg_object["message"]
+    if content.startswith("/luck"):
+        args_str = content.replace("/luck", "").strip()
+        args = args_str.split(" ")
+        while '' in args:
+            args.remove('')
+        msg_object = handle_luck(args, user_id)
         msg = msg_object["message"]
     if msg:
         qqbot.log.info(msg)

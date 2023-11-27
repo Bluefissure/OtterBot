@@ -68,7 +68,7 @@ def reply_message_action(receive, msg):
             "data": {"id": receive["message_id"]}
         })
     else:
-        msg += f"[CQ:reply,id={receive['message_id']}]"
+        msg = f"[CQ:reply,id={receive['message_id']}] " + msg
     if receive["message_type"] == "group":
         action.update(
             {

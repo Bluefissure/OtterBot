@@ -9,6 +9,7 @@ from ffxivbot.models import QQUser, Territory, Weather, Boss, Job, Server, QQBot
 from ffxivbot.handlers.QQUtils import getSpecificWeatherTimes, getFollowingWeathers, crawl_dps, search_item
 from ffxivbot.handlers.QQCommand_quest import search_quest
 from ffxivbot.handlers.QQCommand_market import get_market_data, handle_item_name_abbr, handle_server_name_abbr
+from ffxivbot.handlers.QQCommand_luck import luck_daily
 from ffxivbot.views.tata import get_bot_version, mask_id
 
 REDIST_URL = "localhost" if os.environ.get('IS_DOCKER', '') != 'Docker' else 'redis'
@@ -305,7 +306,16 @@ def webapi(req):
                     "rcode": "1060",
                     "msg": "Exception thrown, please check api server.",
                 }
-    
+        elif request_type == "luck":  # 107X
+            user_id = req_data["user_id"]
+            redraw = req_data.get("redraw", False)
+            luck_reply = luck_daily(user_id, redraw)
+            res_dict = {
+                "response": "success",
+                "msg": "",
+                "rcode": "0",
+                "data": luck_reply,
+            }
     except json.decoder.JSONDecodeError:
         res_dict = {"response": "error", "msg": "JSON decode error", "rcode": "103"}
     except KeyError:

@@ -67,7 +67,9 @@ Powered by universalis"""
     msg = help_msg
     if len(command_seg) == 0 or command_seg[0].lower() == "help":
         return { "message": msg }
-    elif command_seg[0].lower() == "item":
+    elif command_seg[0].lower() == "item" or len(command_seg) == 2:
+        if len(command_seg) == 2:
+            command_seg = ["item"] + command_seg
         if len(command_seg) != 3:
             msg = "参数错误：\n/market item $name $server: 查询$server服务器的$name物品交易数据"
             return { "message": msg }
@@ -102,10 +104,40 @@ Powered by universalis"""
 4.如果您使用过Teamcraft客户端，您也可以使用其进行上传"""
     return { "message": msg }
 
+
+def handle_luck(command_seg, user_id):
+    help_msg = """使用命令 /luck 获得今日艾欧泽亚运势
+对结果不满意，可以使用\"/luck r\"来重抽
+重构自：onebot_Astrologian_FFXIV"""
+    msg = help_msg
+    if len(command_seg) > 1 and command_seg[0].lower() == "help":
+        return { "message": msg }
+    else:
+        if len(command_seg) == 0:
+            redraw = False
+        else:
+            redraw = command_seg[0].lower() in ("r", "redraw")
+        post_data = {
+            "request": "luck",
+            "data": {
+                "user_id": user_id,
+                "redraw": redraw,
+            }
+        }
+        r = requests.post(API_BASE, json=post_data)
+        ret_data = r.json()
+        _log.debug(json.dumps(ret_data, indent=2))
+        if ret_data['rcode'] == '0':
+            msg = ret_data['data']
+        else:
+            msg = 'API error, please check log.'
+    return { "message": msg }
+
 def on_at_message_create(message, qqbot):
     _log.info(json.dumps(message, indent=2, ensure_ascii=False))
     data = message['d']
     channel_id = data['channel_id']
+    user_id = data['author']['id']
     content = re.sub(r"<@!.*>", "", data['content']).strip()
     msg = None
     image = None
@@ -134,6 +166,13 @@ def on_at_message_create(message, qqbot):
         while '' in args:
             args.remove('')
         msg_object = handle_market(args)
+        msg = msg_object["message"]
+    if content.startswith("/luck"):
+        args_str = content.replace("/luck", "").strip()
+        args = args_str.split(" ")
+        while '' in args:
+            args.remove('')
+        msg_object = handle_luck(args, user_id)
         msg = msg_object["message"]
     if msg:
         qqbot.log.info(msg)
