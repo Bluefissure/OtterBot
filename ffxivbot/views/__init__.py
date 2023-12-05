@@ -15,3 +15,4 @@ from .register import register
 from .logout import logout
 from .dalamud_feedback import dalamud_feedback
 from .szj import szj_auth
+from .redirect import redirect

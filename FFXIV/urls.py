@@ -43,6 +43,7 @@ urlpatterns = [
     path('hunt/bird/', hunt_bird),
     path('hunt/relay/', hunt_relay),
     path('housing/api', housing_api),
+    path('redirect/<slug:slug>', redirect),
     re_path(r'^oauth/qq/login/$', qq_login, name='qq_login'),
     re_path(r'^api/qqcallback', qq_check, name='qq_check'),
     re_path(r'^oauth/xivid/login/$', xivid_auth, name='xivid_auth'),
