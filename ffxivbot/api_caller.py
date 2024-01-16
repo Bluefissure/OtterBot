@@ -49,6 +49,20 @@ class ApiCaller(object):
                     },
                 }
             )
+        reply_ptn = r"\[CQ:reply,id=(\d+)\]"
+        reply_match = re.search(reply_ptn, msg)
+        if reply_match:
+            reply_id = reply_match.group(1)
+            msg = re.sub(reply_ptn, "", msg)
+            msg_list.append(
+                {
+                    "type": "reply",
+                    "data": {
+                        "id": reply_id,
+                    },
+                }
+            )
+        msg = msg.strip()
         if msg:
             msg_list.append(
                 {
@@ -58,7 +72,6 @@ class ApiCaller(object):
                     },
                 }
             )
-        print("msg_list:{}".format(json.dumps(msg_list, indent=2)))
         return msg_list
 
 

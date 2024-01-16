@@ -72,7 +72,7 @@ def get_round_ending():
     if now_time < SOME_ROUND_ENDING:
         return SOME_ROUND_ENDING
     ending = SOME_ROUND_ENDING
-    while ending + 86400 * 9 < now_time:
+    while ending < now_time:
         ending += 86400 * 9
     return ending
 
