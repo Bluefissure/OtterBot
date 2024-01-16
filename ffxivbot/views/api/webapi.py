@@ -10,6 +10,7 @@ from ffxivbot.handlers.QQUtils import getSpecificWeatherTimes, getFollowingWeath
 from ffxivbot.handlers.QQCommand_quest import search_quest
 from ffxivbot.handlers.QQCommand_market import get_market_data, handle_item_name_abbr, handle_server_name_abbr
 from ffxivbot.handlers.QQCommand_luck import luck_daily
+from ffxivbot.handlers.QQCommand_house import get_house_data
 from ffxivbot.views.tata import get_bot_version, mask_id
 
 REDIST_URL = "localhost" if os.environ.get('IS_DOCKER', '') != 'Docker' else 'redis'
@@ -315,6 +316,18 @@ def webapi(req):
                 "msg": "",
                 "rcode": "0",
                 "data": luck_reply,
+            }
+        elif request_type == "house":  # 108X
+            server = req_data["server"]
+            area = req_data.get("area", "")
+            size = req_data.get("size", "")
+            r_type = req_data.get("r_type", "")
+            house_response = get_house_data(server, area, size, r_type)
+            res_dict = {
+                "response": "success",
+                "msg": "",
+                "rcode": "0",
+                "data": house_response,
             }
     except json.decoder.JSONDecodeError:
         res_dict = {"response": "error", "msg": "JSON decode error", "rcode": "103"}

@@ -18,7 +18,51 @@ class ApiCaller(object):
         self.bot = bot
         self.channel_layer = get_channel_layer()
 
-    def handle_message(self, message):
+    def serialize_cq(self, message):
+        if not isinstance(message, str):
+            return message
+        msg = message
+        msg_list = []
+        at_ptn = r"\[CQ:at,qq=(.*)\]"
+        at_match = re.search(at_ptn, msg)
+        if at_match:
+            at_user = at_match.group(1)
+            msg = re.sub(at_ptn, "".format(at_user), msg)
+            msg_list.append(
+                {
+                    "type": "at",
+                    "data": {
+                        "qq": at_user,
+                    },
+                }
+            )
+        img_pattern = r"\[CQ:image,(?:cache=.,)?file=(.*?)(?:\]|,.*?\])"
+        img_match = re.search(img_pattern, msg)
+        if img_match:
+            img_url = img_match.group(1)
+            msg = re.sub(img_pattern, "", msg)
+            msg_list.append(
+                {
+                    "type": "image",
+                    "data": {
+                        "file": img_url,
+                    },
+                }
+            )
+        if msg:
+            msg_list.append(
+                {
+                    "type": "text",
+                    "data": {
+                        "text": msg,
+                    },
+                }
+            )
+        print("msg_list:{}".format(json.dumps(msg_list, indent=2)))
+        return msg_list
+
+
+    def handle_message(self, message, user_agent):
         bot = self.bot
         new_message = message
         if isinstance(message, list):
@@ -40,6 +84,8 @@ class ApiCaller(object):
                     )
                 else:
                     new_message.append(msg)
+        if "Lagrange" in user_agent and isinstance(new_message, str):
+            new_message = self.serialize_cq(new_message)
         return new_message
 
     def call_api(self, action, params, echo=None, **kwargs):
@@ -52,10 +98,11 @@ class ApiCaller(object):
         if "async" not in action and not echo:
             action = action + "_async"
         # Shamrock doesn't support async actions
-        if "Shamrock" in user_agent:
+        sync_ua_list = ["Shamrock", "Lagrange"]
+        if any(ua in user_agent for ua in sync_ua_list):
             action = action.replace("_async", "")
         if "send_" in action and "_msg" in action:
-            params["message"] = self.handle_message(params["message"])
+            params["message"] = self.handle_message(params["message"], user_agent)
         jdata = {"action": action, "params": params}
         if echo:
             jdata["echo"] = echo

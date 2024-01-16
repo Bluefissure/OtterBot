@@ -21,6 +21,7 @@ commands = {
     #"/treasure": "宝图搜寻",
     "/search": '查询物品("/search 神龙")',
     "/market": '交易板数据("/market item 2级刚力之幻药")',
+    "/house": '房屋数据("/house 萌芽池 沙")',
     "/weather": '天气信息("/weather 优雷卡恒冰之地")',
     "/fsx": '副属性计算（"/fsx 直击"）',
     "/dps": 'DPS排名（"/dps 8s 骑士"）',
@@ -116,6 +117,7 @@ from .QQCommand_dps import QQCommand_dps
 from .QQCommand_fsx import QQCommand_fsx
 from .QQCommand_gate import QQCommand_gate
 from .QQCommand_market import QQCommand_market
+from .QQCommand_house import QQCommand_house
 from .QQCommand_nuannuan import QQCommand_nuannuan
 from .QQCommand_ofish import QQCommand_ofish
 from .QQCommand_quest import QQCommand_quest
