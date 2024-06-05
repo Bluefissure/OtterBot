@@ -56,6 +56,8 @@ def handle_search(item_name):
         return { "message": ret_msg.strip() }
     ret_data = ret_data["data"]
     msg = "{}\n{}".format(ret_data["title"], ret_data["content"])
+    if "url" in ret_data:
+        msg += "\n{}".format(ret_data["url"])
     return {
         "message": msg,
     }
@@ -133,8 +135,86 @@ def handle_luck(command_seg, user_id):
             msg = 'API error, please check log.'
     return { "message": msg }
 
+
+def handle_house(command_seg):
+    help_msg = """/house $server ($area) ($size) ($type): 查询 $server 服务器的 $area 区域房源信息
+/house upload: 查询如何上传房源信息
+例：/house 萌芽池 海雾村 小 部队
+Powered by 艾欧泽亚售楼中心"""
+    msg = help_msg
+    if len(command_seg) == 0 or command_seg[0].lower() == "help":
+        return { "message": msg }
+    command_len = len(command_seg)
+    server_name = command_seg[0]
+    area = command_seg[1] if command_len >= 2 else ""
+    size = command_seg[2] if command_len >= 3 else ""
+    r_type = ""
+    for k in ("部队", "个人"):
+        if k in command_seg:
+            r_type = k
+            break
+    post_data = {
+        "request": "house",
+        "data": {
+            "server": server_name,
+            "area": area,
+            "size": size,
+            "r_type": r_type,
+        }
+    }
+    r = requests.post(API_BASE, json=post_data)
+    ret_data = r.json()
+    _log.debug(json.dumps(ret_data, indent=2))
+    if ret_data['rcode'] == '0':
+        msg = ret_data['data']
+    else:
+        msg = 'API error, please check log.'
+    return { "message": msg }
+
+def msg_to_markdown(page=1):
+    keyboard_payload = {
+        'keyboard': {
+            'id': '102006036_1704906854',
+        },
+        'markdown': {
+            'custom_template_id': '102006036_1701820636',
+            'params': [{
+                'key': 'title0',
+                'values': [f'标题{page}']
+            },{
+                'key': 'desc0',
+                'values': [f'简介{page}']
+            },{
+                'key': 'title1',
+                'values': [f'标题{page+1}']
+            },{
+                'key': 'desc1',
+                'values': [f'简介{page+1}']
+            },{
+                'key': 'title2',
+                'values': [f'标题{page+2}']
+            },{
+                'key': 'desc2',
+                'values': [f'简介{page+2}']
+            },{
+                'key': 'title3',
+                'values': [f'标题{page+3}']
+            },{
+                'key': 'desc3',
+                'values': [f'简介{page+3}']
+            },{
+                'key': 'title4',
+                'values': [f'标题{page+4}']
+            },{
+                'key': 'desc4',
+                'values': [f'简介{page+4}']
+            }],
+        },
+    }
+    return keyboard_payload
+
 def on_at_message_create(message, qqbot):
-    _log.info(json.dumps(message, indent=2, ensure_ascii=False))
+    _log.debug(json.dumps(message, indent=2, ensure_ascii=False))
     data = message['d']
     channel_id = data['channel_id']
     user_id = data['author']['id']
@@ -174,6 +254,17 @@ def on_at_message_create(message, qqbot):
             args.remove('')
         msg_object = handle_luck(args, user_id)
         msg = msg_object["message"]
+    if content.startswith("/house"):
+        args_str = content.replace("/house", "").strip()
+        args = args_str.split(" ")
+        while '' in args:
+            args.remove('')
+        msg_object = handle_house(args)
+        msg = msg_object["message"]
+    # Wait for template audit even in sandbox environment
+    if content.startswith("/markdown"):
+        qqbot.reply_channel_message(message, markdown=msg_to_markdown())
+        return
     if msg:
         qqbot.log.info(msg)
         if image:
@@ -181,3 +272,17 @@ def on_at_message_create(message, qqbot):
             qqbot.reply_channel_message(message, content=msg, image=image)
         else:
             qqbot.reply_channel_message(message, content=msg)
+
+
+def on_interaction_create(event, qqbot):
+    _log.info(json.dumps(event, indent=2, ensure_ascii=False))
+    d = event['d']
+    qqbot.ack_interaction(event)  # need to ask for permission
+    # if d['chat_type'] == 0:
+    #     page = 1
+    #     if d['data']['resolved']['button_data'] == 'nextPage':
+    #         page += 1
+    #     else:
+    #         page -= 1
+    #     markdown = msg_to_markdown(page)
+    #     qqbot.update_channel_markdown(event, markdown)

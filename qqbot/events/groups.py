@@ -2,7 +2,7 @@ import json
 import re
 import logging
 from QQBot import QQBot
-from .guilds import handle_quest, handle_search, handle_market, handle_luck
+from .guilds import handle_quest, handle_search, handle_market, handle_luck, handle_house, msg_to_markdown
 
 _log = logging.getLogger("QQBot Groups")
 
@@ -33,7 +33,8 @@ def on_group_at_message_create(message, qqbot: QQBot):
             ark = msg_object["ark"]
         else:
             msg = msg_object["message"]
-            msg = re.sub(r"https://garlandtools.cn/db/#item/\d+", "", msg)
+            # If you didn't add this domain to your trusted domain, you need to uncomment this line
+            # msg = re.sub(r"https://garlandtools.cn/db/#item/\d+", "", msg)
     if content.startswith("/market") or content.startswith("/mitem"):
         args_str = content.replace("/mitem", "/market item").replace("/market", "").strip()
         args = args_str.split(" ")
@@ -48,6 +49,16 @@ def on_group_at_message_create(message, qqbot: QQBot):
             args.remove('')
         msg_object = handle_luck(args, user_id)
         msg = msg_object["message"]
+    if content.startswith("/house"):
+        args_str = content.replace("/house", "").strip()
+        args = args_str.split(" ")
+        while '' in args:
+            args.remove('')
+        msg_object = handle_house(args)
+        msg = msg_object["message"]
+    if content.startswith("/markdown"):
+        qqbot.reply_group_message(message, markdown=msg_to_markdown())
+        return
     if msg:
         qqbot.log.info(msg)
         if image:

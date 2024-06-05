@@ -154,15 +154,35 @@ class QQBot(object):
                 "seq": self.s,
             }}))
 
-    def send_group_message(self, group_id: str, content: str, reply_msg_id: str = "", image: str = None):
+    def ack_interaction(self, event: dict):
+        d = event['d']
+        event_id = d['id']
+        self._log.debug('Acking interaction %s...', event_id)
+        response = requests.put(
+            f'{self.base_url}/interactions/{event_id}',
+            headers=self.headers,
+            json={'code': 0},
+            timeout=5,
+        )
+        self._log.debug('HTTP response: %s', response.text)
+
+    def send_group_message(self, group_id: str, content: str = None, reply_msg_id: str = "", image: str = None, markdown: dict = None):
         self._log.debug('Sending message %s to group %s...', content, group_id)
         post_data = {
             "content": content,
             "msg_type": 0,
         }
+        if image:
+            post_data['image'] = image
+        if markdown:
+            post_data = markdown
+            if 'content' not in post_data:
+                post_data['content'] = content or ''
+            if 'msg_type' not in post_data:
+                post_data['msg_type'] = 2
         if reply_msg_id:
             post_data['msg_id'] = reply_msg_id
-        self._log.debug('Post data: %s', json.dumps(post_data, indent=2))
+        self._log.debug(f"Post data to group: {json.dumps(post_data, indent=2)}")
         response = requests.post(
             f'{self.base_url}/v2/groups/{group_id}/messages',
             headers=self.headers,
@@ -171,21 +191,42 @@ class QQBot(object):
         )
         self._log.debug('HTTP response: %s', response.text)
 
-    def reply_group_message(self, message:dict, content: str, image: str = None):
+    def reply_group_message(self, message:dict, content: str = None, image: str = None, markdown: dict = None):
         data = message['d']
         group_id = data['group_openid']
         reply_msg_id = data['id']
-        self.send_group_message(group_id, content, reply_msg_id)
+        self.send_group_message(group_id, content, reply_msg_id, image, markdown)
+
+    def update_channel_markdown(self, event: dict, markdown: dict):
+        d = event['d']
+        event_id = d['id']
+        message_id = d['data']['resolved']['message_id']
+        channel_id = d['channel_id']
+        post_data = markdown
+        post_data['msg_id'] = message_id
+        # post_data['event_id'] = event_id
+        self._log.debug(f"Post data to channel: {json.dumps(post_data, indent=2, ensure_ascii=False)}")
+        response = requests.post(
+            f'{self.base_url}/channels/{channel_id}/messages',
+            headers=self.headers,
+            json=post_data,
+            timeout=5,
+        )
+        self._log.debug('HTTP response: %s', response.text)
+
     
-    def send_channel_message(self, channel_id: str, content: str, reply_msg_id=-1, image: str = None):
+    def send_channel_message(self, channel_id: str, content: str = None, reply_msg_id=-1, image: str = None, markdown: dict = None):
         self._log.debug('Sending message %s to channel %s...', content, channel_id)
         post_data = {
             "content": content,
         }
-        if reply_msg_id != -1:
-            post_data['msg_id'] = reply_msg_id
         if image:
             post_data['image'] = image
+        if reply_msg_id != -1:
+            post_data['msg_id'] = reply_msg_id
+        if markdown:
+            post_data = markdown
+        self._log.debug(f"Post data to channel: {json.dumps(post_data, indent=2)}")
         response = requests.post(
             f'{self.base_url}/channels/{channel_id}/messages',
             headers=self.headers,
@@ -194,11 +235,11 @@ class QQBot(object):
         )
         self._log.debug('HTTP response: %s', response.text)
     
-    def reply_channel_message(self, message:dict, content: str, image: str = None):
+    def reply_channel_message(self, message: dict, content: str = None, image: str = None, markdown: dict = None):
         data = message['d']
         channel_id = data['channel_id']
         reply_msg_id = data['id']
-        self.send_channel_message(channel_id, content, reply_msg_id)
+        self.send_channel_message(channel_id, content, reply_msg_id, image, markdown)
 
     async def handle(self, message: dict):
         op = message['op']
@@ -258,6 +299,14 @@ class QQBot(object):
         return wrap
 
     def on_group_at_message_create(self, func: callable):
+        def wrap(*args, **kwargs):
+            func_meta = inspect.getfullargspec(func)
+            if "qqbot" in func_meta.args:
+                kwargs['qqbot'] = self
+            func(*args, **kwargs)
+        return wrap
+
+    def on_interaction_create(self, func: callable):
         def wrap(*args, **kwargs):
             func_meta = inspect.getfullargspec(func)
             if "qqbot" in func_meta.args:
