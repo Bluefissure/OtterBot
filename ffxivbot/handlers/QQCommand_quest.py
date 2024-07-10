@@ -13,7 +13,7 @@ from queue import Queue
 def bfs_quest(quest):
     Q = Queue()
     Q.put(quest)
-    now_main_scenario = "Endwalker主线任务(6.0)"
+    now_main_scenario = "Dawntrail 主线任务(7.0)"
     # back search
     back_cnt = 0
     visited = set()

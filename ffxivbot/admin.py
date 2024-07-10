@@ -89,6 +89,7 @@ class PlotQuestAdmin(admin.ModelAdmin):
     list_display = ["id", "name", "quest_type", "endpoint", "endpoint_desc"]
     search_fields = ["id", "name"]
     list_filter = ["quest_type", "is_deprecated"]
+    raw_id_fields = ["pre_quests"]
 
 
 class CommentAdmin(admin.ModelAdmin):

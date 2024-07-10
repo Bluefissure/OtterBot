@@ -41,6 +41,9 @@ def get_config():
     parser.add_argument(
         "-l", "--language", choices=["cn", "en", "jp"], help="Quest Language"
     )
+    parser.add_argument(
+        "--only-names", action="store_true", help="Only update quest names"
+    )
     # Parse args.
     args = parser.parse_args()
     # Namespace => Dictionary.
@@ -78,7 +81,11 @@ end_point_map = {
     # 晓月之终途
     70000: "晓月之终途主线任务(6.0)",
     # 禁忌的记忆
-    70136: "崭新的冒险主线任务(6.1-6.2)"
+    70136: "崭新的冒险主线任务(6.1-6.2)",
+    # 迈向明日的一步
+    70289: "崭新的冒险主线任务(6.4-6.5)",
+    # 金曦之遗辉
+    70495: "金曦之遗辉主线任务(7.0)"
 }
 
 
@@ -87,7 +94,8 @@ def import_plotquest_from_csv(csv_file, **kwargs):
     deprecated_quests = []
     with codecs.open(csv_file, "r", "utf8") as f:
         reader = csv.reader(f)
-        key_list = key_type = []
+        key_list = []
+        key_type = []
         add_cnt = 0
         for row_id, row in enumerate(tqdm(reader)):
             if row_id == 0:
@@ -136,8 +144,8 @@ def import_plotquest_from_csv(csv_file, **kwargs):
                 quest.save()
                 
                 #Clear pre_quests before
-                quest.pre_quests.clear()
-                for i in range(3):
+                new_pre_quests = []
+                for i in range(4):
                     pre_key = "PreviousQuest[{}]".format(i)
                     try:
                         pre_quest_id = int(row[key_list.index(pre_key)])
@@ -145,14 +153,16 @@ def import_plotquest_from_csv(csv_file, **kwargs):
                             continue
                         # assert pre_quest_id > 0
                     except (ValueError, AssertionError):
-                        pass
+                        print(f"Error while getting pre_quest_id for quest {quest_id}")
                     else:
                         try:
                             pre_quest = PlotQuest.objects.get(id=pre_quest_id)
+                            new_pre_quests.append(pre_quest)
                         except PlotQuest.DoesNotExist:
                             print(f"Quest id:{pre_quest_id} not found, please import again")
-                        else:
-                            quest.pre_quests.add(pre_quest)
+                if new_pre_quests:
+                    quest.pre_quests.clear()
+                    quest.pre_quests.add(*new_pre_quests)
 
                 quest.save()
                 add_cnt += 1
@@ -165,7 +175,11 @@ if __name__ == "__main__":
     if config.get("download", False):
         if os.path.exists("Quest.csv"):
             os.system("rm Quest.csv")
-        os.system(
-            r"wget https://github.com/thewakingsands/ffxiv-datamining-cn/raw/master/Quest.csv"
-        )
+        lang = config.get("language", "cn")
+        if lang == "cn":
+            os.system(r"wget https://github.com/thewakingsands/ffxiv-datamining-cn/raw/master/Quest.csv")
+        elif lang == "en":
+            os.system(r"wget https://github.com/xivapi/ffxiv-datamining/raw/master/csv/Quest.csv")
+        elif lang == "jp":
+            os.system(r"wget https://github.com/AinaSnow/FFXIV-Datamining/raw/JA/Quest.csv")
     import_plotquest_from_csv("Quest.csv", **config)
