@@ -1,5 +1,5 @@
 from .QQEventHandler import QQEventHandler
-from .QQGroupCommand_sonar import GLOBAL_SONAR_RANKS
+from .QQGroupCommand_sonar import GLOBAL_SONAR_RANKS, get_server_from_keyword
 from .QQUtils import *
 from ffxivbot.models import *
 import copy
@@ -11,19 +11,6 @@ import requests
 import math
 import string
 import os
-
-def get_server_from_keyword(keyword):
-    if keyword == "国服" or keyword == '国':
-        return Server.objects.all()
-    elif keyword == "陆行鸟" or keyword == '鸟':
-        return Server.objects.filter(areaId=1)
-    elif keyword == "莫古力" or keyword == '猪':
-        return Server.objects.filter(areaId=6)
-    elif keyword == "猫小胖" or keyword == '猫':
-        return Server.objects.filter(areaId=7)
-    elif keyword == "豆豆柴" or keyword == '狗':
-        return Server.objects.filter(areaId=8)
-    return Server.objects.filter(name=keyword)
 
 
 def handle_sonar_config(bot, parameters):
