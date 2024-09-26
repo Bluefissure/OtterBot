@@ -2,7 +2,6 @@
 ../manage.py dumpdata ffxivbot.Job > Job.json
 ../manage.py dumpdata ffxivbot.Monster > Monster.json
 ../manage.py dumpdata ffxivbot.PlotQuest > PlotQuest.json
-../manage.py dumpdata ffxivbot.Quest > Quest.json
 ../manage.py dumpdata ffxivbot.Server > Server.json
 ../manage.py dumpdata ffxivbot.SorryGIF > SorryGIF.json
 ../manage.py dumpdata ffxivbot.Territory > Territory.json
