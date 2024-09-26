@@ -1,4 +1,5 @@
 from .QQEventHandler import QQEventHandler
+from .QQGroupCommand_sonar import GLOBAL_SONAR_RANKS
 from .QQUtils import *
 from ffxivbot.models import *
 import copy
@@ -10,11 +11,6 @@ import requests
 import math
 import string
 import os
-
-GLOBAL_SONAR_RANKS = [
-    "50S", "60S", "70S", "80S", "90S",
-    "大象", "小电视", "海呱", "地呱", "雷马", "玉藻御前", "夜光花", "长须豹女王", "贝希摩斯", "奥丁"
-]
 
 def get_server_from_keyword(keyword):
     if keyword == "国服" or keyword == '国':
@@ -34,7 +30,7 @@ def handle_sonar_config(bot, parameters):
     if len(parameters) == 0 or parameters[0] == "help":  # /bot sonar (help)
         return """机器人的 Sonar 推送配置：
 /bot sonar info: 查看当前 Sonar 配置
-/bot sonar rank/rank_del <50S/60S/70S/80S/90S/大象/小电视/...>: 添加/删除可通过本机器人推送的上报类别
+/bot sonar rank/rank_del <50S/60S/70S/80S/90S/100S/大象/小电视/蛇蛇/松鼠>: 添加/删除可通过本机器人推送的上报类别
 /bot sonar server/server_del <服务器/大区名称>: 添加/删除可通过本机器人推送的服务器
 /bot sonar group/group_del <群号>: 添加/删除可通过本机器人推送的QQ群号（不设置则任意群均不可推送）
 """
