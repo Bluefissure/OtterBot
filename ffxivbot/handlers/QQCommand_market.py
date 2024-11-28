@@ -135,6 +135,8 @@ def handle_item_name_abbr(item_name):
     if item_name.startswith("第二期重建用的") and not item_name.endswith("（检）"):
         item_name = item_name + "（检）"
     map_dict = {
+        "G17": "陈旧的狞豹革地图",
+        "G16": "陈旧的银狼革地图",
         "G15": "陈旧的蛇牛革地图",
         "G14": "陈旧的金毗罗鳄革地图",
         "G13": "陈旧的赛加羚羊革地图",
