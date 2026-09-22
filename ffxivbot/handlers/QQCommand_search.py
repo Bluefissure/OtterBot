@@ -14,7 +14,6 @@ import traceback
 def QQCommand_search(*args, **kwargs):
     try:
         global_config = kwargs["global_config"]
-        FF14WIKI_API_URL = global_config["FF14WIKI_API_URL"]
         FF14WIKI_BASE_URL = global_config["FF14WIKI_BASE_URL"]
         action_list = []
 
@@ -22,7 +21,7 @@ def QQCommand_search(*args, **kwargs):
 
         name = receive["message"].replace("/search", "").strip()
 
-        res_data = search_item(name, FF14WIKI_BASE_URL, FF14WIKI_API_URL)
+        res_data = search_item(name, FF14WIKI_BASE_URL)
 
         if isinstance(res_data, dict):
             msg = [{"type": "share", "data": res_data}]

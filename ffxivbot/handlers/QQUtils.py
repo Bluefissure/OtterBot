@@ -5,7 +5,7 @@ import os
 import re
 import time
 import traceback
-import urllib
+import urllib.parse
 import requests
 import base64
 import random
@@ -25,6 +25,10 @@ GARLAND = "https://garlandtools.cn"
 
 CAFEMAKER = "https://cafemaker.wakingsands.com"
 XIVAPI = "https://xivapi.com"
+XIVAPI_SEARCH_URL = "https://v2.xivapi.com/api/search"
+XIVAPI_CN_SEARCH_URL = "https://xivapi-v2.xivcdn.com/api/search"
+XIVAPI_ASSET_URL = "https://v2.xivapi.com/api/asset"
+
 
 XIV_TAG_REGEX = re.compile(r"<(.*?)>")
 GT_CORE_DATA_CN = None
@@ -721,56 +725,94 @@ def parse_item_garland(item_id, name_lang):
     return "\n".join(result)
 
 
-def get_xivapi_item(item_name, name_lang=""):
-    api_base = CAFEMAKER if name_lang == "cn" else XIVAPI
-    url = api_base + "/search?indexes=Item&string=" + item_name
-    if name_lang:
-        url = url + "&language=" + name_lang
-    r = requests.get(url, timeout=3)
-    j = r.json()
-    return j, url
+def search_xivapi_items(item_name, name_lang="", limit=100):
+    search_url = XIVAPI_CN_SEARCH_URL if name_lang == "cn" else XIVAPI_SEARCH_URL
+    language = "chs" if name_lang == "cn" else name_lang
+    escaped_item_name = item_name.replace("\\", "\\\\").replace('"', '\\"')
+    params = {
+        "sheets": "Item",
+        "fields": "Name,Icon",
+        "query": 'Name~"{}"'.format(escaped_item_name),
+        "limit": limit,
+    }
+    if language:
+        params["language"] = language
 
-
-def search_item(name, FF14WIKI_BASE_URL, FF14WIKI_API_URL, url_quote=True):
     try:
-        name_lang = None
-        for lang in ["cn", "en", "ja", "fr", "de"]:
-            j, search_url = get_xivapi_item(name, lang)
-            if j.get("Results"):
-                name_lang = lang
-                break
-        if name_lang is None:
-            return False
-        api_base = CAFEMAKER if name_lang == "cn" else XIVAPI
-        res_num = j["Pagination"]["ResultsTotal"]
+        response = requests.get(search_url, params=params, timeout=(5, 15))
+        response.raise_for_status()
+        payload = response.json()
+        results = payload.get("results", [])
+        if not isinstance(results, list):
+            raise TypeError("results is not a list")
 
-        if res_num == 1 or j["Results"][0]["Name"] == name:
-            try:
-                return parse_item_garland(j["Results"][0]["ID"], name_lang)
-            except Exception as e:
-                return f"搜索失败！{repr(e)}"
-        else:
-            search_url = (
-                    FF14WIKI_BASE_URL + "/wiki/ItemSearch?name=" + urllib.parse.quote(name)
-            )
-            res_data = {
-                "url": search_url,
-                "title": "%s 的搜索结果" % (name),
-                "content": "在最终幻想XIV中找到了 %s 个物品" % (res_num),
-                "image": api_base + j["Results"][0]["Icon"],
-            }
-        logging.debug("res_data:%s" % (res_data))
-    except requests.exceptions.ReadTimeout:
-        res_data = {
-            "url": search_url,
-            "title": "%s 的搜索请求超时了" % (name),
-            "content": "不信你自己打开看看",
-            "image": "",
-        }
-    except json.decoder.JSONDecodeError:
-        print(j.text)
+        items = []
+        for result in results:
+            fields = result.get("fields", {})
+            name = fields.get("Name")
+            item_id = result.get("row_id")
+            if not name or not isinstance(item_id, int):
+                continue
+            icon = fields.get("Icon") or {}
+            items.append({
+                "name": name,
+                "id": item_id,
+                "icon_path": icon.get("path") if isinstance(icon, dict) else "",
+            })
+        if results and not items:
+            raise ValueError("XIVAPI returned no usable item records")
+    except (requests.RequestException, ValueError, AttributeError, TypeError):
+        logging.exception("XIVAPI item search failed: %s", search_url)
+        return None
 
-    print(res_data)
+    return {
+        "items": items,
+        "has_more": bool(payload.get("next")),
+    }
+
+
+def search_item(name, FF14WIKI_BASE_URL):
+    service_available = False
+    for name_lang in ["cn", "en", "ja", "fr", "de"]:
+        search_result = search_xivapi_items(name, name_lang)
+        if search_result is None:
+            continue
+        service_available = True
+        items = search_result["items"]
+        if items:
+            break
+    else:
+        if not service_available:
+            return "物品数据服务暂时不可用，请稍后再试"
+        return False
+
+    exact_item = next((item for item in items if item["name"] == name), None)
+    detail_item = exact_item or (items[0] if len(items) == 1 else None)
+    if detail_item is not None:
+        try:
+            return parse_item_garland(detail_item["id"], name_lang)
+        except Exception as e:
+            return f"搜索失败！{repr(e)}"
+
+    search_url = (
+        FF14WIKI_BASE_URL + "/wiki/ItemSearch?name=" + urllib.parse.quote(name)
+    )
+    result_count = len(items)
+    count_text = "至少 {}".format(result_count) if search_result["has_more"] else str(result_count)
+    icon_path = items[0]["icon_path"]
+    image_url = ""
+    if icon_path:
+        image_url = XIVAPI_ASSET_URL + "?" + urllib.parse.urlencode({
+            "path": icon_path,
+            "format": "png",
+        })
+    res_data = {
+        "url": search_url,
+        "title": "%s 的搜索结果" % (name),
+        "content": "在最终幻想XIV中找到了 %s 个物品" % (count_text),
+        "image": image_url,
+    }
+    logging.debug("res_data:%s" % (res_data))
     return res_data
 
 

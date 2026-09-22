@@ -51,38 +51,18 @@ def localize_world_name(world_name):
     return world_name
 
 
-XIVAPI_SEARCH_URL = "https://v2.xivapi.com/api/search"
-XIVAPI_CN_SEARCH_URL = "https://xivapi-v2.xivcdn.com/api/search"
 UNIVERSALIS_API_URL = "https://universalis.app/api/v2"
 
 
 def get_item_id(item_name, name_lang=""):
-    search_url = XIVAPI_CN_SEARCH_URL if name_lang == "cn" else XIVAPI_SEARCH_URL
-    language = "chs" if name_lang == "cn" else name_lang
-    escaped_item_name = item_name.replace("\\", "\\\\").replace('"', '\\"')
-    params = {
-        "sheets": "Item",
-        "fields": "Name",
-        "query": 'Name~"{}"'.format(escaped_item_name),
-        "limit": 100,
-    }
-    if language:
-        params["language"] = language
-
-    try:
-        response = requests.get(search_url, params=params, timeout=(5, 15))
-        response.raise_for_status()
-        results = response.json().get("results", [])
-    except (requests.RequestException, ValueError, AttributeError):
-        logging.exception("XIVAPI item search failed: %s", search_url)
+    search_result = search_xivapi_items(item_name, name_lang)
+    if search_result is None:
         return "", None
 
-    candidates = []
-    for result in results:
-        name = result.get("fields", {}).get("Name")
-        item_id = result.get("row_id")
-        if name and isinstance(item_id, int):
-            candidates.append((name, item_id))
+    candidates = [
+        (item["name"], item["id"])
+        for item in search_result["items"]
+    ]
     if candidates:
         return max(
             candidates,

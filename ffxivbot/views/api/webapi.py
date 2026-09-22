@@ -187,8 +187,6 @@ def webapi(req):
             search_res = search_item(
                 name,
                 "https://ff14.huijiwiki.com",
-                "https://cdn.huijiwiki.com/ff14/api.php",
-                url_quote=False,
             )
             res_dict = {
                 "response": "success",
