@@ -19,7 +19,7 @@ dice==3.1.2
 Django==4.1.13
 docopt==0.6.2
 feedparser==6.0.8
-fonttools==4.33.2
+fonttools==4.43.0
 hiredis==2.0.0
 hyperlink==21.0.0
 idna==3.3
