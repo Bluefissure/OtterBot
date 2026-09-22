@@ -51,25 +51,52 @@ def localize_world_name(world_name):
     return world_name
 
 
+XIVAPI_SEARCH_URL = "https://v2.xivapi.com/api/search"
+XIVAPI_CN_SEARCH_URL = "https://xivapi-v2.xivcdn.com/api/search"
+UNIVERSALIS_API_URL = "https://universalis.app/api/v2"
+
+
 def get_item_id(item_name, name_lang=""):
-    url = "https://xivapi.com/search?indexes=Item&string=" + item_name
-    if name_lang:
-        url = url + "&language=" + name_lang
-    if name_lang == "cn":
-        url = (
-            "https://cafemaker.wakingsands.com/search?indexes=Item&string=" + item_name
+    search_url = XIVAPI_CN_SEARCH_URL if name_lang == "cn" else XIVAPI_SEARCH_URL
+    language = "chs" if name_lang == "cn" else name_lang
+    escaped_item_name = item_name.replace("\\", "\\\\").replace('"', '\\"')
+    params = {
+        "sheets": "Item",
+        "fields": "Name",
+        "query": 'Name~"{}"'.format(escaped_item_name),
+        "limit": 100,
+    }
+    if language:
+        params["language"] = language
+
+    try:
+        response = requests.get(search_url, params=params, timeout=(5, 15))
+        response.raise_for_status()
+        results = response.json().get("results", [])
+    except (requests.RequestException, ValueError, AttributeError):
+        logging.exception("XIVAPI item search failed: %s", search_url)
+        return "", None
+
+    candidates = []
+    for result in results:
+        name = result.get("fields", {}).get("Name")
+        item_id = result.get("row_id")
+        if name and isinstance(item_id, int):
+            candidates.append((name, item_id))
+    if candidates:
+        return max(
+            candidates,
+            key=lambda result: SequenceMatcher(None, result[0], item_name).ratio(),
         )
-    r = requests.get(url, timeout=60)
-    j = r.json()
-    if len(j["Results"]) > 0:
-        result = max(j["Results"], key=lambda x: SequenceMatcher(None, x["Name"], item_name).ratio())
-        return result["Name"], result["ID"]
     return "", -1
 
 
 def get_market_data(server_name, item_name, hq=False):
+    cn_search_failed = False
     new_item_name, item_id = get_item_id(item_name, "cn")
-    if item_id < 0:
+    if item_id is None:
+        cn_search_failed = True
+    if item_id is None or item_id < 0:
         item_name = item_name.replace("_", " ")
         name_lang = ""
         for lang in ["ja", "fr", "de"]:
@@ -78,25 +105,52 @@ def get_market_data(server_name, item_name, hq=False):
                 name_lang = lang
                 break
         new_item_name, item_id = get_item_id(item_name, name_lang)
+        if item_id is None:
+            return "物品数据服务暂时不可用，请稍后再试"
         if item_id < 0:
+            if cn_search_failed:
+                return "物品数据服务暂时不可用，请稍后再试"
             return '所查询物品"{}"不存在'.format(item_name)
-    url = "https://universalis.app/api/{}/{}".format(server_name, item_id)
-    print("market url:{}".format(url))
-    r = requests.get(url, timeout=10)
-    if r.status_code != 200:
-        if r.status_code == 404:
-            msg = "请确认所查询物品可交易且不可在NPC处购买"
-        else:
-            msg = "Error of HTTP request (code {}):\n{}".format(r.status_code, r.text)
-        return msg
-    j = r.json()
-    msg = "{} 的 {}{} 数据如下：\n".format(server_name, new_item_name, "(HQ)" if hq else "")
-    listing_cnt = 0
-    for listing in j["listings"]:
-        if hq and not listing["hq"]:
-            continue
+
+    url = "{}/{}/{}".format(UNIVERSALIS_API_URL, server_name, item_id)
+    params = {"listings": 10, "entries": 0}
+    if hq:
+        params["hq"] = "true"
+    logging.info("market url: %s", url)
+    try:
+        response = requests.get(url, params=params, timeout=(5, 15))
+    except requests.RequestException:
+        logging.exception("Universalis market request failed: %s", url)
+        return "市场数据服务暂时不可用，请稍后再试"
+
+    if response.status_code != 200:
+        if response.status_code == 404:
+            return "请确认所查询物品可交易且不可在NPC处购买"
+        logging.error(
+            "Universalis market request returned HTTP %s: %s",
+            response.status_code,
+            url,
+        )
+        return "市场数据服务暂时不可用，请稍后再试"
+
+    try:
+        market_data = response.json()
+        listings = market_data["listings"]
+        last_upload_timestamp = market_data["lastUploadTime"]
+        if not isinstance(listings, list):
+            raise TypeError("listings is not a list")
+    except (ValueError, KeyError, TypeError):
+        logging.exception("Invalid Universalis market response: %s", url)
+        return "市场数据服务返回异常，请稍后再试"
+
+    msg = "{} 的 {}{} 数据如下：\n".format(
+        server_name,
+        new_item_name,
+        "(HQ)" if hq else "",
+    )
+    for listing in listings:
         retainer_name = listing["retainerName"]
-        if "dcName" in j:
+        if "dcName" in market_data:
             retainer_name += "({})".format(localize_world_name(listing["worldName"]))
         msg += "{:,}x{} = {:,} {} {}\n".format(
             listing["pricePerUnit"],
@@ -105,16 +159,14 @@ def get_market_data(server_name, item_name, hq=False):
             "HQ" if listing["hq"] else "  ",
             retainer_name,
         )
-        listing_cnt += 1
-        if listing_cnt >= 10:
-            break
-    TIMEFORMAT_YMDHMS = "%Y-%m-%d %H:%M:%S"
+    if not listings:
+        return "未查询到数据，请使用/market upload命令查看如何上报数据"
+
     last_upload_time = time.strftime(
-        TIMEFORMAT_YMDHMS, time.localtime(j["lastUploadTime"] / 1000)
+        "%Y-%m-%d %H:%M:%S",
+        time.localtime(last_upload_timestamp / 1000),
     )
     msg += "更新时间:{}".format(last_upload_time)
-    if listing_cnt == 0:
-        msg = "未查询到数据，请使用/market upload命令查看如何上报数据"
     return msg
 
 
